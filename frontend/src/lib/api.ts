@@ -43,18 +43,20 @@ export async function apiRequest<T = any>(
     credentials: "include", // Sends HttpOnly session cookies
   });
 
-  if (response.status === 401) {
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-      window.location.href = "/login";
-    }
-    throw new Error("جلسة العمل منتهية أو غير صالحة");
-  }
-
   let jsonResult: any;
   try {
     jsonResult = await response.json();
   } catch {
     jsonResult = { message: "حدث خطأ غير متوقع في الخادم" };
+  }
+
+  if (response.status === 401) {
+    const isLoginEndpoint = endpoint.includes("/auth/login");
+    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login") && !isLoginEndpoint) {
+      window.location.href = "/login";
+    }
+    const errorMsg = jsonResult?.detail || jsonResult?.message || "جلسة العمل منتهية أو غير صالحة";
+    throw new Error(errorMsg);
   }
 
   if (!response.ok) {
