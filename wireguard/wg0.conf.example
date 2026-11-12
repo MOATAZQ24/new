@@ -1,0 +1,39 @@
+# ==============================================================================
+# WireGuard Server Configuration: wg0.conf
+# Investor Gate IT Operations Management System
+# Place in: /etc/wireguard/wg0.conf on Ubuntu Server
+# ==============================================================================
+
+[Interface]
+Address = 10.10.0.1/24
+ListenPort = 51820
+PrivateKey = SERVER_PRIVATE_KEY_HERE
+SaveConfig = true
+
+# Firewall and NAT routing rules on startup and shutdown
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+# ------------------------------------------------------------------------------
+# Peer 1: IT Administrator (Full Access)
+# ------------------------------------------------------------------------------
+[Peer]
+# Admin Laptop
+PublicKey = ADMIN_PUBLIC_KEY_HERE
+AllowedIPs = 10.10.0.2/32
+
+# ------------------------------------------------------------------------------
+# Peer 2: IT Technician (Operational Access)
+# ------------------------------------------------------------------------------
+[Peer]
+# Tech Workstation
+PublicKey = TECHNICIAN_PUBLIC_KEY_HERE
+AllowedIPs = 10.10.0.3/32
+
+# ------------------------------------------------------------------------------
+# Peer 3: Branch Office Gateway
+# ------------------------------------------------------------------------------
+[Peer]
+# Branch Site-to-Site Router
+PublicKey = BRANCH_PUBLIC_KEY_HERE
+AllowedIPs = 10.10.0.10/32, 192.168.10.0/24

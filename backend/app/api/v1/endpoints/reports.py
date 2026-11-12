@@ -1,0 +1,250 @@
+import uuid
+import csv
+import io
+from datetime import datetime, date
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.core.security import get_current_user, get_user_company_id, require_role
+from app.models.asset import TechnicalAsset, AssetCustody
+from app.models.infrastructure import ITInfrastructure
+from app.models.subscription import ThirdPartySubscription
+from app.models.maintenance import MaintenanceRecord
+from app.models.task import Task
+from app.models.ticket import HelpDeskTicket
+from app.models.audit import AuditLog
+from app.models.user import User, Employee
+
+router = APIRouter(prefix="/reports", tags=["Reports & Exports"])
+
+
+def generate_excel_compatible_csv(headers: list, rows: list) -> str:
+    """Generate UTF-8 with BOM CSV that Excel opens with full Arabic RTL character support."""
+    output = io.StringIO()
+    # Write UTF-8 BOM
+    output.write("\ufeff")
+    writer = csv.writer(output)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow(row)
+    return output.getvalue()
+
+
+def generate_html_printable_report(title: str, headers: list, rows: list, company_name: str) -> str:
+    """Generate printable styled HTML report supporting Arabic RTL and printing to PDF."""
+    table_headers = "".join([f"<th style='border:1px solid #cbd5e1;padding:10px;background:#123D32;color:white;'>{h}</th>" for h in headers])
+    table_rows = ""
+    for r in rows:
+        cells = "".join([f"<td style='border:1px solid #cbd5e1;padding:8px;'>{str(c or '-')}</td>" for c in r])
+        table_rows += f"<tr>{cells}</tr>"
+
+    html = f"""<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<title>{title}</title>
+<style>
+  body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #fff; color: #1e293b; direction: rtl; }}
+  .header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #187A5A; padding-bottom: 15px; margin-bottom: 20px; }}
+  .title {{ color: #123D32; font-size: 24px; font-weight: bold; }}
+  .meta {{ color: #64748B; font-size: 14px; }}
+  table {{ width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }}
+  tr:nth-child(even) {{ background: #f8fafc; }}
+  .footer {{ margin-top: 30px; text-align: center; color: #94a3b8; font-size: 12px; }}
+  @media print {{ body {{ margin: 10mm; }} }}
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">{title}</div>
+      <div class="meta">الشركة: {company_name} | التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+    </div>
+    <div style="font-size: 20px; font-weight: bold; color: #187A5A;">Investor Gate IT</div>
+  </div>
+  <table>
+    <thead><tr>{table_headers}</tr></thead>
+    <tbody>{table_rows}</tbody>
+  </table>
+  <div class="footer">تم إنشاء هذا التقرير آلياً عبر نظام إدارة عمليات تقنية المعلومات - Investor Gate</div>
+</body>
+</html>"""
+    return html
+
+
+@router.get("/export")
+def export_report(
+    report_type: str = Query(..., pattern="^(assets|custody|infrastructure|subscriptions|maintenance|tasks|helpdesk|audit)$"),
+    format_type: str = Query("excel", pattern="^(excel|csv|html|pdf)$"),
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "Auditor"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Export system data to Excel/CSV or printable HTML."""
+    target_cid = company_id or active_cid
+    company_name = "الشركة الحالية"
+
+    if report_type == "assets":
+        title = "تقرير الأصول التقنية (Technical Assets Report)"
+        headers = ["كود الأصل", "اسم الأصل", "النوع", "الماركة", "الموديل", "الرقم التسلسلي", "الحالة", "الموظف المعين له", "تاريخ الشراء", "تاريخ انتهاء الضمان"]
+        assets = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid).all()
+        rows = [
+            [
+                a.asset_code,
+                a.asset_name,
+                a.asset_type,
+                a.brand,
+                a.model,
+                a.serial_number,
+                a.status,
+                a.assigned_employee.full_name if a.assigned_employee else "غير معين",
+                a.purchase_date,
+                a.warranty_expiry,
+            ]
+            for a in assets
+        ]
+
+    elif report_type == "custody":
+        title = "تقرير عهد الموظفين (Employee Custody Report)"
+        headers = ["الموظف", "الرقم الوظيفي", "كود الأصل", "اسم الأصل", "تاريخ التسليم", "تاريخ الإرجاع المتوقع", "حالة الأصل عند التسليم", "حالة العهدة"]
+        records = db.query(AssetCustody).filter(AssetCustody.company_id == target_cid).all()
+        rows = [
+            [
+                r.employee.full_name if r.employee else "",
+                r.employee.employee_number if r.employee else "",
+                r.asset.asset_code if r.asset else "",
+                r.asset.asset_name if r.asset else "",
+                r.assignment_date.strftime("%Y-%m-%d"),
+                r.expected_return_date or "غير محدد",
+                r.condition_on_assignment,
+                r.status,
+            ]
+            for r in records
+        ]
+
+    elif report_type == "infrastructure":
+        title = "تقرير البنية التحتية (IT Infrastructure Report)"
+        headers = ["اسم الجهاز", "نوع الجهاز", "الشركة المصنعة", "الموديل", "الرقم التسلسلي", "اسم المضيف", "IP الإدارة", "الشبكة", "VLAN", "الموقع", "الحالة"]
+        devs = db.query(ITInfrastructure).filter(ITInfrastructure.company_id == target_cid).all()
+        rows = [
+            [
+                d.device_name,
+                d.device_type,
+                d.manufacturer,
+                d.model,
+                d.serial_number,
+                d.hostname,
+                d.management_ip,
+                d.network_name,
+                d.vlan,
+                d.location,
+                d.status,
+            ]
+            for d in devs
+        ]
+
+    elif report_type == "subscriptions":
+        title = "تقرير الاشتراكات الخارجية (Subscriptions Report)"
+        headers = ["اسم الخدمة", "المزود", "نوع الاشتراك", "الباقة", "دورة الفوترة", "السعر", "العملة", "تاريخ التجديد", "تاريخ الانتهاء", "الحالة"]
+        subs = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == target_cid).all()
+        rows = [
+            [
+                s.service_name,
+                s.provider,
+                s.subscription_type,
+                s.package_type,
+                s.billing_cycle,
+                s.price,
+                s.currency,
+                s.renewal_date,
+                s.expiry_date,
+                s.status,
+            ]
+            for s in subs
+        ]
+
+    elif report_type == "maintenance":
+        title = "تقرير سجلات الصيانة والتغيير (Maintenance & Changes Report)"
+        headers = ["العنوان", "نوع الإجراء", "الهدف", "الفني المسؤول", "الحالة", "حالة الاعتماد", "التكلفة", "تاريخ البدء", "تاريخ الإنجاز"]
+        mrec = db.query(MaintenanceRecord).filter(MaintenanceRecord.company_id == target_cid).all()
+        rows = [
+            [
+                m.title,
+                m.action_type,
+                m.target_type,
+                m.assigned_technician.username if m.assigned_technician else "",
+                m.status,
+                m.approval_status,
+                m.cost,
+                m.start_date,
+                m.completion_date,
+            ]
+            for m in mrec
+        ]
+
+    elif report_type == "tasks":
+        title = "تقرير المهام (Tasks Report)"
+        headers = ["عنوان المهمة", "المسند إليه", "الأولوية", "الحالة", "تاريخ البدء", "تاريخ الاستحقاق", "تاريخ الاكتمال"]
+        tasks = db.query(Task).filter(Task.company_id == target_cid).all()
+        rows = [
+            [
+                t.title,
+                t.assigned_to.full_name if t.assigned_to else "غير مسند",
+                t.priority,
+                t.status,
+                t.start_date,
+                t.due_date,
+                t.completed_at,
+            ]
+            for t in tasks
+        ]
+
+    elif report_type == "helpdesk":
+        title = "تقرير مكتب المساعدة (Help Desk Tickets Report)"
+        headers = ["رقم التذكرة", "عنوان المشكلة", "مقدم الطلب", "الفني المكلف", "التصنيف", "الأولوية", "الحالة", "تاريخ الإنشاء", "تاريخ الحل"]
+        tix = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid).all()
+        rows = [
+            [
+                t.ticket_number,
+                t.issue_title,
+                t.requester.full_name if t.requester else "",
+                t.assigned_technician.username if t.assigned_technician else "غير مكلف",
+                t.category,
+                t.priority,
+                t.status,
+                t.created_at.strftime("%Y-%m-%d %H:%M"),
+                t.resolved_at.strftime("%Y-%m-%d %H:%M") if t.resolved_at else "",
+            ]
+            for t in tix
+        ]
+
+    else:  # audit
+        title = "تقرير سجل العمليات والمراجعة (Audit Log Report)"
+        headers = ["المستخدم", "نوع الإجراء", "المورد", "معرف المورد", "عنوان IP", "التاريخ والوقت"]
+        audits = db.query(AuditLog).filter(AuditLog.company_id == target_cid).order_by(AuditLog.created_at.desc()).limit(500).all()
+        rows = [
+            [
+                a.user.username if a.user else "النظام",
+                a.action,
+                a.resource_type,
+                a.resource_id,
+                a.ip_address,
+                a.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            ]
+            for a in audits
+        ]
+
+    if format_type in ["excel", "csv"]:
+        csv_content = generate_excel_compatible_csv(headers, rows)
+        filename = f"{report_type}_report_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        return Response(
+            content=csv_content.encode("utf-8-sig"),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    else:  # html / pdf
+        html_content = generate_html_printable_report(title, headers, rows, company_name)
+        return Response(content=html_content, media_type="text/html; charset=utf-8")
