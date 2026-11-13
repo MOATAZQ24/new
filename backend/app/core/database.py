@@ -49,6 +49,15 @@ def _migrate_columns():
             ("digital_assets", "nameservers", "VARCHAR(255)", "VARCHAR(255)"),
             ("digital_assets", "subscription_tier", "VARCHAR(100)", "VARCHAR(100)"),
             ("digital_assets", "payment_method", "VARCHAR(100)", "VARCHAR(100)"),
+            ("tasks", "is_blocked", "BOOLEAN DEFAULT 0", "BOOLEAN DEFAULT FALSE"),
+            ("tasks", "blocker_reason", "TEXT", "TEXT"),
+            ("tasks", "blocked_at", "DATETIME", "TIMESTAMP"),
+            ("tasks", "unblocked_at", "DATETIME", "TIMESTAMP"),
+            ("tasks", "accepted_at", "DATETIME", "TIMESTAMP"),
+            ("tasks", "submitted_for_review_at", "DATETIME", "TIMESTAMP"),
+            ("tasks", "reviewer_id", "CHAR(32)", "UUID"),
+            ("tasks", "review_notes", "TEXT", "TEXT"),
+            ("tasks", "rework_count", "INTEGER DEFAULT 0", "INTEGER DEFAULT 0"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

@@ -10,10 +10,18 @@ from app.core.response import success_response, paginate
 from app.models.task import Task, TaskComment
 from app.models.user import User, Employee
 from app.models.asset import TechnicalAsset
-from app.schemas.task import TaskCreate, TaskUpdate, TaskCommentCreate
+from app.schemas.task import (
+    TaskCreate,
+    TaskUpdate,
+    TaskCommentCreate,
+    TaskBlockRequest,
+    TaskSubmitReviewRequest,
+    TaskReviewRequest,
+)
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
 from app.services.telegram_service import enqueue_task_notification
+from app.services import task_service
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])
 
@@ -64,6 +72,7 @@ def list_tasks(
     for t in items:
         assignee_name = t.assigned_to.full_name if t.assigned_to else None
         assigner_name = t.assigned_by.username if t.assigned_by else None
+        reviewer_name = t.reviewer.username if t.reviewer else None
         asset_name = t.related_asset.asset_name if t.related_asset else None
         c_count = len(t.comments)
 
@@ -81,11 +90,21 @@ def list_tasks(
             "assigned_to_name": assignee_name,
             "assigned_by_id": str(t.assigned_by_id) if t.assigned_by_id else None,
             "assigned_by_name": assigner_name,
+            "reviewer_id": str(t.reviewer_id) if t.reviewer_id else None,
+            "reviewer_name": reviewer_name,
             "priority": t.priority,
             "status": t.status,
             "start_date": t.start_date,
             "due_date": t.due_date,
+            "accepted_at": t.accepted_at,
+            "submitted_for_review_at": t.submitted_for_review_at,
             "completed_at": t.completed_at,
+            "is_blocked": bool(t.is_blocked),
+            "blocker_reason": t.blocker_reason,
+            "blocked_at": t.blocked_at,
+            "unblocked_at": t.unblocked_at,
+            "review_notes": t.review_notes,
+            "rework_count": t.rework_count or 0,
             "related_asset_id": str(t.related_asset_id) if t.related_asset_id else None,
             "related_asset_name": asset_name,
             "related_ticket_id": str(t.related_ticket_id) if t.related_ticket_id else None,
@@ -207,11 +226,21 @@ def get_task(
         "assigned_to_name": task.assigned_to.full_name if task.assigned_to else None,
         "assigned_by_id": str(task.assigned_by_id) if task.assigned_by_id else None,
         "assigned_by_name": task.assigned_by.username if task.assigned_by else None,
+        "reviewer_id": str(task.reviewer_id) if task.reviewer_id else None,
+        "reviewer_name": task.reviewer.username if task.reviewer else None,
         "priority": task.priority,
         "status": task.status,
         "start_date": task.start_date,
         "due_date": task.due_date,
+        "accepted_at": task.accepted_at,
+        "submitted_for_review_at": task.submitted_for_review_at,
         "completed_at": task.completed_at,
+        "is_blocked": bool(task.is_blocked),
+        "blocker_reason": task.blocker_reason,
+        "blocked_at": task.blocked_at,
+        "unblocked_at": task.unblocked_at,
+        "review_notes": task.review_notes,
+        "rework_count": task.rework_count or 0,
         "related_asset_id": str(task.related_asset_id) if task.related_asset_id else None,
         "related_asset_name": task.related_asset.asset_name if task.related_asset else None,
         "related_ticket_id": str(task.related_ticket_id) if task.related_ticket_id else None,
@@ -331,3 +360,122 @@ def delete_task(
     db.delete(task)
     db.commit()
     return success_response(message="تم حذف المهمة بنجاح")
+
+
+# ── Task Collaboration & 9-State Lifecycle Actions ────────────────────
+
+@router.post("/{task_id}/accept")
+def accept_task_endpoint(
+    task_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Assignee accepts the task."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.accept_task(task=task, user=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم قبول المهمة بنجاح")
+
+
+@router.post("/{task_id}/start")
+def start_task_endpoint(
+    task_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Start working on the task (moves status to In Progress)."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.start_task(task=task, user=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم بدء العمل على المهمة")
+
+
+@router.post("/{task_id}/block")
+def block_task_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskBlockRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Mark task as Blocked with an explicit blocker reason."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.block_task(task=task, blocker_reason=payload.reason, user=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status, "blocker_reason": updated.blocker_reason}, message="تم تسجيل تعليق المهمة لوجود معوق")
+
+
+@router.post("/{task_id}/unblock")
+def unblock_task_endpoint(
+    task_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Resolve blocker and resume task into In Progress."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.unblock_task(task=task, user=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم إزالة المعوق واستئناف المهمة")
+
+
+@router.post("/{task_id}/submit-review")
+def submit_for_review_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskSubmitReviewRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Employee submits task for review and managerial approval."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.submit_for_review(task=task, notes=payload.notes, user=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم رفع المهمة للمراجعة بنجاح")
+
+
+@router.post("/{task_id}/approve")
+def approve_task_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskReviewRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Manager approves and officially completes the task."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.approve_task(task=task, review_notes=payload.review_notes, reviewer=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم اعتماد المهمة وإكمالها بنجاح")
+
+
+@router.post("/{task_id}/rework")
+def rework_task_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskReviewRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Reviewer returns task with rework instructions."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+    updated = task_service.rework_task(task=task, rework_notes=payload.review_notes or "", reviewer=current_user, db=db)
+    return success_response(data={"id": str(updated.id), "status": updated.status, "rework_count": updated.rework_count}, message="تم طلب تعديلات إضافية على المهمة")
+

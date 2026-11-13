@@ -21,11 +21,21 @@ interface TaskItem {
   assigned_to_id?: string;
   assigned_to_name?: string;
   assigned_by_name?: string;
+  reviewer_id?: string;
+  reviewer_name?: string;
   priority: string;
   status: string;
   start_date?: string;
   due_date?: string;
+  accepted_at?: string;
+  submitted_for_review_at?: string;
   completed_at?: string;
+  is_blocked: boolean;
+  blocker_reason?: string;
+  blocked_at?: string;
+  unblocked_at?: string;
+  review_notes?: string;
+  rework_count: number;
   related_asset_name?: string;
   notes?: string;
   is_overdue: boolean;
@@ -45,7 +55,7 @@ interface TaskDetail extends TaskItem {
 }
 
 export default function TasksPage() {
-  const { currentCompany } = useAuth();
+  const { currentCompany, user } = useAuth();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -64,13 +74,28 @@ export default function TasksPage() {
   const [newComment, setNewComment] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
 
-  // Form state
+  // Collaboration Action Modals
+  const [blockModal, setBlockModal] = useState(false);
+  const [blockerReasonInput, setBlockerReasonInput] = useState("");
+  
+  const [submitModal, setSubmitModal] = useState(false);
+  const [submissionNotesInput, setSubmissionNotesInput] = useState("");
+  
+  const [reworkModal, setReworkModal] = useState(false);
+  const [reworkNotesInput, setReworkNotesInput] = useState("");
+  
+  const [approveModal, setApproveModal] = useState(false);
+  const [approvalNotesInput, setApprovalNotesInput] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Form state for task creation
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     assigned_to_id: "",
     priority: "Medium",
-    status: "Pending",
+    status: "Assigned",
     start_date: "",
     due_date: "",
     related_asset_id: "",
@@ -116,7 +141,18 @@ export default function TasksPage() {
     loadDependencies();
   }, [loadDependencies, currentCompany]);
 
+  const refreshSelectedTask = async (taskId: string) => {
+    try {
+      const res = await api.get<TaskDetail>(`/tasks/${taskId}`);
+      setSelectedTask(res.data);
+      loadTasks();
+    } catch (err) {
+      console.error("Failed to refresh task detail", err);
+    }
+  };
+
   const handleOpenDetail = async (taskId: string) => {
+    setActionError(null);
     try {
       const res = await api.get<TaskDetail>(`/tasks/${taskId}`);
       setSelectedTask(res.data);
@@ -146,7 +182,7 @@ export default function TasksPage() {
         description: "",
         assigned_to_id: "",
         priority: "Medium",
-        status: "Pending",
+        status: "Assigned",
         start_date: "",
         due_date: "",
         related_asset_id: "",
@@ -158,15 +194,107 @@ export default function TasksPage() {
     }
   };
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
+  // ── Collaboration Lifecycle Actions ──────────────────────────────────
+  const handleAcceptTask = async (taskId: string) => {
+    setActionLoading(true);
+    setActionError(null);
     try {
-      await api.put(`/tasks/${taskId}`, { status: newStatus });
-      loadTasks();
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: newStatus });
-      }
-    } catch (err) {
-      console.error("Failed to update task status", err);
+      await api.post(`/tasks/${taskId}/accept`);
+      await refreshSelectedTask(taskId);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل قبول المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleStartTask = async (taskId: string) => {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${taskId}/start`);
+      await refreshSelectedTask(taskId);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل بدء العمل على المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBlockTask = async () => {
+    if (!selectedTask || !blockerReasonInput.trim()) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${selectedTask.id}/block`, { reason: blockerReasonInput.trim() });
+      setBlockModal(false);
+      setBlockerReasonInput("");
+      await refreshSelectedTask(selectedTask.id);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل تعليق المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnblockTask = async (taskId: string) => {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${taskId}/unblock`);
+      await refreshSelectedTask(taskId);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل إزالة المعوق واستئناف المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSubmitForReview = async () => {
+    if (!selectedTask) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${selectedTask.id}/submit-review`, { notes: submissionNotesInput.trim() || null });
+      setSubmitModal(false);
+      setSubmissionNotesInput("");
+      await refreshSelectedTask(selectedTask.id);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل رفع المهمة للمراجعة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveTask = async () => {
+    if (!selectedTask) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${selectedTask.id}/approve`, { review_notes: approvalNotesInput.trim() || null });
+      setApproveModal(false);
+      setApprovalNotesInput("");
+      await refreshSelectedTask(selectedTask.id);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل اعتماد المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReworkTask = async () => {
+    if (!selectedTask || !reworkNotesInput.trim()) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${selectedTask.id}/rework`, { review_notes: reworkNotesInput.trim() });
+      setReworkModal(false);
+      setReworkNotesInput("");
+      await refreshSelectedTask(selectedTask.id);
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail || "فشل طلب التعديل على المهمة");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -177,9 +305,7 @@ export default function TasksPage() {
       setCommentSubmitting(true);
       await api.post(`/tasks/${selectedTask.id}/comments`, { content: newComment.trim() });
       setNewComment("");
-      // Refresh detail
-      const res = await api.get<TaskDetail>(`/tasks/${selectedTask.id}`);
-      setSelectedTask(res.data);
+      await refreshSelectedTask(selectedTask.id);
     } catch (err) {
       console.error("Failed to add comment", err);
     } finally {
@@ -187,11 +313,14 @@ export default function TasksPage() {
     }
   };
 
+  // User role check
+  const isManagerOrAdmin = user?.is_superadmin || user?.roles?.some(r => ["Super Admin", "Company Admin", "IT Manager"].includes(r));
+
   // KPIs
   const totalTasks = tasks.length;
   const inProgressCount = tasks.filter(t => t.status === "In Progress").length;
-  const completedCount = tasks.filter(t => t.status === "Completed").length;
-  const overdueCount = tasks.filter(t => t.is_overdue).length;
+  const reviewPendingCount = tasks.filter(t => t.status === "Submitted for Review").length;
+  const blockedCount = tasks.filter(t => t.is_blocked || t.status === "Blocked").length;
 
   return (
     <DashboardLayout>
@@ -199,9 +328,9 @@ export default function TasksPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة المهام التشغيلية</h1>
+            <h1 className="text-2xl font-bold text-gray-900">إدارة المهام التشغيلية والتشاركية</h1>
             <p className="text-sm text-gray-500 mt-1">
-              متابعة المهام الفنية، التكليفات، ومواعيد التسليم لفرق تقنية المعلومات
+              متابعة المهام الفنية، تتبع المعوقات، والاعتماد الإداري متعدد المستويات
             </p>
           </div>
           <button
@@ -216,9 +345,9 @@ export default function TasksPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard title="إجمالي المهام" value={totalTasks} icon={<CheckSquareIcon className="w-5 h-5" />} accentColor="border-blue-500" />
-          <StatsCard title="قيد التنفيذ" value={inProgressCount} icon={<ClockIcon className="w-5 h-5" />} accentColor="border-amber-500" />
-          <StatsCard title="المكتملة" value={completedCount} icon={<CheckSquareIcon className="w-5 h-5" />} accentColor="border-green-500" />
-          <StatsCard title="المتأخرة عن الموعد" value={overdueCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-red-500" />
+          <StatsCard title="قيد التنفيذ" value={inProgressCount} icon={<ClockIcon className="w-5 h-5" />} accentColor="border-[#187A5A]" />
+          <StatsCard title="مرفوعة للمراجعة" value={reviewPendingCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-purple-500" />
+          <StatsCard title="معلّقة لوجود معوّق" value={blockedCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-rose-500" />
         </div>
 
         {/* Filters & Tabs */}
@@ -260,17 +389,23 @@ export default function TasksPage() {
                 />
               </div>
 
-              {/* Status Filter */}
+              {/* Status Filter (All 9 States) */}
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
               >
-                <option value="">جميع الحالات</option>
-                <option value="Pending">قيد الانتظار</option>
-                <option value="In Progress">قيد التنفيذ</option>
-                <option value="Completed">مكتملة</option>
-                <option value="Cancelled">ملغاة</option>
+                <option value="">جميع الحالات (9 حالات)</option>
+                <option value="Draft">مسودة (Draft)</option>
+                <option value="Assigned">تم الإسناد (Assigned)</option>
+                <option value="Accepted">تم القبول (Accepted)</option>
+                <option value="In Progress">قيد التنفيذ (In Progress)</option>
+                <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
+                <option value="Waiting for Response">بانتظار الرد (Waiting)</option>
+                <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
+                <option value="Rework Required">مطلوب تعديلات (Rework)</option>
+                <option value="Completed">معتمد ومكتمل (Completed)</option>
+                <option value="Cancelled">ملغي (Cancelled)</option>
               </select>
 
               {/* Priority Filter */}
@@ -280,10 +415,10 @@ export default function TasksPage() {
                 className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
               >
                 <option value="">جميع الأولويات</option>
-                <option value="Urgent">عاجل</option>
-                <option value="High">مرتفع</option>
-                <option value="Medium">متوسط</option>
-                <option value="Low">منخفض</option>
+                <option value="Urgent">عاجل جداً (Urgent)</option>
+                <option value="High">مرتفع (High)</option>
+                <option value="Medium">متوسط (Medium)</option>
+                <option value="Low">منخفض (Low)</option>
               </select>
             </div>
           </div>
@@ -310,12 +445,26 @@ export default function TasksPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <PriorityBadge priority={task.priority} />
                       <StatusBadge status={task.status} />
+                      
+                      {task.is_blocked && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                          ⚠️ معلّق: {task.blocker_reason}
+                        </span>
+                      )}
+
+                      {task.rework_count > 0 && task.status === "Rework Required" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300">
+                          🔄 جولة تعديل #{task.rework_count}
+                        </span>
+                      )}
+
                       {task.is_overdue && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700">
                           <AlertCircleIcon className="w-3.5 h-3.5" />
                           متأخرة عن الموعد
                         </span>
                       )}
+
                       <h3 
                         onClick={() => handleOpenDetail(task.id)}
                         className="text-base font-semibold text-gray-900 cursor-pointer hover:text-[#187A5A] transition-colors"
@@ -335,15 +484,15 @@ export default function TasksPage() {
                           المسند إليه: <strong className="text-gray-700">{task.assigned_to_name}</strong>
                         </span>
                       )}
+                      {task.reviewer_name && (
+                        <span className="inline-flex items-center gap-1 text-purple-700">
+                          المراجع / المعتمد: <strong>{task.reviewer_name}</strong>
+                        </span>
+                      )}
                       {task.due_date && (
                         <span className="inline-flex items-center gap-1">
                           <ClockIcon className="w-3.5 h-3.5 text-gray-400" />
                           موعد التسليم: <span dir="ltr">{task.due_date}</span>
-                        </span>
-                      )}
-                      {task.related_asset_name && (
-                        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                          الأصل المرتبط: {task.related_asset_name}
                         </span>
                       )}
                       {task.comments_count > 0 && (
@@ -355,29 +504,49 @@ export default function TasksPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Actions Bar in Table */}
                   <div className="flex items-center gap-2">
-                    {task.status !== "Completed" && (
+                    {task.status === "Assigned" && (
                       <button
-                        onClick={() => handleStatusChange(task.id, "Completed")}
-                        className="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
-                      >
-                        إكمال المهمة
-                      </button>
-                    )}
-                    {task.status === "Pending" && (
-                      <button
-                        onClick={() => handleStatusChange(task.id, "In Progress")}
+                        onClick={() => handleAcceptTask(task.id)}
                         className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
                       >
-                        بدء التنفيذ
+                        قبول المهمة
                       </button>
                     )}
+
+                    {task.status === "Accepted" && (
+                      <button
+                        onClick={() => handleStartTask(task.id)}
+                        className="px-3 py-1.5 text-xs font-medium text-[#187A5A] bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors"
+                      >
+                        بدء العمل
+                      </button>
+                    )}
+
+                    {task.status === "In Progress" && (
+                      <button
+                        onClick={() => handleOpenDetail(task.id)}
+                        className="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors"
+                      >
+                        رفع للمراجعة
+                      </button>
+                    )}
+
+                    {task.status === "Submitted for Review" && isManagerOrAdmin && (
+                      <button
+                        onClick={() => handleOpenDetail(task.id)}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg transition-colors"
+                      >
+                        مراجعة واعتماد
+                      </button>
+                    )}
+
                     <button
                       onClick={() => handleOpenDetail(task.id)}
                       className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                     >
-                      التفاصيل والتعليقات
+                      التفاصيل وسير العمل
                     </button>
                   </div>
                 </div>
@@ -403,7 +572,7 @@ export default function TasksPage() {
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="مثال: ترقية ذاكرة الخادم الرئيسي، تهيئة طابعات القسم المالي"
+                placeholder="مثال: ترقية خوادم قواعد البيانات، تهيئة طابعات القسم المالي"
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
               />
             </div>
@@ -469,8 +638,8 @@ export default function TasksPage() {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
                 >
-                  <option value="Pending">قيد الانتظار</option>
-                  <option value="In Progress">قيد التنفيذ</option>
+                  <option value="Assigned">تم الإسناد (Assigned)</option>
+                  <option value="Draft">مسودة (Draft)</option>
                 </select>
               </div>
 
@@ -523,7 +692,7 @@ export default function TasksPage() {
           </form>
         </Modal>
 
-        {/* Modal: Task Detail & Comments */}
+        {/* Modal: Task Detail & Collaboration Drawer */}
         {selectedTask && (
           <Modal
             isOpen={detailModal}
@@ -532,7 +701,82 @@ export default function TasksPage() {
             maxWidth="max-w-3xl"
           >
             <div className="space-y-6">
-              {/* Task Meta */}
+              {actionError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                  <AlertCircleIcon className="w-4 h-4 text-red-500" />
+                  {actionError}
+                </div>
+              )}
+
+              {/* Blocker Alert Banner */}
+              {selectedTask.is_blocked && (
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xl">⚠️</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-rose-800">المهمة معلقة لوجود معوّق تقني أو لوجستي</h4>
+                      <p className="text-xs text-rose-700 mt-0.5">{selectedTask.blocker_reason}</p>
+                      {selectedTask.blocked_at && (
+                        <span className="text-[10px] text-rose-500 block mt-1">
+                          تاريخ التعليق: {selectedTask.blocked_at.slice(0, 16).replace("T", " ")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleUnblockTask(selectedTask.id)}
+                    disabled={actionLoading}
+                    className="px-3 py-1.5 text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 rounded-lg shadow-sm whitespace-nowrap self-end sm:self-center"
+                  >
+                    فك التعليق واستئناف العمل
+                  </button>
+                </div>
+              )}
+
+              {/* Rework Alert Banner */}
+              {selectedTask.status === "Rework Required" && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-orange-800 font-bold text-sm">
+                    <span>🔄</span>
+                    <h4>مطلوب تعديلات إضافية من قِبل المسؤول (جولة تعديل #{selectedTask.rework_count})</h4>
+                  </div>
+                  <p className="text-xs text-orange-700 bg-white/80 p-2.5 rounded-lg border border-orange-100">
+                    {selectedTask.review_notes || "يرجى مراجعة الملاحظات وإعادة العمل على المهمة ثم رفعها مجدداً."}
+                  </p>
+                </div>
+              )}
+
+              {/* Submitted for Review Alert Banner */}
+              {selectedTask.status === "Submitted for Review" && (
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">📋</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-purple-900">المهمة مكتملة فنياً وبانتظار المراجعة والاعتماد</h4>
+                      <p className="text-xs text-purple-700">لا تعتبر المهمة مكتملة نهائياً حتى يتم اعتمادها من قِبل مدير النظام أو المسؤول.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Completed Status Card */}
+              {selectedTask.status === "Completed" && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                  <span className="text-2xl">🎉</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-emerald-900">تم اعتماد واكتمال المهمة بنجاح</h4>
+                    <p className="text-xs text-emerald-700">
+                      معتمدة بواسطة: <strong>{selectedTask.reviewer_name || "المسؤول"}</strong>
+                      {selectedTask.completed_at && ` في ${selectedTask.completed_at.slice(0, 16).replace("T", " ")}`}
+                    </p>
+                    {selectedTask.review_notes && (
+                      <p className="text-xs text-emerald-800 mt-1 italic">ملاحظات الاعتماد: {selectedTask.review_notes}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Task Meta Information Card */}
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200/80 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -545,7 +789,7 @@ export default function TasksPage() {
                     )}
                   </div>
                   <div className="text-xs text-gray-500">
-                    أضيفت بواسطة: {selectedTask.assigned_by_name || "النظام"}
+                    أنشئت بواسطة: {selectedTask.assigned_by_name || "النظام"}
                   </div>
                 </div>
 
@@ -568,17 +812,96 @@ export default function TasksPage() {
                     <span className="text-gray-400 block">تاريخ الاستحقاق:</span>
                     <span className="font-semibold text-gray-800">{selectedTask.due_date || "-"}</span>
                   </div>
+                  {selectedTask.accepted_at && (
+                    <div>
+                      <span className="text-gray-400 block">تاريخ القبول:</span>
+                      <span className="text-blue-700">{selectedTask.accepted_at.slice(0, 16).replace("T", " ")}</span>
+                    </div>
+                  )}
+                  {selectedTask.submitted_for_review_at && (
+                    <div>
+                      <span className="text-gray-400 block">تاريخ الرفع للمراجعة:</span>
+                      <span className="text-purple-700">{selectedTask.submitted_for_review_at.slice(0, 16).replace("T", " ")}</span>
+                    </div>
+                  )}
                   {selectedTask.related_asset_name && (
                     <div>
                       <span className="text-gray-400 block">الأصل المرتبط:</span>
                       <span>{selectedTask.related_asset_name}</span>
                     </div>
                   )}
-                  {selectedTask.completed_at && (
-                    <div>
-                      <span className="text-gray-400 block">تاريخ الإكمال:</span>
-                      <span className="text-green-700 font-semibold">{selectedTask.completed_at.slice(0, 10)}</span>
-                    </div>
+                </div>
+              </div>
+
+              {/* Collaboration Interactive Action Bar */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  إجراءات دورة حياة المهمة (Workflow Actions)
+                </h4>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Step 1: Accept Task */}
+                  {selectedTask.status === "Assigned" && (
+                    <button
+                      onClick={() => handleAcceptTask(selectedTask.id)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+                    >
+                      ✓ قبول المهمة (Accept)
+                    </button>
+                  )}
+
+                  {/* Step 2: Start Task */}
+                  {(selectedTask.status === "Assigned" || selectedTask.status === "Accepted" || selectedTask.status === "Rework Required") && (
+                    <button
+                      onClick={() => handleStartTask(selectedTask.id)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg shadow-sm transition-colors"
+                    >
+                      🚀 بدء التنفيذ (Start Work)
+                    </button>
+                  )}
+
+                  {/* Step 3: Block Task with Reason */}
+                  {selectedTask.status === "In Progress" && (
+                    <button
+                      onClick={() => setBlockModal(true)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors"
+                    >
+                      ⚠️ تعليق لوجود معوّق (Block)
+                    </button>
+                  )}
+
+                  {/* Step 4: Submit for Review (CRITICAL: Doesn't auto-complete) */}
+                  {(selectedTask.status === "In Progress" || selectedTask.status === "Rework Required") && (
+                    <button
+                      onClick={() => setSubmitModal(true)}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm transition-colors"
+                    >
+                      📋 رفع للمراجعة والاعتماد (Submit for Review)
+                    </button>
+                  )}
+
+                  {/* Step 5: Manager Approval & Rework Request (RBAC Enforced) */}
+                  {selectedTask.status === "Submitted for Review" && isManagerOrAdmin && (
+                    <>
+                      <button
+                        onClick={() => setApproveModal(true)}
+                        disabled={actionLoading}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg shadow-sm transition-colors"
+                      >
+                        🎉 اعتماد واكتمال المهمة (Approve)
+                      </button>
+                      <button
+                        onClick={() => setReworkModal(true)}
+                        disabled={actionLoading}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-orange-800 bg-orange-100 hover:bg-orange-200 border border-orange-300 rounded-lg transition-colors"
+                      >
+                        🔄 طلب تعديلات إضافية (Rework)
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -587,7 +910,7 @@ export default function TasksPage() {
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <MessageSquareIcon className="w-4 h-4 text-[#187A5A]" />
-                  سجل التعليقات والتحديثات ({selectedTask.comments?.length || 0})
+                  سجل التعليقات والتحديثات الفنية ({selectedTask.comments?.length || 0})
                 </h4>
 
                 <div className="space-y-2 max-h-60 overflow-y-auto p-1">
@@ -606,13 +929,13 @@ export default function TasksPage() {
                   )}
                 </div>
 
-                {/* Add Comment */}
+                {/* Add Comment Form */}
                 <form onSubmit={handleAddComment} className="flex gap-2 pt-2">
                   <input
                     type="text"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="اكتب تعليقاً أو تحديثاً على سير العمل..."
+                    placeholder="اكتب تعليقاً أو استفساراً تشغيلياً..."
                     className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
                   />
                   <button
@@ -625,34 +948,163 @@ export default function TasksPage() {
                   </button>
                 </form>
               </div>
-
-              {/* Status Update Quick Bar */}
-              <div className="flex items-center justify-between pt-4 border-t">
-                <span className="text-xs text-gray-500">تحديث حالة المهمة سريعا:</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleStatusChange(selectedTask.id, "In Progress")}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-                  >
-                    قيد التنفيذ
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(selectedTask.id, "Completed")}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
-                  >
-                    مكتملة
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(selectedTask.id, "Cancelled")}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-              </div>
             </div>
           </Modal>
         )}
+
+        {/* Modal: Block Task */}
+        <Modal
+          isOpen={blockModal}
+          onClose={() => setBlockModal(false)}
+          title="تسجيل معوّق وإيقاف المهمة مؤقتاً"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-gray-600">
+              يرجى توضيح سبب المعوّق التقني أو اللوجستي بدقة ليتم إشعار مدير النظام والمشرفين لمساعدتك في إزالته:
+            </p>
+            <textarea
+              rows={3}
+              required
+              value={blockerReasonInput}
+              onChange={(e) => setBlockerReasonInput(e.target.value)}
+              placeholder="مثال: انقطاع كابل الألياف، عدم توفر صلاحيات المسؤول على الخادم، انتظار رد المورد..."
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-500"
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setBlockModal(false)}
+                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleBlockTask}
+                disabled={actionLoading || !blockerReasonInput.trim()}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-lg shadow-sm"
+              >
+                تأكيد تعليق المهمة
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal: Submit for Review */}
+        <Modal
+          isOpen={submitModal}
+          onClose={() => setSubmitModal(false)}
+          title="رفع المهمة للمراجعة والاعتماد الإداري"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-gray-600">
+              أدخل ملخص الإنجاز والنتائج الفنية التي تم تحقيقها للمراجع:
+            </p>
+            <textarea
+              rows={3}
+              value={submissionNotesInput}
+              onChange={(e) => setSubmissionNotesInput(e.target.value)}
+              placeholder="مثال: تم إكمال تثبيت الحزم، واختبار الخدمة بنجاح، كافة الفحوصات سليمة..."
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setSubmitModal(false)}
+                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitForReview}
+                disabled={actionLoading}
+                className="px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-lg shadow-sm"
+              >
+                تأكيد الرفع للمراجعة
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal: Request Rework */}
+        <Modal
+          isOpen={reworkModal}
+          onClose={() => setReworkModal(false)}
+          title="طلب تعديلات إضافية على المهمة (Rework)"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-gray-600">
+              اكتب التوجيهات والملاحظات الإلزامية التي يجب على الفني تعديلها قبل إعادة الاعتماد:
+            </p>
+            <textarea
+              rows={3}
+              required
+              value={reworkNotesInput}
+              onChange={(e) => setReworkNotesInput(e.target.value)}
+              placeholder="مثال: يرجى إضافة التقرير الفني لاختبار الأداء وضبط جدار الحماية..."
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setReworkModal(false)}
+                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleReworkTask}
+                disabled={actionLoading || !reworkNotesInput.trim()}
+                className="px-4 py-2 text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 rounded-lg shadow-sm"
+              >
+                إرسال طلب التعديل
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal: Approve Task */}
+        <Modal
+          isOpen={approveModal}
+          onClose={() => setApproveModal(false)}
+          title="الاعتماد النهائي وإكمال المهمة"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-gray-600">
+              هل أنت متأكد من اكتمال العمل واعتماد المهمة نهائياً وإغلاقها؟ يمكنك تدوين ملاحظات الاعتماد:
+            </p>
+            <textarea
+              rows={2}
+              value={approvalNotesInput}
+              onChange={(e) => setApprovalNotesInput(e.target.value)}
+              placeholder="ملاحظات الاعتماد (اختياري)..."
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setApproveModal(false)}
+                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleApproveTask}
+                disabled={actionLoading}
+                className="px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 rounded-lg shadow-sm"
+              >
+                اعتماد وإكمال المهمة
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </DashboardLayout>
   );

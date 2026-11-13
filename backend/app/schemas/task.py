@@ -58,6 +58,18 @@ class TaskUpdate(BaseModel):
     attachments: Optional[Any] = None
 
 
+class TaskBlockRequest(BaseModel):
+    reason: str
+
+
+class TaskSubmitReviewRequest(BaseModel):
+    notes: Optional[str] = None
+
+
+class TaskReviewRequest(BaseModel):
+    review_notes: Optional[str] = None
+
+
 class TaskResponse(TaskBase):
     id: uuid.UUID
     company_id: uuid.UUID
@@ -73,6 +85,19 @@ class TaskResponse(TaskBase):
     related_asset_name: Optional[str] = None
     is_overdue: Optional[bool] = False
     comments_count: Optional[int] = 0
+
+    # Collaboration & Lifecycle
+    is_blocked: bool = False
+    blocker_reason: Optional[str] = None
+    blocked_at: Optional[datetime] = None
+    unblocked_at: Optional[datetime] = None
+    accepted_at: Optional[datetime] = None
+    submitted_for_review_at: Optional[datetime] = None
+    reviewer_id: Optional[uuid.UUID] = None
+    reviewer_name: Optional[str] = None
+    review_notes: Optional[str] = None
+    rework_count: int = 0
+
     created_at: datetime
     updated_at: Optional[datetime] = None
 

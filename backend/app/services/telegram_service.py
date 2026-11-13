@@ -485,7 +485,11 @@ def execute_bot_action(
             .filter(
                 Task.company_id == company_id,
                 Task.assigned_to_id == emp_id,
-                Task.status.in_(["To Do", "In Progress", "On Hold"]),
+                Task.status.in_([
+                    "To Do", "In Progress", "On Hold",
+                    "Assigned", "Accepted", "Blocked",
+                    "Waiting for Response", "Submitted for Review", "Rework Required"
+                ]),
             )
             .order_by(Task.due_date.asc().nullslast())
             .all()

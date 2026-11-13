@@ -9,6 +9,8 @@ from sqlalchemy import (
     Text,
     Date,
     DateTime,
+    Boolean,
+    Integer,
     ForeignKey,
     Index,
     JSON,
@@ -47,11 +49,28 @@ class Task(UUIDMixin, TimestampMixin, Base):
     )
 
     priority: Mapped[str] = mapped_column(String(50), default="Medium", nullable=False)  # Low, Medium, High, Urgent
-    status: Mapped[str] = mapped_column(String(50), default="To Do", nullable=False)  # To Do, In Progress, On Hold, Completed, Cancelled
+    status: Mapped[str] = mapped_column(String(50), default="Assigned", nullable=False)  # Draft, Assigned, Accepted, In Progress, Blocked, Waiting for Response, Submitted for Review, Rework Required, Completed, Cancelled
 
     start_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     due_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    accepted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    submitted_for_review_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Blocker tracking
+    is_blocked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    blocker_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    blocked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    unblocked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Review & Rework
+    reviewer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    review_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    rework_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     related_asset_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
@@ -72,6 +91,7 @@ class Task(UUIDMixin, TimestampMixin, Base):
     branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])
     assigned_to: Mapped[Optional["Employee"]] = relationship("Employee", foreign_keys=[assigned_to_id])
     assigned_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_by_id])
+    reviewer: Mapped[Optional["User"]] = relationship("User", foreign_keys=[reviewer_id])
     related_asset: Mapped[Optional["TechnicalAsset"]] = relationship("TechnicalAsset", foreign_keys=[related_asset_id])
     comments: Mapped[List["TaskComment"]] = relationship(
         "TaskComment", back_populates="task", cascade="all, delete-orphan"
