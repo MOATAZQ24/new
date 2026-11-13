@@ -37,7 +37,19 @@ interface TelegramStatusData {
   readiness_summary: string;
   bot_username: string;
   bot_token_masked?: string;
+  has_bot_token?: boolean;
+  chat_id?: string;
   is_enabled: boolean;
+  last_tested_at?: string;
+  last_error?: string;
+  worker_status?: {
+    is_running: boolean;
+    status_label: string;
+    last_heartbeat?: string;
+    pid?: number;
+    offset?: number;
+    mode?: string;
+  };
   webhook_endpoint: string;
   notification_rules: Record<string, boolean>;
   stats: {
@@ -108,6 +120,11 @@ export default function IntegrationsCenterPage() {
   // Bot Config Form State
   const [botTokenInput, setBotTokenInput] = useState("");
   const [botUsernameInput, setBotUsernameInput] = useState("InvestorGateBot");
+  const [chatIdInput, setChatIdInput] = useState("");
+  const [isTgEnabled, setIsTgEnabled] = useState(false);
+  const [testingTgConnection, setTestingTgConnection] = useState(false);
+  const [sendingTgTestNotification, setSendingTgTestNotification] = useState(false);
+  const [tgFeedback, setTgFeedback] = useState<{ success: boolean; message: string } | null>(null);
   const [rulesState, setRulesState] = useState<Record<string, boolean>>({
     notify_on_assigned: true,
     notify_on_accepted: true,
@@ -173,6 +190,8 @@ export default function IntegrationsCenterPage() {
         const d: TelegramStatusData = statusRes.value.data;
         setTgStatus(d);
         setBotUsernameInput(d.bot_username || "InvestorGateBot");
+        if (d.chat_id) setChatIdInput(d.chat_id);
+        setIsTgEnabled(Boolean(d.is_enabled));
         if (d.notification_rules) {
           setRulesState(d.notification_rules);
         }
@@ -228,13 +247,15 @@ export default function IntegrationsCenterPage() {
   };
 
   const openConfigModal = (item: IntegrationItem) => {
-    if (item.service_name === "telegram") {
-      setActiveTab("telegram");
-      return;
-    }
     setActiveModal(item.service_name);
     setCurrentConfig({ ...(item.config_data || {}) });
     setTestResult(null);
+    setTgFeedback(null);
+    if (item.service_name === "telegram") {
+      setBotTokenInput("");
+      setChatIdInput(item.config_data?.chat_id || tgStatus?.chat_id || chatIdInput || "");
+      setIsTgEnabled(item.is_enabled);
+    }
   };
 
   const handleSaveConfig = async (serviceName: string) => {
@@ -253,22 +274,80 @@ export default function IntegrationsCenterPage() {
   };
 
   // Telegram Specific Handlers
+  const handleTestTgConnection = async (tokenOverride?: string) => {
+    setTestingTgConnection(true);
+    setTgFeedback(null);
+    try {
+      const payload: any = {};
+      const tok = (tokenOverride || botTokenInput || "").trim();
+      if (tok) payload.bot_token = tok;
+      const res = await api.post("/telegram/test-connection", payload);
+      setTgFeedback({
+        success: res.data?.success !== false,
+        message: res.data?.message || "تم التحقق من الاتصال بنجاح!",
+      });
+      fetchTelegramData();
+      fetchIntegrations();
+    } catch (err: any) {
+      setTgFeedback({
+        success: false,
+        message: err?.response?.data?.detail || err?.message || "فشل فحص الاتصال بـ Telegram",
+      });
+    } finally {
+      setTestingTgConnection(false);
+    }
+  };
+
+  const handleSendTgTestNotification = async (chatIdOverride?: string) => {
+    setSendingTgTestNotification(true);
+    setTgFeedback(null);
+    try {
+      const cid = (chatIdOverride || chatIdInput || "").trim();
+      const res = await api.post("/telegram/test-notification", { chat_id: cid || undefined });
+      setTgFeedback({
+        success: res.data?.success !== false,
+        message: res.data?.message || "تم إرسال الإشعار التجريبي بنجاح إلى تليجرام!",
+      });
+      fetchTelegramData();
+      fetchLogs();
+    } catch (err: any) {
+      setTgFeedback({
+        success: false,
+        message: err?.response?.data?.detail || err?.message || "فشل إرسال الإشعار التجريبي",
+      });
+    } finally {
+      setSendingTgTestNotification(false);
+    }
+  };
+
   const handleSaveTelegramConfig = async () => {
     setSavingConfig(true);
     try {
       const payload: any = {
         bot_username: botUsernameInput,
+        chat_id: chatIdInput,
+        is_enabled: isTgEnabled,
         ...rulesState,
       };
       if (botTokenInput) {
         payload.bot_token = botTokenInput;
       }
       await api.put("/telegram/config", payload);
-      alert("تم حفظ إعدادات Telegram بنجاح!");
+      setTgFeedback({
+        success: true,
+        message: "تم حفظ إعدادات Telegram بنجاح!",
+      });
       setBotTokenInput("");
       fetchTelegramData();
+      fetchIntegrations();
+      if (activeModal === "telegram") {
+        setActiveModal(null);
+      }
     } catch (err: any) {
-      alert(err?.message || "فشل حفظ إعدادات تليجرام");
+      setTgFeedback({
+        success: false,
+        message: err?.response?.data?.detail || err?.message || "فشل حفظ إعدادات تليجرام",
+      });
     } finally {
       setSavingConfig(false);
     }
@@ -423,11 +502,11 @@ export default function IntegrationsCenterPage() {
                             : "bg-blue-50 text-blue-700 border border-blue-200"
                         }`}
                       >
-                        {item.service_name === "telegram"
-                          ? "جاهز للربط (Ready)"
-                          : item.status === "Connected"
+                        {item.status === "Connected"
                           ? "متصل (Connected)"
-                          : "غير مهيأ"}
+                          : item.status === "Error"
+                          ? "خطأ في الاتصال (Error)"
+                          : "جاهز للربط (Ready)"}
                       </span>
                     </div>
                   </div>
@@ -571,14 +650,24 @@ export default function IntegrationsCenterPage() {
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
-              <span className="text-xs text-slate-500 font-medium">الموظفون المرتبطون بالتليجرام</span>
-              <div className="text-2xl font-bold text-slate-900 my-1">
-                {tgStatus?.stats.linked_employees || 0}
-                <span className="text-xs text-slate-400 font-normal mr-1">
-                  / {tgStatus?.stats.total_active_employees || 0}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500 font-medium">عامل الاستطلاع الخلفي</span>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    tgStatus?.worker_status?.is_running
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                  }`}
+                >
+                  {tgStatus?.worker_status?.is_running ? "نشط ويعمل" : "متوقف / بانتظار"}
                 </span>
               </div>
-              <span className="text-[11px] text-emerald-600 font-medium">جاهزون لتلقي إشعارات المهام</span>
+              <div className="text-sm font-bold text-slate-800 my-1">
+                {tgStatus?.worker_status?.mode || "Long-Polling (LAN Outbound)"}
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                PID: {tgStatus?.worker_status?.pid || "—"} • منفذ صادر آمن
+              </span>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
@@ -588,7 +677,7 @@ export default function IntegrationsCenterPage() {
                 <span className="text-xs text-slate-400 font-normal mr-1">قيد الانتظار</span>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-                <span className="text-emerald-600">تم إرسال: {tgStatus?.stats.outbox_sent || 0}</span>
+                <span className="text-emerald-600">مرسل: {tgStatus?.stats.outbox_sent || 0}</span>
                 <span>•</span>
                 <span className="text-rose-600">فشل: {tgStatus?.stats.outbox_failed || 0}</span>
               </div>
@@ -597,28 +686,73 @@ export default function IntegrationsCenterPage() {
 
           {/* Bot Configuration & Notification Rules Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-            <h3 className="text-base font-bold text-slate-900 mb-1">إعدادات البوت وقواعد الإشعارات للمهام</h3>
-            <p className="text-xs text-slate-500 mb-4">
-              يمكنك ضبط رمز Bot Token وتحديد الأحداث التشغيلية التي يتم تحويلها تلقائياً إلى إشعارات في تليجرام.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 mb-0.5">إعدادات البوت وقواعد الإشعارات للمهام</h3>
+                <p className="text-xs text-slate-500">
+                  اضبط رمز Bot Token ومعرّف Chat ID المعتمد لإرسال التنبيهات الفورية وإدارة المهام.
+                </p>
+              </div>
+
+              {tgStatus?.last_tested_at && (
+                <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                  آخر فحص: {new Date(tgStatus.last_tested_at).toLocaleString("ar-SA")}
+                </span>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column: Credentials & Webhook */}
               <div className="space-y-4">
+                {/* Enable toggle */}
+                <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isTgEnabled}
+                    onChange={(e) => setIsTgEnabled(e.target.checked)}
+                    className="rounded text-[#187A5A] focus:ring-[#187A5A]"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">
+                      تفعيل تكامل تليجرام في هذه المنشأة (Enable Integration)
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      تشغيل تدفق الإشعارات وصندوق الإرسال عند إسناد وتحديث المهام
+                    </span>
+                  </div>
+                </label>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     رمز البوت (Bot Token) — يتم حفظه مشفراً ولا يظهر بالنص الصريح
                   </label>
                   <input
                     type="password"
-                    placeholder={tgStatus?.bot_token_masked || "أدخل رمز البوت من BotFather (اختياري حالياً)..."}
+                    placeholder={tgStatus?.bot_token_masked || "أدخل رمز البوت من BotFather (مثال: 123456:ABC-DEF...)"}
                     value={botTokenInput}
                     onChange={(e) => setBotTokenInput(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A]"
                     dir="ltr"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
-                    يمكنك ترك الرمز فارغاً أثناء مرحلة التطوير والجاهزية.
+                    {tgStatus?.has_bot_token ? "✓ تم تعيين رمز البوت بنجاح في الخادم." : "أدخل الرمز المستلم من @BotFather."}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    معرّف المحادثة المعتمد للإشعارات (Authorized Chat ID) *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="مثال: 987654321 أو -100123456789"
+                    value={chatIdInput}
+                    onChange={(e) => setChatIdInput(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A]"
+                    dir="ltr"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    معرّف المحادثة الذي ستصل إليه الإشعارات الإدارية والتجريبية.
                   </span>
                 </div>
 
@@ -643,6 +777,49 @@ export default function IntegrationsCenterPage() {
                     {typeof window !== "undefined" ? window.location.origin : "http://localhost:8000"}
                     /api/v1/telegram/webhook
                   </div>
+                </div>
+
+                {/* Test Connection Buttons & Feedback */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleTestTgConnection()}
+                      disabled={testingTgConnection}
+                      className="px-3 py-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <Icons.Refresh size={12} className={testingTgConnection ? "animate-spin" : ""} />
+                      <span>{testingTgConnection ? "جاري الفحص..." : "اختبار الاتصال (getMe)"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSendTgTestNotification()}
+                      disabled={sendingTgTestNotification}
+                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <Icons.Send size={12} />
+                      <span>{sendingTgTestNotification ? "جاري الإرسال..." : "إرسال إشعار تجريبي"}</span>
+                    </button>
+                  </div>
+
+                  {tgFeedback && (
+                    <div
+                      className={`p-2.5 rounded-lg text-xs font-medium ${
+                        tgFeedback.success
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          : "bg-rose-50 text-rose-800 border border-rose-200"
+                      }`}
+                    >
+                      {tgFeedback.message}
+                    </div>
+                  )}
+
+                  {!tgFeedback && tgStatus?.last_error && (
+                    <div className="p-2.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                      تنبيه الفحص السابق: {tgStatus.last_error}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1026,6 +1203,167 @@ export default function IntegrationsCenterPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Telegram Modal */}
+      <Modal
+        isOpen={activeModal === "telegram"}
+        onClose={() => {
+          setActiveModal(null);
+          setTgFeedback(null);
+        }}
+        title="تهيئة وتفعيل تكامل Telegram Bot"
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-4 text-right">
+          {/* Worker Status Badge */}
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icons.Send size={16} className="text-blue-500" />
+              <span className="text-xs font-bold text-slate-700">عامل تليجرام الخلفي:</span>
+              <span
+                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                  tgStatus?.worker_status?.is_running
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {tgStatus?.worker_status?.is_running ? "نشط ويعمل بنجاح" : "جاهز للتشغيل"}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">
+              {tgStatus?.worker_status?.mode || "LAN Outbound"}
+            </span>
+          </div>
+
+          {/* Enable Toggle */}
+          <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50/70 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isTgEnabled}
+              onChange={(e) => setIsTgEnabled(e.target.checked)}
+              className="rounded text-[#187A5A] focus:ring-[#187A5A]"
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">
+                تفعيل تكامل تليجرام في هذه المنشأة (Enable Integration)
+              </span>
+              <span className="text-[10px] text-slate-500">
+                تشغيل إرسال إشعارات المهام والتنبيهات التشغيلية
+              </span>
+            </div>
+          </label>
+
+          {/* Bot Token Field */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              رمز البوت (Bot API Token) *
+            </label>
+            <input
+              type="password"
+              placeholder={tgStatus?.bot_token_masked || "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"}
+              value={botTokenInput}
+              onChange={(e) => setBotTokenInput(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A] text-left"
+              dir="ltr"
+            />
+            <span className="text-[10px] text-slate-400 mt-1 block">
+              {tgStatus?.has_bot_token ? "✓ تم حفظ رمز البوت مسبقاً في الخادم بصيغة آمنة." : "أدخل الرمز المستلم من @BotFather."}
+            </span>
+          </div>
+
+          {/* Bot Username Field */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              اسم مستخدم البوت (Bot Username)
+            </label>
+            <input
+              type="text"
+              placeholder="InvestorGateBot"
+              value={botUsernameInput}
+              onChange={(e) => setBotUsernameInput(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A] text-left"
+              dir="ltr"
+            />
+          </div>
+
+          {/* Chat ID Field */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              معرّف المحادثة المعتمد للإشعارات (Authorized Chat ID) *
+            </label>
+            <input
+              type="text"
+              placeholder="مثال: 987654321 أو -100123456789"
+              value={chatIdInput}
+              onChange={(e) => setChatIdInput(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A] text-left"
+              dir="ltr"
+            />
+            <span className="text-[10px] text-slate-400 mt-1 block">
+              المعرّف الرقمي لحسابك أو مجموعة تليجرام التي ستصلها الإشعارات الفورية.
+            </span>
+          </div>
+
+          {/* Feedback Banner */}
+          {tgFeedback && (
+            <div
+              className={`p-3 rounded-xl text-xs font-medium ${
+                tgFeedback.success
+                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                  : "bg-rose-50 text-rose-800 border border-rose-200"
+              }`}
+            >
+              {tgFeedback.message}
+            </div>
+          )}
+
+          {/* Actions Bar */}
+          <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleTestTgConnection()}
+                disabled={testingTgConnection}
+                className="px-3 py-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+              >
+                <Icons.Refresh size={12} className={testingTgConnection ? "animate-spin" : ""} />
+                <span>{testingTgConnection ? "جاري الفحص..." : "اختبار الاتصال (getMe)"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSendTgTestNotification()}
+                disabled={sendingTgTestNotification}
+                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 flex items-center gap-1"
+              >
+                <Icons.Send size={12} />
+                <span>{sendingTgTestNotification ? "جاري الإرسال..." : "إرسال إشعار تجريبي"}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveModal(null);
+                  setActiveTab("telegram");
+                }}
+                className="text-xs text-blue-600 hover:underline px-2 cursor-pointer font-medium"
+              >
+                إدارة ربط الموظفين
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveTelegramConfig}
+                disabled={savingConfig}
+                className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {savingConfig ? "جاري الحفظ..." : "حفظ الإعدادات"}
+              </button>
+            </div>
+          </div>
+        </div>
       </Modal>
 
       {/* n8n Modal */}

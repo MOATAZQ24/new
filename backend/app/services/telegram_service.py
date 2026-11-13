@@ -55,6 +55,134 @@ def get_telegram_config(db: Session, company_id: uuid.UUID) -> Tuple[bool, str, 
     return is_configured, bot_token, bot_username
 
 
+def test_telegram_connection(bot_token: str) -> Dict[str, Any]:
+    """Verify bot token validity by calling Telegram getMe API."""
+    clean_token = bot_token.strip()
+    if not clean_token:
+        return {"success": False, "message": "لم يتم إدخال رمز Bot Token"}
+
+    url = f"https://api.telegram.org/bot{clean_token}/getMe"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "InvestorGateOS/1.0"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if data.get("ok"):
+                result = data.get("result", {})
+                bot_user = result.get("username", "")
+                bot_name = result.get("first_name", "")
+                return {
+                    "success": True,
+                    "message": f"تم التحقق بنجاح! البوت @{bot_user} ({bot_name}) متصل وجاهز للعمل.",
+                    "bot": {
+                        "id": result.get("id"),
+                        "username": bot_user,
+                        "first_name": bot_name,
+                        "can_join_groups": result.get("can_join_groups"),
+                        "can_read_all_group_messages": result.get("can_read_all_group_messages"),
+                    },
+                }
+            return {
+                "success": False,
+                "message": f"فشل التحقق: {data.get('description', 'استجابة غير صالحة من Telegram')}",
+            }
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            return {"success": False, "message": "رمز البوت غير صالح أو منتهي الصلاحية (401 Unauthorized)"}
+        return {"success": False, "message": f"خطأ في خادم Telegram (HTTP {e.code}): {e.reason}"}
+    except Exception as e:
+        return {"success": False, "message": f"تعذر الاتصال بـ Telegram API: {str(e)}"}
+
+
+def send_telegram_direct_message(bot_token: str, chat_id: str, text: str) -> Dict[str, Any]:
+    """Send an immediate test notification message to a specific chat ID."""
+    clean_token = bot_token.strip()
+    clean_chat = str(chat_id).strip()
+
+    if not clean_token:
+        return {"success": False, "message": "رمز Bot Token مفقود"}
+    if not clean_chat:
+        return {"success": False, "message": "معرّف Chat ID مفقود"}
+
+    url = f"https://api.telegram.org/bot{clean_token}/sendMessage"
+    payload = {
+        "chat_id": clean_chat,
+        "text": text,
+        "parse_mode": "HTML",
+    }
+    body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS/1.0"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if data.get("ok"):
+                return {
+                    "success": True,
+                    "message": "تم إرسال رسالة الإشعار التجريبية بنجاح إلى تليجرام!",
+                    "message_id": data.get("result", {}).get("message_id"),
+                }
+            return {
+                "success": False,
+                "message": f"فشل إرسال الرسالة: {data.get('description', 'خطأ غير معروف')}",
+            }
+    except urllib.error.HTTPError as e:
+        try:
+            err_body = json.loads(e.read().decode("utf-8"))
+            desc = err_body.get("description", e.reason)
+        except Exception:
+            desc = e.reason
+        return {"success": False, "message": f"خطأ في إرسال تليجرام ({e.code}): {desc}"}
+    except Exception as e:
+        return {"success": False, "message": f"تعذر إرسال الإشعار: {str(e)}"}
+
+
+def get_telegram_worker_status() -> Dict[str, Any]:
+    """Check whether the Telegram Long-Polling background daemon is active."""
+    worker_status_file = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "workers", ".telegram_worker_status.json")
+    )
+    is_running = False
+    last_heartbeat = None
+    pid = None
+    offset = 0
+    mode = "Long-Polling (LAN Outbound)"
+
+    if os.path.exists(worker_status_file):
+        try:
+            with open(worker_status_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                last_hb_str = data.get("last_heartbeat")
+                pid = data.get("pid")
+                offset = data.get("offset", 0)
+                mode = data.get("mode", mode)
+
+                if last_hb_str:
+                    last_hb_dt = datetime.fromisoformat(last_hb_str)
+                    age_seconds = (datetime.utcnow() - last_hb_dt).total_seconds()
+                    # If heartbeat updated in the last 45 seconds, worker is actively running
+                    if age_seconds < 45 and data.get("is_running", False):
+                        is_running = True
+                    last_heartbeat = last_hb_str
+        except Exception as e:
+            logger.debug(f"Failed to read worker status: {e}")
+
+    return {
+        "is_running": is_running,
+        "status_label": "يعمل بنشاط (Active)" if is_running else "متوقف (Stopped)",
+        "last_heartbeat": last_heartbeat,
+        "pid": pid,
+        "offset": offset,
+        "mode": mode,
+    }
+
+
 # ── Employee Account Linking ──────────────────────────────────────────
 
 def generate_telegram_link_token(

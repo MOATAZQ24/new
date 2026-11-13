@@ -1,6 +1,8 @@
 """Telegram Bot Integration Readiness API Endpoints."""
 
+import os
 import uuid
+from datetime import datetime
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Header
 from pydantic import BaseModel, Field
@@ -20,7 +22,11 @@ from app.services.telegram_service import (
     enqueue_task_notification,
     dispatch_outbox_notifications,
     execute_bot_action,
+    test_telegram_connection,
+    send_telegram_direct_message,
+    get_telegram_worker_status,
 )
+from app.models.integration import IntegrationConfig, IntegrationLog
 
 router = APIRouter(prefix="/telegram", tags=["Telegram Bot Integration Readiness"])
 
@@ -46,13 +52,19 @@ class BotActionSimulationRequest(BaseModel):
 
 
 class TestNotificationRequest(BaseModel):
-    employee_id: uuid.UUID
+    chat_id: Optional[str] = None
+    employee_id: Optional[uuid.UUID] = None
     custom_message: Optional[str] = None
+
+
+class TestConnectionRequest(BaseModel):
+    bot_token: Optional[str] = None
 
 
 class TelegramConfigUpdate(BaseModel):
     bot_token: Optional[str] = None
     bot_username: Optional[str] = "InvestorGateBot"
+    chat_id: Optional[str] = None
     is_enabled: Optional[bool] = None
     notify_on_assigned: Optional[bool] = True
     notify_on_accepted: Optional[bool] = True
@@ -111,14 +123,20 @@ def get_telegram_status(
     ).count()
 
     rules = (cfg.config_data or {}) if cfg else {}
+    chat_id = rules.get("chat_id", "")
 
     return success_response(data={
         "is_configured": is_cfg,
-        "status": "Ready (Prepared)" if not is_cfg else "Live (Connected)",
-        "readiness_summary": "بنية Telegram Bot جاهزة بالكامل (Transactional Outbox، التحقق بـ Token، والربط بالمهام). تتطلب إدخال Bot Token للتفعيل الحي.",
+        "status": cfg.status if (cfg and cfg.status) else ("Live (Connected)" if is_cfg else "Ready (Prepared)"),
+        "readiness_summary": "بنية Telegram Bot جاهزة بالكامل (Transactional Outbox، التحقق بـ Token، والربط بالمهام). يمكنك ربط البوت مباشرة أو حفظ رمز الاعتماد.",
         "bot_username": bot_username,
         "bot_token_masked": masked_token,
+        "has_bot_token": bool(bot_token),
+        "chat_id": chat_id,
         "is_enabled": cfg.is_enabled if cfg else False,
+        "last_tested_at": cfg.last_tested_at if cfg else None,
+        "last_error": cfg.last_error if cfg else None,
+        "worker_status": get_telegram_worker_status(),
         "webhook_endpoint": "/api/v1/telegram/webhook",
         "notification_rules": {
             "notify_on_assigned": rules.get("notify_on_assigned", True),
@@ -145,7 +163,7 @@ def update_telegram_config(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """Update Telegram Bot token, username, and notification rules."""
+    """Update Telegram Bot token, username, chat_id, and notification rules."""
     cfg = db.query(IntegrationConfig).filter(
         IntegrationConfig.company_id == active_cid,
         IntegrationConfig.service_name == "telegram",
@@ -163,7 +181,9 @@ def update_telegram_config(
         db.add(cfg)
         db.flush()
 
-    current_data = cfg.config_data or {}
+    from sqlalchemy.orm.attributes import flag_modified
+
+    current_data = dict(cfg.config_data or {})
 
     if payload.bot_token is not None:
         clean_token = payload.bot_token.strip()
@@ -176,6 +196,9 @@ def update_telegram_config(
 
     if payload.bot_username is not None:
         current_data["bot_username"] = payload.bot_username.strip().lstrip("@")
+
+    if payload.chat_id is not None:
+        current_data["chat_id"] = payload.chat_id.strip()
 
     if payload.is_enabled is not None:
         cfg.is_enabled = payload.is_enabled
@@ -194,9 +217,139 @@ def update_telegram_config(
             current_data[rule] = val
 
     cfg.config_data = current_data
+    flag_modified(cfg, "config_data")
     db.commit()
 
     return success_response(message="تم تحديث إعدادات تكامل Telegram بنجاح")
+
+
+@router.post("/test-connection")
+def test_telegram_connection_endpoint(
+    payload: Optional[TestConnectionRequest] = None,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Test connection to Telegram Bot API by calling getMe."""
+    cfg = db.query(IntegrationConfig).filter(
+        IntegrationConfig.company_id == active_cid,
+        IntegrationConfig.service_name == "telegram",
+    ).first()
+
+    bot_token = ""
+    if payload and payload.bot_token and payload.bot_token.strip():
+        bot_token = payload.bot_token.strip()
+    elif cfg and cfg.config_data:
+        bot_token = cfg.config_data.get("bot_token", "").strip()
+
+    if not bot_token:
+        # Check env
+        env_tok = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+        if env_tok:
+            bot_token = env_tok
+
+    if not bot_token:
+        raise HTTPException(status_code=400, detail="يرجى إدخال رمز Bot Token لاختبار الاتصال")
+
+    result = test_telegram_connection(bot_token)
+    now = datetime.utcnow()
+
+    if cfg:
+        cfg.last_tested_at = now
+        if result.get("success"):
+            cfg.status = "Connected"
+            cfg.last_error = None
+            if result.get("bot", {}).get("username"):
+                cdata = dict(cfg.config_data or {})
+                cdata["bot_username"] = result["bot"]["username"]
+                cfg.config_data = cdata
+                flag_modified(cfg, "config_data")
+        else:
+            cfg.status = "Error"
+            cfg.last_error = result.get("message")
+        db.commit()
+
+    if not result.get("success"):
+        return success_response(data=result, message=result.get("message"))
+    return success_response(data=result, message=result.get("message"))
+
+
+@router.post("/test-notification")
+def send_test_notification_endpoint(
+    payload: Optional[TestNotificationRequest] = None,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Send a real test notification to the configured chat_id or linked employee."""
+    cfg = db.query(IntegrationConfig).filter(
+        IntegrationConfig.company_id == active_cid,
+        IntegrationConfig.service_name == "telegram",
+    ).first()
+
+    is_cfg, bot_token, bot_username = get_telegram_config(db, active_cid)
+    if not bot_token:
+        raise HTTPException(status_code=400, detail="يرجى حفظ أو إدخال رمز Bot Token أولاً")
+
+    chat_id = None
+    if payload and payload.chat_id and payload.chat_id.strip():
+        chat_id = payload.chat_id.strip()
+    elif cfg and cfg.config_data and cfg.config_data.get("chat_id"):
+        chat_id = cfg.config_data.get("chat_id").strip()
+    elif payload and payload.employee_id:
+        link = db.query(TelegramUserLink).filter(
+            TelegramUserLink.employee_id == payload.employee_id,
+            TelegramUserLink.is_verified == True,
+        ).first()
+        if link and link.telegram_chat_id:
+            chat_id = link.telegram_chat_id
+    else:
+        # Check if current user is linked to an employee
+        emp = db.query(Employee).filter(Employee.user_id == current_user.id).first()
+        if emp:
+            link = db.query(TelegramUserLink).filter(
+                TelegramUserLink.employee_id == emp.id,
+                TelegramUserLink.is_verified == True,
+            ).first()
+            if link and link.telegram_chat_id:
+                chat_id = link.telegram_chat_id
+
+    if not chat_id:
+        raise HTTPException(
+            status_code=400,
+            detail="يرجى تحديد معرّف المحادثة (Chat ID) لإرسال رسالة الاختبار، أو ربط حساب تليجرام للموظف",
+        )
+
+    msg_text = (
+        payload.custom_message
+        if (payload and payload.custom_message)
+        else (
+            f"🔔 <b>رسالة اختبارية من منصة Investor Gate OS</b>\n\n"
+            f"✅ تم تأكيد الاتصال بنجاح مع بوت تليجرام (@{bot_username}).\n"
+            f"📅 التاريخ: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n"
+            f"👤 المرسل: {current_user.username}\n\n"
+            f"<i>نظام Investor Gate لإدارة العمليات التقنية والأصول</i>"
+        )
+    )
+
+    res = send_telegram_direct_message(bot_token=bot_token, chat_id=chat_id, text=msg_text)
+
+    # Log in integration log
+    log_entry = IntegrationLog(
+        company_id=active_cid,
+        service_name="telegram",
+        event_type="test.notification",
+        payload={"chat_id": chat_id, "sent_by": current_user.username},
+        status="Success" if res.get("success") else "Failed",
+        response_data=res,
+        error_message=None if res.get("success") else res.get("message"),
+    )
+    db.add(log_entry)
+    db.commit()
+
+    if not res.get("success"):
+        return success_response(data=res, message=res.get("message"))
+    return success_response(data=res, message=res.get("message"))
 
 
 # ── Employee Account Linking ──────────────────────────────────────────

@@ -226,30 +226,43 @@ def test_integration(db: Session, company_id: Optional[uuid.UUID], service_name:
     elif service_name == "telegram":
         token = (cfg.config_data or {}).get("bot_token", "").strip()
         chat_id = (cfg.config_data or {}).get("chat_id", "").strip()
-        if not token or not chat_id:
+        if not token:
             cfg.status = "Not Configured"
-            cfg.last_error = "رمز Bot Token أو معرّف Chat ID مفقود"
+            cfg.last_error = "رمز Bot Token مفقود"
             db.commit()
-            return {"success": False, "message": "يرجى إدخال Bot Token و Chat ID"}
+            return {"success": False, "message": "يرجى إدخال رمز Bot Token أولاً"}
 
-        try:
-            url = f"https://api.telegram.org/bot{token}/sendMessage"
-            test_msg = json.dumps({
-                "chat_id": chat_id,
-                "text": "🟢 *اختبار نجاح الاتصال*\nتم ربط نظام Investor Gate بنجاح مع تليجرام!",
-                "parse_mode": "Markdown",
-            }).encode("utf-8")
-            req = urllib.request.Request(url, data=test_msg, headers={"Content-Type": "application/json"}, method="POST")
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                cfg.status = "Connected"
-                cfg.last_error = None
-                db.commit()
-                return {"success": True, "message": "تم إرسال رسالة الاختبار بنجاح إلى تليجرام!"}
-        except Exception as e:
+        from app.services.telegram_service import test_telegram_connection, send_telegram_direct_message
+
+        # 1. Test token via getMe
+        conn_res = test_telegram_connection(token)
+        if not conn_res.get("success"):
             cfg.status = "Error"
-            cfg.last_error = str(e)
+            cfg.last_error = conn_res.get("message")
             db.commit()
-            return {"success": False, "message": f"فشل الاتصال بتليجرام: {str(e)}"}
+            return conn_res
+
+        # 2. If chat_id is provided, also test message delivery
+        if chat_id:
+            msg_res = send_telegram_direct_message(
+                bot_token=token,
+                chat_id=chat_id,
+                text="🟢 <b>اختبار نجاح الاتصال</b>\nتم ربط نظام Investor Gate بنجاح مع تليجرام!",
+            )
+            if not msg_res.get("success"):
+                cfg.status = "Warning"
+                cfg.last_error = msg_res.get("message")
+                db.commit()
+                return {"success": False, "message": f"تم التحقق من البوت ولكن تعذر الإرسال للـ Chat ID: {msg_res.get('message')}"}
+
+        cfg.status = "Connected"
+        cfg.last_error = None
+        if conn_res.get("bot", {}).get("username"):
+            cdata = cfg.config_data or {}
+            cdata["bot_username"] = conn_res["bot"]["username"]
+            cfg.config_data = cdata
+        db.commit()
+        return conn_res
 
     elif service_name == "gemini":
         api_key = (cfg.config_data or {}).get("api_key", "").strip()

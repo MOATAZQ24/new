@@ -41,10 +41,36 @@ RUNNING = True
 OFFSET_FILE = os.path.join(os.path.dirname(__file__), ".telegram_offset.json")
 
 
+STATUS_FILE = os.path.join(os.path.dirname(__file__), ".telegram_worker_status.json")
+
+
+def update_worker_status(offset: int, active_bots_count: int) -> None:
+    """Record worker heartbeat and status to local file for API health checks."""
+    try:
+        data = {
+            "is_running": True,
+            "pid": os.getpid(),
+            "last_heartbeat": datetime.utcnow().isoformat(),
+            "offset": offset,
+            "active_bots_count": active_bots_count,
+            "mode": "Long-Polling (LAN Outbound)",
+        }
+        with open(STATUS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+    except Exception as e:
+        logger.debug(f"Failed to write worker status file: {e}")
+
+
 def handle_signals(sig, frame):
     global RUNNING
     logger.info("Received termination signal. Gracefully shutting down Telegram poller...")
     RUNNING = False
+    try:
+        if os.path.exists(STATUS_FILE):
+            with open(STATUS_FILE, "w", encoding="utf-8") as f:
+                json.dump({"is_running": False, "pid": os.getpid(), "last_heartbeat": datetime.utcnow().isoformat()}, f)
+    except Exception:
+        pass
 
 
 signal.signal(signal.SIGINT, handle_signals)
@@ -255,7 +281,8 @@ def run_poller_loop(poll_interval: int = 3):
             now_ts = time.time()
             if now_ts - last_outbox_check >= 5:
                 try:
-                    processed = dispatch_outbox_notifications(db=db, max_batch_size=10)
+                    res = dispatch_outbox_notifications(db=db, limit=10)
+                    processed = res.get("processed", 0) if isinstance(res, dict) else 0
                     if processed > 0:
                         logger.info(f"Dispatched {processed} pending notification(s) from transactional outbox.")
                 except Exception as ex:
@@ -264,6 +291,8 @@ def run_poller_loop(poll_interval: int = 3):
 
             # 2. Retrieve configured Telegram bots
             bot_configs = get_active_bot_tokens(db)
+            update_worker_status(offset, len(bot_configs))
+
             if not bot_configs:
                 # No bot tokens active yet; idle gracefully without consuming CPU
                 time.sleep(poll_interval)
