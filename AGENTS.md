@@ -26,8 +26,7 @@ A secure, self-hosted, multi-company IT management platform.
 - Notifications
 - Reports and Audit Logs
 - Authentication and RBAC
-
-Do not create a Digital Assets module.
+- Digital Assets and Secrets Vault
 
 ## Engineering Rules
 1. Inspect the existing repository before changing code.

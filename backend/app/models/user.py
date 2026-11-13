@@ -75,6 +75,8 @@ class User(UUIDMixin, TimestampMixin, Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     account_status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -85,7 +87,10 @@ class User(UUIDMixin, TimestampMixin, Base):
         "UserRole", back_populates="user", cascade="all, delete-orphan"
     )
     company_memberships: Mapped[List["CompanyMembership"]] = relationship(
-        "CompanyMembership", back_populates="user", cascade="all, delete-orphan"
+        "CompanyMembership",
+        foreign_keys="[CompanyMembership.user_id]",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
     sessions: Mapped[List["UserSession"]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
@@ -142,16 +147,30 @@ class CompanyMembership(UUIDMixin, TimestampMixin, Base):
         ForeignKey("companies.id", ondelete="CASCADE"),
         nullable=False,
     )
+    branch_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     role_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("roles.id", ondelete="SET NULL"),
         nullable=True,
     )
+    status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    assigned_by: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    user: Mapped["User"] = relationship("User", back_populates="company_memberships")
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id], back_populates="company_memberships")
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])
     role: Mapped[Optional["Role"]] = relationship("Role", foreign_keys=[role_id])
+    assigner: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_by])
 
     __table_args__ = (
         UniqueConstraint("user_id", "company_id", name="uq_user_company"),

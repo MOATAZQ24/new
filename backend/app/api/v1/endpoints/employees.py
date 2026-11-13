@@ -232,6 +232,38 @@ def update_employee(
     return success_response(message="تم تحديث بيانات الموظف بنجاح")
 
 
+@router.delete("/{employee_id}")
+def delete_employee(
+    employee_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    if not current_user.is_superadmin and emp.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية حذف هذا الموظف")
+
+    active_c = db.query(AssetCustody).filter(AssetCustody.employee_id == emp.id, AssetCustody.status == "Active").count()
+    if active_c > 0:
+        raise HTTPException(status_code=400, detail="لا يمكن حذف الموظف لوجود عهد نشطة مسجلة باسمه. يرجى استرجاع العهد أولاً.")
+
+    log_audit(
+        db=db,
+        action="DELETE",
+        resource_type="Employee",
+        resource_id=str(emp.id),
+        user_id=current_user.id,
+        company_id=emp.company_id,
+    )
+
+    db.delete(emp)
+    db.commit()
+    return success_response(message="تم حذف الموظف بنجاح")
+
+
 # ── Users & Roles ─────────────────────────────────────────────────────
 
 @router.get("/users/list")

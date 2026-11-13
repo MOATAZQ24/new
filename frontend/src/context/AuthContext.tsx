@@ -9,6 +9,7 @@ export interface CompanyInfo {
   name_en: string;
   code: string;
   is_default: boolean;
+  company_logo?: string;
   contact_email?: string;
   contact_phone?: string;
 }
@@ -19,6 +20,7 @@ export interface UserProfile {
   email: string;
   account_status: string;
   is_superadmin: boolean;
+  must_change_password?: boolean;
   roles: string[];
   companies: CompanyInfo[];
   active_company_id?: string;

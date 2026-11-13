@@ -1,13 +1,17 @@
 import uuid
 import csv
+import base64
+from html import escape
 import io
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.response import success_response
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
 from app.models.subscription import ThirdPartySubscription
@@ -16,6 +20,7 @@ from app.models.task import Task
 from app.models.ticket import HelpDeskTicket
 from app.models.audit import AuditLog
 from app.models.user import User, Employee
+from app.services.audit_service import log_audit
 
 router = APIRouter(prefix="/reports", tags=["Reports & Exports"])
 
@@ -32,12 +37,14 @@ def generate_excel_compatible_csv(headers: list, rows: list) -> str:
     return output.getvalue()
 
 
-def generate_html_printable_report(title: str, headers: list, rows: list, company_name: str) -> str:
+def generate_html_printable_report(title: str, headers: list, rows: list, company_name: str, company_logo: bytes | None = None) -> str:
     """Generate printable styled HTML report supporting Arabic RTL and printing to PDF."""
-    table_headers = "".join([f"<th style='border:1px solid #cbd5e1;padding:10px;background:#123D32;color:white;'>{h}</th>" for h in headers])
+    title, company_name = escape(title), escape(company_name)
+    logo_markup = f'<img alt="Company logo" style="max-height:64px;max-width:180px" src="data:image/png;base64,{base64.b64encode(company_logo).decode()}" />' if company_logo else "Investor Gate IT"
+    table_headers = "".join([f"<th style='border:1px solid #cbd5e1;padding:10px;background:#123D32;color:white;'>{escape(str(h))}</th>" for h in headers])
     table_rows = ""
     for r in rows:
-        cells = "".join([f"<td style='border:1px solid #cbd5e1;padding:8px;'>{str(c or '-')}</td>" for c in r])
+        cells = "".join([f"<td style='border:1px solid #cbd5e1;padding:8px;'>{escape(str(c or '-'))}</td>" for c in r])
         table_rows += f"<tr>{cells}</tr>"
 
     html = f"""<!DOCTYPE html>
@@ -62,7 +69,7 @@ def generate_html_printable_report(title: str, headers: list, rows: list, compan
       <div class="title">{title}</div>
       <div class="meta">الشركة: {company_name} | التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
     </div>
-    <div style="font-size: 20px; font-weight: bold; color: #187A5A;">Investor Gate IT</div>
+    <div style="font-size: 20px; font-weight: bold; color: #187A5A;">{logo_markup}</div>
   </div>
   <table>
     <thead><tr>{table_headers}</tr></thead>
@@ -84,8 +91,12 @@ def export_report(
     db: Session = Depends(get_db),
 ):
     """Export system data to Excel/CSV or printable HTML."""
+    from app.api.v1.endpoints.workspace import authorize_company, shared_settings
+    from app.models.company import Company
     target_cid = company_id or active_cid
-    company_name = "الشركة الحالية"
+    authorize_company(db, current_user, target_cid)
+    company_name = db.get(Company, target_cid).company_name_ar
+    branding = shared_settings(db, target_cid)
 
     if report_type == "assets":
         title = "تقرير الأصول التقنية (Technical Assets Report)"
@@ -246,5 +257,148 @@ def export_report(
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
     else:  # html / pdf
-        html_content = generate_html_printable_report(title, headers, rows, company_name)
+        html_content = generate_html_printable_report(title, headers, rows, company_name, branding.logo if branding else None)
         return Response(content=html_content, media_type="text/html; charset=utf-8")
+
+
+class ImportPayload(BaseModel):
+    module: str  # assets | employees | infrastructure
+    rows: List[Dict[str, Any]]
+    dry_run: bool = False
+
+
+@router.post("/import")
+def import_data(
+    payload: ImportPayload,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Import data from Excel/CSV mapped rows into assets, employees, or infrastructure."""
+    module = payload.module.lower().strip()
+    if module not in ["assets", "employees", "infrastructure"]:
+        raise HTTPException(status_code=400, detail="الوحدة المحددة غير مدعومة للاستيراد")
+
+    imported_count = 0
+    skipped_count = 0
+    errors: List[str] = []
+
+    if module == "assets":
+        for idx, row in enumerate(payload.rows, start=1):
+            code = str(row.get("كود الأصل") or row.get("asset_code") or "").strip()
+            name = str(row.get("اسم الأصل") or row.get("asset_name") or row.get("name") or "").strip()
+            if not name:
+                errors.append(f"الصف {idx}: اسم الأصل مطلوب")
+                skipped_count += 1
+                continue
+
+            if not code:
+                code = f"AST-IMP-{uuid.uuid4().hex[:6].upper()}"
+
+            existing = db.query(TechnicalAsset).filter(
+                TechnicalAsset.company_id == active_cid,
+                TechnicalAsset.asset_code == code,
+            ).first()
+            if existing:
+                errors.append(f"الصف {idx}: كود الأصل {code} مسجل مسبقاً")
+                skipped_count += 1
+                continue
+
+            if not payload.dry_run:
+                asset = TechnicalAsset(
+                    company_id=active_cid,
+                    asset_code=code,
+                    asset_name=name,
+                    asset_type=str(row.get("النوع") or row.get("asset_type") or "Other").strip(),
+                    brand=str(row.get("الماركة") or row.get("brand") or "").strip() or None,
+                    model=str(row.get("الموديل") or row.get("model") or "").strip() or None,
+                    serial_number=str(row.get("الرقم التسلسلي") or row.get("serial_number") or "").strip() or None,
+                    condition=str(row.get("الحالة") or row.get("condition") or "Good").strip(),
+                    status="Available",
+                    notes="تم الاستيراد آلياً من ملف بيانات",
+                )
+                db.add(asset)
+            imported_count += 1
+
+    elif module == "employees":
+        for idx, row in enumerate(payload.rows, start=1):
+            emp_num = str(row.get("الرقم الوظيفي") or row.get("employee_number") or "").strip()
+            name = str(row.get("الاسم") or row.get("اسم الموظف") or row.get("full_name") or "").strip()
+            if not name:
+                errors.append(f"الصف {idx}: اسم الموظف مطلوب")
+                skipped_count += 1
+                continue
+
+            if not emp_num:
+                emp_num = f"EMP-IMP-{uuid.uuid4().hex[:5].upper()}"
+
+            existing = db.query(Employee).filter(
+                Employee.company_id == active_cid,
+                Employee.employee_number == emp_num,
+            ).first()
+            if existing:
+                errors.append(f"الصف {idx}: الرقم الوظيفي {emp_num} مسجل مسبقاً")
+                skipped_count += 1
+                continue
+
+            if not payload.dry_run:
+                emp = Employee(
+                    company_id=active_cid,
+                    employee_number=emp_num,
+                    full_name=name,
+                    job_title=str(row.get("المسمى الوظيفي") or row.get("job_title") or "").strip() or None,
+                    email=str(row.get("البريد الإلكتروني") or row.get("email") or "").strip() or None,
+                    phone=str(row.get("الهاتف") or row.get("phone") or "").strip() or None,
+                    employment_status="Active",
+                )
+                db.add(emp)
+            imported_count += 1
+
+    elif module == "infrastructure":
+        for idx, row in enumerate(payload.rows, start=1):
+            name = str(row.get("اسم الجهاز") or row.get("device_name") or row.get("name") or "").strip()
+            dev_type = str(row.get("نوع الجهاز") or row.get("device_type") or "Server").strip()
+            if not name:
+                errors.append(f"الصف {idx}: اسم جهاز البنية التحتية مطلوب")
+                skipped_count += 1
+                continue
+
+            if not payload.dry_run:
+                dev = ITInfrastructure(
+                    company_id=active_cid,
+                    device_name=name,
+                    device_type=dev_type,
+                    manufacturer=str(row.get("الشركة المصنعة") or row.get("manufacturer") or "").strip() or None,
+                    model=str(row.get("الموديل") or row.get("model") or "").strip() or None,
+                    serial_number=str(row.get("الرقم التسلسلي") or row.get("serial_number") or "").strip() or None,
+                    hostname=str(row.get("اسم المضيف") or row.get("hostname") or "").strip() or None,
+                    management_ip=str(row.get("IP الإدارة") or row.get("management_ip") or "").strip() or None,
+                    location=str(row.get("الموقع") or row.get("location") or "").strip() or None,
+                    status="Operational",
+                )
+                db.add(dev)
+            imported_count += 1
+
+    if not payload.dry_run and imported_count > 0:
+        db.commit()
+        log_audit(
+            db=db,
+            action="IMPORT",
+            resource_type=module.capitalize(),
+            resource_id="BULK",
+            user_id=current_user.id,
+            company_id=active_cid,
+            new_values={"count": imported_count, "module": module},
+        )
+
+    return success_response(
+        data={
+            "module": module,
+            "imported_count": imported_count,
+            "skipped_count": skipped_count,
+            "errors": errors,
+            "dry_run": payload.dry_run,
+        },
+        message=f"تم فحص/استيراد البيانات بنجاح: {imported_count} سجل جديد ({skipped_count} متخطى)",
+    )
+

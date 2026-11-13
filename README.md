@@ -19,7 +19,7 @@ A production-ready, self-hosted, multi-company IT Operations, Asset Management, 
 - **In-App Notifications:** Real-time notification feed for task assignments, ticket updates, custody handovers, and upcoming contract renewals.
 - **Reports & Excel Exports:** Complete export engine supporting Excel-compatible CSV with UTF-8 BOM (for pristine Arabic display in MS Excel) and printable HTML reports.
 - **Security & Audit Logs:** Immutable audit trail recording every mutation with old/new values, IP addresses, and user context. Passwords hashed using Argon2id with HttpOnly session cookies and server-side RBAC.
-- **Strict Scope Directives:** The legacy "Digital Assets" module has been completely removed. Domains and email accounts are managed exclusively as recurring subscriptions.
+- **Digital Assets & Secrets Vault:** Enterprise vault for corporate social media accounts (X, LinkedIn, Instagram), cloud services, and email platforms with linked recovery emails, recovery phone numbers, 2FA status, and zero-plaintext encrypted secrets (passwords, TOTP authenticator keys, recovery codes) protected by Argon2id reauthentication.
 
 ---
 
@@ -36,40 +36,128 @@ A production-ready, self-hosted, multi-company IT Operations, Asset Management, 
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 How to Run the Project (دليل تشغيل النظام)
 
-### 1. Prerequisites
-- Docker Engine & Docker Compose
-- Git
-- OpenSSL
+You can run the project in three ways: **One-Click Local Scripts**, **Manual Local Development**, or **Docker Compose**.
 
-### 2. Installation (Automated)
-Clone the repository and run the setup script:
-```bash
-git clone <repository_url>
-cd itops
-chmod +x scripts/*.sh
-./scripts/setup.sh
+---
+
+### Option 1: One-Click Startup Scripts (Fastest on Windows)
+
+Use the built-in startup scripts located in the root directory to launch both Backend and Frontend in parallel:
+
+**Using Command Prompt / Batch:**
+```cmd
+start_servers.bat
 ```
 
-### 3. Manual Start with Docker Compose
+**Using PowerShell:**
+```powershell
+.\start_servers.ps1
+```
+
+This starts:
+- **Backend API (Uvicorn):** [http://localhost:8000](http://localhost:8000) (Interactive Swagger Docs at [http://localhost:8000/docs](http://localhost:8000/docs))
+- **Frontend App (Next.js):** [http://localhost:3000](http://localhost:3000)
+
+---
+
+### Option 2: Manual Local Development (Step-by-Step)
+
+#### Prerequisites
+- **Python**: 3.10+ or 3.12+
+- **Node.js**: 18+ or 20+
+- **Git**
+
+#### 1. Backend Setup (FastAPI & SQLite / PostgreSQL)
+
+Open a terminal and navigate to the `backend` folder:
 ```bash
-# 1. Prepare environment variables
+cd backend
+
+# Optional: Create and activate a Python virtual environment
+python -m venv venv
+
+# Windows (Command Prompt / PowerShell):
+.\venv\Scripts\activate
+# Linux / macOS:
+source venv/bin/activate
+
+# Install backend dependencies
+pip install -r requirements.txt
+
+# (Optional) Seed initial demo companies, branches, employees, and assets
+python seed_data.py
+
+# Start the FastAPI server with hot-reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+#### 2. Frontend Setup (Next.js 16 & React 19)
+
+Open a second terminal and navigate to the `frontend` folder:
+```bash
+cd frontend
+
+# Install frontend dependencies
+npm install
+
+# Start the Next.js development server
+npm run dev
+# Or run Next.js directly:
+node node_modules/next/dist/bin/next dev -p 3000
+```
+
+#### 3. Open the App in Your Browser
+- **Web Interface:** [http://localhost:3000](http://localhost:3000)
+- **Interactive API Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Default Super Admin Credentials:**
+  - **Username:** `admin`
+  - **Password:** `Admin@12345`
+
+---
+
+### Option 3: Docker Compose (Production-Ready)
+
+#### 1. Prepare Environment Variables
+```bash
 cp .env.example .env
+```
 
-# 2. Build and start containers
+#### 2. Build and Launch Containers
+```bash
 docker compose up -d --build
+```
 
-# 3. Seed initial database records
+#### 3. Seed Initial Database Records (First Time Only)
+```bash
 docker compose exec backend python seed_data.py
 ```
 
-### 4. Access the Application
-- **Frontend Dashboard:** [http://localhost:3000](http://localhost:3000) (or `https://localhost` via Nginx)
-- **FastAPI OpenAPI Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Default Super Admin:**
-  - **Username:** `admin`
-  - **Password:** `Admin@12345`
+#### 4. Access the Stack
+- **Frontend App:** [http://localhost:3000](http://localhost:3000) (or `https://localhost` via Nginx)
+- **Backend API:** [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+### 🧪 Running Tests & Verifications
+
+To verify system integrity and test business logic across all modules:
+
+```bash
+# 1. Run all 13 core modules test suite
+python backend/tests/run_all_tests.py
+
+# 2. Run User Management, RBAC & Multi-Company isolation tests
+python backend/tests/test_user_management.py
+
+# 3. Run Vault, Zero-Plaintext & Customization tests
+python backend/tests/test_vault_customization.py
+
+# 4. Run Frontend TypeScript compilation & type checking
+cd frontend
+node node_modules/typescript/bin/tsc --noEmit
+```
 
 ---
 

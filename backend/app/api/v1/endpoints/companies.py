@@ -14,6 +14,7 @@ from app.schemas.company import (
     DepartmentCreate, DepartmentUpdate,
 )
 from app.services.audit_service import log_audit
+from app.api.v1.endpoints.workspace import authorize_company
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -106,23 +107,51 @@ def create_company(
     db.commit()
     db.refresh(company)
 
-    # Create default Main Branch for company
-    main_branch = Branch(
-        company_id=company.id,
-        branch_name="الفرع الرئيسي (Main Branch)",
-        location="المقر الرئيسي",
-        status="Active",
-    )
-    db.add(main_branch)
+    # Create default or initial branches
+    created_branches = []
+    if payload.initial_branches and len(payload.initial_branches) > 0:
+        for b_name in payload.initial_branches:
+            if b_name.strip():
+                br = Branch(
+                    company_id=company.id,
+                    branch_name=b_name.strip(),
+                    location="المقر",
+                    status="Active",
+                )
+                db.add(br)
+                created_branches.append(br)
+    else:
+        main_branch = Branch(
+            company_id=company.id,
+            branch_name="الفرع الرئيسي (Main Branch)",
+            location="المقر الرئيسي",
+            status="Active",
+        )
+        db.add(main_branch)
+        created_branches.append(main_branch)
 
-    # Create default IT Department
-    it_dept = Department(
-        company_id=company.id,
-        branch_id=main_branch.id,
-        department_name="إدارة تقنية المعلومات (IT Department)",
-        status="Active",
-    )
-    db.add(it_dept)
+    db.flush()
+    first_branch_id = created_branches[0].id if created_branches else None
+
+    # Create default or initial departments
+    if payload.initial_departments and len(payload.initial_departments) > 0:
+        for d_name in payload.initial_departments:
+            if d_name.strip():
+                dept = Department(
+                    company_id=company.id,
+                    branch_id=first_branch_id,
+                    department_name=d_name.strip(),
+                    status="Active",
+                )
+                db.add(dept)
+    else:
+        it_dept = Department(
+            company_id=company.id,
+            branch_id=first_branch_id,
+            department_name="إدارة تقنية المعلومات (IT Department)",
+            status="Active",
+        )
+        db.add(it_dept)
     db.commit()
 
     log_audit(
@@ -144,6 +173,7 @@ def create_company(
 @router.get("/{company_id}")
 def get_company(company_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get single company details."""
+    authorize_company(db, current_user, company_id)
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="الشركة غير موجودة")
@@ -176,6 +206,8 @@ def update_company(
     db: Session = Depends(get_db),
 ):
     """Update company details."""
+    authorize_company(db, current_user, company_id, admin=True)
+    authorize_company(db, current_user, company_id)
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="الشركة غير موجودة")
@@ -224,6 +256,7 @@ def delete_company(
     db: Session = Depends(get_db),
 ):
     """Delete company (Super Admin only)."""
+    authorize_company(db, current_user, company_id)
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="الشركة غير موجودة")
@@ -388,3 +421,43 @@ def create_department(
     )
 
     return success_response(data={"id": str(dept.id)}, message="تم إنشاء القسم بنجاح")
+
+
+@router.put("/departments/{dept_id}")
+def update_department(
+    dept_id: uuid.UUID,
+    payload: DepartmentUpdate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    db: Session = Depends(get_db),
+):
+    dept = db.query(Department).filter(Department.id == dept_id).first()
+    if not dept:
+        raise HTTPException(status_code=404, detail="القسم غير موجود")
+
+    if payload.department_name is not None:
+        dept.department_name = payload.department_name
+    if payload.branch_id is not None:
+        dept.branch_id = payload.branch_id
+    if payload.manager_id is not None:
+        dept.manager_id = payload.manager_id
+    if payload.status is not None:
+        dept.status = payload.status
+
+    db.commit()
+    return success_response(message="تم تحديث القسم بنجاح")
+
+
+@router.delete("/departments/{dept_id}")
+def delete_department(
+    dept_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    db: Session = Depends(get_db),
+):
+    dept = db.query(Department).filter(Department.id == dept_id).first()
+    if not dept:
+        raise HTTPException(status_code=404, detail="القسم غير موجود")
+
+    db.delete(dept)
+    db.commit()
+    return success_response(message="تم حذف القسم بنجاح")
+

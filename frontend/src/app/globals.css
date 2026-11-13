@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "./tailwind.gen.css";
 @import "tailwindcss";
 
 :root {
@@ -35,4 +37,47 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Existing utility classes consume workspace tokens without replacing page markup. */
+html { font-size: var(--workspace-font-size, 16px); }
+body { font-family: var(--workspace-font, 'Inter', 'IBM Plex Sans Arabic', sans-serif); font-weight: var(--workspace-font-weight, 400); background: var(--bg-main) !important; color: var(--on-background, var(--text-main)) !important; }
+[class~="bg-white"] { background-color: var(--surface); color: var(--text-main); }
+[class~="bg-[#F5F7F8]"] { background-color: var(--bg-main); }
+[class~="bg-[#123D32]"] { background-color: var(--primary-dark); color: var(--on-primary); }
+[class~="bg-[#187A5A]"] { background-color: var(--primary-green); color: var(--on-secondary); }
+[class~="bg-[#C5A46D]"] { background-color: var(--gold-accent); }
+[class~="text-[#123D32]"] { color: var(--primary-dark); }
+[class~="text-[#187A5A]"] { color: var(--primary-green); }
+[class~="text-[#C5A46D]"] { color: var(--gold-accent); }
+:is(.rounded-lg, .rounded-xl, .rounded-2xl) { border-radius: var(--workspace-radius, 12px); }
+.workspace-main { margin-inline-start: var(--sidebar-width, 256px); padding: calc(var(--workspace-spacing, 1rem) * 1.5); padding-top: 5rem; }
+.workspace-sidebar { width: var(--sidebar-width, 256px); }
+.workspace-topnav { right: var(--sidebar-width, 256px); }
+.workspace-sidebar[data-collapsed="true"] .workspace-nav-label,
+.workspace-sidebar[data-collapsed="true"] > div { display: none; }
+.workspace-sidebar[data-collapsed="true"] nav a { justify-content: center; padding-inline: .5rem; }
+.workspace-settings :is(select, input:not([type="checkbox"]):not([type="color"]):not([type="range"])) { display: block; width: 100%; padding: .6rem; border: 1px solid var(--border-color); border-radius: var(--workspace-radius); background: var(--surface); color: var(--text-main); }
+.workspace-settings input[type="range"] { display: block; width: 100%; }
+.workspace-settings input[type="color"] { display: inline-block; margin-inline: .75rem; vertical-align: middle; }
+.workspace-settings button { border: 1px solid var(--border-color); padding: .5rem .8rem; border-radius: var(--workspace-radius); }
+.workspace-primary { background: var(--primary-dark); color: var(--on-primary); padding: .6rem 1rem; border-radius: var(--workspace-radius); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+:focus-visible { outline: 3px solid var(--text-main); outline-offset: 3px; box-shadow: 0 0 0 5px var(--surface); }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="dark"] :is(.bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100) { background-color: var(--bg-main); }
+html[data-theme="dark"] [class*="text-slate-"], html[data-theme="dark"] [class*="text-gray-"] { color: var(--text-main); }
+html[data-theme="dark"] [class*="border-slate-"], html[data-theme="dark"] [class*="border-gray-"] { border-color: var(--border-color); }
+html[data-density="compact"] :is(td, th) { padding-block: .35rem; }
+html[data-density="spacious"] :is(td, th) { padding-block: 1.1rem; }
+@media (max-width: 767px) {
+  .workspace-sidebar { width: 64px; }
+  .workspace-sidebar .workspace-nav-label, .workspace-sidebar > div { display: none; }
+  .workspace-sidebar nav { padding-inline: .25rem; }
+  .workspace-sidebar nav a { justify-content: center; padding-inline: .5rem; }
+  .workspace-main { margin-inline-start: 64px; padding-inline: .75rem; }
+  .workspace-topnav { right: 64px; padding-inline: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface StatsCardProps {
   title: string;
@@ -7,6 +8,7 @@ interface StatsCardProps {
   icon?: React.ReactNode;
   trend?: string;
   accentColor?: string;
+  href?: string;
 }
 
 export function StatsCard({
@@ -16,14 +18,23 @@ export function StatsCard({
   icon,
   trend,
   accentColor = "border-[#187A5A]",
+  href,
 }: StatsCardProps) {
-  return (
+  const cardContent = (
     <div
-      className={`bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden border-t-4 ${accentColor}`}
+      className={`bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all relative overflow-hidden border-t-4 ${accentColor} ${
+        href ? "cursor-pointer group hover:-translate-y-0.5" : ""
+      }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-500">{title}</span>
-        {icon && <div className="p-2 rounded-lg bg-slate-50 text-[#187A5A]">{icon}</div>}
+        <span className="text-xs font-semibold text-slate-500 group-hover:text-slate-800 transition-colors">
+          {title}
+        </span>
+        {icon && (
+          <div className="p-2 rounded-lg bg-slate-50 text-[#187A5A] group-hover:bg-[#187A5A] group-hover:text-white transition-colors">
+            {icon}
+          </div>
+        )}
       </div>
 
       <div className="mt-3 flex items-baseline gap-2">
@@ -38,6 +49,12 @@ export function StatsCard({
       {subtitle && <p className="mt-1 text-[11px] text-slate-400">{subtitle}</p>}
     </div>
   );
+
+  if (href) {
+    return <Link href={href} className="block">{cardContent}</Link>;
+  }
+
+  return cardContent;
 }
 
 export default StatsCard;

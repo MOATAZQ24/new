@@ -27,7 +27,9 @@ def get_dashboard_data(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
+    from app.api.v1.endpoints.workspace import authorize_company, workspace_permissions
     target_cid = company_id or active_cid
+    authorize_company(db, current_user, target_cid)
     today = date.today()
 
     # Query counts for target company
@@ -153,4 +155,18 @@ def get_dashboard_data(
         "recent_activities": activities,
     }
 
+    allowed = workspace_permissions(db, current_user, target_cid)
+    recent = db.query(Task).filter(Task.company_id == target_cid)
+    if "kpis" not in allowed and "maintenance" not in allowed:
+        recent = recent.filter(Task.assigned_to_id == current_user.employee_id) if current_user.employee_id else recent.filter(False)
+        tickets = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid, HelpDeskTicket.requester_id == current_user.employee_id) if current_user.employee_id else db.query(HelpDeskTicket).filter(False)
+        data["critical_tickets"] = tickets.filter(HelpDeskTicket.priority.in_(["Urgent", "Critical", "Urgent / Critical"]), HelpDeskTicket.status.notin_(["Resolved", "Closed", "Cancelled"])).count()
+    data["recent_tasks"] = [{"id": str(t.id), "title": t.title, "status": t.status, "due_date": t.due_date} for t in recent.order_by(Task.created_at.desc()).limit(6)]
+    keys = {"critical_tickets", "recent_tasks"}
+    if "kpis" in allowed:
+        keys = set(data)
+    if "maintenance" in allowed:
+        keys.add("pending_maintenance")
+    data = {key: value for key, value in data.items() if key in keys}
+    data["available_widgets"] = allowed
     return success_response(data=data)

@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/ui/Icons";
+import { useWorkspace, mediaUrl } from "@/context/WorkspaceContext";
 import { useAuth } from "@/context/AuthContext";
 
 interface NavItem {
@@ -16,8 +17,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
   { name: "الشركات والفروع", href: "/companies", icon: "Companies" },
-  { name: "الموظفون والمستخدمون", href: "/employees", icon: "Users" },
+  { name: "الموظفون", href: "/employees", icon: "Users" },
+  { name: "المستخدمون والوصول", href: "/users", icon: "User" },
   { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
+  { name: "الأصول الرقمية والخزنة", href: "/digital-assets", icon: "Lock" },
   { name: "عهدة الأصول", href: "/custody", icon: "Custody" },
   { name: "البنية التحتية", href: "/infrastructure", icon: "Infrastructure" },
   { name: "الاشتراكات الخارجية", href: "/subscriptions", icon: "Subscriptions" },
@@ -33,14 +36,21 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { activeCompany } = useAuth();
+  const { draft, setDraft, save } = useWorkspace();
+  const configured = draft.navigation.length ? draft.navigation.flatMap(pref => {
+    const item = navItems.find(item => item.href === pref.href);
+    return item && (!pref.hidden || pref.href === "/settings") ? [{ ...item, icon: pref.icon === "default" ? item.icon : pref.icon, pinned: pref.pinned }] : [];
+  }) : navItems.map(item => ({ ...item, pinned: false }));
+  const orderedItems = [...configured.filter(i => i.pinned), ...configured.filter(i => !i.pinned)];
 
   return (
-    <aside className="w-64 bg-[#123D32] text-white flex flex-col h-screen fixed right-0 top-0 z-40 border-l border-[#187A5A]/30 select-none shadow-xl">
+    <aside data-collapsed={draft.collapsed} className="workspace-sidebar w-64 bg-[#123D32] text-white flex flex-col h-screen fixed right-0 top-0 z-40 border-l border-[#187A5A]/30 select-none shadow-xl">
+      <button type="button" className="p-2 text-sm" aria-label="طي أو توسيع القائمة / Toggle sidebar" onClick={() => { const next = { ...draft, collapsed: !draft.collapsed }; setDraft(next); void save(next).catch(() => setDraft(draft)); }}>☰</button>
       {/* Brand & Logo Header */}
       <div className="p-5 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md">
-            IG
+            {activeCompany?.company_logo?.startsWith("/workspace/") ? <img src={mediaUrl(activeCompany.company_logo)} alt="" className="w-10 h-10 object-contain" /> : "IG"}
           </div>
           <div>
             <h1 className="font-bold text-base tracking-tight text-white leading-tight">
@@ -68,17 +78,17 @@ export function Sidebar() {
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-        {navItems.map((item) => {
+        {orderedItems.map((item) => {
           const isActive =
             item.href === "/"
               ? pathname === "/"
               : pathname.startsWith(item.href);
-          const IconComp = Icons[item.icon];
+          const IconComp = Icons[item.icon as keyof typeof Icons];
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href} title={item.name}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                 isActive
                   ? "bg-[#187A5A] text-white font-bold shadow-sm"
@@ -92,7 +102,7 @@ export function Sidebar() {
               >
                 {IconComp && <IconComp size={18} />}
               </span>
-              <span className="flex-1">{item.name}</span>
+              <span className="workspace-nav-label flex-1">{item.pinned ? "★ " : ""}{item.name}</span>
             </Link>
           );
         })}

@@ -108,25 +108,47 @@ def get_current_user(
         )
 
     user = db.query(User).filter(User.id == session.user_id).first()
-    if not user or user.account_status != "Active":
+    if not user or user.account_status != "Active" or getattr(user, "is_deleted", False):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="حساب المستخدم غير مفعّل أو معطل (User account is not active)",
         )
 
+    if user.locked_until and user.locked_until > now:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="تم قفل الحساب مؤقتاً لتكرار محاولات الدخول الخاطئة (Account locked)",
+        )
+
     return user
 
 
-def get_user_roles(user: User, db: Session) -> List[str]:
-    """Retrieve all role names assigned to the user."""
+def get_user_roles(user: User, db: Session, company_id: Optional[uuid.UUID] = None) -> List[str]:
+    """Retrieve all role names assigned to the user, strictly adhering to company membership context."""
     if user.is_superadmin:
         return ["Super Admin", "Company Admin", "IT Manager", "IT Technician", "Employee", "Auditor"]
+    
+    if company_id:
+        membership = (
+            db.query(CompanyMembership)
+            .filter(
+                CompanyMembership.user_id == user.id,
+                CompanyMembership.company_id == company_id,
+                CompanyMembership.status == "Active",
+            )
+            .first()
+        )
+        if membership and membership.role:
+            return [membership.role.name]
+        return ["Employee"]
+
     user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
     role_ids = [ur.role_id for ur in user_roles]
-    if not role_ids:
-        return ["Employee"]
-    roles = db.query(Role).filter(Role.id.in_(role_ids)).all()
-    return [r.name for r in roles]
+    if role_ids:
+        db_roles = db.query(Role).filter(Role.id.in_(role_ids)).all()
+        return [r.name for r in db_roles]
+
+    return ["Employee"]
 
 
 def get_user_company_id(
@@ -189,15 +211,24 @@ def get_user_company_id(
 
 
 def require_role(allowed_roles: List[str]):
-    """Ensure current user has at least one of the allowed roles."""
+    """Ensure current user has at least one of the allowed roles, taking company-specific roles into account."""
     def role_checker(
+        request: Request,
         user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
     ) -> User:
         if user.is_superadmin:
             return user
 
-        user_roles = get_user_roles(user, db)
+        cid = None
+        cid_str = request.headers.get("X-Company-ID") or request.query_params.get("company_id")
+        if cid_str:
+            try:
+                cid = uuid.UUID(cid_str)
+            except ValueError:
+                pass
+
+        user_roles = get_user_roles(user, db, company_id=cid)
         if not any(role in allowed_roles for role in user_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

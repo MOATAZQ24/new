@@ -25,10 +25,16 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def login(payload: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db)):
     """Authenticate user with username and password using Argon2id."""
     user = db.query(User).filter(User.username == payload.username.strip()).first()
-    if not user:
+    if not user or getattr(user, "is_deleted", False):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="اسم المستخدم أو كلمة المرور غير صحيحة",
+        )
+
+    if user.locked_until and user.locked_until > datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="تم قفل الحساب مؤقتاً لتكرار محاولات الدخول الخاطئة. يرجى مراجعة مسؤول النظام أو المحاولة لاحقاً.",
         )
 
     if user.account_status != "Active":
@@ -40,6 +46,8 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
     if not verify_password(payload.password, user.password_hash):
         # Update failed login count
         user.failed_login_attempts += 1
+        if user.failed_login_attempts >= 5:
+            user.locked_until = datetime.utcnow() + timedelta(minutes=15)
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -69,6 +77,8 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
                 "name_ar": c.company_name_ar,
                 "name_en": c.company_name_en,
                 "code": c.company_code,
+                "company_logo": c.company_logo,
+                "role": m.role.name if m.role else ("Super Admin" if user.is_superadmin else "Employee"),
                 "is_default": m.is_default,
             }
             companies.append(c_info)
@@ -83,6 +93,8 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
                 "name_ar": c.company_name_ar,
                 "name_en": c.company_name_en,
                 "code": c.company_code,
+                "company_logo": c.company_logo,
+                "role": "Super Admin",
                 "is_default": False,
             })
             if active_company_id is None:
@@ -105,6 +117,7 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
         "email": user.email,
         "account_status": user.account_status,
         "is_superadmin": user.is_superadmin,
+        "must_change_password": getattr(user, "must_change_password", False),
         "roles": roles,
         "companies": companies,
         "active_company_id": active_company_id,
@@ -156,6 +169,8 @@ def get_me(request: Request, current_user: User = Depends(get_current_user), db:
                 "name_ar": c.company_name_ar,
                 "name_en": c.company_name_en,
                 "code": c.company_code,
+                "company_logo": c.company_logo,
+                "role": m.role.name if m.role else ("Super Admin" if current_user.is_superadmin else "Employee"),
                 "is_default": m.is_default,
             }
             companies.append(c_info)
@@ -170,6 +185,8 @@ def get_me(request: Request, current_user: User = Depends(get_current_user), db:
                 "name_ar": c.company_name_ar,
                 "name_en": c.company_name_en,
                 "code": c.company_code,
+                "company_logo": c.company_logo,
+                "role": "Super Admin",
                 "is_default": False,
             })
             if active_company_id is None:
@@ -183,6 +200,7 @@ def get_me(request: Request, current_user: User = Depends(get_current_user), db:
         "email": current_user.email,
         "account_status": current_user.account_status,
         "is_superadmin": current_user.is_superadmin,
+        "must_change_password": getattr(current_user, "must_change_password", False),
         "roles": roles,
         "companies": companies,
         "active_company_id": active_company_id,
@@ -203,6 +221,7 @@ def change_password(payload: ChangePasswordRequest, current_user: User = Depends
         raise HTTPException(status_code=400, detail="يجب أن تتكون كلمة المرور الجديدة من 6 خانات على الأقل")
 
     current_user.password_hash = hash_password(payload.new_password)
+    current_user.must_change_password = False
     db.commit()
 
     log_audit(

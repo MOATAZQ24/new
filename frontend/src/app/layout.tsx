@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { CustomizationProvider } from "@/context/CustomizationContext";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +22,11 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#F5F7F8] text-[#1e293b] font-sans antialiased">
+      <body className="min-h-full flex flex-col bg-[#F5F7F8] dark:bg-slate-900 text-[#1e293b] dark:text-slate-100 font-sans antialiased">
         <AuthProvider>
-          {children}
+          <WorkspaceProvider>
+            <CustomizationProvider>{children}</CustomizationProvider>
+          </WorkspaceProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,5 +1,6 @@
 "use client";
 
+import WorkspaceSettings from "@/components/workspace/WorkspaceSettings";
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { 
@@ -55,12 +56,64 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">إعدادات النظام والحساب</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            إدارة بيانات الحساب الشخصي، الأمان، ومعلومات بيئة التشغيل
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">إعدادات النظام والحساب</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              إدارة بيانات الحساب الشخصي، الأمان، ومعلومات بيئة التشغيل
+            </p>
+          </div>
+
+          <a
+            href="/settings/integrations"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+          >
+            <SettingsIcon className="w-4 h-4 text-[#C5A46D]" />
+            <span>مركز التكامل والأتمتة (n8n / Telegram / Gemini)</span>
+          </a>
         </div>
+
+        {/* Quick Links to Settings Sections */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <a
+            href="/settings/appearance"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#187A5A]/10 text-[#187A5A] flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-[#187A5A] transition">المظهر والواجهة</div>
+              <div className="text-xs text-gray-400">السمة، الألوان، الخطوط، الكثافة</div>
+            </div>
+          </a>
+          <a
+            href="/settings/branding"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/10 text-[#C5A46D] flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/></svg>
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-[#C5A46D] transition">علامة الشركة التجارية</div>
+              <div className="text-xs text-gray-400">الشعار، الهوية البصرية، Favicon</div>
+            </div>
+          </a>
+          <a
+            href="/settings/integrations"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition">التكاملات والأتمتة</div>
+              <div className="text-xs text-gray-400">n8n، Telegram، Google Gemini</div>
+            </div>
+          </a>
+        </div>
+
+        <WorkspaceSettings />
 
         {/* User Profile Card */}
         <div className="bg-white rounded-xl border border-gray-200/80 p-6 shadow-sm">

@@ -11,6 +11,10 @@ from app.models.task import Task, TaskComment
 from app.models.ticket import HelpDeskTicket, TicketComment
 from app.models.notification import Notification
 from app.models.audit import AuditLog
+from app.models.integration import IntegrationConfig, IntegrationLog
+from app.models.customization import UserWorkspacePreference, CompanyBranding
+from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermission
+from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog
 
 __all__ = [
     "Base",
@@ -36,4 +40,16 @@ __all__ = [
     "TicketComment",
     "Notification",
     "AuditLog",
+    "IntegrationConfig",
+    "IntegrationLog",
+    "UserWorkspacePreference",
+    "CompanyBranding",
+    "DigitalAsset",
+    "AssetSecret",
+    "AssetAccessPermission",
+    "TelegramUserLink",
+    "NotificationOutbox",
+    "TelegramActionLog",
 ]
+
+from app.models.workspace import WorkspacePreference, CompanyWorkspace

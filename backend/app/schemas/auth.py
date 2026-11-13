@@ -19,6 +19,7 @@ class UserInfo(BaseModel):
     email: str
     account_status: str
     is_superadmin: bool
+    must_change_password: Optional[bool] = False
     roles: List[str]
     companies: List[dict]
     active_company_id: Optional[uuid.UUID] = None

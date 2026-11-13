@@ -553,3 +553,8 @@ def seed():
 
 if __name__ == "__main__":
     seed()
+    try:
+        from seed_digital_assets import seed_digital_assets
+        seed_digital_assets()
+    except Exception as e:
+        print(f"Digital assets seed notice: {e}")

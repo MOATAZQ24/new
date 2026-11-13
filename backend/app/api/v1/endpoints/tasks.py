@@ -13,6 +13,7 @@ from app.models.asset import TechnicalAsset
 from app.schemas.task import TaskCreate, TaskUpdate, TaskCommentCreate
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
+from app.services.telegram_service import enqueue_task_notification
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])
 
@@ -142,6 +143,13 @@ def create_task(
                 related_record_id=task.id,
             )
 
+        # Enqueue in Telegram Transactional Outbox (non-blocking)
+        try:
+            enqueue_task_notification(db=db, task=task, event_type="task.assigned")
+            db.commit()
+        except Exception:
+            pass
+
     log_audit(
         db=db,
         action="CREATE",
@@ -232,6 +240,9 @@ def update_task(
     if not current_user.is_superadmin and task.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية التعديل على هذه المهمة")
 
+    old_assigned_id = task.assigned_to_id
+    old_status = task.status
+
     if payload.title is not None:
         task.title = payload.title
     if payload.description is not None:
@@ -252,6 +263,19 @@ def update_task(
         task.notes = payload.notes
 
     db.commit()
+
+    # Enqueue Telegram Outbox events based on transitions
+    try:
+        if payload.assigned_to_id is not None and payload.assigned_to_id != old_assigned_id:
+            enqueue_task_notification(db=db, task=task, event_type="task.reassigned")
+        elif payload.status is not None and payload.status != old_status:
+            if payload.status == "In Progress":
+                enqueue_task_notification(db=db, task=task, event_type="task.started")
+            elif payload.status == "Completed":
+                enqueue_task_notification(db=db, task=task, event_type="task.completed")
+        db.commit()
+    except Exception:
+        pass
 
     log_audit(
         db=db,

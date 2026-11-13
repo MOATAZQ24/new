@@ -11,8 +11,12 @@ class BranchBase(BaseModel):
     status: str = "Active"
 
 
-class BranchCreate(BranchBase):
-    company_id: uuid.UUID
+class BranchCreate(BaseModel):
+    branch_name: str
+    location: Optional[str] = None
+    contact_details: Optional[str] = None
+    status: str = "Active"
+    company_id: Optional[uuid.UUID] = None
 
 
 class BranchUpdate(BaseModel):
@@ -39,8 +43,12 @@ class DepartmentBase(BaseModel):
     status: str = "Active"
 
 
-class DepartmentCreate(DepartmentBase):
-    company_id: uuid.UUID
+class DepartmentCreate(BaseModel):
+    department_name: str
+    branch_id: Optional[uuid.UUID] = None
+    manager_id: Optional[uuid.UUID] = None
+    status: str = "Active"
+    company_id: Optional[uuid.UUID] = None
 
 
 class DepartmentUpdate(BaseModel):
@@ -71,7 +79,8 @@ class CompanyBase(BaseModel):
 
 
 class CompanyCreate(CompanyBase):
-    pass
+    initial_branches: Optional[List[str]] = None
+    initial_departments: Optional[List[str]] = None
 
 
 class CompanyUpdate(BaseModel):
