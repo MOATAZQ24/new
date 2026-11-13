@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -17,12 +18,15 @@ def list_notifications(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     unread_only: bool = False,
+    priority: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     query = db.query(Notification).filter(Notification.recipient_user_id == current_user.id)
     if unread_only:
         query = query.filter(Notification.read_at.is_(None))
+    if priority:
+        query = query.filter(Notification.priority == priority)
 
     total = query.count()
     items = (
@@ -38,6 +42,7 @@ def list_notifications(
             "event_type": n.event_type,
             "title": n.title,
             "message": n.message,
+            "priority": getattr(n, "priority", "Normal") or "Normal",
             "related_record_type": n.related_record_type,
             "related_record_id": str(n.related_record_id) if n.related_record_id else None,
             "channel": n.channel,

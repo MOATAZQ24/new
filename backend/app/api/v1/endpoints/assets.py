@@ -44,12 +44,15 @@ def list_assets(
     asset_type: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     search: Optional[str] = None,
+    sort: str = Query("", pattern="^(|asset_code|asset_name|asset_type|serial_number|status|employee)$"),
     current_user: User = Depends(get_current_user),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """List technical assets with company isolation."""
+    from app.api.v1.endpoints.workspace import authorize_company
     target_cid = company_id or active_cid
+    authorize_company(db, current_user, target_cid)
     query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
 
     if branch_id:
@@ -71,8 +74,12 @@ def list_assets(
         )
 
     total = query.count()
+    ordering = getattr(TechnicalAsset, sort).asc() if sort and sort != "employee" else TechnicalAsset.created_at.desc()
+    if sort == "employee":
+        query = query.outerjoin(Employee, TechnicalAsset.assigned_employee_id == Employee.id)
+        ordering = Employee.full_name.asc()
     assets = (
-        query.order_by(TechnicalAsset.created_at.desc())
+        query.order_by(ordering, TechnicalAsset.id)
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()

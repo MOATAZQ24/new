@@ -202,3 +202,31 @@ class UserSession(UUIDMixin, TimestampMixin, Base):
         Index("ix_user_sessions_is_active", "is_active"),
         Index("ix_user_sessions_expires_at", "expires_at"),
     )
+
+
+class PasswordResetToken(UUIDMixin, TimestampMixin, Base):
+    __tablename__ = "password_reset_tokens"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    token_hash: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    user: Mapped["User"] = relationship("User")
+
+    __table_args__ = (
+        Index("ix_password_reset_tokens_user_id", "user_id"),
+        Index("ix_password_reset_tokens_token_hash", "token_hash"),
+        Index("ix_password_reset_tokens_expires_at", "expires_at"),
+        Index("ix_password_reset_tokens_is_used", "is_used"),
+    )
+

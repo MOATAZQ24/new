@@ -81,3 +81,7 @@ html[data-density="spacious"] :is(td, th) { padding-block: 1.1rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+[data-table-density="compact"] > :is(td, th) { padding-block: .35rem; }
+[data-table-density="comfortable"] > :is(td, th) { padding-block: .75rem; }
+[data-table-density="spacious"] > :is(td, th) { padding-block: 1.2rem; }

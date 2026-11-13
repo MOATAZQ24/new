@@ -35,7 +35,8 @@ class Notification(UUIDMixin, Base):
     message: Mapped[str] = mapped_column(Text, nullable=False)
     related_record_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # task, ticket, asset, subscription, maintenance
     related_record_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
-    channel: Mapped[str] = mapped_column(String(50), default="in_app", nullable=False)  # in_app, push, email
+    channel: Mapped[str] = mapped_column(String(50), default="in_app", nullable=False)  # in_app, telegram, email, multi
+    priority: Mapped[str] = mapped_column(String(50), default="Normal", nullable=False)  # Urgent, High, Normal, Low
     delivery_status: Mapped[str] = mapped_column(String(50), default="sent", nullable=False)  # pending, sent, failed
     read_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

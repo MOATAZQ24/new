@@ -15,8 +15,10 @@ from app.core.security import (
 from app.core.response import success_response
 from app.models.user import User, CompanyMembership
 from app.models.company import Company
-from app.schemas.auth import LoginRequest, ChangePasswordRequest
+from app.schemas.auth import LoginRequest, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest
 from app.services.audit_service import log_audit
+from app.services import recovery_service
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -233,3 +235,59 @@ def change_password(payload: ChangePasswordRequest, current_user: User = Depends
     )
 
     return success_response(message="تم تغيير كلمة المرور بنجاح")
+
+
+# ── Self-Service Password Recovery ────────────────────────────────────
+
+class VerifyTokenBody(BaseModel):
+    token: str
+
+
+@router.post("/forgot-password")
+def forgot_password_endpoint(
+    payload: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Public self-service forgot password endpoint with enumeration protection."""
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent")
+    res = recovery_service.request_password_reset(
+        db=db,
+        identifier=payload.identifier,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    return success_response(message=res["message"])
+
+
+@router.post("/verify-reset-token")
+def verify_token_endpoint(
+    payload: VerifyTokenBody,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Validate reset token status and expiration before presenting the reset form."""
+    ip = request.client.host if request.client else None
+    recovery_service.verify_reset_token(db=db, raw_token=payload.token, ip_address=ip)
+    return success_response(message="رمز استعادة كلمة المرور صالح ويمكن المتابعة")
+
+
+@router.post("/reset-password")
+def reset_password_endpoint(
+    payload: ResetPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Execute password reset, invalidate token, and terminate all active sessions."""
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent")
+    res = recovery_service.reset_password_with_token(
+        db=db,
+        raw_token=payload.token,
+        new_password=payload.new_password,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    return success_response(message=res["message"])
+

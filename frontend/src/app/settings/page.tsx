@@ -111,6 +111,20 @@ export default function SettingsPage() {
               <div className="text-xs text-gray-400">n8n، Telegram، Google Gemini</div>
             </div>
           </a>
+          {user?.is_superadmin && (
+            <a
+              href="/settings/system"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#123D32] hover:shadow-md transition group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-lg">
+                🛡️
+              </div>
+              <div>
+                <div className="text-sm font-bold text-gray-900 group-hover:text-[#123D32] transition">صيانة النظام والتعافي (DR)</div>
+                <div className="text-xs text-gray-400">النسخ الاحتياطي، صحة السيرفر، السجلات</div>
+              </div>
+            </a>
+          )}
         </div>
 
         <WorkspaceSettings />

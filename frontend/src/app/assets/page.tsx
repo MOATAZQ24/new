@@ -1,5 +1,7 @@
 "use client";
 
+import { TablePreferences, PreferenceRow, useTablePreference } from "@/components/workspace/TablePreferences";
+import { useWorkspace } from "@/context/WorkspaceContext";
 import React, { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
@@ -8,8 +10,18 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
+const assetColumns = [
+  { id: "asset_code", label: "كود الأصل" }, { id: "asset_name", label: "اسم وموديل الأصل" },
+  { id: "asset_type", label: "النوع" }, { id: "serial_number", label: "الرقم التسلسلي" },
+  { id: "status", label: "الحالة" }, { id: "employee", label: "الموظف المعين له" },
+  { id: "qr", label: "رمز QR" }, { id: "custody", label: "إجراء العهدة" }, { id: "actions", label: "الإجراءات" },
+];
 export default function AssetsPage() {
   const { activeCompanyId, user } = useAuth();
+  const tablePreference = useTablePreference("/assets");
+  const { info: workspaceInfo } = useWorkspace();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -69,11 +81,12 @@ export default function AssetsPage() {
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      let url = `/assets?search=${encodeURIComponent(search)}`;
+      let url = `/assets?search=${encodeURIComponent(search)}&page=${page}&per_page=${tablePreference.per_page}&sort=${encodeURIComponent(tablePreference.sort)}`;
       if (typeFilter) url += `&asset_type=${typeFilter}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       const res = await api.get(url);
       setAssets(res.data || []);
+      setTotalPages(res.pagination?.total_pages || 1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -83,7 +96,13 @@ export default function AssetsPage() {
 
   useEffect(() => {
     fetchAssets();
-  }, [typeFilter, statusFilter, activeCompanyId]);
+  }, [typeFilter, statusFilter, activeCompanyId, page, tablePreference.per_page, tablePreference.sort]);
+
+  useEffect(() => {
+    if (!workspaceInfo) return;
+    const timer = setTimeout(() => { setSearch(tablePreference.filters.search || ""); setTypeFilter(tablePreference.filters.asset_type || ""); setStatusFilter(tablePreference.filters.status || ""); }, 0);
+    return () => clearTimeout(timer);
+  }, [workspaceInfo]);
 
   const copyToClipboard = (text: string) => {
     if (!text) return;
@@ -332,12 +351,14 @@ export default function AssetsPage() {
         </button>
       </div>
 
+      <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setPage(1); }} />
+      <div className="flex gap-4 items-center"><button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>السابق / Previous</button><bdi>{page} / {totalPages}</bdi><button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>التالي / Next</button></div>
       {/* Assets Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
             <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
-              <tr>
+              <PreferenceRow tableId="/assets" columns={assetColumns}>
                 <th className="p-3.5">كود الأصل</th>
                 <th className="p-3.5">اسم وموديل الأصل</th>
                 <th className="p-3.5">النوع</th>
@@ -347,11 +368,11 @@ export default function AssetsPage() {
                 <th className="p-3.5 text-center">رمز QR</th>
                 <th className="p-3.5 text-center">إجراء العهدة</th>
                 <th className="p-3.5 text-center">الإجراءات</th>
-              </tr>
+              </PreferenceRow>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {assets.map((ast) => (
-                <tr key={ast.id} className="hover:bg-slate-50/50 transition-colors">
+                <PreferenceRow tableId="/assets" columns={assetColumns} key={ast.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="p-3.5 font-mono font-bold text-[#187A5A]">
                     {ast.asset_code}
                   </td>
@@ -451,7 +472,7 @@ export default function AssetsPage() {
                       )}
                     </div>
                   </td>
-                </tr>
+                </PreferenceRow>
               ))}
             </tbody>
           </table>

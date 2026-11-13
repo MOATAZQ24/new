@@ -2,7 +2,7 @@
 
 from app.models.base import Base, UUIDMixin, TimestampMixin
 from app.models.company import Company, Branch, Department
-from app.models.user import Employee, User, Role, UserRole, CompanyMembership, UserSession
+from app.models.user import Employee, User, Role, UserRole, CompanyMembership, UserSession, PasswordResetToken
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
 from app.models.subscription import ThirdPartySubscription
@@ -29,6 +29,7 @@ __all__ = [
     "UserRole",
     "CompanyMembership",
     "UserSession",
+    "PasswordResetToken",
     "TechnicalAsset",
     "AssetCustody",
     "ITInfrastructure",

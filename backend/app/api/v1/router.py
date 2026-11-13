@@ -43,5 +43,6 @@ api_router.include_router(customization.router)
 api_router.include_router(digital_assets.router)
 api_router.include_router(telegram.router)
 
-from app.api.v1.endpoints import workspace
+from app.api.v1.endpoints import workspace, system
 api_router.include_router(workspace.router)
+api_router.include_router(system.router)

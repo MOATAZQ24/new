@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6">
+      <DashboardWorkspace>
       {/* Page Header */}
       <div style={{ order: -2 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
@@ -58,6 +58,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
+      </div>
         {/* Quick Action Buttons */}
         <DashboardWidget id="quick_actions" allowed={data?.available_widgets}>
         <div className="flex flex-wrap items-center gap-2">
@@ -91,7 +92,6 @@ export default function DashboardPage() {
           </Link>
         </div>
         </DashboardWidget>
-      </div>
 
       {failure && <div role="alert" style={{ order: -1 }}>{failure} <button onClick={() => void fetchDashboard()}>إعادة المحاولة / Retry</button></div>}
       {loading && <p role="status" style={{ order: -1 }}>تحميل لوحة المعلومات…</p>}
@@ -336,7 +336,7 @@ export default function DashboardPage() {
           </div>
         </div>
         </DashboardWidget>
-      </div>
+      </DashboardWorkspace>
     </DashboardLayout>
   );
 }
@@ -346,4 +346,10 @@ function DashboardWidget({ id, allowed, children }: { id: string; allowed?: stri
   const index = draft.widgets.findIndex(w => w.id === id);
   if (!allowed?.includes(id) || index < 0 || !draft.widgets[index].enabled) return null;
   return <section style={{ order: index }} data-widget={id}>{children}</section>;
+}
+
+function DashboardWorkspace({ children }: { children: React.ReactNode }) {
+  const { draft } = useWorkspace();
+  const order = (child: React.ReactNode) => React.isValidElement<{ id?: string }>(child) && child.props.id ? draft.widgets.findIndex(w => w.id === child.props.id) : -1;
+  return <div className="flex flex-col gap-6">{React.Children.toArray(children).sort((a, b) => order(a) - order(b))}</div>;
 }

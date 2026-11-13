@@ -58,6 +58,7 @@ def _migrate_columns():
             ("tasks", "reviewer_id", "CHAR(32)", "UUID"),
             ("tasks", "review_notes", "TEXT", "TEXT"),
             ("tasks", "rework_count", "INTEGER DEFAULT 0", "INTEGER DEFAULT 0"),
+            ("notifications", "priority", "VARCHAR(50) DEFAULT 'Normal'", "VARCHAR(50) DEFAULT 'Normal'"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

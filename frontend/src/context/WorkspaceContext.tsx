@@ -68,6 +68,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     const apply = () => {
       const dark = a.theme === "dark" || (a.theme === "system" && media.matches);
       root.dataset.theme = dark ? "dark" : "light";
+      root.classList.toggle("dark", dark);
       const background = dark ? "#101B19" : a.background;
       const surface = dark ? "#182824" : a.surface;
       const values: Record<string, string> = {
