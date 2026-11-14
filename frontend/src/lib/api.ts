@@ -16,6 +16,69 @@ export interface ApiResponse<T = any> {
   };
 }
 
+export class ApiError extends Error {
+  status: number;
+  data: any;
+  response: { status: number; data: any };
+
+  constructor(message: string, status: number, data: any) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+    this.response = { status, data };
+  }
+}
+
+export function parseApiErrorMessage(jsonResult: any, status: number = 500): string {
+  if (!jsonResult) {
+    return `خطأ في الخادم (رمز الحالة: ${status})`;
+  }
+
+  // 1. Plain string detail
+  if (typeof jsonResult.detail === "string" && jsonResult.detail.trim()) {
+    return jsonResult.detail;
+  }
+
+  // 2. Array of validation errors (Pydantic / FastAPI 422)
+  if (Array.isArray(jsonResult.detail) && jsonResult.detail.length > 0) {
+    const messages = jsonResult.detail.map((err: any) => {
+      if (typeof err === "string") return err;
+      if (typeof err === "object" && err !== null) {
+        const fieldLoc = Array.isArray(err.loc)
+          ? err.loc.filter((segment: any) => segment !== "body").join(".")
+          : (err.loc ? String(err.loc) : "");
+        const msg = err.msg || err.message || JSON.stringify(err);
+        return fieldLoc ? `${fieldLoc}: ${msg}` : msg;
+      }
+      return String(err);
+    });
+    return messages.join(" | ");
+  }
+
+  // 3. Object detail
+  if (typeof jsonResult.detail === "object" && jsonResult.detail !== null) {
+    return jsonResult.detail.message || jsonResult.detail.msg || JSON.stringify(jsonResult.detail);
+  }
+
+  // 4. Plain string message
+  if (typeof jsonResult.message === "string" && jsonResult.message.trim()) {
+    return jsonResult.message;
+  }
+
+  // 5. Object message
+  if (typeof jsonResult.message === "object" && jsonResult.message !== null) {
+    return jsonResult.message.detail || JSON.stringify(jsonResult.message);
+  }
+
+  // 6. Generic error key
+  if (typeof jsonResult.error === "string" && jsonResult.error.trim()) {
+    return jsonResult.error;
+  }
+
+  return `حدث خطأ أثناء تنفيذ الطلب (رمز الحالة: ${status})`;
+}
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
@@ -55,13 +118,13 @@ export async function apiRequest<T = any>(
     if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login") && !isLoginEndpoint) {
       window.location.href = "/login";
     }
-    const errorMsg = jsonResult?.detail || jsonResult?.message || "جلسة العمل منتهية أو غير صالحة";
-    throw new Error(errorMsg);
+    const errorMsg = parseApiErrorMessage(jsonResult, 401) || "جلسة العمل منتهية أو غير صالحة";
+    throw new ApiError(errorMsg, 401, jsonResult);
   }
 
   if (!response.ok) {
-    const errorMsg = jsonResult?.detail || jsonResult?.message || "حدث خطأ أثناء تنفيذ الطلب";
-    throw new Error(errorMsg);
+    const errorMsg = parseApiErrorMessage(jsonResult, response.status);
+    throw new ApiError(errorMsg, response.status, jsonResult);
   }
 
   return jsonResult as ApiResponse<T>;

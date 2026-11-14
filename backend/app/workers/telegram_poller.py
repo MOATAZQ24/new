@@ -168,8 +168,47 @@ def send_telegram_reply(bot_token: str, chat_id: str, text: str, reply_markup: O
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             pass
+    except urllib.error.HTTPError as e:
+        err_msg = ""
+        try:
+            err_msg = e.read().decode("utf-8")
+        except Exception:
+            pass
+        if "can't parse entities" in err_msg.lower() or "entity" in err_msg.lower():
+            try:
+                payload.pop("parse_mode", None)
+                req2 = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS-Poller/1.0"},
+                )
+                with urllib.request.urlopen(req2, timeout=10) as resp:
+                    pass
+                return
+            except Exception:
+                pass
+        logger.error(f"Failed to send Telegram reply to chat {chat_id}: {e} - {err_msg}")
     except Exception as e:
         logger.error(f"Failed to send Telegram reply to chat {chat_id}: {e}")
+
+
+def answer_callback_query(bot_token: str, callback_query_id: str, text: Optional[str] = None) -> None:
+    """Acknowledge Telegram callback query to dismiss loading spinner."""
+    url = f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery"
+    payload = {"callback_query_id": callback_query_id}
+    if text:
+        payload["text"] = text
+    try:
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS-Poller/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            pass
+    except Exception as e:
+        logger.debug(f"Failed to answer callback query {callback_query_id}: {e}")
 
 
 def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any]) -> None:
@@ -183,6 +222,9 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
         action_str = cb.get("data", "")
 
         logger.info(f"Processing callback query '{action_str}' from Telegram User {user_id}")
+        if cb_id:
+            answer_callback_query(bot_token, cb_id, "تم استلام الإجراء")
+
         res = execute_bot_action(
             db=db,
             telegram_user_id=user_id,
@@ -220,9 +262,11 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
                         telegram_chat_id=chat_id,
                         telegram_username=username,
                     )
-                    emp_name = link.employee.full_name if link.employee else "الموظف"
+                    emp_name = link.get("employee_name", "الموظف") if isinstance(link, dict) else (link.employee.full_name if getattr(link, "employee", None) else "الموظف")
+                    company_name = link.get("company_name", "الشركة") if isinstance(link, dict) else "الشركة"
                     welcome_msg = (
-                        f"🎉 <b>تم ربط حسابك بنجاح يا {emp_name}!</b>\n\n"
+                        f"🎉 <b>تم ربط حسابك بنجاح يا {emp_name}!</b>\n"
+                        f"🏢 الشركة: <b>{company_name}</b>\n\n"
                         f"أهلاً بك في بوت <b>Investor Gate OS</b> التشغيلي.\n"
                         f"ستصلك إشعارات وتكليفات المهام التشغيلية مباشرة هنا مع إمكانية قبولها، وبدء العمل، ورفعها للمراجعة."
                     )

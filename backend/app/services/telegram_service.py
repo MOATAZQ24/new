@@ -55,8 +55,30 @@ def get_telegram_config(db: Session, company_id: uuid.UUID) -> Tuple[bool, str, 
     return is_configured, bot_token, bot_username
 
 
+def delete_telegram_webhook(bot_token: str, drop_pending_updates: bool = False) -> Dict[str, Any]:
+    """Delete any registered webhook so getUpdates long-polling can operate without 409 Conflict."""
+    clean_token = bot_token.strip()
+    if not clean_token:
+        return {"success": False, "message": "Bot token missing"}
+
+    url = f"https://api.telegram.org/bot{clean_token}/deleteWebhook"
+    payload = json.dumps({"drop_pending_updates": drop_pending_updates}).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS/1.0"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return {"success": bool(data.get("ok")), "message": data.get("description", "")}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
 def test_telegram_connection(bot_token: str) -> Dict[str, Any]:
-    """Verify bot token validity by calling Telegram getMe API."""
+    """Verify bot token validity by calling Telegram getMe API and clearing any conflicting webhook."""
     clean_token = bot_token.strip()
     if not clean_token:
         return {"success": False, "message": "لم يتم إدخال رمز Bot Token"}
@@ -73,6 +95,10 @@ def test_telegram_connection(bot_token: str) -> Dict[str, Any]:
                 result = data.get("result", {})
                 bot_user = result.get("username", "")
                 bot_name = result.get("first_name", "")
+
+                # Automatically clear any active webhook to allow seamless long-polling
+                delete_telegram_webhook(clean_token)
+
                 return {
                     "success": True,
                     "message": f"تم التحقق بنجاح! البوت @{bot_user} ({bot_name}) متصل وجاهز للعمل.",
@@ -90,7 +116,7 @@ def test_telegram_connection(bot_token: str) -> Dict[str, Any]:
             }
     except urllib.error.HTTPError as e:
         if e.code == 401:
-            return {"success": False, "message": "رمز البوت غير صالح أو منتهي الصلاحية (401 Unauthorized)"}
+            return {"success": False, "message": "رمز البوت غير صالح أو منتهي الصلاحية (401 Unauthorized). تأكد من نسخ الرمز بالكامل من @BotFather."}
         return {"success": False, "message": f"خطأ في خادم Telegram (HTTP {e.code}): {e.reason}"}
     except Exception as e:
         return {"success": False, "message": f"تعذر الاتصال بـ Telegram API: {str(e)}"}
@@ -125,7 +151,7 @@ def send_telegram_direct_message(bot_token: str, chat_id: str, text: str) -> Dic
             if data.get("ok"):
                 return {
                     "success": True,
-                    "message": "تم إرسال رسالة الإشعار التجريبية بنجاح إلى تليجرام!",
+                    "message": "تم إرسال رسالة الإشعار بنجاح إلى تليجرام!",
                     "message_id": data.get("result", {}).get("message_id"),
                 }
             return {
@@ -138,6 +164,39 @@ def send_telegram_direct_message(bot_token: str, chat_id: str, text: str) -> Dic
             desc = err_body.get("description", e.reason)
         except Exception:
             desc = e.reason
+
+        # Retry without HTML formatting if entity parsing failed
+        if "can't parse entities" in desc.lower() or "entity" in desc.lower():
+            try:
+                import re
+                plain_text = re.sub(r"<[^<]+?>", "", text)
+                plain_req = urllib.request.Request(
+                    url,
+                    data=json.dumps({"chat_id": clean_chat, "text": plain_text}).encode("utf-8"),
+                    headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS/1.0"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(plain_req, timeout=10.0) as resp2:
+                    data2 = json.loads(resp2.read().decode("utf-8"))
+                    if data2.get("ok"):
+                        return {
+                            "success": True,
+                            "message": "تم إرسال رسالة الإشعار بنجاح إلى تليجرام (كنص عادي)!",
+                            "message_id": data2.get("result", {}).get("message_id"),
+                        }
+            except Exception:
+                pass
+
+        if "chat not found" in desc.lower():
+            return {
+                "success": False,
+                "message": "تعذر إرسال الإشعار: لم يتم العثور على المحادثة (Chat not found). تأكد أن المستخدم قام ببدء المحادثة مع البوت بالضغط على /start أولاً، وأن معرّف Chat ID رقمي وصحيح.",
+            }
+        if "bot was blocked by the user" in desc.lower():
+            return {
+                "success": False,
+                "message": "تعذر إرسال الإشعار: قام المستخدم بحظر البوت (Bot was blocked by the user).",
+            }
         return {"success": False, "message": f"خطأ في إرسال تليجرام ({e.code}): {desc}"}
     except Exception as e:
         return {"success": False, "message": f"تعذر إرسال الإشعار: {str(e)}"}

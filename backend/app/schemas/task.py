@@ -34,7 +34,7 @@ class TaskBase(BaseModel):
 
 
 class TaskCreate(TaskBase):
-    company_id: uuid.UUID
+    company_id: Optional[uuid.UUID] = None
     branch_id: Optional[uuid.UUID] = None
     assigned_to_id: Optional[uuid.UUID] = None
     related_asset_id: Optional[uuid.UUID] = None

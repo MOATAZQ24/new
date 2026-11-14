@@ -44,19 +44,19 @@ def list_tasks(
     target_cid = company_id or active_cid
     query = db.query(Task).filter(Task.company_id == target_cid)
 
-    if filter_mode == "my" and current_user.employee_id:
+    if filter_mode and isinstance(filter_mode, str) and filter_mode == "my" and current_user.employee_id:
         query = query.filter(Task.assigned_to_id == current_user.employee_id)
     elif assigned_to_id:
         query = query.filter(Task.assigned_to_id == assigned_to_id)
 
     if branch_id:
         query = query.filter(Task.branch_id == branch_id)
-    if priority:
-        query = query.filter(Task.priority == priority)
-    if status_filter:
-        query = query.filter(Task.status == status_filter)
-    if search:
-        s = f"%{search}%"
+    if priority and isinstance(priority, str) and priority.strip():
+        query = query.filter(Task.priority == priority.strip())
+    if status_filter and isinstance(status_filter, str) and status_filter.strip():
+        query = query.filter(Task.status == status_filter.strip())
+    if search and isinstance(search, str) and search.strip():
+        s = f"%{search.strip()}%"
         query = query.filter((Task.title.ilike(s)) | (Task.description.ilike(s)))
 
     total = query.count()

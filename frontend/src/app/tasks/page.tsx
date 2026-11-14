@@ -69,6 +69,8 @@ export default function TasksPage() {
 
   // Modals
   const [createModal, setCreateModal] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
   const [newComment, setNewComment] = useState("");
@@ -164,17 +166,20 @@ export default function TasksPage() {
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreateLoading(true);
+    setCreateError(null);
     try {
       await api.post("/tasks", {
-        title: formData.title,
-        description: formData.description || null,
+        company_id: currentCompany?.id || undefined,
+        title: formData.title.trim(),
+        description: formData.description?.trim() || null,
         assigned_to_id: formData.assigned_to_id || null,
         priority: formData.priority,
         status: formData.status,
         start_date: formData.start_date || null,
         due_date: formData.due_date || null,
         related_asset_id: formData.related_asset_id || null,
-        notes: formData.notes || null,
+        notes: formData.notes?.trim() || null,
       });
       setCreateModal(false);
       setFormData({
@@ -189,8 +194,11 @@ export default function TasksPage() {
         notes: "",
       });
       loadTasks();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create task", err);
+      setCreateError(err.message || "حدث خطأ أثناء إنشاء المهمة");
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -334,7 +342,7 @@ export default function TasksPage() {
             </p>
           </div>
           <button
-            onClick={() => setCreateModal(true)}
+            onClick={() => { setCreateError(null); setCreateModal(true); }}
             className="inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
@@ -563,6 +571,12 @@ export default function TasksPage() {
           maxWidth="max-w-2xl"
         >
           <form onSubmit={handleCreateTask} className="space-y-4">
+            {createError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+                <span className="font-bold shrink-0">⚠️ خطأ:</span>
+                <span className="leading-relaxed">{createError}</span>
+              </div>
+            )}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 عنوان المهمة <span className="text-red-500">*</span>
@@ -684,9 +698,11 @@ export default function TasksPage() {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-sm font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg shadow-sm"
+                disabled={createLoading}
+                className="px-5 py-2 text-sm font-medium text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm flex items-center gap-2"
               >
-                حفظ وإنشاء المهمة
+                {createLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
+                {createLoading ? "جاري الحفظ..." : "حفظ وإنشاء المهمة"}
               </button>
             </div>
           </form>
