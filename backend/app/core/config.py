@@ -4,6 +4,9 @@ from typing import List
 from pydantic_settings import BaseSettings
 
 
+# Resolve root database path deterministically
+_DEFAULT_DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "it_ops.db")).replace("\\", "/")
+
 class Settings(BaseSettings):
     APP_NAME: str = "Investor Gate IT Operations Management System"
     APP_VERSION: str = "1.0.0"
@@ -12,11 +15,12 @@ class Settings(BaseSettings):
     # Database: Supports PostgreSQL and SQLite
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "sqlite:///./it_ops.db"
+        f"sqlite:///{_DEFAULT_DB_FILE}"
     )
 
     SECRET_KEY: str = os.getenv("SECRET_KEY", "investorgate-secret-key-production-ready-2026")
     SESSION_EXPIRE_HOURS: int = 24
+    SESSION_COOKIE_SECURE: bool = False
     CORS_ORIGINS: str = '["http://localhost:3000","http://127.0.0.1:3000","http://localhost:8000","http://127.0.0.1:8000"]'
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "./data/uploads")
     RATE_LIMIT_LOGIN_ATTEMPTS: int = 5
@@ -35,9 +39,12 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         try:
-            return json.loads(self.CORS_ORIGINS)
+            origins = json.loads(self.CORS_ORIGINS)
+            if not isinstance(origins, list) or any(not isinstance(o, str) or o == "*" for o in origins):
+                raise ValueError("CORS_ORIGINS must be an explicit JSON list of origins")
+            return origins
         except Exception:
-            return ["*"]
+            return []
 
     class Config:
         env_file = ".env"

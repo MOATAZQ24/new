@@ -125,3 +125,49 @@ class TelegramActionLog(UUIDMixin, Base):
 
     company = relationship("Company", foreign_keys=[company_id])
     task = relationship("Task", foreign_keys=[task_id])
+
+
+class TelegramBotMenuConfig(UUIDMixin, TimestampMixin, Base):
+    __tablename__ = "telegram_menu_configs"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    action: Mapped[str] = mapped_column(String(255), nullable=False)  # cmd:tasks, cmd:tickets, cmd:help, url:..., act:...
+    menu_type: Mapped[str] = mapped_column(String(50), default="reply_keyboard", nullable=False)  # reply_keyboard, inline_button, command
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    icon: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    description_ar: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    company = relationship("Company", foreign_keys=[company_id])
+
+    __table_args__ = (
+        Index("idx_telegram_menu_sort", "company_id", "sort_order"),
+    )
+
+
+class TelegramMessageTemplate(UUIDMixin, TimestampMixin, Base):
+    __tablename__ = "telegram_message_templates"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    template_key: Mapped[str] = mapped_column(String(100), nullable=False, index=True)  # welcome, link_success, task_assigned, task_status_changed
+    title_ar: Mapped[str] = mapped_column(String(200), nullable=False)
+    content_ar: Mapped[str] = mapped_column(Text, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    company = relationship("Company", foreign_keys=[company_id])
+
+    __table_args__ = (
+        Index("idx_telegram_template_key", "company_id", "template_key", unique=True),
+    )
+

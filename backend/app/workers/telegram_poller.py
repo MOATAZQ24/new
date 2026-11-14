@@ -25,10 +25,13 @@ from app.core.config import settings
 from app.models.company import Company
 from app.models.integration import IntegrationConfig
 from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog
+from app.models.ticket import HelpDeskTicket
+from app.models.notification import Notification
 from app.services.telegram_service import (
     dispatch_outbox_notifications,
     execute_bot_action,
     verify_telegram_link,
+    build_telegram_reply_keyboard,
 )
 
 logging.basicConfig(
@@ -248,6 +251,14 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
         if not text:
             return
 
+        # Resolve employee link if exists for company keyboard
+        user_link = db.query(TelegramUserLink).filter(
+            TelegramUserLink.telegram_user_id == user_id,
+            TelegramUserLink.is_verified == True,
+        ).first()
+        company_id = user_link.company_id if user_link else None
+        reply_kb = build_telegram_reply_keyboard(db, company_id) if company_id else None
+
         # /start or /start <token>
         if text.startswith("/start"):
             parts = text.split(" ")
@@ -264,13 +275,18 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
                     )
                     emp_name = link.get("employee_name", "الموظف") if isinstance(link, dict) else (link.employee.full_name if getattr(link, "employee", None) else "الموظف")
                     company_name = link.get("company_name", "الشركة") if isinstance(link, dict) else "الشركة"
+                    
+                    # Fetch fresh reply keyboard after linking
+                    fresh_kb = build_telegram_reply_keyboard(db, link.company_id if hasattr(link, 'company_id') else company_id)
+
                     welcome_msg = (
                         f"🎉 <b>تم ربط حسابك بنجاح يا {emp_name}!</b>\n"
-                        f"🏢 الشركة: <b>{company_name}</b>\n\n"
+                        f"🏢 المنشأة: <b>{company_name}</b>\n\n"
                         f"أهلاً بك في بوت <b>Investor Gate OS</b> التشغيلي.\n"
-                        f"ستصلك إشعارات وتكليفات المهام التشغيلية مباشرة هنا مع إمكانية قبولها، وبدء العمل، ورفعها للمراجعة."
+                        f"ستصلك إشعارات وتكليفات المهام التشغيلية مباشرة هنا مع إمكانية التفاعل الفوري.\n\n"
+                        f"💡 استخدم أزرار القائمة أدناه للوصول السريع إلى مهامك وتذاكرك."
                     )
-                    send_telegram_reply(bot_token, chat_id, welcome_msg)
+                    send_telegram_reply(bot_token, chat_id, welcome_msg, reply_markup=fresh_kb)
                 except Exception as e:
                     send_telegram_reply(bot_token, chat_id, f"⚠️ <b>تعذر ربط الحساب:</b> {str(e)}")
             else:
@@ -278,15 +294,18 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
                     bot_token,
                     chat_id,
                     "👋 <b>مرحباً بك في بوت Investor Gate OS التشغيلي!</b>\n\n"
-                    "لربط حسابك الوظيفي، يرجى الدخول على لوحة النظام -> الإعدادات -> التكامل -> Telegram -> توليد رمز الربط، ثم الضغط على رابط الربط السريع.\n\n"
+                    "لربط حسابك الوظيفي، يرجى الدخول على لوحة النظام -> الإعدادات -> التكاملات -> Telegram -> توليد رمز الربط، ثم النقر على رابط الربط السريع.\n\n"
                     "الأوامر المتاحة:\n"
                     "📋 /tasks - عرض مهامي التشغيلية النشطة\n"
+                    "🎫 /tickets - عرض تذاكري النشطة\n"
+                    "🔔 /notifications - عرض أحدث الإشعارات\n"
                     "ℹ️ /help - المساعدة والدعم",
+                    reply_markup=reply_kb,
                 )
             return
 
-        # /tasks - list my tasks
-        if text.startswith("/tasks") or text == "مهامي":
+        # /tasks or 'مهامي'
+        if text.startswith("/tasks") or "مهامي" in text:
             res = execute_bot_action(
                 db=db,
                 telegram_user_id=user_id,
@@ -294,18 +313,82 @@ def process_telegram_update(db: Session, bot_token: str, update: Dict[str, Any])
                 action_str="cmd:my_tasks",
                 ip_address="telegram_long_polling",
             )
-            send_telegram_reply(bot_token, chat_id, res.get("message", "لا توجد مهام نشطة"))
+            send_telegram_reply(bot_token, chat_id, res.get("message", "لا توجد مهام نشطة"), reply_markup=reply_kb)
             return
 
-        # /help
-        if text.startswith("/help") or text == "مساعدة":
+        # /tickets or 'تذاكري'
+        if text.startswith("/tickets") or "تذاكري" in text:
+            if not user_link:
+                send_telegram_reply(bot_token, chat_id, "⚠️ حساب التليجرام غير مرتبط بأي موظف معتمد في النظام.")
+                return
+            tickets = (
+                db.query(HelpDeskTicket)
+                .filter(
+                    HelpDeskTicket.company_id == user_link.company_id,
+                    HelpDeskTicket.status.in_(["New", "In Progress", "Pending Approval"]),
+                )
+                .order_by(HelpDeskTicket.created_at.desc())
+                .limit(5)
+                .all()
+            )
+            if not tickets:
+                send_telegram_reply(bot_token, chat_id, "🎉 ليس لديك أي تذاكر دعم فني نشطة حالياً!", reply_markup=reply_kb)
+            else:
+                t_lines = [f"🎫 <b>تذاكر الدعم الفني النشطة ({len(tickets)}):</b>\n"]
+                for i, tk in enumerate(tickets, 1):
+                    p_badge = "🔴" if tk.priority in ("Urgent", "Critical") else ("🟠" if tk.priority == "High" else "🟡")
+                    t_lines.append(f"{i}. {p_badge} <b>#{tk.ticket_number or i}: {tk.title}</b>\n   الحالة: {tk.status} | القسم: {tk.category or 'عام'}")
+                send_telegram_reply(bot_token, chat_id, "\n".join(t_lines), reply_markup=reply_kb)
+            return
+
+        # /notifications or 'الإشعارات'
+        if text.startswith("/notifications") or "الإشعارات" in text or "اشعارات" in text:
+            if not user_link:
+                send_telegram_reply(bot_token, chat_id, "⚠️ حساب التليجرام غير مرتبط بأي موظف معتمد في النظام.")
+                return
+            notifs = (
+                db.query(Notification)
+                .filter(Notification.company_id == user_link.company_id)
+                .order_by(Notification.created_at.desc())
+                .limit(5)
+                .all()
+            )
+            if not notifs:
+                send_telegram_reply(bot_token, chat_id, "🔔 لا توجد إشعارات جديدة حالياً.", reply_markup=reply_kb)
+            else:
+                n_lines = [f"🔔 <b>أحدث الإشعارات ({len(notifs)}):</b>\n"]
+                for i, n in enumerate(notifs, 1):
+                    date_str = n.created_at.strftime("%Y-%m-%d %H:%M") if n.created_at else ""
+                    n_lines.append(f"{i}. <b>{n.title}</b>\n   {n.message}\n   🕒 {date_str}")
+                send_telegram_reply(bot_token, chat_id, "\n".join(n_lines), reply_markup=reply_kb)
+            return
+
+        # 'بوابة النظام' or /portal
+        if "بوابة النظام" in text or text.startswith("/portal"):
+            frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+            send_telegram_reply(
+                bot_token,
+                chat_id,
+                f"🌐 <b>بوابة Investor Gate OS الرقمية:</b>\n\n"
+                f"يمكنك فتح لوحة التحكم السحابية وإدارة جميع العمليات عبر الرابط:\n"
+                f"{frontend_url}\n\n"
+                f"تسجيل الدخول متاح للمستخدمين المصرح لهم عبر بروتوكولات الأمان المؤسسية.",
+                reply_markup=reply_kb,
+            )
+            return
+
+        # /help or 'مساعدة'
+        if text.startswith("/help") or "مساعدة" in text:
             help_text = (
                 "ℹ️ <b>دليل استخدام بوت Investor Gate OS</b>\n\n"
-                "• <b>/tasks</b>: استعراض المهام المسندة إليك وحالتها.\n"
-                "• <b>الأزرار التفاعلية</b>: عند إسناد مهمة جديدة لك، يمكنك الضغط مباشرة على [قبول المهمة] أو [بدء التنفيذ].\n"
-                "• <b>الربط الأمني</b>: يتم ربط حسابك برمز مشفر أحادي الاستخدام ينتهي تلقائياً بعد 30 دقيقة."
+                "• <b>📋 مهامي (/tasks)</b>: استعراض المهام التشغيلية المسندة إليك وتحديث حالتها.\n"
+                "• <b>🎫 تذاكري (/tickets)</b>: استعراض تذاكر الدعم الفني الخاصة بك.\n"
+                "• <b>🔔 الإشعارات (/notifications)</b>: استعراض أحدث التنبيهات.\n"
+                "• <b>🌐 بوابة النظام</b>: الوصول المباشر إلى المنصة عبر المتصفح.\n"
+                "• <b>الأزرار التفاعلية</b>: عند استلام مهمة جديدة يمكنك الضغط فوراً على [قبول المهمة] أو [بدء التنفيذ].\n"
+                "• <b>الربط الآمن</b>: يتم ربط حسابك برمز مشفر أحادي الاستخدام عبر لوحة التحكم."
             )
-            send_telegram_reply(bot_token, chat_id, help_text)
+            send_telegram_reply(bot_token, chat_id, help_text, reply_markup=reply_kb)
             return
 
 
@@ -368,4 +451,30 @@ def run_poller_loop(poll_interval: int = 3):
 
 
 if __name__ == "__main__":
-    run_poller_loop()
+    # OS file locks are released on exit/crash, unlike a stale PID marker.
+    # All supported launch commands use this entry point.
+    lock_path = os.path.join(os.path.dirname(__file__), ".telegram_poller.lock")
+    with open(lock_path, "a+b") as worker_lock:
+        worker_lock.seek(0)
+        if not worker_lock.read(1):
+            worker_lock.write(b"0")
+            worker_lock.flush()
+        worker_lock.seek(0)
+        try:
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(worker_lock.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(worker_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            logger.error("Another Telegram poller already holds the worker lock; exiting.")
+            sys.exit(1)
+        try:
+            run_poller_loop()
+        finally:
+            worker_lock.seek(0)
+            if os.name == "nt":
+                msvcrt.locking(worker_lock.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl.flock(worker_lock.fileno(), fcntl.LOCK_UN)

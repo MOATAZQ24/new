@@ -21,7 +21,13 @@ import json
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
-from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog
+from app.models.telegram import (
+    TelegramUserLink,
+    NotificationOutbox,
+    TelegramActionLog,
+    TelegramBotMenuConfig,
+    TelegramMessageTemplate,
+)
 from app.models.task import Task
 from app.models.user import Employee, User
 from app.models.integration import IntegrationConfig
@@ -333,6 +339,21 @@ def verify_telegram_link(
     if link.token_expires_at < now:
         raise ValueError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد من لوحة التحكم")
 
+    # Strict 1:1 Identity Binding:
+    # If this telegram account was previously linked to another employee in the company,
+    # revoke the previous link immediately to prevent cross-account notifications.
+    old_links = db.query(TelegramUserLink).filter(
+        TelegramUserLink.company_id == link.company_id,
+        TelegramUserLink.telegram_user_id == str(telegram_user_id),
+        TelegramUserLink.id != link.id,
+    ).all()
+    for old in old_links:
+        old.is_verified = False
+        old.telegram_chat_id = None
+        old.telegram_user_id = None
+        old.telegram_username = None
+        old.linked_at = None
+
     # Bind telegram details
     link.telegram_user_id = str(telegram_user_id)
     link.telegram_chat_id = str(telegram_chat_id)
@@ -346,6 +367,22 @@ def verify_telegram_link(
     emp_name = link.employee.full_name if link.employee else "الموظف"
     company_name = link.company.company_name_ar if link.company else "الشركة"
 
+    # Log verification action
+    action_log = TelegramActionLog(
+        company_id=link.company_id,
+        telegram_user_id=str(telegram_user_id),
+        telegram_chat_id=str(telegram_chat_id),
+        action="verify_telegram_link",
+        status="Success",
+        details={
+            "employee_id": str(link.employee_id),
+            "employee_name": emp_name,
+            "previous_links_revoked": len(old_links),
+        },
+    )
+    db.add(action_log)
+    db.commit()
+
     return {
         "success": True,
         "employee_name": emp_name,
@@ -358,16 +395,32 @@ def verify_telegram_link(
 
 
 def unlink_employee_telegram(db: Session, employee_id: uuid.UUID) -> bool:
-    """Unlink an employee from Telegram."""
+    """Unlink an employee from Telegram, revoking bot access immediately without deleting employee or audit history."""
     link = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee_id).first()
     if not link:
         return False
+
+    old_chat_id = link.telegram_chat_id
+    old_tg_user = link.telegram_user_id
 
     link.is_verified = False
     link.telegram_chat_id = None
     link.telegram_user_id = None
     link.telegram_username = None
     link.linked_at = None
+    # Reset token to prevent replay
+    link.verification_token = secrets.token_urlsafe(24)
+
+    # Log unlink action
+    action_log = TelegramActionLog(
+        company_id=link.company_id,
+        telegram_user_id=old_tg_user or "unknown",
+        telegram_chat_id=old_chat_id,
+        action="unlink_employee",
+        status="Success",
+        details={"employee_id": str(employee_id), "unlinked_at": datetime.utcnow().isoformat()},
+    )
+    db.add(action_log)
     db.commit()
     return True
 
@@ -876,3 +929,219 @@ def execute_bot_action(
         "new_status": task.status,
         "message": response_msg,
     }
+
+
+# ── Bot Menu Builder & Reply Keyboard Engine ─────────────────────────────────
+
+def get_or_create_default_menu_configs(db: Session, company_id: uuid.UUID) -> List[TelegramBotMenuConfig]:
+    """Retrieve existing or seed default menu items for the company."""
+    existing = (
+        db.query(TelegramBotMenuConfig)
+        .filter(TelegramBotMenuConfig.company_id == company_id)
+        .order_by(TelegramBotMenuConfig.sort_order.asc())
+        .all()
+    )
+    if existing:
+        return existing
+
+    defaults = [
+        {
+            "label": "📋 مهامي",
+            "action": "cmd:my_tasks",
+            "menu_type": "reply_keyboard",
+            "sort_order": 1,
+            "is_enabled": True,
+            "icon": "📋",
+            "description_ar": "استعراض المهام التشغيلية المسندة إليك",
+        },
+        {
+            "label": "🎫 تذاكري",
+            "action": "cmd:tickets",
+            "menu_type": "reply_keyboard",
+            "sort_order": 2,
+            "is_enabled": True,
+            "icon": "🎫",
+            "description_ar": "استعراض تذاكر الدعم الفني الخاصة بك",
+        },
+        {
+            "label": "🔔 الإشعارات",
+            "action": "cmd:notifications",
+            "menu_type": "reply_keyboard",
+            "sort_order": 3,
+            "is_enabled": True,
+            "icon": "🔔",
+            "description_ar": "استعراض أحدث التنبيهات والإشعارات",
+        },
+        {
+            "label": "🌐 بوابة النظام",
+            "action": "url:web_portal",
+            "menu_type": "inline_button",
+            "sort_order": 4,
+            "is_enabled": True,
+            "icon": "🌐",
+            "description_ar": "فتح لوحة تحكم المنصة في المتصفح",
+        },
+        {
+            "label": "❓ المساعدة",
+            "action": "cmd:help",
+            "menu_type": "reply_keyboard",
+            "sort_order": 5,
+            "is_enabled": True,
+            "icon": "❓",
+            "description_ar": "دليل استخدام أوامر البوت والدعم",
+        },
+    ]
+
+    created = []
+    for d in defaults:
+        item = TelegramBotMenuConfig(company_id=company_id, **d)
+        db.add(item)
+        created.append(item)
+
+    db.commit()
+    for item in created:
+        db.refresh(item)
+    return created
+
+
+def build_telegram_reply_keyboard(db: Session, company_id: uuid.UUID) -> Optional[Dict[str, Any]]:
+    """Build dynamic reply keyboard markup for a company based on enabled menu items."""
+    items = (
+        db.query(TelegramBotMenuConfig)
+        .filter(
+            TelegramBotMenuConfig.company_id == company_id,
+            TelegramBotMenuConfig.menu_type == "reply_keyboard",
+            TelegramBotMenuConfig.is_enabled == True,
+        )
+        .order_by(TelegramBotMenuConfig.sort_order.asc())
+        .all()
+    )
+
+    if not items:
+        # Seed defaults
+        items = [i for i in get_or_create_default_menu_configs(db, company_id) if i.menu_type == "reply_keyboard" and i.is_enabled]
+
+    if not items:
+        return None
+
+    # Arrange buttons into rows of up to 2 buttons
+    keyboard_rows: List[List[Dict[str, str]]] = []
+    current_row: List[Dict[str, str]] = []
+
+    for item in items:
+        current_row.append({"text": item.label})
+        if len(current_row) == 2:
+            keyboard_rows.append(current_row)
+            current_row = []
+
+    if current_row:
+        keyboard_rows.append(current_row)
+
+    return {
+        "keyboard": keyboard_rows,
+        "resize_keyboard": True,
+        "is_persistent": True,
+    }
+
+
+def publish_bot_commands_to_telegram(bot_token: str, commands: List[Dict[str, str]]) -> Dict[str, Any]:
+    """Publish bot commands list to Telegram Bot API (setMyCommands) for in-app autocomplete menu."""
+    url = f"https://api.telegram.org/bot{bot_token.strip()}/setMyCommands"
+    payload = {"commands": commands}
+
+    try:
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={"Content-Type": "application/json", "User-Agent": "InvestorGateOS/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            res_data = json.loads(resp.read().decode("utf-8"))
+            if res_data.get("ok"):
+                return {"success": True, "message": "تم تحديث أوامر البوت في تطبيق Telegram بنجاح!"}
+            return {"success": False, "message": res_data.get("description", "فشل تحديث أوامر البوت")}
+    except Exception as e:
+        return {"success": False, "message": f"خطأ أثناء نشر أوامر البوت: {str(e)}"}
+
+
+# ── Configurable Arabic Message Templates Engine ──────────────────────────────
+
+def render_template(template_str: str, context: Dict[str, Any]) -> str:
+    """Safely replace {placeholders} in template with context values."""
+    rendered = template_str
+    for k, v in context.items():
+        rendered = rendered.replace(f"{{{k}}}", str(v or ""))
+    return rendered
+
+
+def get_or_create_default_message_templates(db: Session, company_id: uuid.UUID) -> List[TelegramMessageTemplate]:
+    """Retrieve existing or seed default Arabic message templates for the company."""
+    existing = (
+        db.query(TelegramMessageTemplate)
+        .filter(TelegramMessageTemplate.company_id == company_id)
+        .all()
+    )
+    if existing:
+        return existing
+
+    defaults = [
+        {
+            "template_key": "welcome",
+            "title_ar": "رسالة الترحيب والبدء",
+            "content_ar": (
+                "👋 مرحباً بك {employee_name} في بوت <b>Investor Gate OS</b> التابع لـ {company_name}!\n\n"
+                "يمكنك استخدام الأزرار أدناه لاستعراض مهامك ومتابعة التذاكر والإشعارات التشغيلية مباشرة."
+            ),
+            "is_active": True,
+        },
+        {
+            "template_key": "link_success",
+            "title_ar": "إشعار نجاح ربط الحساب",
+            "content_ar": (
+                "✅ <b>تم ربط حسابك بنجاح!</b>\n\n"
+                "👤 الموظف: <b>{employee_name}</b>\n"
+                "🏢 المنشأة: <b>{company_name}</b>\n"
+                "📍 الفرع: <b>{branch_name}</b>\n"
+                "🏷️ القسم: <b>{department_name}</b>\n\n"
+                "أصبحت الآن مؤهلاً لاستلام التنبيهات وإدارة المهام التشغيلية."
+            ),
+            "is_active": True,
+        },
+        {
+            "template_key": "task_assigned",
+            "title_ar": "إشعار إسناد مهمة جديدة",
+            "content_ar": (
+                "📌 <b>تم إسناد مهمة تشغيلية جديدة إليك:</b>\n\n"
+                "📋 العنوان: <b>{task_title}</b>\n"
+                "⚡ الأولوية: <b>{priority}</b>\n"
+                "📅 تاريخ الاستحقاق: <b>{due_date}</b>\n"
+                "🏢 المنشأة: <b>{company_name}</b>\n\n"
+                "📝 <b>الوصف:</b>\n{description}"
+            ),
+            "is_active": True,
+        },
+        {
+            "template_key": "task_status_changed",
+            "title_ar": "إشعار تحديث حالة المهمة",
+            "content_ar": (
+                "🔄 <b>تحديث حالة المهمة:</b>\n\n"
+                "📋 المهمة: <b>{task_title}</b>\n"
+                "📊 الحالة الجديدة: <b>{new_status}</b>\n"
+                "👤 بواسطة: <b>{actor_name}</b>"
+            ),
+            "is_active": True,
+        },
+    ]
+
+    created = []
+    for d in defaults:
+        t = TelegramMessageTemplate(company_id=company_id, **d)
+        db.add(t)
+        created.append(t)
+
+    db.commit()
+    for t in created:
+        db.refresh(t)
+    return created
+

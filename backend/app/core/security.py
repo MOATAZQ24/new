@@ -56,7 +56,7 @@ def create_session(
         key="session_token",
         value=token,
         httponly=True,
-        secure=False,  # Set True in production over HTTPS
+        secure=settings.SESSION_COOKIE_SECURE,
         samesite="lax",
         max_age=settings.SESSION_EXPIRE_HOURS * 3600,
         path="/",

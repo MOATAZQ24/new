@@ -14,7 +14,7 @@ from app.models.audit import AuditLog
 from app.models.integration import IntegrationConfig, IntegrationLog
 from app.models.customization import UserWorkspacePreference, CompanyBranding
 from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermission
-from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog
+from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog, TelegramBotMenuConfig, TelegramMessageTemplate
 
 __all__ = [
     "Base",
@@ -51,6 +51,8 @@ __all__ = [
     "TelegramUserLink",
     "NotificationOutbox",
     "TelegramActionLog",
+    "TelegramBotMenuConfig",
+    "TelegramMessageTemplate",
 ]
 
 from app.models.workspace import WorkspacePreference, CompanyWorkspace

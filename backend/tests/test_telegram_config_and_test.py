@@ -12,6 +12,7 @@ from app.models.company import Company
 from app.models.integration import IntegrationConfig, IntegrationLog
 from app.services.telegram_service import get_telegram_worker_status, get_telegram_config
 from app.api.v1.endpoints import telegram as telegram_ep
+from sqlalchemy.orm.attributes import flag_modified
 
 def test_telegram_config_suite():
     print("=================================================================")
@@ -32,6 +33,14 @@ def test_telegram_config_suite():
         assert "is_running" in w_status, "Worker status must include is_running"
         assert "status_label" in w_status, "Worker status must include status_label"
         assert isinstance(w_status["is_running"], bool), "is_running must be boolean"
+
+        # Backup original configuration to restore in finally
+        orig_record = db.query(IntegrationConfig).filter(
+            IntegrationConfig.company_id == company.id,
+            IntegrationConfig.service_name == "telegram",
+        ).first()
+        orig_config_data = dict(orig_record.config_data) if orig_record and orig_record.config_data else None
+        orig_is_enabled = orig_record.is_enabled if orig_record else None
 
         # 3. Test Config Update
         test_chat_id = "987654321"
@@ -114,6 +123,17 @@ def test_telegram_config_suite():
         print("=================================================================")
 
     finally:
+        if orig_record is not None and orig_config_data is not None:
+            rec = db.query(IntegrationConfig).filter(
+                IntegrationConfig.company_id == company.id,
+                IntegrationConfig.service_name == "telegram",
+            ).first()
+            if rec:
+                rec.config_data = orig_config_data
+                rec.is_enabled = orig_is_enabled
+                flag_modified(rec, "config_data")
+                db.commit()
+                print("  ✓ Restored original Telegram configuration after test suite execution.")
         db.close()
 
 if __name__ == "__main__":
