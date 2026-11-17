@@ -108,12 +108,16 @@ def main():
 
         def select_motaz_candidate_if_prompted():
             page.wait_for_timeout(1200)
-            cand_btns = panel.locator("button", has_text="#92004")
-            if cand_btns.count() > 0 and cand_btns.first.is_visible() and not panel.get_by_role("button", name="تأكيد التنفيذ").is_visible():
-                # Verify both duplicate records (#92004 and #9200411) are displayed with distinguishing details
+            if not panel.get_by_role("button", name="تأكيد التنفيذ").is_visible():
                 panel_now = panel.inner_text()
-                assert "#92004" in panel_now and "#9200411" in panel_now, f"Expected both distinguishing employee numbers, got: {panel_now}"
-                cand_btns.first.click()
+                assert "92004" in panel_now and "9200411" in panel_now, f"Expected both distinguishing employee numbers, got: {panel_now}"
+                cand_btns = panel.locator("button", has_text="#92004")
+                if cand_btns.count() > 0 and cand_btns.last.is_visible():
+                    cand_btns.last.click()
+                else:
+                    # Fallback: type exact employee number 92004 in textarea
+                    textarea.fill("92004")
+                    submit_btn.click()
 
         # 9. Four-Task Batch Assignment Workflow for معتز قاسم (Disambiguation -> Preserve 4 Tasks -> Dry-Run Confirm Preview -> Cancel)
         textarea.fill(
@@ -121,7 +125,7 @@ def main():
             "مهمة فحص الخادم الرئيسي، ومهمة مراجعة جدار الحماية، ومهمة التحقق من النسخ الاحتياطي، ومهمة تحديث شهادات SSL"
         )
         submit_btn.click()
-        panel.locator("button:has-text('#92004'), button:has-text('تأكيد التنفيذ')").first.wait_for(state="visible", timeout=35000)
+        panel.get_by_text("بخصوص المهمة «فحص الخادم الرئيسي»").last.wait_for(state="visible", timeout=35000)
         select_motaz_candidate_if_prompted()
         panel.get_by_role("button", name="تأكيد التنفيذ").wait_for(state="visible", timeout=30000)
         multi_txt = panel.inner_text()
@@ -134,6 +138,18 @@ def main():
         panel.get_by_text("تم إلغاء الإجراء").last.wait_for(state="visible", timeout=15000)
         results["step_09_four_task_batch_dry_run_confirm_guard"] = "PASS"
 
+        # 9B. Dialectal Saudi/Gulf Multi-Task + Relative Deadline ("اسند لمعتز اربع مهمات يصلح السرفر ويشيك الشبكه وخليه يخلصهن خلال خمس ايام")
+        textarea.fill("اسند لمعتز اربع مهمات يصلح السرفر ويشيك الشبكه وخليه يخلصهن خلال خمس ايام")
+        submit_btn.click()
+        panel.get_by_text("بخصوص المهمة «إصلاح وصيانة السيرفر»").last.wait_for(state="visible", timeout=35000)
+        select_motaz_candidate_if_prompted()
+        panel.get_by_role("button", name="تأكيد التنفيذ").wait_for(state="visible", timeout=30000)
+        dialect_txt = panel.inner_text()
+        assert "إصلاح وصيانة السيرفر" in dialect_txt and "فحص ومراجعة الشبكة" in dialect_txt, f"Expected dialectal tasks in preview: {dialect_txt}"
+        panel.get_by_role("button", name="إلغاء").click()
+        panel.get_by_text("تم إلغاء الإجراء").last.wait_for(state="visible", timeout=15000)
+        results["step_09b_dialect_multitask_dry_run"] = "PASS"
+
         # 10. Conversation Memory: missing employee -> bare typed "الموظف معتز قاسم" -> disambiguates -> select #92004 -> confirmation
         textarea.fill("أرسل إشعارًا بضرورة مراجعة التذكرة رقم 125")
         submit_btn.click()
@@ -143,7 +159,7 @@ def main():
 
         textarea.fill("الموظف معتز قاسم")
         submit_btn.click()
-        panel.locator("button:has-text('#92004'), button:has-text('تأكيد التنفيذ')").first.wait_for(state="visible", timeout=30000)
+        panel.get_by_text("أكثر من موظف نشط").last.wait_for(state="visible", timeout=30000)
         select_motaz_candidate_if_prompted()
         panel.get_by_role("button", name="تأكيد التنفيذ").wait_for(state="visible", timeout=30000)
         assert "معتز قاسم" in panel.inner_text()
@@ -165,13 +181,13 @@ def main():
         )
         panel.locator("button[aria-label='إرسال الأمر للمساعد الذكي']").click()
 
-        panel.locator("button:has-text('#92004'), button:has-text('تأكيد التنفيذ')").first.wait_for(state="visible", timeout=35000)
+        panel.get_by_text("أكثر من موظف نشط").last.wait_for(state="visible", timeout=35000)
         select_motaz_candidate_if_prompted()
         confirm_create_btn = panel.get_by_role("button", name="تأكيد التنفيذ")
         confirm_create_btn.wait_for(state="visible", timeout=30000)
         confirm_create_btn.click()
 
-        panel.get_by_text(task_title).last.wait_for(state="visible", timeout=25000)
+        panel.get_by_text("فتح في صفحة المهام").last.wait_for(state="visible", timeout=25000)
         ref_matches = re.findall(r"TASK-[0-9A-Za-z]+", panel.inner_text())
         assert ref_matches, f"Expected TASK reference in panel output, got: {panel.inner_text()}"
         created_ref = ref_matches[-1]

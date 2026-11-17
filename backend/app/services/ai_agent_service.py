@@ -332,7 +332,7 @@ def _parse_multi_task_command(text: str) -> Optional[Dict[str, Any]]:
     # Case 0: Dialectal "اسند لمعتز اربع مهمات يصلح السرفر ويشيك الشبكه..." (verb + ל-employee + counted tasks + clauses)
     m_dialect_emp_first = re.match(
         rf"^(?:أنشئ|انشئ|إنشاء|انشاء|أضف|اضف|اسند|أسند|كلف|كلّف|سوي|سوّي|اعمل|حط|وجه|assign|create|give)\s+"
-        rf"(?:لـ\s*|للموظفة?\s+|إلى\s+الموظفة?\s+|الى\s+|ل|to\s+|for\s+)([^\s،,:]+(?:\s+[^\s،,:]+)?)\s+"
+        rf"(?:لـ\s*|للموظفة?\s+|إلى\s+الموظفة?\s+|الى\s+|ل|to\s+|for\s+)([^\s،,:]+(?:\s+[^\s،,:]+)*?)\s+"
         rf"(?:(?:عدد\s+)?(?:\d+|{num_words}|عدة|مجموعة)\s+)?(?:مهمتين|مهمتان|مهام|مهمات|مهمة|tasks?)\s*[:،,\-]?\s*(.+)$",
         work,
         flags=re.I,
@@ -579,7 +579,7 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
         ticket_num = ticket_match.group(1) if ticket_match else None
 
         stripped = re.sub(
-            r"^(?:أرسل|ارسل|إرسال|ارسال|نب[ّ]?ه|send|notify)\s+(?:إشعارًا?|اشعارا?|تنبيهًا?|تنبيه|رسالة|a?\s*notification|an?\s*alert|message)?\s*",
+            r"^(?:أرسل|ارسل|إرسال|ارسال|نب[ّ]?ه|send|notify)\s+(?:إشعار(?:ا|اً|ًا)?|اشعار(?:ا|اً|ًا)?|تنبيه(?:ا|اً|ًا)?|رسالة|a?\s*notification|an?\s*alert|message)?\s*",
             "",
             text,
             flags=re.I,
@@ -1381,7 +1381,10 @@ def process_agent_request(
         # 3. Conversation Memory & Follow-Up Clarification Resume Flow
         ctx_dict = payload.context.model_dump() if payload.context else None
         standalone_plan = _offline_plan_intent(payload.message, ctx_dict)
-        is_explicit_new_cmd = bool(standalone_plan.get("tool") and not (standalone_plan["tool"] == "resolve_employee" and len(payload.message.split()) <= 4))
+        is_explicit_new_cmd = bool(
+            standalone_plan.get("tool")
+            and not (standalone_plan["tool"] == "resolve_employee" and len(payload.message.split()) <= 2)
+        )
 
         active_pending = None if (is_explicit_new_cmd and not payload.resolved_employee_id) else payload.pending_intent
         saved_candidates = None

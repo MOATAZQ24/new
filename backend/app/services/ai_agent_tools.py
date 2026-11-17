@@ -87,7 +87,7 @@ def _as_date(val: Any) -> Optional[date]:
 
 
 _ROLE_PREFIXES_RE = re.compile(
-    r"^(?:لـ\s+|للموظفة?\s+|إلى\s+الموظفة?\s+|الى\s+الموظفة?\s+|لـ\s*الموظفة?\s+|"
+    r"^(?:لـ\s+|ل\s+|للموظفة?\s+|إلى\s+الموظفة?\s+|الى\s+الموظفة?\s+|لـ\s*الموظفة?\s+|"
     r"للفني\s+|إلى\s+|الى\s+|to\s+|for\s+|"
     r"الموظفة?\s+|موظفة?\s+|الأستاذة?\s+|الاستاذة?\s+|أستاذة?\s+|استاذة?\s+|"
     r"المهندسة?\s+|مهندسة?\s+|الفني\s+|فني\s+|الدكتورة?\s+|دكتورة?\s+|"
@@ -109,6 +109,9 @@ def clean_employee_query(raw: Optional[str]) -> str:
     if not txt:
         return ""
     cleaned = _ROLE_PREFIXES_RE.sub("", txt).strip(" .،,:-'\"«»")
+    # Strip attached Arabic recipient preposition "ل" on single-token names ("لمعتز" -> "معتز", "لسلمان" -> "سلمان")
+    if len(cleaned.split()) == 1 and len(cleaned) >= 4 and cleaned.startswith("ل") and not cleaned.startswith(("لا", "لل", "لؤ", "لي")):
+        cleaned = cleaned[1:].strip()
     # Strip trailing punctuation/honorifics or pronouns like "له" / "لها"
     if cleaned.lower() in _NON_NAME_WORDS:
         return ""
