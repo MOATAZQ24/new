@@ -8,12 +8,16 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { AlertBanner } from "@/components/ui/AlertBanner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import { Icons } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 interface DashboardData {
   available_widgets: string[]; critical_tickets: number; upcoming_renewals: number;
+  total_companies?: number; total_branches?: number; total_departments?: number;
+  present_today?: number; active_projects?: number; total_customers?: number;
+  open_opportunities?: number; pending_approvals?: number;
   total_assets: number; available_assets: number; assigned_assets: number; infrastructure_devices: number;
   open_tickets: number; open_tasks: number; overdue_tasks: number; active_subscriptions: number;
   monthly_subscription_cost: number; pending_maintenance: number; total_employees: number;
@@ -24,13 +28,15 @@ interface DashboardData {
 export default function DashboardPage() {
   const { activeCompany } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
   const [failure, setFailure] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (branchIds = selectedBranchIds) => {
     setLoading(true); setFailure(""); setData(null);
     try {
-      const res = await api.get<DashboardData>("/dashboard");
+      const q = branchIds.length > 0 ? `?branch_ids=${encodeURIComponent(branchIds.join(","))}` : "";
+      const res = await api.get<DashboardData>(`/dashboard${q}`);
       setData(res.data);
     } catch (e) {
       setFailure(e instanceof Error ? e.message : "تعذر تحميل اللوحة");
@@ -40,9 +46,9 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => { void fetchDashboard(); }, 0);
+    const timer = setTimeout(() => { void fetchDashboard(selectedBranchIds); }, 0);
     return () => clearTimeout(timer);
-  }, [activeCompany?.id]);
+  }, [activeCompany?.id, selectedBranchIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <DashboardLayout>
@@ -70,6 +76,13 @@ export default function DashboardPage() {
               <span>تحديث</span>
             </button>
           }
+        />
+      </div>
+      <div style={{ order: -2 }} className="lg:col-span-12">
+        <BranchIntelligenceFilterBar
+          selectedBranchIds={selectedBranchIds}
+          onChangeBranchIds={setSelectedBranchIds}
+          label="تصفية ومقارنة المؤشرات التنفيذية حسب الفروع المعتمدة (Group → Company → Branch)"
         />
       </div>
         {/* Quick Action Buttons */}
@@ -227,7 +240,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards Row 2 (Clickable) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
         <StatsCard
           title="الاشتراكات السحابية النشطة"
           value={loading ? "..." : data?.active_subscriptions || 0}
@@ -238,7 +251,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="التكلفة الشهرية للاشتراكات"
-          value={loading ? "..." : `${data?.monthly_subscription_cost?.toLocaleString() || 0} ر.س`}
+          value={loading ? "..." : `${data?.monthly_subscription_cost?.toLocaleString("en-US") || 0} ر.س`}
           subtitle="برمجيات، خوادم سحابية، استضافة"
           icon={<Icons.Subscriptions size={20} />}
           accentColor="border-emerald-600"
@@ -255,10 +268,46 @@ export default function DashboardPage() {
         <StatsCard
           title="إجمالي موظفي الشركة"
           value={loading ? "..." : data?.total_employees || 0}
-          subtitle="مسجلين في نظام العهد والصلاحيات"
+          subtitle={`حضور اليوم: ${data?.present_today || 0} • الفروع: ${data?.total_branches || 5}`}
           icon={<Icons.Users size={20} />}
           accentColor="border-slate-600"
           href="/employees"
+        />
+      </div>
+
+      {/* KPI Cards Row 3: Enterprise CRM, Projects, HRM & Approvals */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <StatsCard
+          title="المشاريع المؤسسية النشطة"
+          value={loading ? "..." : data?.active_projects || 0}
+          subtitle="مرتبطة بالمراحل والمهام التشغيلية"
+          icon={<Icons.CheckSquare size={20} />}
+          accentColor="border-[#123D32]"
+          href="/projects"
+        />
+        <StatsCard
+          title="الفرص البيعية المفتوحة (CRM)"
+          value={loading ? "..." : data?.open_opportunities || 0}
+          subtitle={`إجمالي العملاء: ${data?.total_customers || 0}`}
+          icon={<Icons.Globe size={20} />}
+          accentColor="border-[#187A5A]"
+          href="/crm"
+        />
+        <StatsCard
+          title="مركز الاعتمادات المعلقة"
+          value={loading ? "..." : data?.pending_approvals || 0}
+          subtitle="مشتريات، إجازات، وتغييرات تقنية"
+          icon={<Icons.ShieldCheck size={20} />}
+          accentColor="border-amber-500"
+          href="/approvals"
+        />
+        <StatsCard
+          title="الموارد البشرية والحضور"
+          value={loading ? "..." : `${data?.present_today || 0} / ${data?.total_employees || 0}`}
+          subtitle="بصمة الحضور الفعلي لليوم"
+          icon={<Icons.Clock size={20} />}
+          accentColor="border-[#C5A46D]"
+          href="/hrm"
         />
       </div>
 
