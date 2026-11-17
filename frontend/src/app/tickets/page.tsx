@@ -14,9 +14,9 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useToast } from "@/context/ToastContext";
 import EmployeeCombobox from "@/components/ui/EmployeeCombobox";
 import { 
-  LifeBuoyIcon, PlusIcon, SearchIcon, ClockIcon, 
+  LifeBuoyIcon, PlusIcon, ClockIcon, 
   CheckCircleIcon, AlertCircleIcon, MessageSquareIcon, 
-  SendIcon, UserIcon, ArrowRightIcon, CheckSquareIcon, ShieldCheckIcon
+  SendIcon, UserIcon, CheckSquareIcon, ShieldCheckIcon
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -129,11 +129,17 @@ export default function TicketsPage() {
   }, []);
 
   useEffect(() => {
-    loadTickets();
+    const t = window.setTimeout(() => {
+      void loadTickets();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadTickets, currentCompany]);
 
   useEffect(() => {
-    loadDependencies();
+    const t = window.setTimeout(() => {
+      void loadDependencies();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadDependencies, currentCompany]);
 
   const handleOpenDetail = async (ticketId: string) => {

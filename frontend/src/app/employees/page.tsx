@@ -10,18 +10,81 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
+interface BranchOption {
+  id: string;
+  branch_name: string;
+}
+
+interface DepartmentOption {
+  id: string;
+  department_name: string;
+  branch_id?: string | null;
+}
+
+interface EmployeeTaskItem {
+  id: string;
+  title: string;
+  priority: string;
+  due_date?: string | null;
+  status: string;
+}
+
+interface EmployeeAssignedAsset {
+  custody_id: string;
+  asset_name: string;
+  asset_code: string;
+  asset_type: string;
+  condition: string;
+}
+
+interface EmployeeRow {
+  id: string;
+  employee_number: string;
+  full_name: string;
+  job_title?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  employment_status: string;
+  branch_id?: string | null;
+  branch_ids?: string[];
+  branch_names?: string[];
+  department_id?: string | null;
+  department_name?: string | null;
+  manager_id?: string | null;
+  telegram_username?: string | null;
+  is_telegram_linked?: boolean;
+  assigned_assets?: EmployeeAssignedAsset[];
+}
+
+interface EmployeeUserAccount {
+  id: string;
+  username: string;
+  email?: string | null;
+  full_name?: string | null;
+  account_status?: string | null;
+  is_superadmin?: boolean;
+  last_login?: string | null;
+  roles?: string[];
+}
+
+function getErrMsg(err: unknown, fallback: string): string {
+  const e = err as { response?: { data?: { detail?: string } }; message?: string } | null;
+  return e?.response?.data?.detail || e?.message || fallback;
+}
+
 export default function EmployeesPage() {
   const { activeCompanyId, user } = useAuth();
   const toast = useToast();
   const [tab, setTab] = useState<"employees" | "users">("employees");
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<EmployeeRow[]>([]);
+  const [users, setUsers] = useState<EmployeeUserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
@@ -31,10 +94,10 @@ export default function EmployeesPage() {
   const [showAddEmpModal, setShowAddEmpModal] = useState(false);
   const [showEditEmpModal, setShowEditEmpModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [selectedEmp, setSelectedEmp] = useState<any>(null);
+  const [selectedEmp, setSelectedEmp] = useState<EmployeeRow | null>(null);
   const [empDetailsModal, setEmpDetailsModal] = useState(false);
   const [detailsTab, setDetailsTab] = useState<"custody" | "tasks">("custody");
-  const [empTasks, setEmpTasks] = useState<any[]>([]);
+  const [empTasks, setEmpTasks] = useState<EmployeeTaskItem[]>([]);
   const [showAssignTaskModal, setShowAssignTaskModal] = useState(false);
   const [showTelegramLinkModal, setShowTelegramLinkModal] = useState(false);
   const [sendingEmpTest, setSendingEmpTest] = useState(false);
@@ -46,6 +109,21 @@ export default function EmployeesPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [empStatus, setEmpStatus] = useState("Active");
+  const [empRoleName, setEmpRoleName] = useState("Employee");
+  const [empBranchIds, setEmpBranchIds] = useState<string[]>([]);
+  const [empDeptId, setEmpDeptId] = useState("");
+  const [empManagerId, setEmpManagerId] = useState("");
+  const [empExtraCompanyIds, setEmpExtraCompanyIds] = useState<string[]>([]);
+  const [createUserAccount, setCreateUserAccount] = useState(false);
+  const [empUsername, setEmpUsername] = useState("");
+  const [empAccountPassword, setEmpAccountPassword] = useState("");
+  const [submittingEmp, setSubmittingEmp] = useState(false);
+
+  // Canonical Branches, Departments & Filter state
+  const [selectedFilterBranchIds, setSelectedFilterBranchIds] = useState<string[]>([]);
+  const [companyBranches, setCompanyBranches] = useState<BranchOption[]>([]);
+  const [companyDepartments, setCompanyDepartments] = useState<DepartmentOption[]>([]);
 
   // Edit employee form
   const [editEmpId, setEditEmpId] = useState("");
@@ -54,6 +132,11 @@ export default function EmployeesPage() {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editStatus, setEditStatus] = useState("Active");
+  const [editBranchIds, setEditBranchIds] = useState<string[]>([]);
+  const [editDeptId, setEditDeptId] = useState("");
+  const [editManagerId, setEditManagerId] = useState("");
+  const [editChangeReason, setEditChangeReason] = useState("");
+  const [submittingEditEmp, setSubmittingEditEmp] = useState(false);
 
   // New user form
   const [username, setUsername] = useState("");
@@ -75,7 +158,10 @@ export default function EmployeesPage() {
     try {
       let url = `/employees?search=${encodeURIComponent(debouncedSearch)}`;
       if (statusFilter) url += `&status=${statusFilter}`;
-      const res = await api.get(url);
+      if (selectedFilterBranchIds.length > 0) {
+        url += `&branch_ids=${encodeURIComponent(selectedFilterBranchIds.join(","))}`;
+      }
+      const res = await api.get<EmployeeRow[]>(url);
       setEmployees(res.data || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الموظفين");
@@ -84,10 +170,27 @@ export default function EmployeesPage() {
     }
   };
 
+  useEffect(() => {
+    if (!activeCompanyId) return;
+    Promise.all([
+      api.get<BranchOption[]>(`/companies/${activeCompanyId}/branches`),
+      api.get<DepartmentOption[]>(`/companies/${activeCompanyId}/departments`),
+    ])
+      .then(([bRes, dRes]) => {
+        const brs = bRes.data || [];
+        setCompanyBranches(brs);
+        setCompanyDepartments(dRes.data || []);
+        if (brs.length > 0 && empBranchIds.length === 0) {
+          setEmpBranchIds([brs[0].id]);
+        }
+      })
+      .catch(() => {});
+  }, [activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/employees/users/list?search=${encodeURIComponent(debouncedSearch)}`);
+      const res = await api.get<EmployeeUserAccount[]>(`/employees/users/list?search=${encodeURIComponent(debouncedSearch)}`);
       setUsers(res.data || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل حسابات المستخدمين");
@@ -97,21 +200,56 @@ export default function EmployeesPage() {
   };
 
   useEffect(() => {
-    if (tab === "employees") fetchEmployees();
-    else fetchUsers();
-  }, [tab, activeCompanyId, statusFilter, debouncedSearch]);
+    const t = window.setTimeout(() => {
+      if (tab === "employees") void fetchEmployees();
+      else void fetchUsers();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [tab, activeCompanyId, statusFilter, debouncedSearch, selectedFilterBranchIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingEmp) return;
+
+    const cleanNum = empNumber.trim();
+    const cleanName = fullName.trim();
+    const cleanEmail = email.trim();
+    if (!cleanNum || !cleanName) {
+      toast.error("الرقم الوظيفي والاسم الكامل مطلوبان");
+      return;
+    }
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("يرجى إدخال بريد إلكتروني صحيح");
+      return;
+    }
+    if (createUserAccount && (!empUsername.trim() || !cleanEmail)) {
+      toast.error("اسم المستخدم والبريد الإلكتروني مطلوبان لإنشاء حساب الدخول");
+      return;
+    }
+
+    setSubmittingEmp(true);
     try {
+      const targetCompanies =
+        empExtraCompanyIds.length > 0 && activeCompanyId
+          ? [activeCompanyId, ...empExtraCompanyIds.filter((c) => c !== activeCompanyId)]
+          : undefined;
       await api.post("/employees", {
         company_id: activeCompanyId,
-        employee_number: empNumber,
-        full_name: fullName,
-        job_title: jobTitle,
-        email: email,
-        phone: phone,
-        employment_status: "Active",
+        employee_number: cleanNum,
+        full_name: cleanName,
+        job_title: jobTitle.trim() || undefined,
+        email: cleanEmail || undefined,
+        phone: phone.trim() || undefined,
+        employment_status: empStatus,
+        branch_ids: empBranchIds.length > 0 ? empBranchIds : undefined,
+        branch_id: empBranchIds[0] || undefined,
+        department_id: empDeptId || undefined,
+        manager_id: empManagerId || undefined,
+        role_name: empRoleName,
+        company_ids: targetCompanies,
+        create_user_account: createUserAccount,
+        username: createUserAccount ? empUsername.trim() : undefined,
+        password: createUserAccount && empAccountPassword ? empAccountPassword : undefined,
       });
       setShowAddEmpModal(false);
       setEmpNumber("");
@@ -119,36 +257,72 @@ export default function EmployeesPage() {
       setJobTitle("");
       setEmail("");
       setPhone("");
+      setEmpDeptId("");
+      setEmpManagerId("");
+      setEmpExtraCompanyIds([]);
+      setCreateUserAccount(false);
+      setEmpUsername("");
+      setEmpAccountPassword("");
+      toast.success("تم إضافة الموظف بنجاح وربطه بالفروع المعتمدة");
       fetchEmployees();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إضافة الموظف");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إضافة الموظف");
+    } finally {
+      setSubmittingEmp(false);
     }
   };
 
-  const openEditEmployee = (emp: any) => {
+  const openEditEmployee = (emp: EmployeeRow) => {
     setEditEmpId(emp.id);
     setEditFullName(emp.full_name);
     setEditJobTitle(emp.job_title || "");
     setEditEmail(emp.email || "");
     setEditPhone(emp.phone || "");
     setEditStatus(emp.employment_status || "Active");
+    const initBranches =
+      Array.isArray(emp.branch_ids) && emp.branch_ids.length > 0
+        ? emp.branch_ids
+        : emp.branch_id
+          ? [emp.branch_id]
+          : [];
+    setEditBranchIds(initBranches);
+    setEditDeptId(emp.department_id || "");
+    setEditManagerId(emp.manager_id || "");
+    setEditChangeReason("");
     setShowEditEmpModal(true);
   };
 
   const handleUpdateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingEditEmp) return;
+
+    const cleanEmail = editEmail.trim();
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("يرجى إدخال بريد إلكتروني صحيح");
+      return;
+    }
+
+    setSubmittingEditEmp(true);
     try {
       await api.put(`/employees/${editEmpId}`, {
-        full_name: editFullName,
-        job_title: editJobTitle,
-        email: editEmail,
-        phone: editPhone,
+        full_name: editFullName.trim(),
+        job_title: editJobTitle.trim() || undefined,
+        email: cleanEmail || undefined,
+        phone: editPhone.trim() || undefined,
         employment_status: editStatus,
+        branch_ids: editBranchIds.length > 0 ? editBranchIds : undefined,
+        branch_id: editBranchIds[0] || undefined,
+        department_id: editDeptId || undefined,
+        manager_id: editManagerId || undefined,
+        change_reason: editChangeReason.trim() || undefined,
       });
       setShowEditEmpModal(false);
+      toast.success("تم تحديث بيانات الموظف وسجل التسكين بنجاح");
       fetchEmployees();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحديث بيانات الموظف");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحديث بيانات الموظف");
+    } finally {
+      setSubmittingEditEmp(false);
     }
   };
 
@@ -157,8 +331,8 @@ export default function EmployeesPage() {
     try {
       await api.delete(`/employees/${empId}`);
       fetchEmployees();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الموظف");
+    } catch (err: unknown) {
+      toast.error(getErrMsg(err, "فشل حذف الموظف"));
     }
   };
 
@@ -178,16 +352,16 @@ export default function EmployeesPage() {
       setUserEmail("");
       setUserPassword("");
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إنشاء حساب المستخدم");
+    } catch (err: unknown) {
+      toast.error(getErrMsg(err, "فشل إنشاء حساب المستخدم"));
     }
   };
 
-  const openEmployeeDetails = async (emp: any) => {
+  const openEmployeeDetails = async (emp: EmployeeRow) => {
     try {
       const [empRes, taskRes] = await Promise.all([
-        api.get(`/employees/${emp.id}`),
-        api.get(`/tasks?assigned_to_id=${emp.id}`),
+        api.get<EmployeeRow>(`/employees/${emp.id}`),
+        api.get<EmployeeTaskItem[]>(`/tasks?assigned_to_id=${emp.id}`),
       ]);
       setSelectedEmp(empRes.data);
       setEmpTasks(taskRes.data || []);
@@ -208,8 +382,8 @@ export default function EmployeesPage() {
         custom_message: `🔔 مرحباً ${selectedEmp?.full_name}، رسالة اختبار مباشرة للتحقق من الاتصال عبر منصة Investor Gate OS.`,
       });
       setEmpTestMessage(res.message || "تم إرسال رسالة الاختبار لحساب تليجرام بنجاح!");
-    } catch (err: any) {
-      setEmpTestMessage(err?.response?.data?.detail || err?.message || "فشل إرسال رسالة الاختبار");
+    } catch (err: unknown) {
+      setEmpTestMessage(getErrMsg(err, "فشل إرسال رسالة الاختبار"));
     } finally {
       setSendingEmpTest(false);
     }
@@ -234,10 +408,10 @@ export default function EmployeesPage() {
       setTaskDueDate("");
 
       // Refresh employee tasks
-      const taskRes = await api.get(`/tasks?assigned_to_id=${selectedEmp.id}`);
+      const taskRes = await api.get<EmployeeTaskItem[]>(`/tasks?assigned_to_id=${selectedEmp.id}`);
       setEmpTasks(taskRes.data || []);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إسناد المهمة");
+    } catch (err: unknown) {
+      toast.error(getErrMsg(err, "فشل إسناد المهمة"));
     }
   };
 
@@ -308,6 +482,15 @@ export default function EmployeesPage() {
           </div>
         }
       />
+
+      {/* Canonical 5-Branch Filter Bar */}
+      {tab === "employees" && (
+        <BranchIntelligenceFilterBar
+          selectedBranchIds={selectedFilterBranchIds}
+          onChangeBranchIds={setSelectedFilterBranchIds}
+          label="تصفية دليل الموظفين حسب الفرع المعتمد (يدعم الموظفين العاملين في أكثر من فرع)"
+        />
+      )}
 
       {/* Search & Filter Toolbar */}
       <DataToolbar
@@ -391,7 +574,21 @@ export default function EmployeesPage() {
                         </Link>
                       </td>
                       <td className="p-3.5 text-slate-700">{emp.job_title || "-"}</td>
-                      <td className="p-3.5 text-slate-700">{emp.department_name || "-"}</td>
+                      <td className="p-3.5 text-slate-700">
+                        <div>{emp.department_name || "-"}</div>
+                        {Array.isArray(emp.branch_names) && emp.branch_names.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {emp.branch_names.map((bn: string) => (
+                              <span
+                                key={bn}
+                                className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-[#123D32] text-[10px] font-semibold"
+                              >
+                                {bn}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                       <td className="p-3.5 font-mono text-slate-600">
                         <bdi dir="ltr">{emp.email || "-"}</bdi>
                       </td>
@@ -490,7 +687,7 @@ export default function EmployeesPage() {
                       </div>
                     </td>
                     <td className="p-3.5">
-                      <StatusBadge status={u.account_status} />
+                      <StatusBadge status={u.account_status || "Active"} />
                     </td>
                     <td className="p-3.5 text-slate-600 font-mono">
                       <bdi dir="ltr">{u.last_login ? new Date(u.last_login).toLocaleString("ar-SA") : "لم يسجل بعد"}</bdi>
@@ -571,12 +768,186 @@ export default function EmployeesPage() {
               </label>
               <input
                 type="text"
+                dir="ltr"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+966 50 000 0000"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] text-left font-mono"
               />
             </div>
+          </div>
+
+          {/* Multi-Branch Selection (Canonical 5 Branches) */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              الفروع المعتمدة (الأول المختار هو الفرع الرئيسي) *
+            </label>
+            <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              {companyBranches.map((br) => {
+                const idx = empBranchIds.indexOf(br.id);
+                const checked = idx !== -1;
+                return (
+                  <button
+                    key={br.id}
+                    type="button"
+                    onClick={() => {
+                      if (checked && empBranchIds.length > 1) {
+                        setEmpBranchIds(empBranchIds.filter((x) => x !== br.id));
+                      } else if (!checked) {
+                        setEmpBranchIds([...empBranchIds, br.id]);
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                      checked
+                        ? "bg-[#123D32] text-white border-[#123D32]"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                    }`}
+                  >
+                    {idx === 0 ? "★ أساسي: " : checked ? "✓ مساند: " : ""}{br.branch_name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Optional Secondary Companies (Multi-Company Staffing) */}
+          {(user?.companies || []).length > 1 && (
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                منشآت إضافية تابعة لنفس الشخص (اختياري)
+              </label>
+              <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                {(user?.companies || [])
+                  .filter((c) => c.id !== activeCompanyId)
+                  .map((c) => {
+                    const picked = empExtraCompanyIds.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() =>
+                          setEmpExtraCompanyIds((prev) =>
+                            picked ? prev.filter((x) => x !== c.id) : [...prev, c.id]
+                          )
+                        }
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                          picked
+                            ? "bg-[#187A5A] text-white border-[#187A5A]"
+                            : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                        }`}
+                      >
+                        {picked ? "✓ " : ""}{c.name_ar}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                القسم الإداري
+              </label>
+              <select
+                value={empDeptId}
+                onChange={(e) => setEmpDeptId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="">اختر القسم...</option>
+                {companyDepartments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.department_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                المدير المباشر
+              </label>
+              <select
+                value={empManagerId}
+                onChange={(e) => setEmpManagerId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="">بدون مدير مباشر / الإدارة التنفيذية</option>
+                {employees.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.full_name} (#{e.employee_number})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                الحالة الوظيفية
+              </label>
+              <select
+                value={empStatus}
+                onChange={(e) => setEmpStatus(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="Active">على رأس العمل (Active)</option>
+                <option value="On Leave">في إجازة (On Leave)</option>
+                <option value="Suspended">موقوف (Suspended)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                الدور الوظيفي في المنشأة
+              </label>
+              <select
+                value={empRoleName}
+                onChange={(e) => setEmpRoleName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="Employee">موظف (Employee)</option>
+                <option value="IT Technician">فني تقنية معلومات (IT Technician)</option>
+                <option value="IT Manager">مدير تقنية معلومات (IT Manager)</option>
+                <option value="Company Admin">مدير شركة (Company Admin)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2.5">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={createUserAccount}
+                onChange={(e) => setCreateUserAccount(e.target.checked)}
+                className="rounded border-slate-300 text-[#123D32]"
+              />
+              إنشاء حساب دخول للنظام لهذا الموظف تلقائياً
+            </label>
+            {createUserAccount && (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">اسم المستخدم *</label>
+                  <input
+                    type="text"
+                    required={createUserAccount}
+                    value={empUsername}
+                    onChange={(e) => setEmpUsername(e.target.value)}
+                    placeholder="emp.username"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A] font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">كلمة المرور (توليد مؤقت إن تركت فارغة)</label>
+                  <input
+                    type="password"
+                    value={empAccountPassword}
+                    onChange={(e) => setEmpAccountPassword(e.target.value)}
+                    placeholder="كلمة مرور قوية..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A]"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
@@ -589,9 +960,10 @@ export default function EmployeesPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              disabled={submittingEmp}
+              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
-              حفظ الموظف
+              {submittingEmp ? "جارٍ الحفظ..." : "حفظ الموظف"}
             </button>
           </div>
         </form>
@@ -601,7 +973,7 @@ export default function EmployeesPage() {
       <Modal
         isOpen={showEditEmpModal}
         onClose={() => setShowEditEmpModal(false)}
-        title="تعديل بيانات الموظف"
+        title="تعديل بيانات الموظف والتسكين"
       >
         <form onSubmit={handleUpdateEmployee} className="space-y-4">
           <div>
@@ -647,27 +1019,107 @@ export default function EmployeesPage() {
               </label>
               <input
                 type="text"
+                dir="ltr"
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] text-left font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              الحالة الوظيفية *
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              الفروع المعتمدة للموظف
             </label>
-            <select
-              value={editStatus}
-              onChange={(e) => setEditStatus(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-            >
-              <option value="Active">على رأس العمل (Active)</option>
-              <option value="On Leave">في إجازة (On Leave)</option>
-              <option value="Suspended">موقوف (Suspended)</option>
-              <option value="Terminated">منتهي الخدمة (Terminated)</option>
-            </select>
+            <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              {companyBranches.map((br) => {
+                const idx = editBranchIds.indexOf(br.id);
+                const checked = idx !== -1;
+                return (
+                  <button
+                    key={br.id}
+                    type="button"
+                    onClick={() => {
+                      if (checked && editBranchIds.length > 1) {
+                        setEditBranchIds(editBranchIds.filter((x) => x !== br.id));
+                      } else if (!checked) {
+                        setEditBranchIds([...editBranchIds, br.id]);
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                      checked
+                        ? "bg-[#123D32] text-white border-[#123D32]"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                    }`}
+                  >
+                    {idx === 0 ? "★ أساسي: " : checked ? "✓ مساند: " : ""}{br.branch_name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">القسم الإداري</label>
+              <select
+                value={editDeptId}
+                onChange={(e) => setEditDeptId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="">اختر القسم...</option>
+                {companyDepartments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.department_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">المدير المباشر</label>
+              <select
+                value={editManagerId}
+                onChange={(e) => setEditManagerId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="">بدون مدير مباشر / الإدارة التنفيذية</option>
+                {employees
+                  .filter((e) => e.id !== editEmpId)
+                  .map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.full_name} (#{e.employee_number})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                الحالة الوظيفية *
+              </label>
+              <select
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="Active">على رأس العمل (Active)</option>
+                <option value="On Leave">في إجازة (On Leave)</option>
+                <option value="Suspended">موقوف (Suspended)</option>
+                <option value="Terminated">منتهي الخدمة (Terminated)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">سبب التعديل / النقل (اختياري)</label>
+              <input
+                type="text"
+                value={editChangeReason}
+                onChange={(e) => setEditChangeReason(e.target.value)}
+                placeholder="مثال: نقل إلى فرع الدمام"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              />
+            </div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
@@ -680,9 +1132,10 @@ export default function EmployeesPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              disabled={submittingEditEmp}
+              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
-              حفظ التعديلات
+              {submittingEditEmp ? "جارٍ التحديث..." : "حفظ التعديلات"}
             </button>
           </div>
         </form>
@@ -813,7 +1266,7 @@ export default function EmployeesPage() {
             </div>
             <div>
               <span className="text-slate-400 block text-[10px]">الحالة:</span>
-              <StatusBadge status={selectedEmp?.employment_status} />
+              <StatusBadge status={selectedEmp?.employment_status || "Active"} />
             </div>
           </div>
 
@@ -910,9 +1363,9 @@ export default function EmployeesPage() {
 
           {detailsTab === "custody" ? (
             <div>
-              {selectedEmp?.assigned_assets?.length > 0 ? (
+              {selectedEmp?.assigned_assets && selectedEmp.assigned_assets.length > 0 ? (
                 <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {selectedEmp.assigned_assets.map((a: any) => (
+                  {selectedEmp.assigned_assets.map((a) => (
                     <div
                       key={a.custody_id}
                       className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
@@ -941,7 +1394,7 @@ export default function EmployeesPage() {
             <div>
               {empTasks.length > 0 ? (
                 <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {empTasks.map((t: any) => (
+                  {empTasks.map((t) => (
                     <div
                       key={t.id}
                       className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
@@ -1060,7 +1513,7 @@ export default function EmployeesPage() {
           employeeName={selectedEmp.full_name}
           companyId={activeCompanyId || undefined}
           onVerified={async () => {
-            const empRes = await api.get(`/employees/${selectedEmp.id}`);
+            const empRes = await api.get<EmployeeRow>(`/employees/${selectedEmp.id}`);
             setSelectedEmp(empRes.data);
             fetchEmployees();
           }}

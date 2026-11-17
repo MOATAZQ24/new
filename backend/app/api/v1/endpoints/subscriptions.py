@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
 from app.models.subscription import ThirdPartySubscription
-from app.models.user import User
+from app.models.user import User, Employee
 from app.schemas.subscription import SubscriptionCreate, SubscriptionUpdate
 from app.services.audit_service import log_audit
 
@@ -162,7 +162,9 @@ def create_subscription(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    validate_company_fk(db, Employee, payload.assigned_owner_id, target_cid, "الموظف المسؤول")
+    validate_company_fk(db, Employee, payload.payment_responsible_id, target_cid, "مسؤول الدفع")
 
     sub = ThirdPartySubscription(
         company_id=target_cid,

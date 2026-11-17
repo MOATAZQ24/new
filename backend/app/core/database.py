@@ -69,7 +69,10 @@ def _migrate_columns():
             ("employees", "employment_type", "VARCHAR(50) DEFAULT 'Full-Time'", "VARCHAR(50) DEFAULT 'Full-Time'"),
             ("employees", "work_location", "VARCHAR(255)", "VARCHAR(255)"),
             ("employees", "avatar_url", "VARCHAR(512)", "VARCHAR(512)"),
+            ("employees", "person_id", "CHAR(32)", "UUID"),
+            ("branches", "physical_branch_id", "CHAR(32)", "UUID"),
             ("tasks", "project_id", "CHAR(32)", "UUID"),
+            ("technical_assets", "asset_category", "VARCHAR(50) DEFAULT 'IT'", "VARCHAR(50) DEFAULT 'IT'"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

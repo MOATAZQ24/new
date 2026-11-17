@@ -7,7 +7,8 @@ from pydantic import BaseModel
 class TechnicalAssetBase(BaseModel):
     asset_code: str
     asset_name: str
-    asset_type: str  # Laptop, Desktop, Mobile Phone, Tablet, Monitor, Printer, Other
+    asset_category: str = "IT"  # IT, General
+    asset_type: str  # Laptop, Desktop, Mobile Phone, Tablet, Monitor, Printer, Furniture, Vehicle, Equipment, Other
     brand: Optional[str] = None
     model: Optional[str] = None
     serial_number: Optional[str] = None
@@ -27,6 +28,7 @@ class TechnicalAssetCreate(TechnicalAssetBase):
 
 class TechnicalAssetUpdate(BaseModel):
     asset_name: Optional[str] = None
+    asset_category: Optional[str] = None
     asset_type: Optional[str] = None
     brand: Optional[str] = None
     model: Optional[str] = None

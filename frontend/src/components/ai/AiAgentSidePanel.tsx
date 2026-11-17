@@ -240,6 +240,12 @@ export function AiAgentSidePanel({
           ? lastAssistant.pendingIntent
           : undefined;
 
+      const selectedAssetId =
+        typeof window !== "undefined" && pathname?.startsWith("/assets")
+          ? sessionStorage.getItem("ig_selected_asset_id") || undefined
+          : undefined;
+      const empPathMatch = pathname?.match(/^\/employees\/([0-9a-f-]{36})$/i);
+
       const body = {
         message: trimmed,
         idempotency_key: turnKey,
@@ -248,7 +254,11 @@ export function AiAgentSidePanel({
         resolved_employee_id: opts?.resolvedEmployeeId || undefined,
         pending_intent: resolvedPendingIntent || undefined,
         history: historyPayload,
-        context: { current_page: pathname },
+        context: {
+          current_page: pathname,
+          selected_asset_id: selectedAssetId,
+          selected_employee_id: empPathMatch ? empPathMatch[1] : undefined,
+        },
       };
 
       const res = await fetch(`${API_BASE}/ai/agent/chat/stream`, {

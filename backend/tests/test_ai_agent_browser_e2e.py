@@ -223,6 +223,41 @@ def main():
         panel.locator("button[aria-label='إغلاق لوحة المساعد الذكي']").click()
         page.wait_for_timeout(200)
 
+        # 15. Verify Enterprise 3.0 Workspaces (Employee 360°, HRM, CRM, Projects, Approvals) in live browser
+        page.set_viewport_size({"width": 1440, "height": 900})
+        for route_path, expected_heading in [
+            ("/employees/ce9e5d67-8c28-4363-bcd1-d424352b9450", "ملف الموظف الشامل 360°"),
+            ("/hrm", "إدارة الموارد البشرية والحضور والانصراف"),
+            ("/crm", "إدارة علاقات العملاء والفرص البيعية"),
+            ("/projects", "إدارة المشاريع والجدولة الزمنية"),
+            ("/approvals", "مركز الاعتمادات الموحد وطلبات الشراء"),
+        ]:
+            page.goto(f"{BASE_URL}{route_path}", wait_until="domcontentloaded", timeout=30000)
+            page.get_by_text(expected_heading).first.wait_for(state="visible", timeout=20000)
+        results["step_15_enterprise_v3_pages_verified"] = "PASS (Employee 360°, HRM, CRM, Projects, Approvals)"
+
+        # 16. Verify Canonical 5 Operational Branches & Asset Analytics Dashboard (/assets)
+        canonical_branches = [
+            "الرياض – السلي (مخرج 17)",
+            "الرياض – الفيصلية (مخرج 18)",
+            "الرياض – العليا",
+            "الدمام",
+            "جدة",
+        ]
+        page.goto(f"{BASE_URL}/assets", wait_until="domcontentloaded", timeout=30000)
+        page.get_by_text("تحليلات ومقارنة الأصول حسب الفروع الخمسة المعتمدة", exact=False).first.wait_for(state="visible", timeout=20000)
+        for bname in canonical_branches:
+            page.get_by_text(bname, exact=False).first.wait_for(state="visible", timeout=15000)
+        page.get_by_text("مقارنة الأصول بين الفروع المعتمدة", exact=False).first.wait_for(state="visible", timeout=15000)
+        results["step_16_canonical_branches_and_asset_dashboard"] = "PASS (5 canonical branches + branch asset charts)"
+
+        # 17. Verify Unified Employee Directory & Repaired إضافة موظف Multi-Branch Modal (/employees)
+        page.goto(f"{BASE_URL}/employees", wait_until="domcontentloaded", timeout=30000)
+        page.get_by_text("تصفية دليل الموظفين حسب الفرع المعتمد", exact=False).first.wait_for(state="visible", timeout=20000)
+        page.get_by_role("button", name="إضافة موظف").first.click()
+        page.get_by_text("الفروع المعتمدة (يمكن اختيار فرع واحد أو عدة فروع)", exact=False).first.wait_for(state="visible", timeout=10000)
+        results["step_17_employees_multi_branch_modal"] = "PASS (Multi-branch إضافة موظف modal verified)"
+
         assert not page_errors, f"Uncaught page errors: {page_errors}"
         assert not failed_http, f"Failed HTTP 5xx/422 responses: {failed_http}"
 

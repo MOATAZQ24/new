@@ -13,26 +13,99 @@ import { useDialogAccessibility } from "@/components/ui/useDialogAccessibility";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 
+interface DigitalSecretItem {
+  secret_id: string;
+  secret_type: string;
+  access_policy: string;
+  vault_reference_masked: string;
+  last_rotated?: string | null;
+  last_accessed?: string | null;
+}
+
+interface DigitalPermissionItem {
+  permission_id: string;
+  username?: string | null;
+  full_name?: string | null;
+  access_level: string;
+  can_reveal_secrets?: boolean;
+}
+
+interface DigitalAssetItem {
+  asset_id: string;
+  name: string;
+  category: string;
+  platform: string;
+  branch_id?: string | null;
+  branch_name?: string | null;
+  url?: string | null;
+  username?: string | null;
+  account_email?: string | null;
+  recovery_email?: string | null;
+  recovery_phone?: string | null;
+  two_factor_method?: string | null;
+  two_factor_phone?: string | null;
+  domain_registrar?: string | null;
+  nameservers?: string | null;
+  subscription_tier?: string | null;
+  payment_method?: string | null;
+  assigned_employee_id?: string | null;
+  assigned_employee_name?: string | null;
+  status: string;
+  subscription_cost?: number | string | null;
+  two_factor_enabled?: boolean;
+  expires_at?: string | null;
+  notes?: string | null;
+  secrets_count?: number;
+  secrets?: DigitalSecretItem[];
+  permissions?: DigitalPermissionItem[];
+}
+
+interface DigitalEmployeeOption {
+  id: string;
+  employee_id?: string;
+  full_name: string;
+  employee_number?: string;
+  job_title?: string | null;
+}
+
+interface DigitalBranchOption {
+  id: string;
+  branch_id?: string;
+  branch_name: string;
+}
+
+interface DigitalUserOption {
+  id: string;
+  username: string;
+  full_name?: string | null;
+  role?: string | null;
+  employee?: { full_name?: string | null } | null;
+}
+
+interface VaultStatusInfo {
+  status: string;
+}
+
 export default function DigitalAssetsPage() {
   const { activeCompanyId, activeCompany } = useAuth();
   const toast = useToast();
 
   // State
-  const [assets, setAssets] = useState<any[]>([]);
+  const [assets, setAssets] = useState<DigitalAssetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [platformFilter, setPlatformFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [branches, setBranches] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [vaultStatus, setVaultStatus] = useState<any>(null);
+  const [employees, setEmployees] = useState<DigitalEmployeeOption[]>([]);
+  const [branches, setBranches] = useState<DigitalBranchOption[]>([]);
+  const [users, setUsers] = useState<DigitalUserOption[]>([]);
+  const [vaultStatus, setVaultStatus] = useState<VaultStatusInfo | null>(null);
 
   // Modals & Drawer State
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<any>(null);
+  const [selectedAsset, setSelectedAsset] = useState<DigitalAssetItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [drawerTab, setDrawerTab] = useState<"details" | "secrets" | "permissions">("details");
@@ -42,7 +115,7 @@ export default function DigitalAssetsPage() {
   const [showAddSecretModal, setShowAddSecretModal] = useState(false);
   const [showRevealModal, setShowRevealModal] = useState(false);
   const [showRotateModal, setShowRotateModal] = useState(false);
-  const [selectedSecret, setSelectedSecret] = useState<any>(null);
+  const [selectedSecret, setSelectedSecret] = useState<DigitalSecretItem | null>(null);
   const [reauthPassword, setReauthPassword] = useState("");
   const [revealedValue, setRevealedValue] = useState<string | null>(null);
   const [revealCountdown, setRevealCountdown] = useState<number>(30);
@@ -134,7 +207,7 @@ export default function DigitalAssetsPage() {
       if (platformFilter) query += `&platform=${encodeURIComponent(platformFilter)}`;
       if (statusFilter) query += `&status=${encodeURIComponent(statusFilter)}`;
 
-      const res = await api.get(query);
+      const res = await api.get<DigitalAssetItem[]>(query);
       setAssets(res.data || []);
     } catch (err) {
       console.error("Failed to load digital assets", err);
@@ -147,9 +220,9 @@ export default function DigitalAssetsPage() {
   const fetchAuxData = async () => {
     try {
       const [empRes, userRes, vaultRes] = await Promise.allSettled([
-        api.get("/employees?status=Active"),
-        api.get("/employees/users/list"),
-        api.get("/digital-assets/vault/status"),
+        api.get<DigitalEmployeeOption[]>("/employees?status=Active"),
+        api.get<DigitalUserOption[]>("/employees/users/list"),
+        api.get<VaultStatusInfo>("/digital-assets/vault/status"),
       ]);
 
       if (empRes.status === "fulfilled") setEmployees(empRes.value.data || []);
@@ -158,7 +231,7 @@ export default function DigitalAssetsPage() {
 
       if (activeCompanyId) {
         try {
-          const brRes = await api.get(`/companies/${activeCompanyId}/branches`);
+          const brRes = await api.get<DigitalBranchOption[]>(`/companies/${activeCompanyId}/branches`);
           setBranches(brRes.data || []);
         } catch {
           setBranches([]);
@@ -170,19 +243,22 @@ export default function DigitalAssetsPage() {
   };
 
   useEffect(() => {
-    fetchAssets();
-    fetchAuxData();
-  }, [search, categoryFilter, platformFilter, statusFilter, activeCompanyId]);
+    const t = window.setTimeout(() => {
+      void fetchAssets();
+      void fetchAuxData();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [search, categoryFilter, platformFilter, statusFilter, activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Open asset drawer and fetch full details
-  const handleOpenDrawer = async (asset: any) => {
+  const handleOpenDrawer = async (asset: DigitalAssetItem) => {
     try {
-      const res = await api.get(`/digital-assets/${asset.asset_id}`);
+      const res = await api.get<DigitalAssetItem>(`/digital-assets/${asset.asset_id}`);
       setSelectedAsset(res.data);
       setDrawerOpen(true);
       setDrawerTab("details");
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحميل تفاصيل الأصل الرقمي");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل تفاصيل الأصل الرقمي");
     }
   };
 
@@ -190,7 +266,7 @@ export default function DigitalAssetsPage() {
   const refreshSelectedAsset = async () => {
     if (!selectedAsset) return;
     try {
-      const res = await api.get(`/digital-assets/${selectedAsset.asset_id}`);
+      const res = await api.get<DigitalAssetItem>(`/digital-assets/${selectedAsset.asset_id}`);
       setSelectedAsset(res.data);
       fetchAssets();
     } catch (err) {
@@ -224,7 +300,7 @@ export default function DigitalAssetsPage() {
   };
 
   // Prepare edit modal
-  const handleOpenEdit = (asset: any) => {
+  const handleOpenEdit = (asset: DigitalAssetItem) => {
     setSelectedAsset(asset);
     setFormName(asset.name || "");
     setFormCategory(asset.category || "Social Media");
@@ -284,8 +360,8 @@ export default function DigitalAssetsPage() {
       setShowAddModal(false);
       resetForm();
       fetchAssets();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل إنشاء الأصل الرقمي");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل إنشاء الأصل الرقمي");
     } finally {
       setActionLoading(false);
     }
@@ -325,15 +401,15 @@ export default function DigitalAssetsPage() {
       setShowEditModal(false);
       fetchAssets();
       if (drawerOpen) refreshSelectedAsset();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل تحديث بيانات الأصل الرقمي");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تحديث بيانات الأصل الرقمي");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Delete Asset
-  const handleDeleteAsset = async (asset: any) => {
+  const handleDeleteAsset = async (asset: DigitalAssetItem) => {
     if (!confirm(`هل أنت متأكد من حذف الأصل الرقمي "${asset.name}" وجميع أسراره المشفرة من الخزنة؟`)) {
       return;
     }
@@ -343,13 +419,13 @@ export default function DigitalAssetsPage() {
         setDrawerOpen(false);
       }
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الأصل الرقمي");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف الأصل الرقمي");
     }
   };
 
   // Reveal Secret with Reauthentication
-  const handleOpenReveal = (secret: any) => {
+  const handleOpenReveal = (secret: DigitalSecretItem) => {
     setSelectedSecret(secret);
     setReauthPassword("");
     setRevealedValue(null);
@@ -363,7 +439,7 @@ export default function DigitalAssetsPage() {
     setActionLoading(true);
     setActionError("");
     try {
-      const res = await api.post(`/digital-assets/secrets/${selectedSecret.secret_id}/reveal`, {
+      const res = await api.post<{ secret_value?: string }>(`/digital-assets/secrets/${selectedSecret.secret_id}/reveal`, {
         reauth_password: reauthPassword,
       });
 
@@ -372,8 +448,8 @@ export default function DigitalAssetsPage() {
 
       // Refresh drawer so last_accessed updates
       refreshSelectedAsset();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل التحقق من كلمة المرور وكشف السر");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل التحقق من كلمة المرور وكشف السر");
     } finally {
       setActionLoading(false);
     }
@@ -422,15 +498,15 @@ export default function DigitalAssetsPage() {
       setSecretValue("");
       setRotationDue("");
       refreshSelectedAsset();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل تخزين السر في الخزنة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تخزين السر في الخزنة");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Rotate Secret
-  const handleOpenRotate = (secret: any) => {
+  const handleOpenRotate = (secret: DigitalSecretItem) => {
     setSelectedSecret(secret);
     setNewRotateValue("");
     setReauthPassword("");
@@ -453,15 +529,15 @@ export default function DigitalAssetsPage() {
       setNewRotateValue("");
       setReauthPassword("");
       refreshSelectedAsset();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل تدوير السر");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تدوير السر");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Delete Secret
-  const handleDeleteSecret = async (secret: any) => {
+  const handleDeleteSecret = async (secret: DigitalSecretItem) => {
     if (!confirm(`هل أنت متأكد من حذف هذا السر (${secret.secret_type}) نهائياً من الخزنة المشفرة؟`)) {
       return;
     }
@@ -469,8 +545,8 @@ export default function DigitalAssetsPage() {
       await api.delete(`/digital-assets/secrets/${secret.secret_id}`);
       toast.success("تم حذف السر نهائياً من الخزنة");
       refreshSelectedAsset();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف السر من الخزنة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف السر من الخزنة");
     }
   };
 
@@ -494,23 +570,23 @@ export default function DigitalAssetsPage() {
       setPermCanReveal(false);
       setPermExpiresAt("");
       refreshSelectedAsset();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل منح الصلاحيات");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل منح الصلاحيات");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Revoke Permission
-  const handleRevokePermission = async (perm: any) => {
+  const handleRevokePermission = async (perm: DigitalPermissionItem) => {
     if (!confirm(`هل أنت متأكد من إلغاء صلاحيات المستخدم على هذا الأصل الرقمي؟`)) {
       return;
     }
     try {
       await api.delete(`/digital-assets/permissions/${perm.permission_id}`);
       refreshSelectedAsset();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إلغاء الصلاحية");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إلغاء الصلاحية");
     }
   };
 
@@ -519,7 +595,7 @@ export default function DigitalAssetsPage() {
     const total = assets.length;
     const active = assets.filter((a) => a.status === "Active").length;
     const twoFactorCount = assets.filter((a) => a.two_factor_enabled).length;
-    const totalSecrets = assets.reduce((sum, a) => sum + (a.secrets_count || 0), 0);
+    const totalSecrets = assets.reduce((sum, a) => sum + Number(a.secrets_count || 0), 0);
     const twoFactorRate = total > 0 ? Math.round((twoFactorCount / total) * 100) : 0;
 
     return { total, active, twoFactorRate, totalSecrets };
@@ -1138,7 +1214,7 @@ export default function DigitalAssetsPage() {
                     {/* Secrets List */}
                     {selectedAsset.secrets && selectedAsset.secrets.length > 0 ? (
                       <div className="space-y-3">
-                        {selectedAsset.secrets.map((secret: any) => (
+                        {selectedAsset.secrets.map((secret) => (
                           <div
                             key={secret.secret_id}
                             className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3"
@@ -1210,7 +1286,7 @@ export default function DigitalAssetsPage() {
                           لا توجد أسرار أو كلمات مرور في الخزنة لهذا الأصل
                         </p>
                         <p className="text-xs text-slate-400 mt-1">
-                          انقر على "إضافة سر إلى الخزنة" لحفظ كلمة المرور أو مفتاح الـ API بأمان
+                          انقر على &quot;إضافة سر إلى الخزنة&quot; لحفظ كلمة المرور أو مفتاح الـ API بأمان
                         </p>
                       </div>
                     )}
@@ -1247,7 +1323,7 @@ export default function DigitalAssetsPage() {
 
                     {selectedAsset.permissions && selectedAsset.permissions.length > 0 ? (
                       <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-                        {selectedAsset.permissions.map((perm: any) => (
+                        {selectedAsset.permissions.map((perm) => (
                           <div
                             key={perm.permission_id}
                             className="p-4 flex items-center justify-between bg-white dark:bg-slate-900"

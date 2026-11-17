@@ -33,7 +33,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Drawer Backdrop */}
       {mobileNavOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-[1px] md:hidden motion-backdrop-enter"
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-[1px] lg:hidden motion-backdrop-enter"
           onClick={() => setMobileNavOpen(false)}
           aria-hidden="true"
         />

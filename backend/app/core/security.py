@@ -231,6 +231,24 @@ def resolve_company_scope(
     return requested_cid or active_cid
 
 
+def validate_company_fk(
+    db: Session,
+    model,
+    record_id: Optional[uuid.UUID],
+    target_cid: uuid.UUID,
+    label: str = "السجل المرتبط",
+    pk_attr: str = "id",
+):
+    """Ensure an optional foreign key target exists and belongs to the target company."""
+    if not record_id:
+        return None
+    pk_col = getattr(model, pk_attr)
+    row = db.query(model).filter(pk_col == record_id, model.company_id == target_cid).first()
+    if not row:
+        raise HTTPException(status_code=400, detail=f"{label} غير موجود أو لا ينتمي لهذه المنشأة")
+    return row
+
+
 def require_role(allowed_roles: List[str]):
     """Ensure current user has at least one of the allowed roles, taking company-specific roles into account."""
     def role_checker(

@@ -14,17 +14,35 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
+interface InfraDevice {
+  id: string;
+  device_name: string;
+  device_type: string;
+  manufacturer?: string;
+  model?: string;
+  serial_number?: string;
+  hostname?: string;
+  management_ip?: string;
+  network_name?: string;
+  vlan?: string;
+  location?: string;
+  credential_reference?: string;
+  firmware_version?: string;
+  status: string;
+  notes?: string;
+}
+
 export default function InfrastructurePage() {
   const { activeCompanyId } = useAuth();
   const toast = useToast();
-  const [devices, setDevices] = useState<any[]>([]);
+  const [devices, setDevices] = useState<InfraDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<any>(null);
+  const [selectedDevice, setSelectedDevice] = useState<InfraDevice | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // New Device Form
@@ -32,15 +50,15 @@ export default function InfrastructurePage() {
   const [deviceType, setDeviceType] = useState("Server");
   const [manufacturer, setManufacturer] = useState("");
   const [model, setModel] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
+  const [serialNumber] = useState("");
   const [hostname, setHostname] = useState("");
   const [managementIp, setManagementIp] = useState("");
-  const [networkName, setNetworkName] = useState("");
-  const [vlan, setVlan] = useState("");
+  const [networkName] = useState("");
+  const [vlan] = useState("");
   const [location, setLocation] = useState("");
   const [credentialRef, setCredentialRef] = useState("");
-  const [firmwareVersion, setFirmwareVersion] = useState("");
-  const [statusVal, setStatusVal] = useState("Active");
+  const [firmwareVersion] = useState("");
+  const [statusVal] = useState("Active");
   const [notes, setNotes] = useState("");
 
   const fetchDevices = async () => {
@@ -49,7 +67,7 @@ export default function InfrastructurePage() {
       let url = `/infrastructure?search=${encodeURIComponent(debouncedSearch)}`;
       if (typeFilter) url += `&device_type=${typeFilter}`;
       if (statusFilter) url += `&status=${statusFilter}`;
-      const res = await api.get(url);
+      const res = await api.get<InfraDevice[]>(url);
       setDevices(res.data || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل أجهزة البنية التحتية");
@@ -59,8 +77,11 @@ export default function InfrastructurePage() {
   };
 
   useEffect(() => {
-    fetchDevices();
-  }, [typeFilter, statusFilter, activeCompanyId, debouncedSearch]);
+    const t = window.setTimeout(() => {
+      void fetchDevices();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [typeFilter, statusFilter, activeCompanyId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,8 +112,8 @@ export default function InfrastructurePage() {
       setCredentialRef("");
       setNotes("");
       fetchDevices();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إضافة جهاز البنية التحتية");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إضافة جهاز البنية التحتية");
     }
   };
 

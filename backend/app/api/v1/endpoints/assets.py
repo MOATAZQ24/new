@@ -7,15 +7,49 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.user import User, Employee
 from app.models.company import Branch, Department
 from app.schemas.asset import TechnicalAssetCreate, TechnicalAssetUpdate
 from app.services.audit_service import log_audit
+from app.services import enterprise_service
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/assets", tags=["Technical Assets"])
+
+
+class AssetBranchTransferRequest(BaseModel):
+    to_branch_id: uuid.UUID
+    reason: Optional[str] = None
+    require_approval: bool = False
+
+
+@router.get("/analytics")
+def get_assets_branch_analytics(
+    company_id: Optional[uuid.UUID] = None,
+    branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
+    department_id: Optional[uuid.UUID] = None,
+    asset_category: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Return strictly deduplicated, branch-aware Asset & IT Asset Dashboard analytics."""
+    from app.api.v1.endpoints.workspace import authorize_company
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    authorize_company(db, current_user, target_cid)
+    parsed_branches = enterprise_service.parse_branch_ids_filter(db, target_cid, branch_id, branch_ids)
+    data = enterprise_service.get_branch_aware_asset_analytics(
+        db=db,
+        company_id=target_cid,
+        branch_ids=parsed_branches,
+        department_id=department_id,
+        asset_category=asset_category,
+    )
+    return success_response(data=data)
 
 
 def generate_qr_code_base64(data: str) -> str:
@@ -40,7 +74,9 @@ def list_assets(
     per_page: int = Query(20, ge=1, le=100),
     company_id: Optional[uuid.UUID] = None,
     branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
     department_id: Optional[uuid.UUID] = None,
+    asset_category: Optional[str] = None,
     asset_type: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     search: Optional[str] = None,
@@ -49,16 +85,20 @@ def list_assets(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """List technical assets with company isolation."""
+    """List technical & general assets with company isolation and multi-branch filtering."""
     from app.api.v1.endpoints.workspace import authorize_company
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
     authorize_company(db, current_user, target_cid)
+    enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    parsed_branches = enterprise_service.parse_branch_ids_filter(db, target_cid, branch_id, branch_ids)
     query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
 
-    if branch_id:
-        query = query.filter(TechnicalAsset.branch_id == branch_id)
+    if parsed_branches:
+        query = query.filter(TechnicalAsset.branch_id.in_(parsed_branches))
     if department_id:
         query = query.filter(TechnicalAsset.department_id == department_id)
+    if asset_category:
+        query = query.filter(TechnicalAsset.asset_category == asset_category)
     if asset_type:
         query = query.filter(TechnicalAsset.asset_type == asset_type)
     if status_filter:
@@ -102,6 +142,7 @@ def list_assets(
             "department_name": d_name,
             "asset_code": a.asset_code,
             "asset_name": a.asset_name,
+            "asset_category": getattr(a, "asset_category", "IT") or "IT",
             "asset_type": a.asset_type,
             "brand": a.brand,
             "model": a.model,
@@ -127,7 +168,11 @@ def create_asset(
     db: Session = Depends(get_db),
 ):
     """Create a new technical asset with QR code generation."""
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+
+    validate_company_fk(db, Branch, payload.branch_id, target_cid, "الفرع")
+    validate_company_fk(db, Department, payload.department_id, target_cid, "القسم")
+    validate_company_fk(db, Employee, payload.assigned_employee_id, target_cid, "الموظف المعين")
 
     # Check unique asset_code in company
     existing = db.query(TechnicalAsset).filter(
@@ -142,13 +187,17 @@ def create_asset(
 
     status_val = "Assigned" if payload.assigned_employee_id else payload.status
 
+    canonical_branches = enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    effective_branch_id = payload.branch_id or (canonical_branches[2].id if len(canonical_branches) >= 3 else canonical_branches[0].id)
+
     asset = TechnicalAsset(
         company_id=target_cid,
-        branch_id=payload.branch_id,
+        branch_id=effective_branch_id,
         department_id=payload.department_id,
         assigned_employee_id=payload.assigned_employee_id,
         asset_code=payload.asset_code.strip(),
         asset_name=payload.asset_name.strip(),
+        asset_category=payload.asset_category or "IT",
         asset_type=payload.asset_type,
         brand=payload.brand,
         model=payload.model,
@@ -280,8 +329,10 @@ def update_asset(
     if payload.serial_number is not None:
         asset.serial_number = payload.serial_number
     if payload.branch_id is not None:
+        validate_company_fk(db, Branch, payload.branch_id, asset.company_id, "الفرع")
         asset.branch_id = payload.branch_id
     if payload.department_id is not None:
+        validate_company_fk(db, Department, payload.department_id, asset.company_id, "القسم")
         asset.department_id = payload.department_id
     if payload.purchase_date is not None:
         asset.purchase_date = payload.purchase_date
@@ -346,3 +397,29 @@ def delete_asset(
     db.delete(asset)
     db.commit()
     return success_response(message="تم حذف الأصل بنجاح")
+
+
+@router.post("/{asset_id}/transfer-branch")
+def transfer_asset_branch_endpoint(
+    asset_id: uuid.UUID,
+    payload: AssetBranchTransferRequest,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Transfer an asset to a new physical branch while preserving ownership and transfer history."""
+    res = enterprise_service.transfer_asset_to_branch(
+        db=db,
+        current_user=current_user,
+        company_id=active_cid,
+        asset_id=asset_id,
+        to_branch_id=payload.to_branch_id,
+        reason=payload.reason,
+        require_approval=payload.require_approval,
+    )
+    msg = (
+        "تم إرسال طلب نقل الأصل للاعتماد"
+        if payload.require_approval
+        else f"تم نقل الأصل بنجاح إلى فرع ({res['to_branch_name']})"
+    )
+    return success_response(data=res, message=msg)

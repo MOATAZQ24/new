@@ -12,12 +12,73 @@ import { useToast } from "@/context/ToastContext";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 
+interface UserCompanyLink {
+  company_id: string;
+  company_name_ar: string;
+  role: string;
+  is_default?: boolean;
+  branch_name?: string | null;
+}
+
+interface UserItem {
+  id: string;
+  username: string;
+  email?: string | null;
+  full_name?: string | null;
+  phone?: string | null;
+  job_title?: string | null;
+  account_status: string;
+  is_deleted?: boolean;
+  is_locked?: boolean;
+  is_superadmin?: boolean;
+  must_change_password?: boolean;
+  last_login?: string | null;
+  roles?: string[];
+  companies?: UserCompanyLink[];
+  employee?: {
+    branch_id?: string | null;
+    department_id?: string | null;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
+interface UserCompanyOption {
+  id: string;
+  company_name_ar: string;
+  name_ar?: string;
+}
+
+interface UserBranchOption {
+  id: string;
+  branch_id?: string;
+  branch_name: string;
+}
+
+interface UserDeptOption {
+  id: string;
+  department_name: string;
+}
+
+interface UserActivityLogItem {
+  id: string;
+  action: string;
+  resource_type: string;
+  resource_id?: string | null;
+  timestamp: string;
+}
+
+interface BulkImportResult {
+  imported_count: number;
+  errors?: string[];
+}
+
 export default function UsersManagementPage() {
   const toast = useToast();
   const { user: currentUser, activeCompanyId } = useAuth();
 
   // State
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -25,10 +86,10 @@ export default function UsersManagementPage() {
   const [includeDeleted, setIncludeDeleted] = useState(false);
 
   // Auxiliary data
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [branches, setBranches] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [permissionMatrix, setPermissionMatrix] = useState<any>(null);
+  const [companies, setCompanies] = useState<UserCompanyOption[]>([]);
+  const [branches, setBranches] = useState<UserBranchOption[]>([]);
+  const [departments, setDepartments] = useState<UserDeptOption[]>([]);
+  const [permissionMatrix, setPermissionMatrix] = useState<Record<string, Record<string, string[]>> | null>(null);
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -40,9 +101,9 @@ export default function UsersManagementPage() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showTempPassModal, setShowTempPassModal] = useState(false);
 
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [userActivity, setUserActivity] = useState<any[]>([]);
-  const [userCompanies, setUserCompanies] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [userActivity, setUserActivity] = useState<UserActivityLogItem[]>([]);
+  const [userCompanies, setUserCompanies] = useState<UserCompanyLink[]>([]);
 
   // Action status
   const [actionLoading, setActionLoading] = useState(false);
@@ -87,7 +148,7 @@ export default function UsersManagementPage() {
 
   // Bulk Import State
   const [bulkText, setBulkText] = useState("");
-  const [bulkResult, setBulkResult] = useState<any>(null);
+  const [bulkResult, setBulkResult] = useState<BulkImportResult | null>(null);
 
   const rolesList = [
     "Super Admin",
@@ -107,7 +168,7 @@ export default function UsersManagementPage() {
       if (roleFilter) query += `&role=${encodeURIComponent(roleFilter)}`;
       if (statusFilter) query += `&status=${encodeURIComponent(statusFilter)}`;
 
-      const res = await api.get(query);
+      const res = await api.get<UserItem[]>(query);
       setUsers(res.data || []);
     } catch (err) {
       console.error("Failed to fetch users", err);
@@ -120,8 +181,8 @@ export default function UsersManagementPage() {
   const fetchAuxData = async () => {
     try {
       const [compRes, matRes] = await Promise.allSettled([
-        api.get("/companies"),
-        api.get("/users/permissions/matrix"),
+        api.get<UserCompanyOption[]>("/companies"),
+        api.get<Record<string, Record<string, string[]>>>("/users/permissions/matrix"),
       ]);
 
       if (compRes.status === "fulfilled") {
@@ -137,8 +198,8 @@ export default function UsersManagementPage() {
       if (activeCompanyId) {
         try {
           const [brRes, depRes] = await Promise.all([
-            api.get(`/companies/${activeCompanyId}/branches`),
-            api.get(`/companies/${activeCompanyId}/departments`),
+            api.get<UserBranchOption[]>(`/companies/${activeCompanyId}/branches`),
+            api.get<UserDeptOption[]>(`/companies/${activeCompanyId}/departments`),
           ]);
           setBranches(brRes.data || []);
           setDepartments(depRes.data || []);
@@ -150,17 +211,23 @@ export default function UsersManagementPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, [search, roleFilter, statusFilter, includeDeleted, activeCompanyId]);
+    const t = window.setTimeout(() => {
+      void fetchUsers();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [search, roleFilter, statusFilter, includeDeleted, activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    fetchAuxData();
-  }, [activeCompanyId]);
+    const t = window.setTimeout(() => {
+      void fetchAuxData();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When formCompanyId changes, load branches for that company
   useEffect(() => {
     if (formCompanyId) {
-      api.get(`/companies/${formCompanyId}/branches`).then((res) => {
+      api.get<UserBranchOption[]>(`/companies/${formCompanyId}/branches`).then((res) => {
         setBranches(res.data || []);
       }).catch(() => setBranches([]));
     }
@@ -181,7 +248,7 @@ export default function UsersManagementPage() {
     setActionLoading(true);
     setActionError("");
     try {
-      const res = await api.post("/users", {
+      const res = await api.post<{ temporary_password?: string }>("/users", {
         full_name: formFullName.trim(),
         username: formUsername.trim(),
         email: formEmail.trim(),
@@ -212,15 +279,15 @@ export default function UsersManagementPage() {
         setTempPasswordGenerated(res.data.temporary_password);
         setShowTempPassModal(true);
       }
-    } catch (err: any) {
-      setActionError(err?.message || "فشل إنشاء حساب المستخدم");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل إنشاء حساب المستخدم");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Open Edit Modal
-  const handleOpenEdit = (user: any) => {
+  const handleOpenEdit = (user: UserItem) => {
     setSelectedUser(user);
     setEditFullName(user.full_name || "");
     setEditEmail(user.email || "");
@@ -253,15 +320,15 @@ export default function UsersManagementPage() {
 
       setShowEditModal(false);
       fetchUsers();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل تحديث بيانات المستخدم");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تحديث بيانات المستخدم");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Toggle User Status (Activate / Suspend)
-  const handleToggleStatus = async (user: any) => {
+  const handleToggleStatus = async (user: UserItem) => {
     const newStatus = user.account_status === "Active" ? "Suspended" : "Active";
     const confirmMsg = newStatus === "Suspended"
       ? `هل أنت متأكد من تعليق حساب "${user.username}"؟ سيتم إلغاء جميع جلسات دخوله فوراً.`
@@ -272,46 +339,46 @@ export default function UsersManagementPage() {
     try {
       await api.post(`/users/${user.id}/status`, { account_status: newStatus });
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تغيير حالة الحساب");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تغيير حالة الحساب");
     }
   };
 
   // Soft Delete User
-  const handleDeleteUser = async (user: any) => {
+  const handleDeleteUser = async (user: UserItem) => {
     if (!confirm(`هل أنت متأكد من حذف حساب "${user.username}"؟ سيتم إيقاف دخوله مع الحفاظ على سجل التدقيق والبيانات التاريخية.`)) {
       return;
     }
     try {
       await api.delete(`/users/${user.id}`);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف حساب المستخدم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف حساب المستخدم");
     }
   };
 
   // Restore User
-  const handleRestoreUser = async (user: any) => {
+  const handleRestoreUser = async (user: UserItem) => {
     try {
       await api.post(`/users/${user.id}/restore`);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل استعادة حساب المستخدم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل استعادة حساب المستخدم");
     }
   };
 
   // Unlock Account
-  const handleUnlockUser = async (user: any) => {
+  const handleUnlockUser = async (user: UserItem) => {
     try {
       await api.post(`/users/${user.id}/unlock`);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إلغاء قفل الحساب");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إلغاء قفل الحساب");
     }
   };
 
   // Reset Password Modal
-  const handleOpenReset = (user: any) => {
+  const handleOpenReset = (user: UserItem) => {
     setSelectedUser(user);
     setAdminReauthPassword("");
     setResetCustomPassword("");
@@ -327,7 +394,7 @@ export default function UsersManagementPage() {
     setActionLoading(true);
     setActionError("");
     try {
-      const res = await api.post(`/users/${selectedUser.id}/reset-password`, {
+      const res = await api.post<{ temporary_password?: string }>(`/users/${selectedUser.id}/reset-password`, {
         new_password: resetUseAutoPassword ? null : resetCustomPassword || null,
         must_change_password: resetMustChangePassword,
         reauth_password: adminReauthPassword,
@@ -342,26 +409,26 @@ export default function UsersManagementPage() {
       } else {
         toast.success("تمت إعادة تعيين كلمة المرور بنجاح");
       }
-    } catch (err: any) {
-      setActionError(err?.message || "فشل إعادة تعيين كلمة المرور");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل إعادة تعيين كلمة المرور");
     } finally {
       setActionLoading(false);
     }
   };
 
   // Manage Multi-Company Access
-  const handleOpenCompanyAccess = async (user: any) => {
+  const handleOpenCompanyAccess = async (user: UserItem) => {
     setSelectedUser(user);
     setAccessCompanyId(companies[0]?.id || "");
     setAccessBranchId("");
     setAccessRole("Employee");
     setActionError("");
     try {
-      const res = await api.get(`/users/${user.id}/companies`);
+      const res = await api.get<UserCompanyLink[]>(`/users/${user.id}/companies`);
       setUserCompanies(res.data || []);
       setShowCompanyModal(true);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحميل عضويات الشركات للمستخدم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل عضويات الشركات للمستخدم");
     }
   };
 
@@ -378,11 +445,11 @@ export default function UsersManagementPage() {
         is_default: false,
       });
 
-      const res = await api.get(`/users/${selectedUser.id}/companies`);
+      const res = await api.get<UserCompanyLink[]>(`/users/${selectedUser.id}/companies`);
       setUserCompanies(res.data || []);
       fetchUsers();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل تعيين وصول الشركة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تعيين وصول الشركة");
     } finally {
       setActionLoading(false);
     }
@@ -393,23 +460,23 @@ export default function UsersManagementPage() {
     if (!confirm("هل أنت متأكد من إزالة وصول المستخدم لهذه الشركة؟")) return;
     try {
       await api.delete(`/users/${selectedUser.id}/companies/${companyId}`);
-      const res = await api.get(`/users/${selectedUser.id}/companies`);
+      const res = await api.get<UserCompanyLink[]>(`/users/${selectedUser.id}/companies`);
       setUserCompanies(res.data || []);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إزالة صلاحية الشركة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إزالة صلاحية الشركة");
     }
   };
 
   // View User Activity
-  const handleOpenActivity = async (user: any) => {
+  const handleOpenActivity = async (user: UserItem) => {
     setSelectedUser(user);
     try {
-      const res = await api.get(`/users/${user.id}/activity?limit=30`);
+      const res = await api.get<UserActivityLogItem[]>(`/users/${user.id}/activity?limit=30`);
       setUserActivity(res.data || []);
       setShowActivityModal(true);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحميل سجل النشاط للمستخدم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل سجل النشاط للمستخدم");
     }
   };
 
@@ -423,7 +490,7 @@ export default function UsersManagementPage() {
       // Parse CSV/TSV or lines
       // Format: FullName, Username, Email, Phone, Role
       const lines = bulkText.trim().split("\n");
-      const parsedUsers: any[] = [];
+      const parsedUsers: Array<{ full_name: string; username: string; email: string; phone: string | null; role: string }> = [];
 
       for (const line of lines) {
         const parts = line.split(/[,\t]/).map((p) => p.trim());
@@ -442,11 +509,11 @@ export default function UsersManagementPage() {
         throw new Error("لم يتم العثور على أسطر صالحة. تأكد من إدخال: الاسم، اسم المستخدم، البريد");
       }
 
-      const res = await api.post("/users/bulk-import", { users: parsedUsers });
+      const res = await api.post<BulkImportResult>("/users/bulk-import", { users: parsedUsers });
       setBulkResult(res.data);
       fetchUsers();
-    } catch (err: any) {
-      setActionError(err?.message || "فشل استيراد المستخدمين");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل استيراد المستخدمين");
     } finally {
       setActionLoading(false);
     }
@@ -1496,7 +1563,7 @@ export default function UsersManagementPage() {
                   <div className="font-bold">
                     تم استيراد {bulkResult.imported_count} مستخدم بنجاح!
                   </div>
-                  {bulkResult.errors?.length > 0 && (
+                  {bulkResult.errors && bulkResult.errors.length > 0 && (
                     <div className="text-amber-700">
                       تنبيهات: {bulkResult.errors.join(" • ")}
                     </div>
@@ -1560,14 +1627,14 @@ export default function UsersManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {Object.entries(permissionMatrix).map(([roleName, modulesMap]: [string, any]) => (
+                      {Object.entries(permissionMatrix).map(([roleName, modulesMap]) => (
                         <tr key={roleName} className="hover:bg-slate-50/50">
                           <td className="p-3 font-bold text-primary align-top whitespace-nowrap">
                             {roleName}
                           </td>
                           <td className="p-3">
                             <div className="flex flex-wrap gap-2">
-                              {Object.entries(modulesMap).map(([mod, actions]: [string, any]) => (
+                              {Object.entries(modulesMap).map(([mod, actions]) => (
                                 actions.length > 0 && (
                                   <div
                                     key={mod}

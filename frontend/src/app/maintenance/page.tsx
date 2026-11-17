@@ -5,22 +5,46 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
+interface MaintenanceRecordRow {
+  id: string;
+  title: string;
+  description?: string;
+  action_type: string;
+  target_type: string;
+  target_name?: string;
+  approval_status: string;
+  status: string;
+  assigned_technician_name?: string;
+  change_reason?: string;
+  risk_assessment?: string;
+  rollback_plan?: string;
+}
+
+interface SelectableTarget {
+  id: string;
+  asset_code?: string;
+  asset_name?: string;
+  asset_type?: string;
+  device_name?: string;
+  device_type?: string;
+  management_ip?: string;
+}
+
 export default function MaintenancePage() {
-  const { activeCompanyId, user } = useAuth();
+  const { activeCompanyId } = useAuth();
   const toast = useToast();
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<MaintenanceRecordRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionFilter, setActionFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedRecord, setSelectedRecord] = useState<MaintenanceRecordRow | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // New Record Form
@@ -29,13 +53,13 @@ export default function MaintenancePage() {
   const [description, setDescription] = useState("");
   const [targetType, setTargetType] = useState("infrastructure");
   const [targetId, setTargetId] = useState("");
-  const [assetsList, setAssetsList] = useState<any[]>([]);
-  const [infraList, setInfraList] = useState<any[]>([]);
+  const [assetsList, setAssetsList] = useState<SelectableTarget[]>([]);
+  const [infraList, setInfraList] = useState<SelectableTarget[]>([]);
   const [changeReason, setChangeReason] = useState("");
   const [riskAssessment, setRiskAssessment] = useState("");
   const [windowTime, setWindowTime] = useState("");
   const [rollbackPlan, setRollbackPlan] = useState("");
-  const [cost, setCost] = useState("0");
+  const [cost] = useState("0");
 
   const fetchRecords = async () => {
     setLoading(true);
@@ -43,7 +67,7 @@ export default function MaintenancePage() {
       let url = "/maintenance?";
       if (actionFilter) url += `action_type=${actionFilter}&`;
       if (statusFilter) url += `status=${statusFilter}&`;
-      const res = await api.get(url);
+      const res = await api.get<MaintenanceRecordRow[]>(url);
       setRecords(res.data || []);
     } catch (e) {
       console.error(e);
@@ -53,14 +77,17 @@ export default function MaintenancePage() {
   };
 
   useEffect(() => {
-    fetchRecords();
-  }, [actionFilter, statusFilter, activeCompanyId]);
+    const t = window.setTimeout(() => {
+      void fetchRecords();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [actionFilter, statusFilter, activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openAddModal = async () => {
     try {
       const [aRes, iRes] = await Promise.all([
-        api.get("/assets"),
-        api.get("/infrastructure"),
+        api.get<SelectableTarget[]>("/assets"),
+        api.get<SelectableTarget[]>("/infrastructure"),
       ]);
       setAssetsList(aRes.data || []);
       setInfraList(iRes.data || []);
@@ -95,8 +122,8 @@ export default function MaintenancePage() {
       setRiskAssessment("");
       setRollbackPlan("");
       fetchRecords();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تسجيل العملية");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تسجيل العملية");
     }
   };
 
@@ -105,8 +132,8 @@ export default function MaintenancePage() {
       await api.post(`/maintenance/${recordId}/approve?decision=${decision}`);
       fetchRecords();
       if (showDetailModal) setShowDetailModal(false);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحديث حالة الاعتماد");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحديث حالة الاعتماد");
     }
   };
 

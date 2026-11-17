@@ -17,7 +17,7 @@ interface IntegrationItem {
   display_name: string;
   is_enabled: boolean;
   status: string;
-  config_data: Record<string, any>;
+  config_data: Record<string, string | boolean | undefined>;
   last_tested_at?: string;
   last_error?: string;
 }
@@ -27,8 +27,8 @@ interface LogItem {
   service_name: string;
   event_type: string;
   status: string;
-  payload: any;
-  response_data: any;
+  payload: unknown;
+  response_data: unknown;
   error_message?: string;
   created_at: string;
 }
@@ -119,6 +119,22 @@ interface MessageTemplateItem {
   is_active: boolean;
 }
 
+interface CompanyTaskSummary {
+  id: string;
+  title: string;
+  status: string;
+}
+
+interface IntegrationActionResult {
+  success: boolean;
+  message: string;
+}
+
+function getIntegrationErr(err: unknown, fallback = ""): string {
+  const e = err as { response?: { data?: { detail?: string } }; message?: string } | null;
+  return e?.response?.data?.detail || e?.message || fallback;
+}
+
 export default function IntegrationsCenterPage() {
   const toast = useToast();
   const { activeCompanyId, user, currentCompany } = useAuth();
@@ -138,9 +154,9 @@ export default function IntegrationsCenterPage() {
 
   // Config Modal State
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [currentConfig, setCurrentConfig] = useState<any>({});
+  const [currentConfig, setCurrentConfig] = useState<Record<string, string | boolean | undefined>>({});
   const [savingConfig, setSavingConfig] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testResult, setTestResult] = useState<IntegrationActionResult | null>(null);
   const [testingService, setTestingService] = useState<string | null>(null);
 
   // Telegram Readiness & Linking State
@@ -169,7 +185,7 @@ export default function IntegrationsCenterPage() {
   // Telegram Linking State
   const [linkModalEmployee, setLinkModalEmployee] = useState<{ id: string; name: string } | null>(null);
   const [tokenModalOpen, setTokenModalOpen] = useState(false);
-  const [generatedTokenData, setGeneratedTokenData] = useState<any>(null);
+  const [generatedTokenData, setGeneratedTokenData] = useState<Record<string, unknown> | null>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
 
   // Bot Action Simulation Modal
@@ -177,9 +193,9 @@ export default function IntegrationsCenterPage() {
   const [simEmployeeId, setSimEmployeeId] = useState("");
   const [simTaskId, setSimTaskId] = useState("");
   const [simActionType, setSimActionType] = useState("act:accept");
-  const [simResult, setSimResult] = useState<any>(null);
+  const [simResult, setSimResult] = useState<IntegrationActionResult | null>(null);
   const [simulating, setSimulating] = useState(false);
-  const [companyTasks, setCompanyTasks] = useState<any[]>([]);
+  const [companyTasks, setCompanyTasks] = useState<CompanyTaskSummary[]>([]);
 
   // Employee Filter
   const [empSearch, setEmpSearch] = useState("");
@@ -216,7 +232,7 @@ export default function IntegrationsCenterPage() {
   const fetchIntegrations = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/integrations${getCompanyQuery()}`);
+      const res = await api.get<IntegrationItem[]>(`/integrations${getCompanyQuery()}`);
       setIntegrations(res.data || []);
     } catch (e) {
       console.error(e);
@@ -232,7 +248,7 @@ export default function IntegrationsCenterPage() {
       let url = `/integrations/logs/list?page=1&per_page=30`;
       if (cid) url += `&company_id=${cid}`;
       if (logServiceFilter) url += `&service_name=${logServiceFilter}`;
-      const res = await api.get(url);
+      const res = await api.get<LogItem[]>(url);
       setLogs(res.data || []);
     } catch (e) {
       console.error(e);
@@ -246,10 +262,10 @@ export default function IntegrationsCenterPage() {
     const cidParam = getCompanyQuery();
     try {
       const [statusRes, linksRes, outboxRes, tasksRes] = await Promise.allSettled([
-        api.get(`/telegram/status${cidParam}`),
-        api.get(`/telegram/links/list${cidParam}`),
-        api.get(`/telegram/outbox${cidParam ? cidParam + "&per_page=20" : "?per_page=20"}`),
-        api.get(`/tasks?per_page=50`),
+        api.get<TelegramStatusData>(`/telegram/status${cidParam}`),
+        api.get<EmployeeLinkItem[]>(`/telegram/links/list${cidParam}`),
+        api.get<OutboxItem[]>(`/telegram/outbox${cidParam ? cidParam + "&per_page=20" : "?per_page=20"}`),
+        api.get<CompanyTaskSummary[]>(`/tasks?per_page=50`),
       ]);
 
       if (statusRes.status === "fulfilled" && statusRes.value.data) {
@@ -284,7 +300,7 @@ export default function IntegrationsCenterPage() {
   const fetchMenuData = async () => {
     setMenuLoading(true);
     try {
-      const res = await api.get(`/telegram/menu${getCompanyQuery()}`);
+      const res = await api.get<BotMenuItem[]>(`/telegram/menu${getCompanyQuery()}`);
       setMenuItems(res.data || []);
     } catch (e) {
       console.error(e);
@@ -296,7 +312,7 @@ export default function IntegrationsCenterPage() {
   const fetchTemplatesData = async () => {
     setTemplatesLoading(true);
     try {
-      const res = await api.get(`/telegram/templates${getCompanyQuery()}`);
+      const res = await api.get<MessageTemplateItem[]>(`/telegram/templates${getCompanyQuery()}`);
       const list: MessageTemplateItem[] = res.data || [];
       setTemplates(list);
       if (list.length > 0) {
@@ -316,7 +332,7 @@ export default function IntegrationsCenterPage() {
   const updatePreview = async (key: string, content: string) => {
     setPreviewLoading(true);
     try {
-      const res = await api.post(`/telegram/templates/${key}/preview${getCompanyQuery()}`, {
+      const res = await api.post<{ rendered?: string }>(`/telegram/templates/${key}/preview${getCompanyQuery()}`, {
         template_key: key,
         content_ar: content,
       });
@@ -330,17 +346,21 @@ export default function IntegrationsCenterPage() {
 
   useEffect(() => {
     if (activeCompanyId && !selectedCompanyId) {
-      setSelectedCompanyId(activeCompanyId);
+      const t = window.setTimeout(() => setSelectedCompanyId(activeCompanyId), 0);
+      return () => window.clearTimeout(t);
     }
-  }, [activeCompanyId]);
+  }, [activeCompanyId, selectedCompanyId]);
 
   useEffect(() => {
-    fetchIntegrations();
-    fetchLogs();
-    fetchTelegramData();
-    fetchMenuData();
-    fetchTemplatesData();
-  }, [selectedCompanyId, logServiceFilter]);
+    const t = window.setTimeout(() => {
+      void fetchIntegrations();
+      void fetchLogs();
+      void fetchTelegramData();
+      void fetchMenuData();
+      void fetchTemplatesData();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [selectedCompanyId, logServiceFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleEnable = async (item: IntegrationItem) => {
     try {
@@ -348,8 +368,8 @@ export default function IntegrationsCenterPage() {
         is_enabled: !item.is_enabled,
       });
       fetchIntegrations();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحديث الحالة");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل تحديث الحالة"));
     }
   };
 
@@ -357,11 +377,11 @@ export default function IntegrationsCenterPage() {
     setTestingService(serviceName);
     setTestResult(null);
     try {
-      const res = await api.post(`/integrations/${serviceName}/test${getCompanyQuery()}`);
+      const res = await api.post<IntegrationActionResult>(`/integrations/${serviceName}/test${getCompanyQuery()}`);
       setTestResult(res.data);
       fetchIntegrations();
-    } catch (err: any) {
-      setTestResult({ success: false, message: err?.message || "فشل الاتصال" });
+    } catch (err: unknown) {
+      setTestResult({ success: false, message: getIntegrationErr(err, "فشل الاتصال") });
     } finally {
       setTestingService(null);
     }
@@ -374,7 +394,7 @@ export default function IntegrationsCenterPage() {
     setTgFeedback(null);
     if (item.service_name === "telegram") {
       setBotTokenInput("");
-      setChatIdInput(item.config_data?.chat_id || tgStatus?.chat_id || chatIdInput || "");
+      setChatIdInput(String(item.config_data?.chat_id || tgStatus?.chat_id || chatIdInput || ""));
       setIsTgEnabled(item.is_enabled);
     }
   };
@@ -387,8 +407,8 @@ export default function IntegrationsCenterPage() {
       });
       setActiveModal(null);
       fetchIntegrations();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حفظ الإعدادات");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل حفظ الإعدادات"));
     } finally {
       setSavingConfig(false);
     }
@@ -399,20 +419,20 @@ export default function IntegrationsCenterPage() {
     setTestingTgConnection(true);
     setTgFeedback(null);
     try {
-      const payload: any = {};
+      const payload: { bot_token?: string } = {};
       const tok = (tokenOverride || botTokenInput || "").trim();
       if (tok) payload.bot_token = tok;
-      const res = await api.post(`/telegram/test-connection${getCompanyQuery()}`, payload);
+      const res = await api.post<{ success?: boolean; message?: string }>(`/telegram/test-connection${getCompanyQuery()}`, payload);
       setTgFeedback({
         success: res.data?.success !== false,
         message: res.data?.message || "تم التحقق من الاتصال بنجاح!",
       });
       fetchTelegramData();
       fetchIntegrations();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTgFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل فحص الاتصال بـ Telegram",
+        message: getIntegrationErr(err, "فشل فحص الاتصال بـ Telegram"),
       });
     } finally {
       setTestingTgConnection(false);
@@ -424,17 +444,17 @@ export default function IntegrationsCenterPage() {
     setTgFeedback(null);
     try {
       const cid = (chatIdOverride || chatIdInput || "").trim();
-      const res = await api.post(`/telegram/test-notification${getCompanyQuery()}`, { chat_id: cid || undefined });
+      const res = await api.post<{ success?: boolean; message?: string }>(`/telegram/test-notification${getCompanyQuery()}`, { chat_id: cid || undefined });
       setTgFeedback({
         success: res.data?.success !== false,
         message: res.data?.message || "تم إرسال الإشعار التجريبي بنجاح إلى تليجرام!",
       });
       fetchTelegramData();
       fetchLogs();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTgFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل إرسال الإشعار التجريبي",
+        message: getIntegrationErr(err, "فشل إرسال الإشعار التجريبي"),
       });
     } finally {
       setSendingTgTestNotification(false);
@@ -444,7 +464,7 @@ export default function IntegrationsCenterPage() {
   const handleSaveTelegramConfig = async () => {
     setSavingConfig(true);
     try {
-      const payload: any = {
+      const payload: Record<string, string | boolean> = {
         bot_username: botUsernameInput,
         chat_id: chatIdInput,
         is_enabled: isTgEnabled,
@@ -464,10 +484,10 @@ export default function IntegrationsCenterPage() {
       if (activeModal === "telegram") {
         setActiveModal(null);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTgFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل حفظ إعدادات تليجرام",
+        message: getIntegrationErr(err, "فشل حفظ إعدادات تليجرام"),
       });
     } finally {
       setSavingConfig(false);
@@ -477,15 +497,15 @@ export default function IntegrationsCenterPage() {
   const handleGenerateToken = async (employeeId: string) => {
     setGeneratingToken(true);
     try {
-      const res = await api.post(`/telegram/links/generate-token${getCompanyQuery()}`, {
+      const res = await api.post<Record<string, unknown>>(`/telegram/links/generate-token${getCompanyQuery()}`, {
         employee_id: employeeId,
         expires_in_minutes: 30,
       });
       setGeneratedTokenData(res.data);
       setTokenModalOpen(true);
       fetchTelegramData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل توليد رمز الربط");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل توليد رمز الربط"));
     } finally {
       setGeneratingToken(false);
     }
@@ -496,8 +516,8 @@ export default function IntegrationsCenterPage() {
     try {
       await api.delete(`/telegram/links/${employeeId}${getCompanyQuery()}`);
       fetchTelegramData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إلغاء الربط");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل إلغاء الربط"));
     }
   };
 
@@ -506,19 +526,19 @@ export default function IntegrationsCenterPage() {
     try {
       await api.delete(`/telegram/links/${employeeId}${getCompanyQuery()}`).catch(() => {});
       await handleGenerateToken(employeeId);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إعادة الربط");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل إعادة الربط"));
     }
   };
 
   const handleDispatchOutbox = async () => {
     try {
-      const res = await api.post("/telegram/outbox/dispatch");
+      const res = await api.post<{ processed: number; sent: number; ready_awaiting_token: number }>("/telegram/outbox/dispatch");
       const d = res.data;
       toast.success(`تم تشغيل المعالج! تمت معالجة ${d.processed} عنصر (مرسل: ${d.sent}، بانتظار البوت: ${d.ready_awaiting_token})`);
       fetchTelegramData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تشغيل المعالج");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل تشغيل المعالج"));
     }
   };
 
@@ -541,14 +561,14 @@ export default function IntegrationsCenterPage() {
     }
 
     try {
-      const res = await api.post("/telegram/simulate-action", {
+      const res = await api.post<IntegrationActionResult>("/telegram/simulate-action", {
         telegram_user_id: tgUserId,
         action_str: fullAction,
       });
       setSimResult(res.data);
       fetchTelegramData();
-    } catch (err: any) {
-      setSimResult({ success: false, message: err?.response?.data?.detail || err?.message });
+    } catch (err: unknown) {
+      setSimResult({ success: false, message: getIntegrationErr(err) });
     } finally {
       setSimulating(false);
     }
@@ -588,8 +608,8 @@ export default function IntegrationsCenterPage() {
       setMenuModalOpen(false);
       setEditingMenuItem(null);
       fetchMenuData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حفظ عنصر القائمة");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل حفظ عنصر القائمة"));
     } finally {
       setSavingMenuItem(false);
     }
@@ -600,8 +620,8 @@ export default function IntegrationsCenterPage() {
     try {
       await api.delete(`/telegram/menu/${id}${getCompanyQuery()}`);
       fetchMenuData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الزر");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل حذف الزر"));
     }
   };
 
@@ -621,8 +641,8 @@ export default function IntegrationsCenterPage() {
     try {
       await api.post(`/telegram/menu/reorder${getCompanyQuery()}`, payload);
       fetchMenuData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إعادة الترتيب");
+    } catch (err: unknown) {
+      toast.error(getIntegrationErr(err, "فشل إعادة الترتيب"));
     }
   };
 
@@ -635,10 +655,10 @@ export default function IntegrationsCenterPage() {
         success: true,
         message: res.message || "تم نشر وتحديث أوامر البوت على Telegram بنجاح!",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setPublishFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل نشر الأوامر إلى Telegram",
+        message: getIntegrationErr(err, "فشل نشر الأوامر إلى Telegram"),
       });
     } finally {
       setPublishingCommands(false);
@@ -673,10 +693,10 @@ export default function IntegrationsCenterPage() {
         message: "تم حفظ وتحديث القالب بنجاح!",
       });
       fetchTemplatesData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTemplateFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل حفظ القالب",
+        message: getIntegrationErr(err, "فشل حفظ القالب"),
       });
     } finally {
       setSavingTemplate(false);
@@ -696,10 +716,10 @@ export default function IntegrationsCenterPage() {
         success: true,
         message: res.message || "تم إرسال نموذج القالب بنجاح إلى تليجرام!",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTemplateFeedback({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل إرسال نموذج القالب",
+        message: getIntegrationErr(err, "فشل إرسال نموذج القالب"),
       });
     } finally {
       setTestingSendTemplate(false);
@@ -1473,7 +1493,7 @@ export default function IntegrationsCenterPage() {
                 <div className="divide-y divide-slate-100">
                   {menuItems.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 text-xs">
-                      لا توجد أزرار مضافة حالياً. اضغط "إضافة زر جديد" للبدء.
+                      لا توجد أزرار مضافة حالياً. اضغط &quot;إضافة زر جديد&quot; للبدء.
                     </div>
                   ) : (
                     menuItems.map((item, idx) => (
@@ -1999,7 +2019,7 @@ export default function IntegrationsCenterPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1">Gemini API Key:</label>
                     <input
                       type="password"
-                      value={currentConfig.api_key || ""}
+                      value={String(currentConfig.api_key || "")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, api_key: e.target.value })}
                       placeholder="AIzaSy..."
                       className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
@@ -2008,7 +2028,7 @@ export default function IntegrationsCenterPage() {
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">النموذج (Model):</label>
                     <select
-                      value={currentConfig.model || "gemini-2.0-flash"}
+                      value={String(currentConfig.model || "gemini-2.0-flash")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, model: e.target.value })}
                       className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
                     >
@@ -2025,7 +2045,7 @@ export default function IntegrationsCenterPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1">رابط Webhook URL:</label>
                     <input
                       type="text"
-                      value={currentConfig.webhook_url || ""}
+                      value={String(currentConfig.webhook_url || "")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, webhook_url: e.target.value })}
                       placeholder="https://n8n.your-domain.com/webhook/..."
                       className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
@@ -2035,7 +2055,7 @@ export default function IntegrationsCenterPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1">مفتاح السر (Webhook Secret):</label>
                     <input
                       type="password"
-                      value={currentConfig.webhook_secret || ""}
+                      value={String(currentConfig.webhook_secret || "")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, webhook_secret: e.target.value })}
                       className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
                     />

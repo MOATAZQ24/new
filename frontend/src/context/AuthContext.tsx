@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async () => {
     try {
-      const res = await api.get("/auth/me");
+      const res = await api.get<{ user: UserProfile }>("/auth/me");
       const u: UserProfile = res.data.user;
       setUser(u);
 
@@ -77,7 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    fetchProfile();
+    const t = window.setTimeout(() => {
+      void fetchProfile();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, []);
 
   const setActiveCompanyId = (companyId: string) => {
@@ -90,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", { username, password });
+      const res = await api.post<{ user: UserProfile }>("/auth/login", { username, password });
       const u: UserProfile = res.data.user;
       setUser(u);
       if (u.active_company_id) {

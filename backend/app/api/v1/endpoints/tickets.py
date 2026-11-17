@@ -5,15 +5,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
+from app.models.company import Branch
 from app.models.ticket import HelpDeskTicket, TicketComment
 from app.models.task import Task
-from app.models.user import User, Employee
+from app.models.user import User, Employee, CompanyMembership
 from app.models.asset import TechnicalAsset
 from app.schemas.ticket import TicketCreate, TicketUpdate, TicketCommentCreate
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
+from app.services.task_assignment import validate_assignee
 from app.services import gemini_service
 
 router = APIRouter(prefix="/tickets", tags=["IT Help Desk"])
@@ -46,7 +48,7 @@ def list_tickets(
     query = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid)
 
     # If simple employee role, only show their submitted tickets
-    user_roles = get_user_roles(current_user, db)
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
     if "Employee" in user_roles and len(user_roles) == 1 and not current_user.is_superadmin:
         if current_user.employee_id:
             query = query.filter(HelpDeskTicket.requester_id == current_user.employee_id)
@@ -119,7 +121,10 @@ def create_ticket(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    validate_company_fk(db, Branch, payload.branch_id, target_cid, "الفرع")
+    validate_company_fk(db, Employee, payload.requester_id, target_cid, "مقدم الطلب")
+    validate_company_fk(db, TechnicalAsset, payload.related_asset_id, target_cid, "الأصل المرتبط")
     t_number = generate_ticket_number(target_cid, db)
 
     # Resolve requester
@@ -173,10 +178,7 @@ def get_ticket(
     if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
 
-    if not current_user.is_superadmin and ticket.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
-
-    user_roles = get_user_roles(current_user, db)
+    user_roles = get_user_roles(current_user, db, company_id=ticket.company_id)
     is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
 
     # Fetch comments: Filter out internal notes for non-staff employees!
@@ -241,22 +243,35 @@ def update_ticket_status(
         raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
 
     if not current_user.is_superadmin and ticket.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
-
-    if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية التعديل")
 
     old_status = ticket.status
     ticket.status = new_status
 
     if technician_id:
+        tech_user = db.query(User).filter(User.id == technician_id, User.is_deleted == False).first()
+        if not tech_user:
+            raise HTTPException(status_code=400, detail="الفني المحدد غير موجود")
+        if not tech_user.is_superadmin:
+            tech_mem = db.query(CompanyMembership).filter(
+                CompanyMembership.user_id == technician_id,
+                CompanyMembership.company_id == ticket.company_id,
+                CompanyMembership.status == "Active",
+            ).first()
+            if not tech_mem:
+                raise HTTPException(status_code=400, detail="الفني المحدد غير تابع لهذه المنشأة")
         ticket.assigned_technician_id = technician_id
     elif new_status == "In Progress" and not ticket.assigned_technician_id:
         ticket.assigned_technician_id = current_user.id
 
     now = datetime.utcnow()
-    if new_status == "Resolved" and not ticket.resolved_at:
-        ticket.resolved_at = now
+    if new_status in ("Open", "Assigned", "In Progress", "Waiting for User"):
+        ticket.resolved_at = None
+        ticket.closed_at = None
+    elif new_status == "Resolved":
+        ticket.closed_at = None
+        if not ticket.resolved_at:
+            ticket.resolved_at = now
     elif new_status == "Closed":
         ticket.closed_at = now
         if not ticket.resolved_at:
@@ -310,7 +325,7 @@ def add_ticket_comment(
     if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
 
-    user_roles = get_user_roles(current_user, db)
+    user_roles = get_user_roles(current_user, db, company_id=ticket.company_id)
     is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
 
     # Only staff can post internal technician notes
@@ -344,6 +359,9 @@ def convert_ticket_to_task(
 
     if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
+
+    if assigned_to_id:
+        validate_assignee(db, ticket.company_id, assigned_to_id)
 
     task = Task(
         company_id=ticket.company_id,

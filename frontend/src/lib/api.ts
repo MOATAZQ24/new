@@ -5,7 +5,7 @@
 
 export const API_BASE = "/api/v1";
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
   pagination?: {
@@ -18,10 +18,10 @@ export interface ApiResponse<T = any> {
 
 export class ApiError extends Error {
   status: number;
-  data: any;
-  response: { status: number; data: any };
+  data: unknown;
+  response: { status: number; data: unknown };
 
-  constructor(message: string, status: number, data: any) {
+  constructor(message: string, status: number, data: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -30,25 +30,27 @@ export class ApiError extends Error {
   }
 }
 
-export function parseApiErrorMessage(jsonResult: any, status: number = 500): string {
-  if (!jsonResult) {
+export function parseApiErrorMessage(jsonResult: unknown, status: number = 500): string {
+  if (!jsonResult || typeof jsonResult !== "object") {
     return `خطأ في الخادم (رمز الحالة: ${status})`;
   }
+  const obj = jsonResult as Record<string, unknown>;
 
   // 1. Plain string detail
-  if (typeof jsonResult.detail === "string" && jsonResult.detail.trim()) {
-    return jsonResult.detail;
+  if (typeof obj.detail === "string" && obj.detail.trim()) {
+    return obj.detail;
   }
 
   // 2. Array of validation errors (Pydantic / FastAPI 422)
-  if (Array.isArray(jsonResult.detail) && jsonResult.detail.length > 0) {
-    const messages = jsonResult.detail.map((err: any) => {
+  if (Array.isArray(obj.detail) && obj.detail.length > 0) {
+    const messages = obj.detail.map((err: unknown) => {
       if (typeof err === "string") return err;
       if (typeof err === "object" && err !== null) {
-        const fieldLoc = Array.isArray(err.loc)
-          ? err.loc.filter((segment: any) => segment !== "body").join(".")
-          : (err.loc ? String(err.loc) : "");
-        const msg = err.msg || err.message || JSON.stringify(err);
+        const errObj = err as Record<string, unknown>;
+        const fieldLoc = Array.isArray(errObj.loc)
+          ? errObj.loc.filter((segment) => segment !== "body").map(String).join(".")
+          : (errObj.loc ? String(errObj.loc) : "");
+        const msg = String(errObj.msg || errObj.message || JSON.stringify(errObj));
         return fieldLoc ? `${fieldLoc}: ${msg}` : msg;
       }
       return String(err);
@@ -57,29 +59,31 @@ export function parseApiErrorMessage(jsonResult: any, status: number = 500): str
   }
 
   // 3. Object detail
-  if (typeof jsonResult.detail === "object" && jsonResult.detail !== null) {
-    return jsonResult.detail.message || jsonResult.detail.msg || JSON.stringify(jsonResult.detail);
+  if (typeof obj.detail === "object" && obj.detail !== null) {
+    const detailObj = obj.detail as Record<string, unknown>;
+    return String(detailObj.message || detailObj.msg || JSON.stringify(detailObj));
   }
 
   // 4. Plain string message
-  if (typeof jsonResult.message === "string" && jsonResult.message.trim()) {
-    return jsonResult.message;
+  if (typeof obj.message === "string" && obj.message.trim()) {
+    return obj.message;
   }
 
   // 5. Object message
-  if (typeof jsonResult.message === "object" && jsonResult.message !== null) {
-    return jsonResult.message.detail || JSON.stringify(jsonResult.message);
+  if (typeof obj.message === "object" && obj.message !== null) {
+    const msgObj = obj.message as Record<string, unknown>;
+    return String(msgObj.detail || JSON.stringify(msgObj));
   }
 
   // 6. Generic error key
-  if (typeof jsonResult.error === "string" && jsonResult.error.trim()) {
-    return jsonResult.error;
+  if (typeof obj.error === "string" && obj.error.trim()) {
+    return obj.error;
   }
 
   return `حدث خطأ أثناء تنفيذ الطلب (رمز الحالة: ${status})`;
 }
 
-export async function apiRequest<T = any>(
+export async function apiRequest<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
@@ -107,7 +111,7 @@ export async function apiRequest<T = any>(
     credentials: "include", // Sends HttpOnly session cookies
   });
 
-  let jsonResult: any;
+  let jsonResult: unknown;
   try {
     jsonResult = await response.json();
   } catch {
@@ -132,9 +136,9 @@ export async function apiRequest<T = any>(
 }
 
 export const api = {
-  get: <T = any>(
+  get: <T = unknown>(
     url: string,
-    options?: { params?: Record<string, any>; headers?: Record<string, string> } | Record<string, string>
+    options?: { params?: Record<string, string | number | boolean | null | undefined>; headers?: Record<string, string> } | Record<string, string>
   ) => {
     let finalUrl = url;
     let headers: Record<string, string> | undefined;
@@ -157,18 +161,18 @@ export const api = {
 
     return apiRequest<T>(finalUrl, { method: "GET", headers });
   },
-  post: <T = any>(url: string, data?: any, headers?: Record<string, string>) =>
+  post: <T = unknown>(url: string, data?: unknown, headers?: Record<string, string>) =>
     apiRequest<T>(url, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
       headers,
     }),
-  put: <T = any>(url: string, data?: any, headers?: Record<string, string>) =>
+  put: <T = unknown>(url: string, data?: unknown, headers?: Record<string, string>) =>
     apiRequest<T>(url, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
       headers,
     }),
-  delete: <T = any>(url: string, headers?: Record<string, string>) =>
+  delete: <T = unknown>(url: string, headers?: Record<string, string>) =>
     apiRequest<T>(url, { method: "DELETE", headers }),
 };

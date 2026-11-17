@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
 from app.models.maintenance import MaintenanceRecord
 from app.models.asset import TechnicalAsset
 from app.models.infrastructure import ITInfrastructure
-from app.models.user import User
+from app.models.user import User, Employee
 from app.schemas.maintenance import MaintenanceCreate, MaintenanceUpdate
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
@@ -116,7 +116,13 @@ def create_maintenance(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    if payload.target_type == "asset":
+        validate_company_fk(db, TechnicalAsset, payload.target_id, target_cid, "الأصل المستهدف")
+    elif payload.target_type == "infrastructure":
+        validate_company_fk(db, ITInfrastructure, payload.target_id, target_cid, "جهاز البنية التحتية المستهدف")
+    validate_company_fk(db, TechnicalAsset, payload.replacement_asset_id, target_cid, "الأصل البديل")
+    validate_company_fk(db, Employee, payload.reported_by_id, target_cid, "المبلغ")
 
     record = MaintenanceRecord(
         company_id=target_cid,
@@ -147,8 +153,14 @@ def create_maintenance(
     # If it's a replacement and completed, update old and new asset statuses
     if payload.action_type == "Replacement" and payload.replacement_asset_id:
         if payload.target_type == "asset":
-            old_asset = db.query(TechnicalAsset).filter(TechnicalAsset.id == payload.target_id).first()
-            new_asset = db.query(TechnicalAsset).filter(TechnicalAsset.id == payload.replacement_asset_id).first()
+            old_asset = db.query(TechnicalAsset).filter(
+                TechnicalAsset.id == payload.target_id,
+                TechnicalAsset.company_id == target_cid,
+            ).first()
+            new_asset = db.query(TechnicalAsset).filter(
+                TechnicalAsset.id == payload.replacement_asset_id,
+                TechnicalAsset.company_id == target_cid,
+            ).first()
             if old_asset and payload.status == "Completed":
                 old_asset.status = "Damaged"
             if new_asset and payload.status == "Completed" and old_asset and old_asset.assigned_employee_id:

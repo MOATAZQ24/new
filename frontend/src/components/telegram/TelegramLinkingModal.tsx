@@ -2,16 +2,59 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { Icons, CopyIcon, CheckIcon } from "@/components/ui/Icons";
+import { CopyIcon } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import TelegramActionPermissions from "./TelegramActionPermissions";
+
+interface TelegramActivityLog {
+  id: string;
+  created_at?: string;
+  action: string;
+  status: string;
+  details?: Record<string, unknown> | string;
+  error_message?: string;
+  ip_address?: string;
+}
+
+interface TelegramLinkDetails {
+  is_verified?: boolean;
+  bot_username?: string;
+  employee?: {
+    full_name?: string;
+    job_title?: string;
+  };
+  user?: {
+    username?: string;
+    roles?: string[];
+  };
+  link?: {
+    is_verified?: boolean;
+    allowed_modules?: string[];
+    notification_preferences?: Record<string, boolean>;
+    notifications_enabled?: boolean;
+    data_scope?: string;
+    telegram_username?: string;
+    telegram_user_id?: string;
+    telegram_chat_id?: string;
+    linked_at?: string;
+    permission_policy?: { actions?: Record<string, string[]>; scope?: string };
+  };
+  permissions_matrix?: {
+    max_permitted_modules?: string[];
+    effective_actions?: Record<string, string[]>;
+    maximum_actions?: Record<string, string[]>;
+    can_manage?: boolean;
+    maximum_scope?: string;
+  };
+  activity_logs?: TelegramActivityLog[];
+}
 
 interface TelegramLinkingModalProps {
   isOpen: boolean;
   onClose: () => void;
   employeeId: string;
   employeeName: string;
-  onVerified?: (data: any) => void;
+  onVerified?: (data: TelegramLinkDetails) => void;
   companyId?: string;
   initialTab?: "overview" | "permissions" | "activity";
 }
@@ -32,7 +75,7 @@ export default function TelegramLinkingModal({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Connection & Details Data
-  const [details, setDetails] = useState<any>(null);
+  const [details, setDetails] = useState<TelegramLinkDetails | null>(null);
   const [isVerified, setIsVerified] = useState(false);
 
   // Linking token state (for unlinked or re-linking)
@@ -80,7 +123,7 @@ export default function TelegramLinkingModal({
     setSuccessMessage(null);
     try {
       const q = companyId ? `?company_id=${companyId}` : "";
-      const res = await api.get(`/telegram/links/${employeeId}/details${q}`);
+      const res = await api.get<TelegramLinkDetails>(`/telegram/links/${employeeId}/details${q}`);
       if (generation !== generationRef.current) return;
       const d = res.data;
       setDetails(d);
@@ -100,7 +143,7 @@ export default function TelegramLinkingModal({
         setActiveTab("link_command");
         startLinkingWorkflow();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (generation !== generationRef.current) return;
       console.warn("Could not fetch link details directly, starting linking flow", err);
       setIsVerified(false);
@@ -125,7 +168,13 @@ export default function TelegramLinkingModal({
 
     try {
       const q = companyId ? `?company_id=${companyId}` : "";
-      const res = await api.post(`/telegram/links/generate-token${q}`, {
+      const res = await api.post<{
+        token: string;
+        command?: string;
+        bot_username?: string;
+        expires_at: string;
+        pin_code?: string;
+      }>(`/telegram/links/generate-token${q}`, {
         employee_id: employeeId,
         expires_in_minutes: 30,
       });
@@ -143,15 +192,20 @@ export default function TelegramLinkingModal({
       // Poll every 2.5 seconds for live status
       pollingRef.current = setInterval(async () => {
         try {
-          const statusRes = await api.get(`/telegram/links/${employeeId}/status${q}`);
+          const statusRes = await api.get<{
+            is_verified?: boolean;
+            is_pending?: boolean;
+            last_error?: string;
+            worker_status?: { is_running?: boolean; last_error?: string };
+          }>(`/telegram/links/${employeeId}/status${q}`);
           const s = statusRes.data;
           if (generation !== generationRef.current) return;
           if (s && s.is_verified) {
             stopPolling();
             setIsVerified(true);
-            if (onVerified) onVerified(s);
+            if (onVerified) onVerified(s as unknown as TelegramLinkDetails);
             // Refresh full details to populate permissions and tabs
-            const detRes = await api.get(`/telegram/links/${employeeId}/details${q}`);
+            const detRes = await api.get<TelegramLinkDetails>(`/telegram/links/${employeeId}/details${q}`);
             setDetails(detRes.data);
             setActiveTab("overview");
           } else if (s) {
@@ -174,25 +228,30 @@ export default function TelegramLinkingModal({
           }
         }
       }, 2500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to generate token", err);
-      setError(err?.response?.data?.detail || err?.message || "فشل توليد رمز الربط");
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(errObj?.response?.data?.detail || errObj?.message || "فشل توليد رمز الربط");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    let t: number | undefined;
     if (isOpen && employeeId) {
-      fetchDetails();
+      t = window.setTimeout(() => {
+        void fetchDetails();
+      }, 0);
     } else {
       stopPolling();
     }
     return () => {
+      if (t !== undefined) window.clearTimeout(t);
       generationRef.current += 1;
       stopPolling();
     };
-  }, [isOpen, employeeId, companyId]);
+  }, [isOpen, employeeId, companyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCopyCommand = async () => {
     if (!tokenData) return;
@@ -200,7 +259,7 @@ export default function TelegramLinkingModal({
       await navigator.clipboard.writeText(tokenData.command);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
-    } catch (e) {
+    } catch {
       alert("يرجى تحديد النص ونسخه يدوياً");
     }
   };
@@ -219,10 +278,11 @@ export default function TelegramLinkingModal({
         success: true,
         message: res.message || "تم إرسال رسالة الاختبار بنجاح!",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
       setTestResult({
         success: false,
-        message: err?.response?.data?.detail || err?.message || "فشل إرسال رسالة الاختبار",
+        message: errObj?.response?.data?.detail || errObj?.message || "فشل إرسال رسالة الاختبار",
       });
     } finally {
       setSendingTest(false);
@@ -244,8 +304,9 @@ export default function TelegramLinkingModal({
       });
       setSuccessMessage("تم حفظ صلاحيات وتفضيلات Telegram بنجاح!");
       setTimeout(() => setSuccessMessage(null), 4000);
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || err?.message || "فشل حفظ الصلاحيات");
+    } catch (err: unknown) {
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(errObj?.response?.data?.detail || errObj?.message || "فشل حفظ الصلاحيات");
     } finally {
       setSavingPermissions(false);
     }
@@ -264,7 +325,7 @@ export default function TelegramLinkingModal({
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  const applyTemplate = (template: any) => {
+  const applyTemplate = (template: { name: string; modules?: string[]; data_scope?: string }) => {
     const maxPermitted = details?.permissions_matrix?.max_permitted_modules || [];
     const validModules = (template.modules || []).filter((m: string) => maxPermitted.includes(m));
     setAllowedModules(validModules);
@@ -286,8 +347,9 @@ export default function TelegramLinkingModal({
       if (onVerified) onVerified({ is_verified: false });
       setActiveTab("link_command");
       startLinkingWorkflow();
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || err?.message || "فشل إلغاء الربط");
+    } catch (err: unknown) {
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(errObj?.response?.data?.detail || errObj?.message || "فشل إلغاء الربط");
     } finally {
       setLoading(false);
     }
@@ -518,7 +580,7 @@ export default function TelegramLinkingModal({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {details.activity_logs.map((log: any) => (
+                    {details.activity_logs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-50/50">
                         <td className="p-2.5 font-mono text-[11px] text-slate-500">
                           {log.created_at ? log.created_at.slice(0, 16).replace("T", " ") : "—"}

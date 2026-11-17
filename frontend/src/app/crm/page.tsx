@@ -7,6 +7,7 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Icons } from "@/components/ui/Icons";
 import { Modal } from "@/components/ui/Modal";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -63,6 +64,8 @@ export default function CrmDashboardPage() {
   const { activeCompanyId } = useAuth();
   const toast = useToast();
   const [data, setData] = useState<CrmOverviewData | null>(null);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [companyBranches, setCompanyBranches] = useState<{ id: string; branch_name: string }[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string; employee_number: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,10 +73,11 @@ export default function CrmDashboardPage() {
   const [showCustModal, setShowCustModal] = useState(false);
   const [custCode, setCustCode] = useState("");
   const [custName, setCustName] = useState("");
-  const [custIndustry, setCustIndustry] = useState("التقنية والاتصالات");
+  const [custIndustry] = useState("التقنية والاتصالات");
   const [custContact, setCustContact] = useState("");
   const [custPhone, setCustPhone] = useState("");
   const [custOwnerId, setCustOwnerId] = useState("");
+  const [custBranchId, setCustBranchId] = useState("");
 
   // Add Opportunity Modal
   const [showOppModal, setShowOppModal] = useState(false);
@@ -87,21 +91,33 @@ export default function CrmDashboardPage() {
   const fetchCrm = useCallback(async () => {
     setLoading(true);
     try {
-      const [crmRes, empRes] = await Promise.all([
-        api.get<CrmOverviewData>("/crm/overview"),
+      const bq = selectedBranchIds.length > 0 ? `?branch_ids=${encodeURIComponent(selectedBranchIds.join(","))}` : "";
+      const [crmRes, empRes, brRes] = await Promise.all([
+        api.get<CrmOverviewData>(`/crm/overview${bq}`),
         api.get<{ id: string; full_name: string; employee_number: string }[]>("/employees?per_page=100"),
+        activeCompanyId
+          ? api.get<{ id: string; branch_name: string }[]>(`/companies/${activeCompanyId}/branches`)
+          : Promise.resolve({ data: [] as { id: string; branch_name: string }[] }),
       ]);
       setData(crmRes.data);
       setEmployees(empRes.data || []);
+      const branches = brRes.data || [];
+      setCompanyBranches(branches);
+      if (branches.length > 0) {
+        setCustBranchId((prev) => prev || selectedBranchIds[0] || branches[0].id);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل بيانات CRM");
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [activeCompanyId, selectedBranchIds, toast]);
 
   useEffect(() => {
-    void fetchCrm();
+    const timer = window.setTimeout(() => {
+      void fetchCrm();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [activeCompanyId, fetchCrm]);
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
@@ -114,6 +130,7 @@ export default function CrmDashboardPage() {
         contact_person: custContact,
         phone: custPhone,
         account_owner_id: custOwnerId || undefined,
+        branch_id: custBranchId || selectedBranchIds[0] || companyBranches[0]?.id || undefined,
       });
       toast.success("تم تسجيل العميل بنجاح");
       setShowCustModal(false);
@@ -191,6 +208,13 @@ export default function CrmDashboardPage() {
           }
         />
 
+        {/* Canonical 5-Branch Filter Bar */}
+        <BranchIntelligenceFilterBar
+          selectedBranchIds={selectedBranchIds}
+          onChangeBranchIds={setSelectedBranchIds}
+          label="تصفية العملاء والفرص البيعية حسب الفرع المعتمد"
+        />
+
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
@@ -202,14 +226,14 @@ export default function CrmDashboardPage() {
           />
           <StatsCard
             title="قيمة الفرص البيعية المفتوحة"
-            value={loading ? "..." : `${(data?.kpis.open_pipeline_value_sar || 0).toLocaleString()} ر.س`}
+            value={loading ? "..." : `${(data?.kpis.open_pipeline_value_sar || 0).toLocaleString("en-US")} ر.س`}
             subtitle={`عدد الفرص: ${data?.kpis.total_opportunities || 0}`}
             icon={<Icons.Globe size={20} />}
             accentColor="border-[#187A5A]"
           />
           <StatsCard
             title="العقود والفرص المكسوبة (Won)"
-            value={loading ? "..." : `${(data?.kpis.won_revenue_sar || 0).toLocaleString()} ر.س`}
+            value={loading ? "..." : `${(data?.kpis.won_revenue_sar || 0).toLocaleString("en-US")} ر.س`}
             subtitle="إيرادات فعلية مسجلة في النظام"
             icon={<Icons.CheckCircle size={20} />}
             accentColor="border-emerald-600"
@@ -266,7 +290,7 @@ export default function CrmDashboardPage() {
                         <td className="py-2 px-2 font-bold text-slate-900">{o.title}</td>
                         <td className="py-2 px-2 text-slate-600">{o.customer_name}</td>
                         <td className="py-2 px-2 text-slate-700">{o.owner_name}</td>
-                        <td className="py-2 px-2 font-mono font-bold">{o.expected_value_sar.toLocaleString()}</td>
+                        <td className="py-2 px-2 font-mono font-bold">{o.expected_value_sar.toLocaleString("en-US")}</td>
                         <td className="py-2 px-2">
                           <select
                             aria-label={`تغيير مرحلة ${o.title}`}
@@ -341,20 +365,39 @@ export default function CrmDashboardPage() {
                 />
               </div>
             </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">الموظف المسؤول عن الحساب</label>
-              <select
-                value={custOwnerId}
-                onChange={(e) => setCustOwnerId(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-2.5"
-              >
-                <option value="">اختر من الدليل الموحد للموظفين...</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.full_name} (#{emp.employee_number})
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">الفرع المعتمد *</label>
+                <select
+                  aria-label="الفرع المعتمد للعميل"
+                  required
+                  value={custBranchId}
+                  onChange={(e) => setCustBranchId(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl p-2.5"
+                >
+                  <option value="">اختر الفرع...</option>
+                  {companyBranches.map((br) => (
+                    <option key={br.id} value={br.id}>
+                      {br.branch_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">الموظف المسؤول عن الحساب</label>
+                <select
+                  value={custOwnerId}
+                  onChange={(e) => setCustOwnerId(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl p-2.5"
+                >
+                  <option value="">اختر من الدليل الموحد للموظفين...</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.full_name} (#{emp.employee_number})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

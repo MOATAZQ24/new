@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.core.rbac import Action, Module, has_module_permission, require_permission
 from app.core.response import paginate, success_response
-from app.core.security import get_current_user, get_user_company_id, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, resolve_company_scope, validate_company_fk
 from app.models.asset import AssetCustody, TechnicalAsset
 from app.models.company import Branch, Company, Department
 from app.models.enterprise import (
@@ -175,6 +175,7 @@ hrm_router = APIRouter(prefix="/hrm", tags=["HRM & Attendance"])
 @hrm_router.get("/overview")
 def get_hrm_overview(
     branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
     department_id: Optional[uuid.UUID] = None,
     month: Optional[str] = None,  # YYYY-MM
     current_user: User = Depends(require_permission(Module.HRM, Action.VIEW)),
@@ -182,6 +183,11 @@ def get_hrm_overview(
     db: Session = Depends(get_db),
 ):
     """Return HR Dashboard KPIs, headcount distributions, attendance analytics, and leave requests."""
+    from sqlalchemy import or_
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    enterprise_service.ensure_canonical_five_branches(db, active_cid)
+    selected_branches = enterprise_service.parse_branch_ids_filter(db, active_cid, branch_id, branch_ids)
     today = arabic_nlp.riyadh_today()
     if month and len(month) == 7 and "-" in month:
         try:
@@ -196,11 +202,22 @@ def get_hrm_overview(
         period_end = today
 
     emp_q = db.query(Employee).filter(Employee.company_id == active_cid)
-    if branch_id:
-        emp_q = emp_q.filter(Employee.branch_id == branch_id)
+    if selected_branches:
+        sub_emp = (
+            db.query(EmployeeBranchAssignment.employee_id)
+            .filter(
+                EmployeeBranchAssignment.company_id == active_cid,
+                EmployeeBranchAssignment.branch_id.in_(selected_branches),
+                EmployeeBranchAssignment.status == "Active",
+            )
+            .subquery()
+        )
+        emp_q = emp_q.filter(or_(Employee.branch_id.in_(selected_branches), Employee.id.in_(sub_emp)))
     if department_id:
         emp_q = emp_q.filter(Employee.department_id == department_id)
-    employees = emp_q.all()
+    # Deduplicate by Employee.id
+    emp_map = {e.id: e for e in emp_q.all()}
+    employees = list(emp_map.values())
 
     total_headcount = len(employees)
     active_headcount = sum(1 for e in employees if e.employment_status == "Active")
@@ -244,19 +261,41 @@ def get_hrm_overview(
         "غائب مؤكد (Absent)": sum(1 for a in att_rows if a.status == "Absent"),
     }
 
-    leave_rows = (
+    leave_q = (
         db.query(LeaveRequest)
         .options(joinedload(LeaveRequest.employee))
         .filter(LeaveRequest.company_id == active_cid)
-        .order_by(LeaveRequest.created_at.desc())
-        .limit(30)
-        .all()
     )
+    if selected_branches or department_id:
+        leave_rows = (
+            leave_q.filter(LeaveRequest.employee_id.in_(emp_ids))
+            .order_by(LeaveRequest.created_at.desc())
+            .limit(30)
+            .all()
+            if emp_ids
+            else []
+        )
+    else:
+        leave_rows = leave_q.order_by(LeaveRequest.created_at.desc()).limit(30).all()
 
-    # Workload distribution (top 10 employees by active tasks)
+    # Workload distribution (batch query — zero N+1)
+    top_emps = employees[:20]
+    top_emp_ids = [e.id for e in top_emps]
+    tasks_for_top = (
+        db.query(Task)
+        .filter(Task.company_id == active_cid, Task.assigned_to_id.in_(top_emp_ids))
+        .all()
+        if top_emp_ids
+        else []
+    )
+    tasks_by_emp: Dict[uuid.UUID, List[Task]] = {}
+    for t in tasks_for_top:
+        if t.assigned_to_id:
+            tasks_by_emp.setdefault(t.assigned_to_id, []).append(t)
+
     workload_rows = []
-    for e in employees[:20]:
-        emp_tasks = db.query(Task).filter(Task.company_id == active_cid, Task.assigned_to_id == e.id).all()
+    for e in top_emps:
+        emp_tasks = tasks_by_emp.get(e.id, [])
         done_c = sum(1 for t in emp_tasks if t.status == "Completed")
         act_c = sum(1 for t in emp_tasks if t.status not in ("Completed", "Cancelled", "Rejected"))
         ovd_c = sum(
@@ -505,6 +544,7 @@ crm_router = APIRouter(prefix="/crm", tags=["CRM & Pipeline"])
 @crm_router.get("/overview")
 def get_crm_overview(
     branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
     stage: Optional[str] = None,
     search: Optional[str] = None,
     current_user: User = Depends(require_permission(Module.CRM, Action.VIEW)),
@@ -512,13 +552,15 @@ def get_crm_overview(
     db: Session = Depends(get_db),
 ):
     """Return CRM Dashboard KPIs, pipeline stages, customers, opportunities, and follow-up activities."""
+    enterprise_service.ensure_canonical_five_branches(db, active_cid)
+    selected_branches = enterprise_service.parse_branch_ids_filter(db, active_cid, branch_id, branch_ids)
     cust_q = (
         db.query(CRMCustomer)
         .options(joinedload(CRMCustomer.account_owner), joinedload(CRMCustomer.branch))
         .filter(CRMCustomer.company_id == active_cid)
     )
-    if branch_id:
-        cust_q = cust_q.filter(CRMCustomer.branch_id == branch_id)
+    if selected_branches:
+        cust_q = cust_q.filter(CRMCustomer.branch_id.in_(selected_branches))
     if search:
         s = f"%{search.strip()}%"
         cust_q = cust_q.filter(
@@ -528,23 +570,42 @@ def get_crm_overview(
         )
     customers = cust_q.order_by(CRMCustomer.created_at.desc()).all()
 
+    filtered_customer_ids = [c.id for c in customers]
     opp_q = (
         db.query(CRMOpportunity)
         .options(joinedload(CRMOpportunity.customer), joinedload(CRMOpportunity.owner))
         .filter(CRMOpportunity.company_id == active_cid)
     )
-    if stage:
-        opp_q = opp_q.filter(CRMOpportunity.stage == stage)
-    opportunities = opp_q.order_by(CRMOpportunity.created_at.desc()).all()
+    if selected_branches or search:
+        opportunities = (
+            opp_q.filter(CRMOpportunity.customer_id.in_(filtered_customer_ids))
+            .filter(CRMOpportunity.stage == stage if stage else True)
+            .order_by(CRMOpportunity.created_at.desc())
+            .all()
+            if filtered_customer_ids
+            else []
+        )
+    else:
+        if stage:
+            opp_q = opp_q.filter(CRMOpportunity.stage == stage)
+        opportunities = opp_q.order_by(CRMOpportunity.created_at.desc()).all()
 
-    activities = (
+    act_q = (
         db.query(CRMActivity)
         .options(joinedload(CRMActivity.customer), joinedload(CRMActivity.employee))
         .filter(CRMActivity.company_id == active_cid)
-        .order_by(CRMActivity.created_at.desc())
-        .limit(30)
-        .all()
     )
+    if selected_branches or search:
+        activities = (
+            act_q.filter(CRMActivity.customer_id.in_(filtered_customer_ids))
+            .order_by(CRMActivity.created_at.desc())
+            .limit(30)
+            .all()
+            if filtered_customer_ids
+            else []
+        )
+    else:
+        activities = act_q.order_by(CRMActivity.created_at.desc()).limit(30).all()
 
     stages_order = ["Lead", "Qualified", "Proposal", "Negotiation", "Won", "Lost"]
     stage_counts: Dict[str, int] = {st: 0 for st in stages_order}
@@ -643,6 +704,7 @@ def create_crm_customer(
     if existing:
         raise HTTPException(status_code=400, detail="كود العميل مسجل مسبقاً في هذه الشركة")
 
+    validate_company_fk(db, Branch, payload.branch_id, active_cid, "الفرع")
     if payload.account_owner_id:
         owner = db.query(Employee).filter(Employee.id == payload.account_owner_id, Employee.company_id == active_cid).first()
         if not owner:
@@ -694,6 +756,7 @@ def create_crm_opportunity(
     if existing:
         raise HTTPException(status_code=400, detail="الرقم المرجعي للفرصة البيعية مسجل مسبقاً")
 
+    validate_company_fk(db, CRMCustomer, payload.customer_id, active_cid, "العميل")
     if payload.owner_id:
         owner = db.query(Employee).filter(Employee.id == payload.owner_id, Employee.company_id == active_cid).first()
         if not owner:
@@ -804,6 +867,9 @@ projects_router = APIRouter(prefix="/projects", tags=["Enterprise Projects"])
 
 @projects_router.get("")
 def list_projects(
+    branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
+    department_id: Optional[uuid.UUID] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
     current_user: User = Depends(require_permission(Module.PROJECTS, Action.VIEW)),
@@ -811,12 +877,18 @@ def list_projects(
     db: Session = Depends(get_db),
 ):
     """Return Projects Dashboard KPIs, project progress, milestones, Gantt schedule data, and task counts."""
+    enterprise_service.ensure_canonical_five_branches(db, active_cid)
+    selected_branches = enterprise_service.parse_branch_ids_filter(db, active_cid, branch_id, branch_ids)
     today = arabic_nlp.riyadh_today()
     q = (
         db.query(Project)
         .options(joinedload(Project.manager), joinedload(Project.department), joinedload(Project.branch))
         .filter(Project.company_id == active_cid)
     )
+    if selected_branches:
+        q = q.filter(Project.branch_id.in_(selected_branches))
+    if department_id:
+        q = q.filter(Project.department_id == department_id)
     if status:
         q = q.filter(Project.status == status)
     if search:
@@ -832,10 +904,23 @@ def list_projects(
         .all()
     )
 
+    project_ids = [p.id for p in projects]
+    all_proj_tasks = (
+        db.query(Task)
+        .filter(Task.company_id == active_cid, Task.project_id.in_(project_ids))
+        .all()
+        if project_ids
+        else []
+    )
+    tasks_by_project: Dict[uuid.UUID, List[Task]] = {}
+    for pt in all_proj_tasks:
+        if pt.project_id:
+            tasks_by_project.setdefault(pt.project_id, []).append(pt)
+
     project_items = []
     delayed_projects = 0
     for p in projects:
-        p_tasks = db.query(Task).filter(Task.company_id == active_cid, Task.project_id == p.id).all()
+        p_tasks = tasks_by_project.get(p.id, [])
         done_t = sum(1 for t in p_tasks if t.status == "Completed")
         overdue_t = sum(
             1
@@ -924,6 +1009,8 @@ def create_project(
     if existing:
         raise HTTPException(status_code=400, detail="كود المشروع مسجل مسبقاً في هذه الشركة")
 
+    validate_company_fk(db, Branch, payload.branch_id, active_cid, "الفرع")
+    validate_company_fk(db, Department, payload.department_id, active_cid, "القسم")
     if payload.manager_id:
         mgr = db.query(Employee).filter(Employee.id == payload.manager_id, Employee.company_id == active_cid).first()
         if not mgr:
@@ -1093,7 +1180,10 @@ def create_purchase_request(
     if existing:
         raise HTTPException(status_code=400, detail="رقم طلب الشراء مسجل مسبقاً")
 
+    validate_company_fk(db, Branch, payload.branch_id, active_cid, "الفرع")
+    validate_company_fk(db, Department, payload.department_id, active_cid, "القسم")
     requester_id = payload.requester_id or current_user.employee_id
+    validate_company_fk(db, Employee, requester_id, active_cid, "مقدم الطلب")
     total_cost = round(payload.quantity * payload.unit_cost_sar, 2)
     pr = PurchaseRequest(
         company_id=active_cid,
@@ -1163,4 +1253,70 @@ def decide_approval_endpoint(
     return success_response(
         data={"id": str(wf_rec.id), "current_state": wf_rec.current_state},
         message=f"تم تحديث حالة الطلب إلى ({wf_rec.current_state})",
+    )
+
+
+@approvals_router.post("/purchase-requests/{pr_id}/provision-asset")
+def provision_asset_from_purchase_request(
+    pr_id: uuid.UUID,
+    current_user: User = Depends(require_permission(Module.ASSETS, Action.CREATE)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Provision technical asset(s) into inventory from an Approved purchase request."""
+    pr = db.query(PurchaseRequest).filter(PurchaseRequest.id == pr_id, PurchaseRequest.company_id == active_cid).first()
+    if not pr:
+        raise HTTPException(status_code=404, detail="طلب الشراء غير موجود")
+    if pr.status != "Approved":
+        raise HTTPException(status_code=400, detail="يجب اعتماد طلب الشراء أولاً قبل تحويله لأصل مسجل")
+
+    canonical_branches = enterprise_service.ensure_canonical_five_branches(db, active_cid)
+    target_branch_id = pr.branch_id or (canonical_branches[2].id if len(canonical_branches) >= 3 else canonical_branches[0].id)
+
+    created_ids = []
+    for idx in range(max(1, pr.quantity or 1)):
+        code = f"PR-{pr.request_number.strip()}-{idx + 1}-{uuid.uuid4().hex[:4].upper()}"
+        asset = TechnicalAsset(
+            company_id=active_cid,
+            branch_id=target_branch_id,
+            department_id=pr.department_id,
+            asset_code=code,
+            asset_name=pr.item_name,
+            asset_category="General" if pr.category == "General" else "IT",
+            asset_type=pr.category or "Hardware",
+            brand=pr.vendor_name,
+            condition="New",
+            status="Available",
+            notes=f"تم التوريد من طلب شراء رقم {pr.request_number}",
+        )
+        db.add(asset)
+        db.flush()
+        created_ids.append(str(asset.id))
+
+    pr.status = "Fulfilled"
+    wf_item = (
+        db.query(WorkflowApproval)
+        .filter(
+            WorkflowApproval.company_id == active_cid,
+            WorkflowApproval.workflow_type == "PurchaseRequest",
+            WorkflowApproval.target_resource_id == str(pr.id),
+        )
+        .first()
+    )
+    if wf_item and wf_item.current_state == "Approved":
+        wf_item.current_state = "Executed"
+    db.commit()
+
+    log_audit(
+        db=db,
+        action="PROVISION_ASSETS",
+        resource_type="PurchaseRequest",
+        resource_id=str(pr.id),
+        user_id=current_user.id,
+        company_id=active_cid,
+        new_values={"asset_ids": created_ids, "count": len(created_ids)},
+    )
+    return success_response(
+        data={"purchase_request_id": str(pr.id), "asset_ids": created_ids, "status": pr.status},
+        message=f"تم ترحيل {len(created_ids)} أصل إلى سجل الأصول بنجاح",
     )

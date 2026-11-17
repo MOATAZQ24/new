@@ -5,9 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
+from app.models.company import Branch
+from app.models.enterprise import Project
 from app.models.task import Task, TaskComment
+from app.models.ticket import HelpDeskTicket
 from app.models.user import User, Employee
 from app.models.asset import TechnicalAsset
 from app.models.telegram import TelegramUserLink, NotificationOutbox
@@ -59,7 +62,7 @@ def list_task_assignees(
 
 
 def _filtered_task_query(
-    db: Session, current_user: User, target_cid, *, branch_id=None, assigned_to_id=None, filter_mode=None,
+    db: Session, current_user: User, target_cid, *, branch_id=None, project_id=None, assigned_to_id=None, filter_mode=None,
     priority=None, search=None, created_by_id=None, due_from=None, due_to=None,
 ):
     """Single definition of the tenant-scoped task filters, shared by the list and the KPI summary."""
@@ -70,6 +73,8 @@ def _filtered_task_query(
         query = query.filter(Task.assigned_to_id == assigned_to_id)
     if branch_id:
         query = query.filter(Task.branch_id == branch_id)
+    if project_id:
+        query = query.filter(Task.project_id == project_id)
     if priority and priority.strip():
         query = query.filter(Task.priority == priority.strip())
     if created_by_id:
@@ -90,6 +95,7 @@ def list_tasks(
     per_page: int = Query(20, ge=1, le=100),
     company_id: Optional[uuid.UUID] = None,
     branch_id: Optional[uuid.UUID] = None,
+    project_id: Optional[uuid.UUID] = None,
     assigned_to_id: Optional[uuid.UUID] = None,
     created_by_id: Optional[uuid.UUID] = None,
     filter_mode: Optional[str] = Query(None, pattern="^(my|team|all)$"),
@@ -107,7 +113,7 @@ def list_tasks(
     or an exact stored status. Overdue is derived from due_date and is independent of the stored status."""
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = _filtered_task_query(
-        db, current_user, target_cid, branch_id=branch_id, assigned_to_id=assigned_to_id, filter_mode=filter_mode,
+        db, current_user, target_cid, branch_id=branch_id, project_id=project_id, assigned_to_id=assigned_to_id, filter_mode=filter_mode,
         priority=priority, search=search, created_by_id=created_by_id, due_from=due_from, due_to=due_to)
     if status_filter and status_filter.strip():
         query = query.filter(wf.status_condition(status_filter))
@@ -165,6 +171,7 @@ def list_tasks(
             "related_asset_id": str(t.related_asset_id) if t.related_asset_id else None,
             "related_asset_name": asset_name,
             "related_ticket_id": str(t.related_ticket_id) if t.related_ticket_id else None,
+            "project_id": str(t.project_id) if t.project_id else None,
             "notes": t.notes,
             "is_overdue": wf.is_overdue(t, today),
             "comments_count": len(t.comments),
@@ -221,6 +228,10 @@ def create_task(
     target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
     if payload.assigned_to_id:
         validate_assignee(db, target_cid, payload.assigned_to_id)
+    validate_company_fk(db, Branch, payload.branch_id, target_cid, "الفرع")
+    validate_company_fk(db, TechnicalAsset, payload.related_asset_id, target_cid, "الأصل المرتبط")
+    validate_company_fk(db, HelpDeskTicket, payload.related_ticket_id, target_cid, "التذكرة المرتبطة")
+    validate_company_fk(db, Project, payload.project_id, target_cid, "المشروع")
 
     # Double-submit guard: identical task from the same creator within 20 seconds returns the existing record.
     recent = db.query(Task).filter(
@@ -244,6 +255,7 @@ def create_task(
         due_date=payload.due_date,
         related_asset_id=payload.related_asset_id,
         related_ticket_id=payload.related_ticket_id,
+        project_id=payload.project_id,
         notes=payload.notes,
         attachments=payload.attachments,
     )
@@ -302,7 +314,11 @@ def create_task(
     )
 
     return success_response(
-        data={"id": str(task.id), "delivery_status": delivery_info},
+        data={
+            "id": str(task.id),
+            "project_id": str(task.project_id) if task.project_id else None,
+            "delivery_status": delivery_info,
+        },
         message="تم إنشاء المهمة بنجاح"
     )
 
@@ -561,11 +577,27 @@ def update_task(
 
     if 'assigned_to_id' in payload.model_fields_set and payload.assigned_to_id is not None:
         validate_assignee(db, task.company_id, payload.assigned_to_id)
+    if 'branch_id' in payload.model_fields_set and payload.branch_id is not None:
+        validate_company_fk(db, Branch, payload.branch_id, task.company_id, "الفرع")
+    if 'project_id' in payload.model_fields_set and payload.project_id is not None:
+        validate_company_fk(db, Project, payload.project_id, task.company_id, "المشروع")
+    if 'related_asset_id' in payload.model_fields_set and payload.related_asset_id is not None:
+        validate_company_fk(db, TechnicalAsset, payload.related_asset_id, task.company_id, "الأصل المرتبط")
+    if 'related_ticket_id' in payload.model_fields_set and payload.related_ticket_id is not None:
+        validate_company_fk(db, HelpDeskTicket, payload.related_ticket_id, task.company_id, "التذكرة المرتبطة")
 
     if payload.title is not None:
         task.title = payload.title
     if payload.description is not None:
         task.description = payload.description
+    if 'branch_id' in payload.model_fields_set:
+        task.branch_id = payload.branch_id
+    if 'project_id' in payload.model_fields_set:
+        task.project_id = payload.project_id
+    if 'related_asset_id' in payload.model_fields_set:
+        task.related_asset_id = payload.related_asset_id
+    if 'related_ticket_id' in payload.model_fields_set:
+        task.related_ticket_id = payload.related_ticket_id
     if 'assigned_to_id' in payload.model_fields_set:
         task.assigned_to_id = payload.assigned_to_id
     if payload.priority is not None:
@@ -624,6 +656,8 @@ def add_task_comment(
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه المهمة")
 
     comment = TaskComment(
         task_id=task.id,

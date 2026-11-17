@@ -63,10 +63,12 @@ export function MustChangePasswordModal() {
       setTimeout(async () => {
         await refreshUser();
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errObj = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
       setError(
-        err.response?.data?.detail ||
-          err.response?.data?.message ||
+        errObj?.response?.data?.detail ||
+          errObj?.response?.data?.message ||
+          errObj?.message ||
           "حدث خطأ أثناء تغيير كلمة المرور. تأكد من صحة كلمة المرور الحالية."
       );
     } finally {

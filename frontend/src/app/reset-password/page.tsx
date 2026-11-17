@@ -37,7 +37,7 @@ function ResetPasswordContent() {
         setTokenError(null);
       } catch (err) {
         if (!active) return;
-        const detail = err instanceof ApiError ? err.data?.detail : undefined;
+        const detail = err instanceof ApiError ? (err.data as { detail?: string } | null)?.detail : undefined;
         setTokenValid(false);
         setTokenError(
           (typeof detail === "string" ? detail : null) ||
@@ -76,7 +76,7 @@ function ResetPasswordContent() {
       });
       setSubmitSuccess(true);
     } catch (err) {
-      const detail = err instanceof ApiError ? err.data?.detail : undefined;
+      const detail = err instanceof ApiError ? (err.data as { detail?: string } | null)?.detail : undefined;
       setSubmitError(
         (typeof detail === "string" ? detail : null) ||
           "فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."

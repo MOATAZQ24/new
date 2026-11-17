@@ -14,6 +14,8 @@ from app.schemas.company import (
     DepartmentCreate, DepartmentUpdate,
 )
 from app.services.audit_service import log_audit
+from app.services import enterprise_service
+from app.models.enterprise import CANONICAL_BRANCH_NAMES
 from app.api.v1.endpoints.workspace import authorize_company
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
@@ -107,31 +109,9 @@ def create_company(
     db.commit()
     db.refresh(company)
 
-    # Create default or initial branches
-    created_branches = []
-    if payload.initial_branches and len(payload.initial_branches) > 0:
-        for b_name in payload.initial_branches:
-            if b_name.strip():
-                br = Branch(
-                    company_id=company.id,
-                    branch_name=b_name.strip(),
-                    location="المقر",
-                    status="Active",
-                )
-                db.add(br)
-                created_branches.append(br)
-    else:
-        main_branch = Branch(
-            company_id=company.id,
-            branch_name="الفرع الرئيسي (Main Branch)",
-            location="المقر الرئيسي",
-            status="Active",
-        )
-        db.add(main_branch)
-        created_branches.append(main_branch)
-
-    db.flush()
-    first_branch_id = created_branches[0].id if created_branches else None
+    # Ensure canonical 5 operational branches exist for the new company
+    created_branches = enterprise_service.ensure_canonical_five_branches(db, company.id)
+    first_branch_id = created_branches[2].id if len(created_branches) >= 3 else (created_branches[0].id if created_branches else None)
 
     # Create default or initial departments
     if payload.initial_departments and len(payload.initial_departments) > 0:
@@ -283,7 +263,8 @@ def list_branches(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    branches = db.query(Branch).filter(Branch.company_id == company_id).order_by(Branch.created_at.asc()).all()
+    authorize_company(db, current_user, company_id)
+    branches = enterprise_service.ensure_canonical_five_branches(db, company_id)
     data = [
         {
             "id": str(b.id),
@@ -306,28 +287,16 @@ def create_branch(
     current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
     db: Session = Depends(get_db),
 ):
-    branch = Branch(
-        company_id=company_id,
-        branch_name=payload.branch_name,
-        location=payload.location,
-        contact_details=payload.contact_details,
-        status=payload.status,
-    )
-    db.add(branch)
+    authorize_company(db, current_user, company_id)
+    canonical_name = enterprise_service.resolve_canonical_branch_name(payload.branch_name)
+    branches = enterprise_service.ensure_canonical_five_branches(db, company_id)
+    matched = next((b for b in branches if b.branch_name == canonical_name), branches[0])
+    if payload.location:
+        matched.location = payload.location
+    if payload.contact_details:
+        matched.contact_details = payload.contact_details
     db.commit()
-    db.refresh(branch)
-
-    log_audit(
-        db=db,
-        action="CREATE",
-        resource_type="Branch",
-        resource_id=str(branch.id),
-        user_id=current_user.id,
-        company_id=company_id,
-        new_values=payload.model_dump(),
-    )
-
-    return success_response(data={"id": str(branch.id)}, message="تم إنشاء الفرع بنجاح")
+    return success_response(data={"id": str(matched.id), "branch_name": matched.branch_name}, message="تم التحقق من الفرع المعتمد بنجاح")
 
 
 @router.put("/branches/{branch_id}")
@@ -340,14 +309,26 @@ def update_branch(
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         raise HTTPException(status_code=404, detail="الفرع غير موجود")
+    authorize_company(db, current_user, branch.company_id)
 
     if payload.branch_name is not None:
-        branch.branch_name = payload.branch_name
+        from app.services.enterprise_service import CANONICAL_BRANCH_NAMES, resolve_canonical_branch_name
+        clean_name = payload.branch_name.strip()
+        if branch.branch_name in CANONICAL_BRANCH_NAMES and clean_name != branch.branch_name:
+            raise HTTPException(
+                status_code=400,
+                detail="لا يمكن تعديل اسم الفرع المعتمد للحفاظ على التطابق الموحد للفروع الخمسة",
+            )
+        canonical_target = resolve_canonical_branch_name(clean_name) if clean_name else clean_name
+        branch.branch_name = canonical_target or clean_name
     if payload.location is not None:
         branch.location = payload.location
     if payload.contact_details is not None:
         branch.contact_details = payload.contact_details
     if payload.status is not None:
+        from app.services.enterprise_service import CANONICAL_BRANCH_NAMES
+        if branch.branch_name in CANONICAL_BRANCH_NAMES and payload.status != "Active":
+            raise HTTPException(status_code=400, detail="لا يمكن تعطيل فرع تشغيلي معتمد")
         branch.status = payload.status
 
     db.commit()
@@ -363,6 +344,10 @@ def delete_branch(
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         raise HTTPException(status_code=404, detail="الفرع غير موجود")
+    authorize_company(db, current_user, branch.company_id)
+    from app.services.enterprise_service import CANONICAL_BRANCH_NAMES
+    if branch.branch_name in CANONICAL_BRANCH_NAMES:
+        raise HTTPException(status_code=400, detail="لا يمكن حذف فرع تشغيلي معتمد ضمن الفروع الخمسة")
 
     db.delete(branch)
     db.commit()
@@ -377,6 +362,7 @@ def list_departments(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    authorize_company(db, current_user, company_id)
     depts = db.query(Department).filter(Department.company_id == company_id).order_by(Department.created_at.asc()).all()
     data = [
         {
@@ -399,6 +385,11 @@ def create_department(
     current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
     db: Session = Depends(get_db),
 ):
+    authorize_company(db, current_user, company_id)
+    if payload.branch_id:
+        branch = db.query(Branch).filter(Branch.id == payload.branch_id, Branch.company_id == company_id).first()
+        if not branch:
+            raise HTTPException(status_code=400, detail="الفرع المحدد لا ينتمي لهذه المنشأة")
     dept = Department(
         company_id=company_id,
         branch_id=payload.branch_id,
@@ -433,10 +424,14 @@ def update_department(
     dept = db.query(Department).filter(Department.id == dept_id).first()
     if not dept:
         raise HTTPException(status_code=404, detail="القسم غير موجود")
+    authorize_company(db, current_user, dept.company_id)
 
     if payload.department_name is not None:
         dept.department_name = payload.department_name
     if payload.branch_id is not None:
+        branch = db.query(Branch).filter(Branch.id == payload.branch_id, Branch.company_id == dept.company_id).first()
+        if not branch:
+            raise HTTPException(status_code=400, detail="الفرع المحدد لا ينتمي لهذه المنشأة")
         dept.branch_id = payload.branch_id
     if payload.manager_id is not None:
         dept.manager_id = payload.manager_id
@@ -456,6 +451,7 @@ def delete_department(
     dept = db.query(Department).filter(Department.id == dept_id).first()
     if not dept:
         raise HTTPException(status_code=404, detail="القسم غير موجود")
+    authorize_company(db, current_user, dept.company_id)
 
     db.delete(dept)
     db.commit()

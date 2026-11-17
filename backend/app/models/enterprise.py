@@ -688,3 +688,130 @@ class WorkflowApproval(UUIDMixin, TimestampMixin, Base):
         Index("ix_workflow_approvals_state", "current_state"),
         Index("ix_workflow_approvals_initiator", "initiator_employee_id"),
     )
+
+
+# ── 5. Canonical Physical Branch Locations, Multi-Branch Assignments & Asset Transfers ──
+
+CANONICAL_BRANCH_SPEC = [
+    ("BR-RYD-SUL", "الرياض – السلي (مخرج 17)", "الرياض", "حي السلي - مخرج 17"),
+    ("BR-RYD-FSL", "الرياض – الفيصلية (مخرج 18)", "الرياض", "حي الفيصلية - مخرج 18"),
+    ("BR-RYD-OLY", "الرياض – العليا", "الرياض", "حي العليا - طريق الملك فهد"),
+    ("BR-DMM", "الدمام", "الدمام", "المنطقة الشرقية - الدمام"),
+    ("BR-JED", "جدة", "جدة", "منطقة مكة المكرمة - جدة"),
+]
+
+CANONICAL_BRANCH_NAMES = [item[1] for item in CANONICAL_BRANCH_SPEC]
+
+
+class PhysicalBranchLocation(UUIDMixin, TimestampMixin, Base):
+    """Canonical physical operational branch shared across companies (exactly 5 authorized active locations)."""
+
+    __tablename__ = "physical_branch_locations"
+
+    canonical_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    display_name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    city: Mapped[str] = mapped_column(String(100), nullable=False)
+    address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+
+class EmployeeBranchAssignment(UUIDMixin, TimestampMixin, Base):
+    """Allows a canonical person/employee to work across multiple companies and multiple branches."""
+
+    __tablename__ = "employee_branch_assignments"
+
+    employee_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    branch_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("departments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    role_name: Mapped[Optional[str]] = mapped_column(String(100), default="Employee", nullable=True)
+    job_title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
+
+    employee: Mapped["Employee"] = relationship("Employee", foreign_keys=[employee_id])
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    branch: Mapped["Branch"] = relationship("Branch", foreign_keys=[branch_id])
+    department: Mapped[Optional["Department"]] = relationship("Department", foreign_keys=[department_id])
+
+    __table_args__ = (
+        UniqueConstraint("employee_id", "company_id", "branch_id", name="uq_emp_company_branch_assignment"),
+        Index("ix_emp_branch_assign_emp", "employee_id"),
+        Index("ix_emp_branch_assign_company", "company_id"),
+        Index("ix_emp_branch_assign_branch", "branch_id"),
+    )
+
+
+class AssetBranchTransfer(UUIDMixin, TimestampMixin, Base):
+    """Tracks physical branch transfers of assets: Current Branch -> Request -> Approval -> Physical Transfer -> New Branch."""
+
+    __tablename__ = "asset_branch_transfers"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("technical_assets.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    from_branch_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    to_branch_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    custodian_employee_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    requested_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    approved_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(50), default="Completed", nullable=False
+    )  # Pending Approval, Approved, Completed, Rejected, Cancelled
+    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    transferred_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    asset: Mapped["TechnicalAsset"] = relationship("TechnicalAsset", foreign_keys=[asset_id])
+    from_branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[from_branch_id])
+    to_branch: Mapped["Branch"] = relationship("Branch", foreign_keys=[to_branch_id])
+    custodian: Mapped[Optional["Employee"]] = relationship("Employee", foreign_keys=[custodian_employee_id])
+
+    __table_args__ = (
+        Index("ix_asset_branch_transfers_company", "company_id"),
+        Index("ix_asset_branch_transfers_asset", "asset_id"),
+        Index("ix_asset_branch_transfers_to_branch", "to_branch_id"),
+    )

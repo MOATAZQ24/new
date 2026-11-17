@@ -22,16 +22,23 @@ from app.core.rbac import Action, Module, get_user_effective_roles, has_module_p
 from app.models.asset import AssetCustody, TechnicalAsset
 from app.models.audit import AuditLog
 from app.models.company import Branch, Company, Department
+from app.models.digital_asset import DigitalAsset
+from app.models.infrastructure import ITInfrastructure
 from app.models.enterprise import (
+    CANONICAL_BRANCH_NAMES,
+    CANONICAL_BRANCH_SPEC,
+    AssetBranchTransfer,
     AttendanceRecord,
     CRMActivity,
     CRMCustomer,
     CRMOpportunity,
     EmployeeAssignmentHistory,
+    EmployeeBranchAssignment,
     EmployeeDocument,
     EmployeeObjective,
     LeaveRequest,
     PerformanceEvaluation,
+    PhysicalBranchLocation,
     Project,
     ProjectMilestone,
     PurchaseRequest,
@@ -43,7 +50,7 @@ from app.models.subscription import ThirdPartySubscription
 from app.models.task import Task
 from app.models.telegram import TelegramUserLink
 from app.models.ticket import HelpDeskTicket
-from app.models.user import Employee, User
+from app.models.user import CompanyMembership, Employee, User
 from app.services import arabic_nlp, task_workflow as wf
 from app.services.audit_service import log_audit
 from app.services.task_assignment import normalize_name
@@ -71,14 +78,222 @@ def can_view_employee_self_or_staff(user: User, employee: Employee, company_id: 
     return has_module_permission(user, Module.EMPLOYEES, Action.VIEW, company_id, db)
 
 
-# ── 1. Canonical Employee Directory & Disambiguation Service ─────────────────
+# ── 0. Canonical Five-Branch Normalization & Reconciliation ─────────────────
+
+def resolve_canonical_branch_name(raw_name: Optional[str]) -> str:
+    """Map any Arabic/English alias or legacy branch name to one of the 5 canonical display names."""
+    norm = normalize_name(raw_name or "")
+    if not norm:
+        return CANONICAL_BRANCH_NAMES[2]  # الرياض – العليا
+    if any(k in norm for k in ("سلي", "مخرج 17", "exit 17", "sulai")):
+        return CANONICAL_BRANCH_NAMES[0]  # الرياض – السلي (مخرج 17)
+    if any(k in norm for k in ("فيصليه", "فيصلية", "مخرج 18", "exit 18", "faisaliah")):
+        return CANONICAL_BRANCH_NAMES[1]  # الرياض – الفيصلية (مخرج 18)
+    if any(k in norm for k in ("دمام", "خبر", "ظهران", "جبيل", "الشرقيه", "الشرقية", "dammam", "khobar", "dhahran", "jubail")):
+        return CANONICAL_BRANCH_NAMES[3]  # الدمام
+    if any(k in norm for k in ("جده", "جدة", "jeddah")):
+        return CANONICAL_BRANCH_NAMES[4]  # جدة
+    # Default Riyadh / Main / Olaya aliases -> الرياض – العليا
+    return CANONICAL_BRANCH_NAMES[2]
+
+
+def ensure_canonical_five_branches(db: Session, company_id: uuid.UUID) -> List[Branch]:
+    """Ensure the 5 canonical physical locations exist and the company has exactly the 5 active operational branches.
+
+    Safely reconciles legacy branch aliases (e.g. 'الفرع الرئيسي', 'الرياض الرئيسي', 'فرع العليا')
+    onto the 5 canonical branches and re-points any orphaned foreign keys so zero historical data is lost.
+    """
+    # 1. Ensure shared PhysicalBranchLocation master rows exist
+    existing_locs = {loc.canonical_code: loc for loc in db.query(PhysicalBranchLocation).all()}
+    for code, display_name, city, addr in CANONICAL_BRANCH_SPEC:
+        if code not in existing_locs:
+            loc = PhysicalBranchLocation(
+                canonical_code=code,
+                display_name=display_name,
+                city=city,
+                address=addr,
+                is_active=True,
+            )
+            db.add(loc)
+            existing_locs[code] = loc
+        else:
+            existing_locs[code].display_name = display_name
+            existing_locs[code].is_active = True
+    db.flush()
+
+    name_to_loc = {display_name: existing_locs[code] for code, display_name, _, _ in CANONICAL_BRANCH_SPEC}
+
+    # 2. Inspect existing branches for this company
+    company_branches = (
+        db.query(Branch)
+        .filter(Branch.company_id == company_id)
+        .order_by(Branch.created_at.asc())
+        .all()
+    )
+
+    canonical_map: Dict[str, Branch] = {}
+    duplicates_or_legacy: List[Branch] = []
+
+    # First pass: claim exact canonical matches
+    for br in company_branches:
+        if br.branch_name in CANONICAL_BRANCH_NAMES and br.branch_name not in canonical_map:
+            br.status = "Active"
+            br.physical_branch_id = name_to_loc[br.branch_name].id
+            canonical_map[br.branch_name] = br
+        else:
+            duplicates_or_legacy.append(br)
+
+    # Second pass: repurpose legacy branches into missing canonical slots or merge into target canonical branch
+    for br in list(duplicates_or_legacy):
+        mapped_name = resolve_canonical_branch_name(br.branch_name)
+        if mapped_name not in canonical_map:
+            spec_row = next((s for s in CANONICAL_BRANCH_SPEC if s[1] == mapped_name), None)
+            br.branch_name = mapped_name
+            br.physical_branch_id = name_to_loc[mapped_name].id
+            if spec_row and not br.location:
+                br.location = spec_row[3]
+            br.status = "Active"
+            canonical_map[mapped_name] = br
+            duplicates_or_legacy.remove(br)
+
+    # Third pass: create any remaining missing canonical branches for this company
+    for code, display_name, city, addr in CANONICAL_BRANCH_SPEC:
+        if display_name not in canonical_map:
+            new_br = Branch(
+                company_id=company_id,
+                physical_branch_id=name_to_loc[display_name].id,
+                branch_name=display_name,
+                location=addr,
+                contact_details=city,
+                status="Active",
+            )
+            db.add(new_br)
+            db.flush()
+            canonical_map[display_name] = new_br
+
+    # Fourth pass: safely re-point ALL references from any extra legacy/duplicate branch rows and archive them
+    for extra_br in duplicates_or_legacy:
+        target_name = resolve_canonical_branch_name(extra_br.branch_name)
+        target_br = canonical_map[target_name]
+        if extra_br.id != target_br.id:
+            # Merge EmployeeBranchAssignment safely without violating (employee_id, company_id, branch_id) uniqueness
+            extra_assigns = (
+                db.query(EmployeeBranchAssignment)
+                .filter(EmployeeBranchAssignment.branch_id == extra_br.id)
+                .all()
+            )
+            for row in extra_assigns:
+                existing_target = (
+                    db.query(EmployeeBranchAssignment)
+                    .filter(
+                        EmployeeBranchAssignment.employee_id == row.employee_id,
+                        EmployeeBranchAssignment.company_id == row.company_id,
+                        EmployeeBranchAssignment.branch_id == target_br.id,
+                    )
+                    .first()
+                )
+                if existing_target:
+                    if row.is_primary:
+                        existing_target.is_primary = True
+                    db.delete(row)
+                else:
+                    row.branch_id = target_br.id
+            db.flush()
+
+            for model in (
+                Employee,
+                Department,
+                TechnicalAsset,
+                Task,
+                HelpDeskTicket,
+                AttendanceRecord,
+                Project,
+                CRMCustomer,
+                PurchaseRequest,
+                DigitalAsset,
+                ITInfrastructure,
+                CompanyMembership,
+            ):
+                db.query(model).filter(model.branch_id == extra_br.id).update({"branch_id": target_br.id})
+            extra_br.physical_branch_id = name_to_loc[target_name].id
+            extra_br.status = "Archived"
+
+    # Also ensure any assets or employees with NULL branch_id in this company default to 'الرياض – العليا'
+    default_olaya = canonical_map[CANONICAL_BRANCH_NAMES[2]]
+    db.query(Employee).filter(Employee.company_id == company_id, Employee.branch_id == None).update(  # noqa: E711
+        {"branch_id": default_olaya.id}
+    )
+    db.query(TechnicalAsset).filter(TechnicalAsset.company_id == company_id, TechnicalAsset.branch_id == None).update(  # noqa: E711
+        {"branch_id": default_olaya.id}
+    )
+
+    # Backfill person_id & primary EmployeeBranchAssignment rows idempotently
+    emps = db.query(Employee).filter(Employee.company_id == company_id).all()
+    existing_primary = {
+        row[0]
+        for row in db.query(EmployeeBranchAssignment.employee_id)
+        .filter(EmployeeBranchAssignment.company_id == company_id, EmployeeBranchAssignment.status == "Active")
+        .all()
+    }
+    for emp in emps:
+        if not emp.person_id:
+            emp.person_id = uuid.uuid4()
+        if emp.branch_id and emp.id not in existing_primary:
+            db.add(
+                EmployeeBranchAssignment(
+                    employee_id=emp.id,
+                    company_id=company_id,
+                    branch_id=emp.branch_id,
+                    department_id=emp.department_id,
+                    job_title=emp.job_title,
+                    is_primary=True,
+                    status="Active",
+                )
+            )
+
+    db.commit()
+    return [canonical_map[name] for name in CANONICAL_BRANCH_NAMES]
+
+
+def parse_branch_ids_filter(
+    db: Session,
+    company_id: uuid.UUID,
+    branch_id: Optional[uuid.UUID] = None,
+    branch_ids_csv: Optional[str] = None,
+) -> List[uuid.UUID]:
+    """Parse single branch_id or comma-separated branch_ids into validated company branch UUIDs."""
+    selected: List[uuid.UUID] = []
+    if branch_id:
+        selected.append(branch_id)
+    if branch_ids_csv:
+        for part in branch_ids_csv.split(","):
+            p = part.strip()
+            if not p:
+                continue
+            try:
+                u = uuid.UUID(p)
+                if u not in selected:
+                    selected.append(u)
+            except ValueError:
+                # Allow matching by canonical branch name or alias
+                target_name = resolve_canonical_branch_name(p)
+                br = (
+                    db.query(Branch)
+                    .filter(Branch.company_id == company_id, Branch.branch_name == target_name, Branch.status == "Active")
+                    .first()
+                )
+                if br and br.id not in selected:
+                    selected.append(br.id)
+    return selected
+
 
 def serialize_canonical_employee(
     db: Session,
     emp: Employee,
     telegram_map: Optional[Dict[uuid.UUID, TelegramUserLink]] = None,
+    assignments_map: Optional[Dict[uuid.UUID, List[EmployeeBranchAssignment]]] = None,
 ) -> Dict[str, Any]:
-    """Serialize canonical employee identity with distinguishing details for all modules."""
+    """Serialize canonical employee identity with distinguishing details and multi-branch assignments."""
     tlink = (
         telegram_map.get(emp.id)
         if telegram_map is not None
@@ -97,12 +312,50 @@ def serialize_canonical_employee(
     has_account = bool(emp.user and emp.user.account_status == "Active" and not emp.user.is_deleted)
     username = emp.user.username if has_account and emp.user else None
 
+    emp_assigns = (
+        assignments_map.get(emp.id, [])
+        if assignments_map is not None
+        else db.query(EmployeeBranchAssignment)
+        .options(joinedload(EmployeeBranchAssignment.branch), joinedload(EmployeeBranchAssignment.company))
+        .filter(EmployeeBranchAssignment.employee_id == emp.id, EmployeeBranchAssignment.status == "Active")
+        .all()
+    )
+    assigned_branches_list: List[Dict[str, Any]] = []
+    seen_branch_ids = set()
+    if emp.branch_id and emp.branch:
+        seen_branch_ids.add(emp.branch_id)
+        assigned_branches_list.append(
+            {
+                "branch_id": str(emp.branch_id),
+                "branch_name": emp.branch.branch_name,
+                "company_id": str(emp.company_id),
+                "company_name": c_name,
+                "is_primary": True,
+            }
+        )
+    for asg in emp_assigns:
+        if asg.branch_id not in seen_branch_ids and asg.branch:
+            seen_branch_ids.add(asg.branch_id)
+            assigned_branches_list.append(
+                {
+                    "branch_id": str(asg.branch_id),
+                    "branch_name": asg.branch.branch_name,
+                    "company_id": str(asg.company_id),
+                    "company_name": asg.company.company_name_ar if asg.company else c_name,
+                    "is_primary": asg.is_primary,
+                }
+            )
+
+    all_branch_names = [b["branch_name"] for b in assigned_branches_list if b.get("branch_name")]
+
     details = [f"#{emp.employee_number}"]
     if emp.job_title:
         details.append(emp.job_title)
     if d_name:
         details.append(d_name)
-    if b_name:
+    if all_branch_names:
+        details.append(" + ".join(all_branch_names))
+    elif b_name:
         details.append(b_name)
     if username:
         details.append(f"@{username}")
@@ -110,8 +363,13 @@ def serialize_canonical_employee(
     return {
         "id": str(emp.id),
         "employee_id": str(emp.id),
+        "person_id": str(emp.person_id or emp.id),
         "company_id": str(emp.company_id),
         "branch_id": str(emp.branch_id) if emp.branch_id else None,
+        "branch_ids": [b["branch_id"] for b in assigned_branches_list],
+        "branch_names": all_branch_names,
+        "branch_assignments": assigned_branches_list,
+        "is_multi_branch": len(assigned_branches_list) > 1,
         "department_id": str(emp.department_id) if emp.department_id else None,
         "manager_id": str(emp.manager_id) if emp.manager_id else None,
         "employee_number": emp.employee_number,
@@ -124,7 +382,7 @@ def serialize_canonical_employee(
         "hire_date": emp.hire_date.isoformat() if getattr(emp, "hire_date", None) else None,
         "work_location": getattr(emp, "work_location", None),
         "avatar_url": getattr(emp, "avatar_url", None),
-        "branch_name": b_name,
+        "branch_name": b_name or (all_branch_names[0] if all_branch_names else None),
         "department_name": d_name,
         "company_name": c_name,
         "manager_name": mgr_name,
@@ -144,11 +402,19 @@ def search_canonical_directory(
     company_id: uuid.UUID,
     search: Optional[str] = None,
     branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[List[uuid.UUID]] = None,
     department_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = None,
+    multi_branch_only: bool = False,
     limit: int = 100,
 ) -> List[Dict[str, Any]]:
-    """Unified employee directory search supporting Arabic normalization, multi-term, and RapidFuzz typo tolerance."""
+    """Unified employee directory search supporting multi-branch assignments, Arabic normalization, and RapidFuzz."""
+    from sqlalchemy import or_
+
+    effective_branches = list(branch_ids or [])
+    if branch_id and branch_id not in effective_branches:
+        effective_branches.append(branch_id)
+
     query = (
         db.query(Employee)
         .options(
@@ -160,8 +426,22 @@ def search_canonical_directory(
         )
         .filter(Employee.company_id == company_id)
     )
-    if branch_id:
-        query = query.filter(Employee.branch_id == branch_id)
+    if effective_branches:
+        sub_emp_ids = (
+            db.query(EmployeeBranchAssignment.employee_id)
+            .filter(
+                EmployeeBranchAssignment.company_id == company_id,
+                EmployeeBranchAssignment.branch_id.in_(effective_branches),
+                EmployeeBranchAssignment.status == "Active",
+            )
+            .subquery()
+        )
+        query = query.filter(
+            or_(
+                Employee.branch_id.in_(effective_branches),
+                Employee.id.in_(sub_emp_ids),
+            )
+        )
     if department_id:
         query = query.filter(Employee.department_id == department_id)
     if status_filter:
@@ -172,7 +452,19 @@ def search_canonical_directory(
         t.employee_id: t
         for t in db.query(TelegramUserLink).filter(TelegramUserLink.company_id == company_id).all()
     }
-    serialized = [serialize_canonical_employee(db, e, tlinks) for e in all_rows]
+    assign_rows = (
+        db.query(EmployeeBranchAssignment)
+        .options(joinedload(EmployeeBranchAssignment.branch), joinedload(EmployeeBranchAssignment.company))
+        .filter(EmployeeBranchAssignment.company_id == company_id, EmployeeBranchAssignment.status == "Active")
+        .all()
+    )
+    assign_map: Dict[uuid.UUID, List[EmployeeBranchAssignment]] = {}
+    for ar in assign_rows:
+        assign_map.setdefault(ar.employee_id, []).append(ar)
+
+    serialized = [serialize_canonical_employee(db, e, tlinks, assign_map) for e in all_rows]
+    if multi_branch_only:
+        serialized = [item for item in serialized if item.get("is_multi_branch")]
 
     raw_q = (search or "").strip()
     if not raw_q:
@@ -629,7 +921,7 @@ def record_attendance_event(
         raise HTTPException(status_code=403, detail="لا تملك صلاحية تسجيل حضور لموظف آخر")
 
     target_date = attendance_date or arabic_nlp.riyadh_today()
-    now_dt = arabic_nlp.riyadh_now().replace(tzinfo=None)
+    now_dt = datetime.now(arabic_nlp.RIYADH_TZ).replace(tzinfo=None)
 
     schedule = (
         db.query(WorkSchedule)
@@ -809,6 +1101,16 @@ def decide_workflow_approval(
             proj = db.query(Project).filter(Project.id == target_uuid, Project.company_id == company_id).first()
             if proj:
                 proj.status = "Active" if decision == "Approved" else "Cancelled"
+        elif wf_rec.workflow_type == "AssetTransfer":
+            tr = db.query(AssetBranchTransfer).filter(AssetBranchTransfer.id == target_uuid, AssetBranchTransfer.company_id == company_id).first()
+            if tr:
+                tr.status = "Completed" if decision == "Approved" else decision
+                tr.approved_by_id = current_user.id
+                if decision == "Approved":
+                    tr.transferred_at = now_dt
+                    ast = db.query(TechnicalAsset).filter(TechnicalAsset.id == tr.asset_id, TechnicalAsset.company_id == company_id).first()
+                    if ast:
+                        ast.branch_id = tr.to_branch_id
 
     db.commit()
     db.refresh(wf_rec)
@@ -823,3 +1125,254 @@ def decide_workflow_approval(
         new_values={"decision": decision, "target_id": wf_rec.target_resource_id, "notes": notes},
     )
     return wf_rec
+
+
+# ── 5. Branch-Aware Asset Analytics & Physical Branch Transfer Workflows ─────
+
+def transfer_asset_to_branch(
+    db: Session,
+    current_user: User,
+    company_id: uuid.UUID,
+    asset_id: uuid.UUID,
+    to_branch_id: uuid.UUID,
+    reason: Optional[str] = None,
+    require_approval: bool = False,
+) -> Dict[str, Any]:
+    """Execute or request an asset branch transfer: Current Branch -> Request -> Approval -> Physical Transfer -> New Branch."""
+    asset = db.query(TechnicalAsset).filter(TechnicalAsset.id == asset_id, TechnicalAsset.company_id == company_id).first()
+    if not asset:
+        raise HTTPException(status_code=404, detail="الأصل غير موجود في المنشأة الحالية")
+
+    target_branch = db.query(Branch).filter(Branch.id == to_branch_id, Branch.company_id == company_id).first()
+    if not target_branch:
+        raise HTTPException(status_code=400, detail="الفرع المستهدف غير صالح أو لا يتبع للشركة الحالية")
+
+    from_branch_id = asset.branch_id
+    from_branch_name = asset.branch.branch_name if asset.branch else "غير محدد"
+    now_dt = datetime.utcnow()
+
+    transfer_status = "Pending Approval" if require_approval else "Completed"
+    tr = AssetBranchTransfer(
+        company_id=company_id,
+        asset_id=asset.id,
+        from_branch_id=from_branch_id,
+        to_branch_id=target_branch.id,
+        custodian_employee_id=asset.assigned_employee_id,
+        requested_by_id=current_user.id,
+        approved_by_id=None if require_approval else current_user.id,
+        status=transfer_status,
+        reason=reason or f"نقل الأصل من ({from_branch_name}) إلى ({target_branch.branch_name})",
+        transferred_at=None if require_approval else now_dt,
+    )
+    db.add(tr)
+    db.flush()
+
+    approval_id = None
+    if require_approval:
+        wf_item = WorkflowApproval(
+            company_id=company_id,
+            workflow_type="AssetTransfer",
+            target_resource_type="AssetBranchTransfer",
+            target_resource_id=str(tr.id),
+            title=f"نقل الأصل {asset.asset_code} ({asset.asset_name}) إلى فرع {target_branch.branch_name}",
+            initiator_employee_id=current_user.employee_id,
+            requested_by_user_id=current_user.id,
+            current_state="Pending",
+            priority="Medium",
+        )
+        db.add(wf_item)
+        db.flush()
+        approval_id = str(wf_item.id)
+    else:
+        asset.branch_id = target_branch.id
+
+    db.commit()
+    db.refresh(tr)
+
+    log_audit(
+        db=db,
+        action="ASSET_BRANCH_TRANSFER",
+        resource_type="TechnicalAsset",
+        resource_id=str(asset.id),
+        user_id=current_user.id,
+        company_id=company_id,
+        old_values={"branch_id": str(from_branch_id) if from_branch_id else None, "branch_name": from_branch_name},
+        new_values={
+            "to_branch_id": str(target_branch.id),
+            "to_branch_name": target_branch.branch_name,
+            "transfer_status": transfer_status,
+        },
+    )
+    return {
+        "transfer_id": str(tr.id),
+        "asset_id": str(asset.id),
+        "asset_code": asset.asset_code,
+        "from_branch_name": from_branch_name,
+        "to_branch_id": str(target_branch.id),
+        "to_branch_name": target_branch.branch_name,
+        "status": transfer_status,
+        "approval_id": approval_id,
+    }
+
+
+def get_branch_aware_asset_analytics(
+    db: Session,
+    company_id: uuid.UUID,
+    branch_ids: Optional[List[uuid.UUID]] = None,
+    department_id: Optional[uuid.UUID] = None,
+    asset_category: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Compute strictly deduplicated branch-aware asset analytics.
+
+    Rule: Each asset is counted ONCE by its own `TechnicalAsset.id` and `TechnicalAsset.branch_id`
+    (never duplicated when its custodian works across multiple branches).
+    """
+    ensure_canonical_five_branches(db, company_id)
+    today = arabic_nlp.riyadh_today()
+
+    canonical_branches = (
+        db.query(Branch)
+        .filter(Branch.company_id == company_id, Branch.status == "Active", Branch.branch_name.in_(CANONICAL_BRANCH_NAMES))
+        .all()
+    )
+    branch_lookup = {b.id: b.branch_name for b in canonical_branches}
+
+    q = (
+        db.query(TechnicalAsset)
+        .options(
+            joinedload(TechnicalAsset.branch),
+            joinedload(TechnicalAsset.department),
+            joinedload(TechnicalAsset.assigned_employee),
+        )
+        .filter(TechnicalAsset.company_id == company_id)
+    )
+    if branch_ids:
+        q = q.filter(TechnicalAsset.branch_id.in_(branch_ids))
+    if department_id:
+        q = q.filter(TechnicalAsset.department_id == department_id)
+    if asset_category:
+        q = q.filter(TechnicalAsset.asset_category == asset_category)
+
+    # Deduplicate by TechnicalAsset.id
+    assets_by_id: Dict[uuid.UUID, TechnicalAsset] = {}
+    for a in q.all():
+        assets_by_id[a.id] = a
+    assets = list(assets_by_id.values())
+
+    total_assets = len(assets)
+    it_assets = sum(1 for a in assets if (getattr(a, "asset_category", "IT") or "IT") == "IT")
+    general_assets = total_assets - it_assets
+    assigned_assets = sum(1 for a in assets if a.status == "Assigned")
+    available_assets = sum(1 for a in assets if a.status == "Available")
+    maintenance_assets = sum(1 for a in assets if a.status == "Under Maintenance")
+    retired_assets = sum(1 for a in assets if a.status in ("Retired", "Damaged", "Lost"))
+    warranty_expiring_30d = sum(
+        1 for a in assets if a.warranty_expiry and 0 <= (a.warranty_expiry - today).days <= 30
+    )
+
+    # Active custody awaiting return (expected_return_date <= today + 7)
+    asset_uuid_set = set(assets_by_id.keys())
+    awaiting_return = 0
+    if asset_uuid_set:
+        awaiting_return = (
+            db.query(AssetCustody)
+            .filter(
+                AssetCustody.company_id == company_id,
+                AssetCustody.status == "Active",
+                AssetCustody.asset_id.in_(asset_uuid_set),
+                AssetCustody.expected_return_date != None,  # noqa: E711
+                AssetCustody.expected_return_date <= today + timedelta(days=7),
+            )
+            .count()
+        )
+
+    # Aggregations by the 5 canonical branches (always in canonical order)
+    by_branch: Dict[str, int] = {name: 0 for name in CANONICAL_BRANCH_NAMES if not branch_ids or any(branch_lookup.get(bid) == name for bid in branch_ids)}
+    branch_comparison_matrix: List[Dict[str, Any]] = []
+    branch_assets_bucket: Dict[str, List[TechnicalAsset]] = {name: [] for name in CANONICAL_BRANCH_NAMES}
+
+    for a in assets:
+        b_label = a.branch.branch_name if a.branch else CANONICAL_BRANCH_NAMES[2]
+        by_branch[b_label] = by_branch.get(b_label, 0) + 1
+        branch_assets_bucket.setdefault(b_label, []).append(a)
+
+    for b in canonical_branches:
+        if branch_ids and b.id not in branch_ids:
+            continue
+        b_list = branch_assets_bucket.get(b.branch_name, [])
+        # Find branch asset custodian / IT manager if any
+        custodians = sorted({x.assigned_employee.full_name for x in b_list if x.assigned_employee})
+        branch_comparison_matrix.append(
+            {
+                "branch_id": str(b.id),
+                "branch_name": b.branch_name,
+                "total_assets": len(b_list),
+                "it_assets": sum(1 for x in b_list if (getattr(x, "asset_category", "IT") or "IT") == "IT"),
+                "general_assets": sum(1 for x in b_list if getattr(x, "asset_category", "IT") == "General"),
+                "assigned": sum(1 for x in b_list if x.status == "Assigned"),
+                "available": sum(1 for x in b_list if x.status == "Available"),
+                "under_maintenance": sum(1 for x in b_list if x.status == "Under Maintenance"),
+                "retired_or_damaged": sum(1 for x in b_list if x.status in ("Retired", "Damaged")),
+                "custodians": custodians[:5],
+            }
+        )
+
+    by_type: Dict[str, int] = {}
+    by_condition: Dict[str, int] = {}
+    by_department: Dict[str, int] = {}
+    for a in assets:
+        by_type[a.asset_type] = by_type.get(a.asset_type, 0) + 1
+        by_condition[a.condition] = by_condition.get(a.condition, 0) + 1
+        d_label = a.department.department_name if a.department else "غير محدد"
+        by_department[d_label] = by_department.get(d_label, 0) + 1
+
+    transfer_q = (
+        db.query(AssetBranchTransfer)
+        .options(
+            joinedload(AssetBranchTransfer.asset),
+            joinedload(AssetBranchTransfer.from_branch),
+            joinedload(AssetBranchTransfer.to_branch),
+            joinedload(AssetBranchTransfer.custodian),
+        )
+        .filter(AssetBranchTransfer.company_id == company_id)
+        .order_by(AssetBranchTransfer.created_at.desc())
+        .limit(25)
+        .all()
+    )
+
+    return {
+        "kpis": {
+            "total_assets": total_assets,
+            "it_assets": it_assets,
+            "general_assets": general_assets,
+            "assigned_assets": assigned_assets,
+            "available_assets": available_assets,
+            "maintenance_assets": maintenance_assets,
+            "retired_assets": retired_assets,
+            "warranty_expiring_30d": warranty_expiring_30d,
+            "awaiting_return": awaiting_return,
+        },
+        "distributions": {
+            "by_branch": by_branch,
+            "by_type": by_type,
+            "by_condition": by_condition,
+            "by_department": by_department,
+        },
+        "branch_comparison": branch_comparison_matrix,
+        "recent_transfers": [
+            {
+                "id": str(tr.id),
+                "asset_id": str(tr.asset_id),
+                "asset_code": tr.asset.asset_code if tr.asset else "—",
+                "asset_name": tr.asset.asset_name if tr.asset else "—",
+                "from_branch_name": tr.from_branch.branch_name if tr.from_branch else "—",
+                "to_branch_name": tr.to_branch.branch_name if tr.to_branch else "—",
+                "custodian_name": tr.custodian.full_name if tr.custodian else None,
+                "status": tr.status,
+                "reason": tr.reason,
+                "transferred_at": tr.transferred_at.isoformat() if tr.transferred_at else tr.created_at.isoformat(),
+            }
+            for tr in transfer_q
+        ],
+    }
+

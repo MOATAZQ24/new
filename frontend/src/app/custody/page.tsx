@@ -12,17 +12,62 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
+interface CustodyRecordRow {
+  id: string;
+  asset_code: string;
+  asset_name: string;
+  asset_type: string;
+  serial_number?: string;
+  employee_name: string;
+  employee_number: string;
+  assignment_date: string;
+  actual_return_date?: string | null;
+  condition_on_assignment?: string;
+  status: string;
+}
+
+interface CustodyAssetOption {
+  id: string;
+  asset_code: string;
+  asset_name: string;
+  asset_type: string;
+}
+
+interface CustodyEmployeeOption {
+  id: string;
+  full_name: string;
+  employee_number: string;
+  job_title?: string | null;
+}
+
+interface CustodyReceiptData {
+  receipt_number: string;
+  company_name_ar: string;
+  assignment_date: string;
+  employee_name: string;
+  employee_number: string;
+  department?: string;
+  job_title?: string;
+  asset_name: string;
+  asset_code: string;
+  asset_type?: string;
+  brand?: string;
+  serial_number?: string;
+  condition_on_assignment: string;
+  declaration_text: string;
+}
+
 export default function CustodyPage() {
   const { activeCompanyId } = useAuth();
   const toast = useToast();
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<CustodyRecordRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("Active");
 
   // Assign modal
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [availableAssets, setAvailableAssets] = useState<any[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [availableAssets, setAvailableAssets] = useState<CustodyAssetOption[]>([]);
+  const [employees, setEmployees] = useState<CustodyEmployeeOption[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [assignCondition, setAssignCondition] = useState("Good");
@@ -31,20 +76,20 @@ export default function CustodyPage() {
 
   // Return modal
   const [showReturnModal, setShowReturnModal] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedRecord, setSelectedRecord] = useState<CustodyRecordRow | null>(null);
   const [returnCondition, setReturnCondition] = useState("Good");
   const [returnNotes, setReturnNotes] = useState("");
 
   // Receipt modal
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+  const [receiptData, setReceiptData] = useState<CustodyReceiptData | null>(null);
 
   const fetchRecords = async () => {
     setLoading(true);
     try {
       let url = "/custody";
       if (statusFilter) url += `?status=${statusFilter}`;
-      const res = await api.get(url);
+      const res = await api.get<CustodyRecordRow[]>(url);
       setRecords(res.data || []);
     } catch (e) {
       console.error(e);
@@ -54,14 +99,17 @@ export default function CustodyPage() {
   };
 
   useEffect(() => {
-    fetchRecords();
-  }, [statusFilter, activeCompanyId]);
+    const t = window.setTimeout(() => {
+      void fetchRecords();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [statusFilter, activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openAssignModal = async () => {
     try {
       const [astRes, empRes] = await Promise.all([
-        api.get("/assets?status=Available"),
-        api.get("/employees?status=Active"),
+        api.get<CustodyAssetOption[]>("/assets?status=Available"),
+        api.get<CustodyEmployeeOption[]>("/employees?status=Active"),
       ]);
       setAvailableAssets(astRes.data || []);
       setEmployees(empRes.data || []);
@@ -84,8 +132,8 @@ export default function CustodyPage() {
       });
       setShowAssignModal(false);
       fetchRecords();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تسليم العهدة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تسليم العهدة");
     }
   };
 
@@ -99,18 +147,18 @@ export default function CustodyPage() {
       });
       setShowReturnModal(false);
       fetchRecords();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل استرجاع العهدة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل استرجاع العهدة");
     }
   };
 
   const openReceipt = async (recordId: string) => {
     try {
-      const res = await api.get(`/custody/receipt/${recordId}`);
+      const res = await api.get<CustodyReceiptData>(`/custody/receipt/${recordId}`);
       setReceiptData(res.data);
       setShowReceiptModal(true);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحميل سند التسليم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل سند التسليم");
     }
   };
 
@@ -345,7 +393,7 @@ export default function CustodyPage() {
           </div>
 
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            * سيتم تغيير حالة الأصل تلقائياً إلى "Assigned" وحفظ حركة التسليم في السجل التاريخي.
+            * سيتم تغيير حالة الأصل تلقائياً إلى &laquo;Assigned&raquo; وحفظ حركة التسليم في السجل التاريخي.
           </div>
 
           <div className="pt-2 flex justify-end gap-2">

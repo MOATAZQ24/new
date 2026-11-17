@@ -1,6 +1,5 @@
 "use client";
 
-import { mediaUrl } from "@/context/WorkspaceContext";
 import React, { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
@@ -15,10 +14,41 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
+interface CompanyRow {
+  id: string;
+  company_name_ar: string;
+  company_name_en: string;
+  company_code: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  status: string;
+  branches_count?: number;
+  employees_count?: number;
+  logo_url?: string | null;
+  [key: string]: unknown;
+}
+
+interface CompanyBranchRow {
+  id: string;
+  branch_name: string;
+  location?: string | null;
+  contact_details?: string | null;
+  status: string;
+  physical_branch_id?: string | null;
+}
+
+interface CompanyDeptRow {
+  id: string;
+  department_name: string;
+  branch_id?: string | null;
+  branch_name?: string | null;
+  status: string;
+}
+
 export default function CompaniesPage() {
   const toast = useToast();
   const { user } = useAuth();
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -28,15 +58,15 @@ export default function CompaniesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [selectedCompany, setSelectedCompany] = useState<CompanyRow | null>(null);
 
   // Branch & Dept state for details
-  const [branches, setBranches] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [branches, setBranches] = useState<CompanyBranchRow[]>([]);
+  const [departments, setDepartments] = useState<CompanyDeptRow[]>([]);
 
   // Branch CRUD modals
   const [showBranchModal, setShowBranchModal] = useState(false);
-  const [editingBranch, setEditingBranch] = useState<any>(null);
+  const [editingBranch, setEditingBranch] = useState<CompanyBranchRow | null>(null);
   const [branchName, setBranchName] = useState("");
   const [branchLocation, setBranchLocation] = useState("");
   const [branchContact, setBranchContact] = useState("");
@@ -44,7 +74,7 @@ export default function CompaniesPage() {
 
   // Department CRUD modals
   const [showDeptModal, setShowDeptModal] = useState(false);
-  const [editingDept, setEditingDept] = useState<any>(null);
+  const [editingDept, setEditingDept] = useState<CompanyDeptRow | null>(null);
   const [deptName, setDeptName] = useState("");
   const [deptBranchId, setDeptBranchId] = useState("");
   const [deptStatus, setDeptStatus] = useState("Active");
@@ -81,7 +111,7 @@ export default function CompaniesPage() {
       const q = params.toString();
       if (q) url += `?${q}`;
 
-      const res = await api.get(url);
+      const res = await api.get<CompanyRow[]>(url);
       setCompanies(res.data || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الشركات");
@@ -91,8 +121,11 @@ export default function CompaniesPage() {
   };
 
   useEffect(() => {
-    fetchCompanies();
-  }, [statusFilter, debouncedSearch]);
+    const t = window.setTimeout(() => {
+      void fetchCompanies();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [statusFilter, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,12 +157,12 @@ export default function CompaniesPage() {
       setInitialBranchesStr("");
       setInitialDeptsStr("");
       fetchCompanies();
-    } catch (err: any) {
-      setError(err?.message || "فشل إنشاء الشركة");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "فشل إنشاء الشركة");
     }
   };
 
-  const openEditCompany = (c: any) => {
+  const openEditCompany = (c: CompanyRow) => {
     setEditId(c.id);
     setEditNameAr(c.company_name_ar);
     setEditNameEn(c.company_name_en);
@@ -154,8 +187,8 @@ export default function CompaniesPage() {
       });
       setShowEditModal(false);
       fetchCompanies();
-    } catch (err: any) {
-      setError(err?.message || "فشل تحديث بيانات الشركة");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "فشل تحديث بيانات الشركة");
     }
   };
 
@@ -164,16 +197,16 @@ export default function CompaniesPage() {
     try {
       await api.delete(`/companies/${companyId}`);
       fetchCompanies();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الشركة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف الشركة");
     }
   };
 
   const refreshBranchesAndDepts = async (cid: string) => {
     try {
       const [bRes, dRes] = await Promise.all([
-        api.get(`/companies/${cid}/branches`),
-        api.get(`/companies/${cid}/departments`),
+        api.get<CompanyBranchRow[]>(`/companies/${cid}/branches`),
+        api.get<CompanyDeptRow[]>(`/companies/${cid}/departments`),
       ]);
       setBranches(bRes.data || []);
       setDepartments(dRes.data || []);
@@ -182,7 +215,7 @@ export default function CompaniesPage() {
     }
   };
 
-  const openCompanyDetails = async (c: any) => {
+  const openCompanyDetails = async (c: CompanyRow) => {
     setSelectedCompany(c);
     await refreshBranchesAndDepts(c.id);
     setShowDetailsModal(true);
@@ -198,7 +231,7 @@ export default function CompaniesPage() {
     setShowBranchModal(true);
   };
 
-  const openEditBranch = (b: any) => {
+  const openEditBranch = (b: CompanyBranchRow) => {
     setEditingBranch(b);
     setBranchName(b.branch_name);
     setBranchLocation(b.location || "");
@@ -229,8 +262,8 @@ export default function CompaniesPage() {
       setShowBranchModal(false);
       await refreshBranchesAndDepts(selectedCompany.id);
       fetchCompanies();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حفظ بيانات الفرع");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حفظ بيانات الفرع");
     }
   };
 
@@ -242,8 +275,8 @@ export default function CompaniesPage() {
         await refreshBranchesAndDepts(selectedCompany.id);
         fetchCompanies();
       }
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الفرع");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف الفرع");
     }
   };
 
@@ -256,7 +289,7 @@ export default function CompaniesPage() {
     setShowDeptModal(true);
   };
 
-  const openEditDept = (d: any) => {
+  const openEditDept = (d: CompanyDeptRow) => {
     setEditingDept(d);
     setDeptName(d.department_name);
     setDeptBranchId(d.branch_id || "");
@@ -283,8 +316,8 @@ export default function CompaniesPage() {
       }
       setShowDeptModal(false);
       await refreshBranchesAndDepts(selectedCompany.id);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حفظ بيانات القسم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حفظ بيانات القسم");
     }
   };
 
@@ -296,8 +329,8 @@ export default function CompaniesPage() {
         await refreshBranchesAndDepts(selectedCompany.id);
       }
       toast.success("تم حذف القسم");
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف القسم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف القسم");
     }
   };
 
@@ -370,7 +403,7 @@ export default function CompaniesPage() {
             >
               <div>
                 <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-[#123D32] text-[#C5A46D] font-black text-lg flex items-center justify-center shadow-xs">
+                  <div className="min-w-12 h-12 px-2.5 rounded-xl bg-[#123D32] text-[#C5A46D] font-black text-sm flex items-center justify-center shadow-xs shrink-0 whitespace-nowrap">
                     <bdi dir="ltr">{c.company_code}</bdi>
                   </div>
                   <div className="flex items-center gap-2">
@@ -720,13 +753,28 @@ export default function CompaniesPage() {
               </p>
             ) : (
               <div className="space-y-2">
-                {branches.map((b) => (
+                {branches.map((b) => {
+                  const isCanonical = [
+                    "الرياض – السلي (مخرج 17)",
+                    "الرياض – الفيصلية (مخرج 18)",
+                    "الرياض – العليا",
+                    "الدمام",
+                    "جدة",
+                  ].includes(b.branch_name);
+                  return (
                   <div
                     key={b.id}
                     className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-xs"
                   >
                     <div>
-                      <div className="font-bold text-slate-800">{b.branch_name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800">{b.branch_name}</span>
+                        {isCanonical && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                            فرع تشغيلي معتمد
+                          </span>
+                        )}
+                      </div>
                       <div className="text-slate-400 text-[11px] mt-0.5">
                         الموقع: {b.location || "غير محدد"} • تواصل: {b.contact_details || "-"}
                       </div>
@@ -742,18 +790,21 @@ export default function CompaniesPage() {
                           >
                             <Icons.Edit size={14} />
                           </button>
-                          <button
-                            onClick={() => handleDeleteBranch(b.id, b.branch_name)}
-                            className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
-                            title="حذف الفرع"
-                          >
-                            <Icons.Trash size={14} />
-                          </button>
+                          {!isCanonical && (
+                            <button
+                              onClick={() => handleDeleteBranch(b.id, b.branch_name)}
+                              className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                              title="حذف الفرع"
+                            >
+                              <Icons.Trash size={14} />
+                            </button>
+                          )}
                         </>
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

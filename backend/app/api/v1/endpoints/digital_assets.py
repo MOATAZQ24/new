@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, verify_password, resolve_company_scope
+from app.core.security import get_current_user, get_user_company_id, require_role, verify_password, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
-from app.models.user import User, Employee
+from app.models.user import User, Employee, CompanyMembership
 from app.models.company import Company, Branch
 from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermission
 from app.schemas.digital_asset import (
@@ -160,7 +160,9 @@ def create_digital_asset(
     db: Session = Depends(get_db),
 ):
     """Create a new digital asset metadata record."""
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    validate_company_fk(db, Branch, payload.branch_id, target_cid, "الفرع")
+    validate_company_fk(db, Employee, payload.assigned_employee_id, target_cid, "الموظف المعين")
 
     asset = DigitalAsset(
         name=payload.name.strip(),
@@ -556,6 +558,8 @@ def rotate_secret_value(
         raise HTTPException(status_code=404, detail="السر غير موجود")
 
     asset = secret.digital_asset
+    if not current_user.is_superadmin and asset.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تدوير السر لهذا الأصل خارج نطاق الشركة الحالية")
     if not check_asset_access(asset, current_user, db, require_admin=True):
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية تدوير السر لهذا الأصل")
 
@@ -638,6 +642,18 @@ def grant_asset_permission(
 
     if not current_user.is_superadmin and asset.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية إدارة الصلاحيات")
+
+    target_user = db.query(User).filter(User.id == payload.user_id, User.is_deleted == False).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="المستخدم المستهدف غير موجود")
+    if not target_user.is_superadmin:
+        has_mem = db.query(CompanyMembership).filter(
+            CompanyMembership.user_id == payload.user_id,
+            CompanyMembership.company_id == asset.company_id,
+            CompanyMembership.status == "Active",
+        ).first()
+        if not has_mem:
+            raise HTTPException(status_code=403, detail="لا يمكن منح صلاحية أصل رقمي لمستخدم خارج المنشأة")
 
     existing = db.query(AssetAccessPermission).filter(
         AssetAccessPermission.asset_id == asset.asset_id,

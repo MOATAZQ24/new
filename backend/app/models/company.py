@@ -51,6 +51,11 @@ class Branch(UUIDMixin, TimestampMixin, Base):
         nullable=False,
     )
     branch_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    physical_branch_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("physical_branch_locations.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     location: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     contact_details: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
@@ -63,6 +68,7 @@ class Branch(UUIDMixin, TimestampMixin, Base):
 
     __table_args__ = (
         Index("ix_branches_company_id", "company_id"),
+        Index("ix_branches_physical_branch_id", "physical_branch_id"),
         Index("ix_branches_status", "status"),
     )
 

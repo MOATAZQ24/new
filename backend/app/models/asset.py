@@ -46,7 +46,8 @@ class TechnicalAsset(UUIDMixin, TimestampMixin, Base):
 
     asset_code: Mapped[str] = mapped_column(String(100), nullable=False)
     asset_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    asset_type: Mapped[str] = mapped_column(String(100), nullable=False)  # Laptop, Desktop, Mobile, Tablet, Monitor, Printer, Other
+    asset_category: Mapped[str] = mapped_column(String(50), default="IT", nullable=False)  # IT (أصل تقني), General (أصل عام)
+    asset_type: Mapped[str] = mapped_column(String(100), nullable=False)  # Laptop, Desktop, Mobile, Tablet, Monitor, Printer, Furniture, Vehicle, Equipment, Other
     brand: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     model: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     serial_number: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)

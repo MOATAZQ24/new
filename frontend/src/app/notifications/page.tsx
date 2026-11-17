@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PriorityBadge } from "@/components/ui/Badge";
 import { 
-  BellIcon, CheckCircleIcon, ClockIcon, AlertCircleIcon, 
+  BellIcon, CheckCircleIcon, ClockIcon, 
   CheckSquareIcon, LifeBuoyIcon, RefreshCwIcon, ShieldCheckIcon
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
@@ -46,7 +46,10 @@ export default function NotificationsPage() {
   }, [unreadOnly, priorityFilter]);
 
   useEffect(() => {
-    loadNotifications();
+    const t = window.setTimeout(() => {
+      void loadNotifications();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadNotifications]);
 
   const handleMarkRead = async (id: string) => {

@@ -4,10 +4,9 @@ import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Modal from "@/components/ui/Modal";
 import { 
-  FileTextIcon, DownloadIcon, PrinterIcon, LaptopIcon, 
+  DownloadIcon, PrinterIcon, LaptopIcon, 
   ShieldCheckIcon, ServerIcon, CreditCardIcon, WrenchIcon, 
-  CheckSquareIcon, LifeBuoyIcon, ShieldAlertIcon, PlusIcon,
-  RefreshIcon
+  CheckSquareIcon, LifeBuoyIcon, ShieldAlertIcon, PlusIcon
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -90,7 +89,17 @@ export default function ReportsPage() {
   const [importModule, setImportModule] = useState<"assets" | "employees" | "infrastructure">("assets");
   const [importFileContent, setImportFileContent] = useState<string>("");
   const [importLoading, setImportLoading] = useState(false);
-  const [importResult, setImportResult] = useState<any>(null);
+  const [importResult, setImportResult] = useState<{
+    dry_run?: boolean;
+    message?: string;
+    total_rows?: number;
+    valid_count?: number;
+    error_count?: number;
+    created_count?: number;
+    imported_count?: number;
+    skipped_count?: number;
+    errors?: Array<{ row?: number; error?: string } | string>;
+  } | null>(null);
 
   const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
 
@@ -159,14 +168,24 @@ export default function ReportsPage() {
     setImportLoading(true);
     setImportResult(null);
     try {
-      const res = await api.post("/reports/import", {
+      const res = await api.post<{
+        dry_run?: boolean;
+        message?: string;
+        total_rows?: number;
+        valid_count?: number;
+        error_count?: number;
+        created_count?: number;
+        imported_count?: number;
+        skipped_count?: number;
+        errors?: Array<{ row?: number; error?: string } | string>;
+      }>("/reports/import", {
         module: importModule,
         rows,
         dry_run: dryRun,
       });
       setImportResult(res.data);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل استيراد البيانات");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل استيراد البيانات");
     } finally {
       setImportLoading(false);
     }
@@ -266,7 +285,7 @@ export default function ReportsPage() {
               </label>
               <select
                 value={importModule}
-                onChange={(e) => setImportModule(e.target.value as any)}
+                onChange={(e) => setImportModule(e.target.value as "assets" | "employees" | "infrastructure")}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
               >
                 <option value="assets">الأصول التقنية (Technical Assets)</option>
@@ -325,15 +344,17 @@ export default function ReportsPage() {
                   تم بنجاح: {importResult.imported_count} سجل
                 </span>
               </div>
-              {importResult.skipped_count > 0 && (
+              {(importResult.skipped_count ?? 0) > 0 && (
                 <div className="text-rose-600 text-[11px]">
                   تم تخطي {importResult.skipped_count} سجل لوجود تكرار أو نقص في البيانات الأساسية.
                 </div>
               )}
               {importResult.errors && importResult.errors.length > 0 && (
                 <div className="max-h-24 overflow-y-auto space-y-1 text-[10px] text-slate-500 font-mono bg-white p-2 rounded border border-slate-100">
-                  {importResult.errors.map((err: string, i: number) => (
-                    <div key={i}>{err}</div>
+                  {importResult.errors.map((err, i) => (
+                    <div key={i}>
+                      {typeof err === "string" ? err : `صف ${err.row ?? i + 1}: ${err.error ?? ""}`}
+                    </div>
                   ))}
                 </div>
               )}

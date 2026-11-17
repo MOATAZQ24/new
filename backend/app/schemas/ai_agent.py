@@ -15,6 +15,7 @@ class AgentChatContext(BaseModel):
     selected_task_id: Optional[uuid.UUID] = None
     selected_ticket_id: Optional[uuid.UUID] = None
     selected_employee_id: Optional[uuid.UUID] = None
+    selected_asset_id: Optional[uuid.UUID] = None
 
 
 class AgentChatRequest(BaseModel):

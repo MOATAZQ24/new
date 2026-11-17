@@ -168,8 +168,26 @@ def _serialize_employee(db: Session, company_id: uuid.UUID, emp: Employee) -> Di
         )
         .first()
     )
+    from app.models.enterprise import EmployeeBranchAssignment
+
     short_id = str(emp.id).replace("-", "")[:8].upper()
     branch_name = emp.branch.branch_name if emp.branch else None
+    assign_rows = (
+        db.query(EmployeeBranchAssignment)
+        .options(joinedload(EmployeeBranchAssignment.branch))
+        .filter(
+            EmployeeBranchAssignment.company_id == company_id,
+            EmployeeBranchAssignment.employee_id == emp.id,
+            EmployeeBranchAssignment.status == "Active",
+        )
+        .all()
+    )
+    branch_names: List[str] = []
+    if branch_name:
+        branch_names.append(branch_name)
+    for ar in assign_rows:
+        if ar.branch and ar.branch.branch_name and ar.branch.branch_name not in branch_names:
+            branch_names.append(ar.branch.branch_name)
     dept_name = emp.department.department_name if emp.department else None
     has_user = bool(emp.user and emp.user.account_status == "Active" and not emp.user.is_deleted)
     username = emp.user.username if has_user and emp.user else None
@@ -181,7 +199,9 @@ def _serialize_employee(db: Session, company_id: uuid.UUID, emp: Employee) -> Di
         details.append(emp.job_title)
     if dept_name:
         details.append(dept_name)
-    if branch_name:
+    if branch_names:
+        details.append(f"فرع: {' + '.join(branch_names)}")
+    elif branch_name:
         details.append(f"فرع: {branch_name}")
     if username:
         details.append(f"حساب: {username}")
@@ -199,6 +219,7 @@ def _serialize_employee(db: Session, company_id: uuid.UUID, emp: Employee) -> Di
         "employee_number": emp.employee_number,
         "job_title": emp.job_title,
         "branch_name": branch_name,
+        "branch_names": branch_names,
         "department_name": dept_name,
         "has_user_account": has_user,
         "username": username,
@@ -1058,6 +1079,197 @@ def tool_update_task_status(
     }
 
 
+def tool_update_task(
+    db: Session,
+    current_user: User,
+    target_cid: uuid.UUID,
+    args: Dict[str, Any],
+    confirmed: bool = False,
+    ip_address: str = "ai_agent",
+    progress_cb: Optional[Callable[[Dict[str, Any]], None]] = None,
+) -> Dict[str, Any]:
+    """Update task due_date, priority, or assignee (reassignment) securely with disambiguation."""
+    due_raw = _safe_str(args.get("due_date")) or None
+    parsed_due = _parse_due_date(due_raw) if due_raw else None
+    prio_raw = _safe_str(args.get("priority")) or None
+    norm_prio = _normalize_priority(prio_raw) if prio_raw else None
+    assignee_name = clean_employee_query(args.get("assignee_name")) or None
+    assignee_id_raw = args.get("assignee_id")
+
+    if not any([parsed_due, norm_prio, assignee_name, assignee_id_raw]):
+        return {
+            "ok": False,
+            "status": "needs_clarification",
+            "error": "يرجى تحديد التعديل المطلوب على المهمة (تاريخ الاستحقاق الجديد أو الموظف المسند إليه أو الأولوية).",
+        }
+
+    is_reassign = bool(assignee_name or assignee_id_raw)
+    if is_reassign and not (
+        has_module_permission(current_user, Module.TASKS, Action.ASSIGN, target_cid, db)
+        or has_module_permission(current_user, Module.TASKS, Action.EDIT, target_cid, db)
+    ):
+        return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية إسناد أو إعادة تعيين المهام."}
+    if not is_reassign and not has_module_permission(current_user, Module.TASKS, Action.EDIT, target_cid, db):
+        return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية تعديل المهام."}
+
+    if assignee_name and re.search(r"^(?:فريق|قسم|إدارة|ادارة|team|department|group)\b", assignee_name, re.I):
+        return {
+            "ok": False,
+            "status": "needs_clarification",
+            "error": f"«{assignee_name}» يشير إلى مجموعة/فريق، والمهام تسند لموظف محدد. يرجى تحديد اسم الموظف:",
+            "pending_action": {"tool": "update_task", "args": dict(args), "missing_field": "assignee"},
+        }
+
+    task_query = (_safe_str(args.get("task_reference")) or _safe_str(args.get("task_id")) or _safe_str(args.get("query"))).strip()
+    _emit(progress_cb, "find_task", "جارٍ البحث عن المهمة المراد تعديلها...", "running", task_query or "المهمة الحالية")
+
+    task: Optional[Task] = None
+    if task_query:
+        try:
+            t_uuid = uuid.UUID(task_query)
+            task = db.query(Task).filter(Task.id == t_uuid, Task.company_id == target_cid).first()
+        except ValueError:
+            cond = wf.search_condition(db, task_query)
+            q = db.query(Task).filter(Task.company_id == target_cid)
+            if cond is not None:
+                q = q.filter(cond)
+            matches = q.order_by(Task.updated_at.desc()).limit(5).all()
+            if len(matches) == 1:
+                task = matches[0]
+            elif len(matches) > 1:
+                return {
+                    "ok": False,
+                    "status": "needs_clarification",
+                    "error": f"توجد {len(matches)} مهام مطابقة. يرجى تحديد رقم المهمة:",
+                    "task_candidates": [
+                        {
+                            "task_id": str(m.id),
+                            "reference": wf.task_ref(m),
+                            "title": m.title,
+                            "status": m.status,
+                            "assignee_name": m.assigned_to.full_name if m.assigned_to else None,
+                        }
+                        for m in matches
+                    ],
+                    "pending_action": {"tool": "update_task", "args": dict(args), "missing_field": "task_reference"},
+                }
+    elif args.get("selected_task_id"):
+        try:
+            task = db.query(Task).filter(
+                Task.id == uuid.UUID(str(args["selected_task_id"])),
+                Task.company_id == target_cid,
+            ).first()
+        except ValueError:
+            task = None
+    else:
+        q = db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("active"))
+        if not _is_staff(current_user, target_cid, db):
+            if current_user.employee_id:
+                q = q.filter(Task.assigned_to_id == current_user.employee_id)
+            else:
+                q = q.filter(Task.assigned_by_id == current_user.id)
+        recent_tasks = q.order_by(Task.updated_at.desc(), Task.created_at.desc()).limit(5).all()
+        if len(recent_tasks) == 1:
+            task = recent_tasks[0]
+        elif len(recent_tasks) > 1:
+            return {
+                "ok": False,
+                "status": "needs_clarification",
+                "error": "يوجد أكثر من مهمة نشطة حالياً؛ يرجى اختيار المهمة المراد تعديلها:",
+                "task_candidates": [
+                    {
+                        "task_id": str(m.id),
+                        "reference": wf.task_ref(m),
+                        "title": m.title,
+                        "status": m.status,
+                        "assignee_name": m.assigned_to.full_name if m.assigned_to else None,
+                    }
+                    for m in recent_tasks
+                ],
+                "pending_action": {"tool": "update_task", "args": dict(args), "missing_field": "task_reference"},
+            }
+
+    if not task:
+        return {
+            "ok": False,
+            "status": "not_found",
+            "error": f"لم يتم العثور على المهمة المطلوبة ({task_query or 'غير محددة'}) ضمن المنشأة الحالية.",
+        }
+
+    is_priv = task_service.is_manager_or_admin(current_user, db, task.company_id)
+    is_owner = current_user.employee_id and task.assigned_to_id == current_user.employee_id
+    if not (is_priv or is_owner or current_user.is_superadmin):
+        return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية تعديل هذه المهمة."}
+
+    target_emp_id = task.assigned_to_id
+    resolved_assignee = None
+    if assignee_id_raw or assignee_name:
+        res_emp = tool_resolve_employee(
+            db, current_user, target_cid, name=assignee_name or "", employee_id=assignee_id_raw, progress_cb=progress_cb
+        )
+        if res_emp["status"] != "unique":
+            pending_copy = dict(args)
+            pending_copy["task_reference"] = str(task.id)
+            return {
+                "ok": False,
+                "status": "needs_clarification" if res_emp["status"] != "denied" else "denied",
+                "error": res_emp["error"],
+                "candidates": res_emp.get("candidates", []),
+                "pending_action": {"tool": "update_task", "args": pending_copy, "missing_field": "assignee"},
+            }
+        resolved_assignee = res_emp["employee"]
+        target_emp_id = uuid.UUID(resolved_assignee["employee_id"])
+
+    old_vals = {
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "priority": task.priority,
+        "assigned_to_id": str(task.assigned_to_id) if task.assigned_to_id else None,
+    }
+    if parsed_due:
+        task.due_date = parsed_due
+    if norm_prio:
+        task.priority = norm_prio
+    if resolved_assignee:
+        task.assigned_to_id = target_emp_id
+        if wf.stage_of(task.status) in ("rejected", "cancelled"):
+            task.status = "Assigned"
+    task.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(task)
+
+    ref = wf.task_ref(task)
+    log_audit(
+        db=db,
+        action="AI_AGENT_UPDATE_TASK",
+        resource_type="Task",
+        resource_id=str(task.id),
+        user_id=current_user.id,
+        company_id=target_cid,
+        old_values=old_vals,
+        new_values={
+            "due_date": task.due_date.isoformat() if task.due_date else None,
+            "priority": task.priority,
+            "assigned_to_id": str(task.assigned_to_id) if task.assigned_to_id else None,
+        },
+        ip_address=ip_address,
+    )
+    _emit(progress_cb, "update_task", "تم تحديث بيانات المهمة", "completed", ref)
+    return {
+        "ok": True,
+        "status": "executed",
+        "data": {
+            "type": "task",
+            "task_id": str(task.id),
+            "reference": ref,
+            "title": task.title,
+            "status": task.status,
+            "priority": task.priority,
+            "due_date": task.due_date.isoformat() if task.due_date else None,
+            "assignee_name": task.assigned_to.full_name if task.assigned_to else None,
+        },
+    }
+
+
 # ── Tool 4: Send Employee Notification (In-App + Telegram Verified) ────────
 
 def tool_send_employee_notification(
@@ -1626,7 +1838,17 @@ def tool_query_operations(
         if not has_module_permission(current_user, Module.ASSETS, Action.VIEW, target_cid, db):
             return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض الأصول التقنية."}
         _emit(progress_cb, "query_assets", "جارٍ البحث في سجل الأصول التقنية...", "running")
+        from app.services import enterprise_service
+        enterprise_service.ensure_canonical_five_branches(db, target_cid)
+        branch_filter_raw = _safe_str(args.get("branch_name")) or None
+        selected_b_ids = (
+            enterprise_service.parse_branch_ids_filter(db, target_cid, None, branch_filter_raw)
+            if branch_filter_raw
+            else []
+        )
         query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
+        if selected_b_ids:
+            query = query.filter(TechnicalAsset.branch_id.in_(selected_b_ids))
         if raw_status and "maintenance" in raw_status.lower() or (search and ("صيانة" in search or "maintenance" in search.lower())):
             query = query.filter(TechnicalAsset.status == "Under Maintenance")
         elif search:
@@ -1646,6 +1868,7 @@ def tool_query_operations(
                 "asset_name": a.asset_name,
                 "asset_type": a.asset_type,
                 "status": a.status,
+                "branch_name": a.branch.branch_name if a.branch else None,
                 "assigned_to": a.assigned_employee.full_name if a.assigned_employee else None,
             }
             for a in items
@@ -1659,7 +1882,56 @@ def tool_query_operations(
                 "count": len(rows),
                 "total_count": total_count,
                 "truncated": total_count > len(rows),
+                "branch_filter": branch_filter_raw,
+                "status_filter": raw_status,
                 "items": rows,
+            },
+        }
+
+    if qtype == "branch_assets":
+        if not has_module_permission(current_user, Module.ASSETS, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض تحليلات أصول الفروع."}
+        from app.services import enterprise_service
+        branch_filter_raw = _safe_str(args.get("branch_name")) or search
+        selected_b_ids = (
+            enterprise_service.parse_branch_ids_filter(db, target_cid, None, branch_filter_raw)
+            if branch_filter_raw
+            else []
+        )
+        analytics = enterprise_service.get_branch_aware_asset_analytics(
+            db=db,
+            company_id=target_cid,
+            branch_ids=selected_b_ids or None,
+        )
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "branch_assets_summary",
+                "kpis": analytics["kpis"],
+                "branch_comparison": analytics["branch_comparison"],
+            },
+        }
+
+    if qtype == "multi_branch_employees":
+        if not has_module_permission(current_user, Module.EMPLOYEES, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض دليل الموظفين."}
+        from app.services import enterprise_service
+        enterprise_service.ensure_canonical_five_branches(db, target_cid)
+        items = enterprise_service.search_canonical_directory(
+            db=db,
+            company_id=target_cid,
+            multi_branch_only=True,
+            limit=limit,
+        )
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "employee_list",
+                "count": len(items),
+                "total_count": len(items),
+                "items": items,
             },
         }
 
@@ -1735,22 +2007,214 @@ def tool_query_operations(
         if not has_module_permission(current_user, Module.HRM, Action.VIEW, target_cid, db):
             return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض تقارير الحضور والانصراف."}
         from app.models.enterprise import AttendanceRecord
-        att_q = db.query(AttendanceRecord).filter(AttendanceRecord.company_id == target_cid)
-        if not staff and current_user.employee_id:
+        target_emp_id = None
+        resolved_emp_name = None
+        if assignee_id_raw or assignee_name:
+            if not staff and assignee_name:
+                return {"ok": False, "status": "denied", "error": "صلاحياتك تتيح عرض سجل حضورك الشخصي فقط."}
+            res_emp = tool_resolve_employee(
+                db, current_user, target_cid, name=assignee_name or "", employee_id=assignee_id_raw, progress_cb=progress_cb
+            )
+            if res_emp["status"] != "unique":
+                return {
+                    "ok": False,
+                    "status": "needs_clarification" if res_emp["status"] != "denied" else "denied",
+                    "error": res_emp["error"],
+                    "candidates": res_emp.get("candidates", []),
+                    "pending_action": {"tool": "query_operations", "args": dict(args), "missing_field": "assignee"},
+                }
+            target_emp_id = uuid.UUID(res_emp["employee"]["employee_id"])
+            resolved_emp_name = res_emp["employee"]["full_name"]
+
+        att_q = (
+            db.query(AttendanceRecord)
+            .options(joinedload(AttendanceRecord.employee))
+            .filter(AttendanceRecord.company_id == target_cid)
+        )
+        if target_emp_id:
+            att_q = att_q.filter(AttendanceRecord.employee_id == target_emp_id)
+        elif not staff and current_user.employee_id:
             att_q = att_q.filter(AttendanceRecord.employee_id == current_user.employee_id)
         records = att_q.order_by(AttendanceRecord.attendance_date.desc()).limit(limit).all()
         present_c = sum(1 for r in records if r.status in ("Present", "Late", "Remote"))
         late_c = sum(1 for r in records if r.status == "Late" or r.late_minutes > 0)
         absent_c = sum(1 for r in records if r.status == "Absent")
+        att_items = [
+            {
+                "employee_name": r.employee.full_name if r.employee else resolved_emp_name or "—",
+                "attendance_date": r.attendance_date.isoformat() if r.attendance_date else None,
+                "status": r.status,
+                "late_minutes": r.late_minutes or 0,
+                "check_in": r.check_in_at.strftime("%H:%M") if r.check_in_at else None,
+                "check_out": r.check_out_at.strftime("%H:%M") if r.check_out_at else None,
+            }
+            for r in records[:15]
+        ]
         return {
             "ok": True,
             "status": "executed",
             "data": {
                 "type": "attendance_summary",
+                "employee_name": resolved_emp_name,
                 "total_records": len(records),
                 "present_count": present_c,
                 "late_count": late_c,
                 "absent_count": absent_c,
+                "items": att_items,
+            },
+        }
+
+    if qtype == "company_directory":
+        from app.models.company import Company
+        from app.models.user import CompanyMembership
+        from app.services import enterprise_service
+
+        comp_query = _safe_str(args.get("company_name") or search).strip()
+        if not comp_query:
+            return {"ok": False, "status": "needs_clarification", "error": "يرجى تحديد اسم الشركة المطلوبة."}
+        norm_cq = normalize_name(comp_query)
+        matched_comp = None
+        for comp in db.query(Company).all():
+            candidates_str = normalize_name(f"{comp.company_name_ar or ''} {comp.company_name_en or ''} {comp.company_code or ''}")
+            if norm_cq and norm_cq in candidates_str:
+                matched_comp = comp
+                break
+        if not matched_comp:
+            return {
+                "ok": False,
+                "status": "denied",
+                "error": f"الشركة «{comp_query}» غير موجودة أو غير مصرح بالوصول إليها.",
+            }
+
+        authorized = bool(current_user.is_superadmin)
+        if not authorized:
+            mem = (
+                db.query(CompanyMembership)
+                .filter(
+                    CompanyMembership.user_id == current_user.id,
+                    CompanyMembership.company_id == matched_comp.id,
+                    CompanyMembership.status == "Active",
+                )
+                .first()
+            )
+            authorized = bool(mem)
+        if not authorized or not has_module_permission(current_user, Module.EMPLOYEES, Action.VIEW, matched_comp.id, db):
+            return {
+                "ok": False,
+                "status": "denied",
+                "error": f"ليس لديك صلاحية استعراض موظفي شركة «{matched_comp.company_name_ar}» (عزل المنشآت مفعل).",
+            }
+
+        enterprise_service.ensure_canonical_five_branches(db, matched_comp.id)
+        items = enterprise_service.search_canonical_directory(db=db, company_id=matched_comp.id, limit=limit)
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "employee_list",
+                "company_name": matched_comp.company_name_ar,
+                "count": len(items),
+                "total_count": len(items),
+                "items": items,
+            },
+        }
+
+    if qtype == "asset_custodian":
+        if not has_module_permission(current_user, Module.ASSETS, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض الأصول التقنية."}
+        from app.models.asset import AssetCustody
+
+        asset_ref = _safe_str(args.get("asset_reference") or search).strip()
+        sel_asset_id = args.get("selected_asset_id")
+        asset = None
+        if sel_asset_id:
+            try:
+                asset = (
+                    db.query(TechnicalAsset)
+                    .options(joinedload(TechnicalAsset.assigned_employee), joinedload(TechnicalAsset.branch))
+                    .filter(TechnicalAsset.id == uuid.UUID(str(sel_asset_id)), TechnicalAsset.company_id == target_cid)
+                    .first()
+                )
+            except ValueError:
+                asset = None
+        elif asset_ref:
+            try:
+                asset = (
+                    db.query(TechnicalAsset)
+                    .options(joinedload(TechnicalAsset.assigned_employee), joinedload(TechnicalAsset.branch))
+                    .filter(TechnicalAsset.id == uuid.UUID(asset_ref), TechnicalAsset.company_id == target_cid)
+                    .first()
+                )
+            except ValueError:
+                s = f"%{asset_ref}%"
+                matches = (
+                    db.query(TechnicalAsset)
+                    .options(joinedload(TechnicalAsset.assigned_employee), joinedload(TechnicalAsset.branch))
+                    .filter(
+                        TechnicalAsset.company_id == target_cid,
+                        (TechnicalAsset.asset_code.ilike(s))
+                        | (TechnicalAsset.serial_number.ilike(s))
+                        | (TechnicalAsset.asset_name.ilike(s)),
+                    )
+                    .limit(10)
+                    .all()
+                )
+                if len(matches) == 1:
+                    asset = matches[0]
+                elif len(matches) > 1:
+                    return {
+                        "ok": True,
+                        "status": "executed",
+                        "data": {
+                            "type": "asset_list",
+                            "count": len(matches),
+                            "total_count": len(matches),
+                            "truncated": False,
+                            "items": [
+                                {
+                                    "asset_id": str(a.id),
+                                    "asset_code": a.asset_code,
+                                    "asset_name": a.asset_name,
+                                    "asset_type": a.asset_type,
+                                    "status": a.status,
+                                    "branch_name": a.branch.branch_name if a.branch else None,
+                                    "assigned_to": a.assigned_employee.full_name if a.assigned_employee else None,
+                                }
+                                for a in matches
+                            ],
+                        },
+                    }
+                else:
+                    return {"ok": False, "status": "not_found", "error": f"لم يتم العثور على أصل مطابق لـ «{asset_ref}»."}
+        else:
+            return {
+                "ok": False,
+                "status": "needs_clarification",
+                "error": "لم تحدد أي جهاز بعد. يرجى ذكر كود الجهاز (مثال: AST-1001) أو اسمه للاستعلام عن المسؤول عنه:",
+            }
+
+        if not asset:
+            return {"ok": False, "status": "not_found", "error": "الجهاز المحدد غير موجود ضمن المنشأة الحالية."}
+
+        cust = (
+            db.query(AssetCustody)
+            .options(joinedload(AssetCustody.employee))
+            .filter(AssetCustody.asset_id == asset.id, AssetCustody.company_id == target_cid, AssetCustody.status == "Active")
+            .first()
+        )
+        custodian = (cust.employee if cust and cust.employee else None) or asset.assigned_employee
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "asset_custodian",
+                "asset_id": str(asset.id),
+                "asset_code": asset.asset_code,
+                "asset_name": asset.asset_name,
+                "status": asset.status,
+                "branch_name": asset.branch.branch_name if asset.branch else None,
+                "custodian_name": custodian.full_name if custodian else None,
+                "employee_number": custodian.employee_number if custodian else None,
             },
         }
 
@@ -1860,6 +2324,7 @@ TOOL_REGISTRY = {
     "resolve_employee": tool_resolve_employee,
     "create_task": tool_create_task,
     "create_tasks_batch": tool_create_tasks_batch,
+    "update_task": tool_update_task,
     "update_task_status": tool_update_task_status,
     "send_employee_notification": tool_send_employee_notification,
     "create_ticket": tool_create_ticket,

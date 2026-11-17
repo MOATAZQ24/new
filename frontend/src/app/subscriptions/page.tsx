@@ -14,11 +14,34 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
+interface SubscriptionItem {
+  id: string;
+  service_name: string;
+  provider?: string;
+  subscription_type: string;
+  package_type?: string;
+  account_email?: string;
+  price: number;
+  currency: string;
+  billing_cycle: string;
+  renewal_date?: string;
+  days_to_renewal?: number | null;
+  auto_renewal?: boolean;
+  status: string;
+}
+
+interface SubscriptionSummary {
+  total_monthly_cost?: number;
+  total_annual_cost?: number;
+  expiring_soon_count?: number;
+  active_subscriptions_count?: number;
+}
+
 export default function SubscriptionsPage() {
   const { activeCompanyId } = useAuth();
   const toast = useToast();
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
+  const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [cycleFilter, setCycleFilter] = useState("");
@@ -48,8 +71,8 @@ export default function SubscriptionsPage() {
       if (cycleFilter) url += `&billing_cycle=${cycleFilter}`;
 
       const [listRes, sumRes] = await Promise.all([
-        api.get(url),
-        api.get("/subscriptions/summary"),
+        api.get<SubscriptionItem[]>(url),
+        api.get<SubscriptionSummary>("/subscriptions/summary"),
       ]);
       setSubscriptions(listRes.data || []);
       setSummary(sumRes.data || null);
@@ -61,8 +84,11 @@ export default function SubscriptionsPage() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [statusFilter, cycleFilter, activeCompanyId, debouncedSearch]);
+    const t = window.setTimeout(() => {
+      void fetchData();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [statusFilter, cycleFilter, activeCompanyId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,8 +117,8 @@ export default function SubscriptionsPage() {
       setExpiryDate("");
       setNotes("");
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إضافة الاشتراك");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إضافة الاشتراك");
     }
   };
 
@@ -140,7 +166,7 @@ export default function SubscriptionsPage() {
           subtitle="تحتاج متابعة الدفع والتجديد"
           icon={<Icons.AlertTriangle size={20} />}
           accentColor="border-amber-500"
-          trend={summary?.expiring_soon_count > 0 ? "تنبيه" : undefined}
+          trend={(summary?.expiring_soon_count || 0) > 0 ? "تنبيه" : undefined}
         />
         <StatsCard
           title="إجمالي الاشتراكات النشطة"
@@ -217,8 +243,9 @@ export default function SubscriptionsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {subscriptions.map((s) => {
-                const isExpiring = s.days_to_renewal !== null && s.days_to_renewal <= 30 && s.days_to_renewal >= 0;
-                const isOverdue = s.days_to_renewal !== null && s.days_to_renewal < 0;
+                const daysLeft = typeof s.days_to_renewal === "number" ? s.days_to_renewal : null;
+                const isExpiring = daysLeft !== null && daysLeft <= 30 && daysLeft >= 0;
+                const isOverdue = daysLeft !== null && daysLeft < 0;
 
                 return (
                   <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
@@ -240,7 +267,7 @@ export default function SubscriptionsPage() {
                       <div className="font-mono text-slate-800">
                         <bdi dir="ltr">{s.renewal_date || "-"}</bdi>
                       </div>
-                      {s.days_to_renewal !== null && (
+                      {daysLeft !== null && (
                         <div
                           className={`text-[11px] font-bold ${
                             isOverdue
@@ -251,8 +278,8 @@ export default function SubscriptionsPage() {
                           }`}
                         >
                           {isOverdue
-                            ? `منتهي منذ ${Math.abs(s.days_to_renewal)} يوم`
-                            : `متبقي ${s.days_to_renewal} يوم`}
+                            ? `منتهي منذ ${Math.abs(daysLeft)} يوم`
+                            : `متبقي ${daysLeft} يوم`}
                         </div>
                       )}
                     </td>

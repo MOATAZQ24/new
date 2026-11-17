@@ -72,15 +72,19 @@ export default function SystemSettingsPage() {
       setHealth(hRes.data);
       setBackups(bRes.data || []);
       setLogs(lRes.data || []);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "فشل تحميل بيانات صيانة النظام");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(e?.response?.data?.detail || e?.message || "فشل تحميل بيانات صيانة النظام");
     } finally {
       setLoading(false);
     }
   }, [isSuperAdmin]);
 
   useEffect(() => {
-    loadData();
+    const t = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadData]);
 
   const handleCreateBackup = async () => {
@@ -88,11 +92,12 @@ export default function SystemSettingsPage() {
     setBackupSuccess(null);
     setError(null);
     try {
-      const res = await api.post("/system/backup");
+      const res = await api.post<{ message?: string }>("/system/backup");
       setBackupSuccess(res.data?.message || "تم إنشاء النسخة الاحتياطية بنجاح والتحقق من سلامتها");
       await loadData();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "فشل إنشاء النسخة الاحتياطية");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(e?.response?.data?.detail || e?.message || "فشل إنشاء النسخة الاحتياطية");
     } finally {
       setBackupLoading(false);
     }

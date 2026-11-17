@@ -39,6 +39,7 @@ class TaskCreate(TaskBase):
     assigned_to_id: Optional[uuid.UUID] = None
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None
+    project_id: Optional[uuid.UUID] = None
     attachments: Optional[Any] = None
     notify_telegram: Optional[bool] = True
 
@@ -55,6 +56,7 @@ class TaskUpdate(BaseModel):
     completed_at: Optional[datetime] = None
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None
+    project_id: Optional[uuid.UUID] = None
     notes: Optional[str] = None
     attachments: Optional[Any] = None
 
@@ -80,6 +82,7 @@ class TaskResponse(TaskBase):
     completed_at: Optional[datetime] = None
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None
+    project_id: Optional[uuid.UUID] = None
     attachments: Optional[Any] = None
     assigned_to_name: Optional[str] = None
     assigned_by_name: Optional[str] = None

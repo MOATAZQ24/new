@@ -22,7 +22,7 @@ def authorize_company(db, user, cid, admin=False):
         raise HTTPException(404, "Company not found")
     if user.is_superadmin:
         return
-    membership = db.query(CompanyMembership).filter_by(user_id=user.id, company_id=cid).first()
+    membership = db.query(CompanyMembership).filter_by(user_id=user.id, company_id=cid, status="Active").first()
     if not membership:
         raise HTTPException(403, "Company access denied")
     role = db.get(Role, membership.role_id) if membership.role_id else None
@@ -31,7 +31,7 @@ def authorize_company(db, user, cid, admin=False):
 
 
 def workspace_permissions(db, user, cid):
-    membership = db.query(CompanyMembership).filter_by(user_id=user.id, company_id=cid).first()
+    membership = db.query(CompanyMembership).filter_by(user_id=user.id, company_id=cid, status="Active").first()
     role = db.get(Role, membership.role_id) if membership and membership.role_id else None
     role_name = "Super Admin" if user.is_superadmin else role.name if role else "Employee"
     if role_name in ("Super Admin", "Company Admin", "IT Manager", "Auditor"):

@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Modal from "@/components/ui/Modal";
 import { 
-  ShieldAlertIcon, FilterIcon, RefreshCwIcon, 
-  UserIcon, ClockIcon, EyeIcon 
+  ShieldAlertIcon, RefreshCwIcon, 
+  UserIcon, EyeIcon 
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -58,7 +58,10 @@ export default function AuditPage() {
   }, [actionFilter, resourceFilter, page]);
 
   useEffect(() => {
-    loadLogs();
+    const t = window.setTimeout(() => {
+      void loadLogs();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadLogs, currentCompany]);
 
   const getActionBadge = (action: string) => {

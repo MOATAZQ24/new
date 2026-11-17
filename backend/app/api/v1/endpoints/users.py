@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import (
     resolve_company_scope,
+    validate_company_fk,
     get_current_user,
     get_user_company_id,
     require_role,
@@ -26,6 +27,7 @@ from app.core.rbac import (
 )
 from app.core.response import success_response, paginate
 from app.models.user import User, Employee, Role, UserRole, CompanyMembership, UserSession
+from app.models.enterprise import EmployeeBranchAssignment
 from app.models.telegram import TelegramUserLink
 from app.models.company import Company, Branch, Department
 from app.schemas.user import (
@@ -189,6 +191,9 @@ def create_user(
                 detail="ليس لديك صلاحية إدارة المستخدمين في هذه الشركة",
             )
 
+    validate_company_fk(db, Branch, payload.branch_id, target_cid, "الفرع")
+    validate_company_fk(db, Department, payload.department_id, target_cid, "القسم")
+
     # Duplicate checks
     existing_u = db.query(User).filter(User.username == payload.username.strip()).first()
     if existing_u:
@@ -206,70 +211,82 @@ def create_user(
     else:
         raw_password = payload.password
 
-    # 1. Create Employee record if not existing
-    emp_number = f"EMP-{uuid.uuid4().hex[:6].upper()}"
-    employee = Employee(
-        company_id=target_cid,
-        branch_id=payload.branch_id,
-        department_id=payload.department_id,
-        employee_number=emp_number,
-        full_name=payload.full_name.strip(),
-        email=payload.email.strip(),
-        phone=payload.phone.strip() if payload.phone else None,
-        job_title=payload.role,
-        employment_status="Active",
-    )
-    db.add(employee)
-    db.commit()
-    db.refresh(employee)
+    try:
+        # 1. Create Employee record atomically with User & Membership
+        emp_number = f"EMP-{uuid.uuid4().hex[:6].upper()}"
+        employee = Employee(
+            company_id=target_cid,
+            branch_id=payload.branch_id,
+            department_id=payload.department_id,
+            person_id=uuid.uuid4(),
+            employee_number=emp_number,
+            full_name=payload.full_name.strip(),
+            email=payload.email.strip(),
+            phone=payload.phone.strip() if payload.phone else None,
+            job_title=payload.role,
+            employment_status="Active",
+        )
+        db.add(employee)
+        db.flush()
 
-    # 2. Create User account
-    is_super = payload.role == "Super Admin" and current_user.is_superadmin
-    new_user = User(
-        employee_id=employee.id,
-        username=payload.username.strip(),
-        password_hash=hash_password(raw_password),
-        email=payload.email.strip(),
-        account_status=payload.account_status,
-        is_superadmin=is_super,
-        must_change_password=payload.must_change_password,
-        is_deleted=False,
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        # 2. Create User account
+        is_super = payload.role == "Super Admin" and current_user.is_superadmin
+        new_user = User(
+            employee_id=employee.id,
+            username=payload.username.strip(),
+            password_hash=hash_password(raw_password),
+            email=payload.email.strip(),
+            account_status=payload.account_status,
+            is_superadmin=is_super,
+            must_change_password=payload.must_change_password,
+            is_deleted=False,
+        )
+        db.add(new_user)
+        db.flush()
 
-    # 3. Resolve Role
-    role_obj = db.query(Role).filter(Role.name == payload.role).first()
-    if not role_obj:
-        role_obj = Role(name=payload.role, is_system_role=True)
-        db.add(role_obj)
+        # 3. Resolve Role
+        role_obj = db.query(Role).filter(Role.name == payload.role).first()
+        if not role_obj:
+            role_obj = Role(name=payload.role, is_system_role=True)
+            db.add(role_obj)
+            db.flush()
+
+        # Global role & Company Membership
+        db.add(UserRole(user_id=new_user.id, role_id=role_obj.id))
+        db.add(CompanyMembership(
+            user_id=new_user.id,
+            company_id=target_cid,
+            branch_id=payload.branch_id,
+            role_id=role_obj.id,
+            status="Active",
+            is_default=True,
+            assigned_by=current_user.id,
+            assigned_at=datetime.utcnow(),
+        ))
+
+        if payload.branch_id:
+            db.add(EmployeeBranchAssignment(
+                employee_id=employee.id,
+                company_id=target_cid,
+                branch_id=payload.branch_id,
+                is_primary=True,
+                assignment_role="Primary",
+                status="Active",
+            ))
+
+        # Synchronize any existing TelegramUserLink for this employee to the newly created user account
+        tlink = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee.id).first()
+        if tlink:
+            tlink.user_id = new_user.id
+
         db.commit()
-        db.refresh(role_obj)
-
-    # Global role
-    user_role = UserRole(user_id=new_user.id, role_id=role_obj.id)
-    db.add(user_role)
-
-    # 4. Create Company Membership with role and branch
-    membership = CompanyMembership(
-        user_id=new_user.id,
-        company_id=target_cid,
-        branch_id=payload.branch_id,
-        role_id=role_obj.id,
-        status="Active",
-        is_default=True,
-        assigned_by=current_user.id,
-        assigned_at=datetime.utcnow(),
-    )
-    db.add(membership)
-    db.commit()
-
-    # Synchronize any existing TelegramUserLink for this employee to the newly created user account
-    tlink = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee.id).first()
-    if tlink:
-        tlink.user_id = new_user.id
-        db.commit()
+        db.refresh(new_user)
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"فشل إنشاء المستخدم وتم التراجع عن التغييرات: {str(exc)}")
 
     # Log audit
     log_audit(
@@ -378,6 +395,37 @@ def get_user_details(
     return success_response(data=data)
 
 
+def authorize_user_scope(
+    db: Session,
+    current_user: User,
+    active_cid: uuid.UUID,
+    target_user: User,
+    *,
+    allow_superadmin_target: bool = False,
+) -> None:
+    """Enforce company tenant isolation on user operations for non-SuperAdmins."""
+    if current_user.is_superadmin:
+        return
+    if target_user.is_superadmin and not allow_superadmin_target:
+        raise HTTPException(status_code=403, detail="لا يمكن لمدير الشركة تعديل بيانات مدير النظام العام (Super Admin)")
+
+    has_link = (
+        db.query(CompanyMembership)
+        .filter(
+            CompanyMembership.user_id == target_user.id,
+            CompanyMembership.company_id == active_cid,
+        )
+        .first()
+    )
+    if not has_link and target_user.employee and target_user.employee.company_id == active_cid:
+        has_link = True
+    if not has_link:
+        raise HTTPException(
+            status_code=403,
+            detail="ليس لديك صلاحية الوصول إلى بيانات مستخدم خارج نطاق المنشأة الحالية",
+        )
+
+
 # ── 4. Update User ─────────────────────────────────────────────────────────
 
 @router.put("/{user_id}")
@@ -392,6 +440,12 @@ def update_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user)
+
+    if payload.branch_id is not None:
+        validate_company_fk(db, Branch, payload.branch_id, active_cid, "الفرع")
+    if payload.department_id is not None:
+        validate_company_fk(db, Department, payload.department_id, active_cid, "القسم")
 
     # Prevent non-superadmins from modifying Super Admins or escalating themselves
     if user.is_superadmin and not current_user.is_superadmin:
@@ -443,8 +497,31 @@ def update_user(
             user.employee.phone = payload.phone.strip() if payload.phone else None
         if payload.job_title:
             user.employee.job_title = payload.job_title.strip()
-        if payload.branch_id is not None:
+        if payload.branch_id is not None and payload.branch_id != user.employee.branch_id:
             user.employee.branch_id = payload.branch_id
+            db.query(EmployeeBranchAssignment).filter(
+                EmployeeBranchAssignment.employee_id == user.employee.id,
+                EmployeeBranchAssignment.company_id == active_cid,
+                EmployeeBranchAssignment.is_primary == True,
+            ).update({"is_primary": False})
+            existing_ba = db.query(EmployeeBranchAssignment).filter(
+                EmployeeBranchAssignment.employee_id == user.employee.id,
+                EmployeeBranchAssignment.branch_id == payload.branch_id,
+                EmployeeBranchAssignment.company_id == active_cid,
+            ).first()
+            if existing_ba:
+                existing_ba.is_primary = True
+                existing_ba.assignment_role = "Primary"
+                existing_ba.status = "Active"
+            else:
+                db.add(EmployeeBranchAssignment(
+                    employee_id=user.employee.id,
+                    company_id=active_cid,
+                    branch_id=payload.branch_id,
+                    is_primary=True,
+                    assignment_role="Primary",
+                    status="Active",
+                ))
         if payload.department_id is not None:
             user.employee.department_id = payload.department_id
 
@@ -477,9 +554,7 @@ def toggle_user_status(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
-
-    if user.is_superadmin and not current_user.is_superadmin:
-        raise HTTPException(status_code=403, detail="لا يمكن تعديل حالة مدير النظام العام")
+    authorize_user_scope(db, current_user, active_cid, user)
 
     # Protect last active Super Admin
     if user.is_superadmin and payload.account_status != "Active":
@@ -522,6 +597,7 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user)
 
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail="لا يمكنك حذف حسابك الحالي")
@@ -562,6 +638,7 @@ def restore_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user)
 
     user.is_deleted = False
     user.account_status = "Active"
@@ -600,9 +677,7 @@ def admin_reset_password(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
-
-    if user.is_superadmin and not current_user.is_superadmin:
-        raise HTTPException(status_code=403, detail="لا يمكن لمدير الشركة إعادة تعيين كلمة مرور Super Admin")
+    authorize_user_scope(db, current_user, active_cid, user)
 
     generated_temp = None
     if not payload.new_password:
@@ -649,6 +724,7 @@ def unlock_account(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user)
 
     user.locked_until = None
     user.failed_login_attempts = 0
@@ -674,14 +750,19 @@ def unlock_account(
 def get_user_companies(
     user_id: uuid.UUID,
     current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """List all companies and roles assigned to a user."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user, allow_superadmin_target=True)
 
-    memberships = db.query(CompanyMembership).filter(CompanyMembership.user_id == user.id).all()
+    mem_q = db.query(CompanyMembership).filter(CompanyMembership.user_id == user.id)
+    if not current_user.is_superadmin:
+        mem_q = mem_q.filter(CompanyMembership.company_id == active_cid)
+    memberships = mem_q.all()
     data = []
     for m in memberships:
         c = db.query(Company).filter(Company.id == m.company_id).first()
@@ -824,18 +905,21 @@ def get_user_activity(
     user_id: uuid.UUID,
     limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(require_role(["Super Admin", "Company Admin", "Auditor"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """Get audit activity and login history for a specific user."""
     from app.models.audit import AuditLog
 
-    logs = (
-        db.query(AuditLog)
-        .filter(AuditLog.user_id == user_id)
-        .order_by(AuditLog.timestamp.desc())
-        .limit(limit)
-        .all()
-    )
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    authorize_user_scope(db, current_user, active_cid, user, allow_superadmin_target=True)
+
+    logs_q = db.query(AuditLog).filter(AuditLog.user_id == user_id)
+    if not current_user.is_superadmin:
+        logs_q = logs_q.filter(AuditLog.company_id == active_cid)
+    logs = logs_q.order_by(AuditLog.timestamp.desc()).limit(limit).all()
 
     data = [
         {
@@ -876,61 +960,80 @@ def bulk_import_users(
             errors.append(f"السطر {idx+1}: البريد '{e_mail}' مسجل مسبقاً")
             continue
 
+        if item.branch_id:
+            b_ok = db.query(Branch).filter(Branch.id == item.branch_id, Branch.company_id == active_cid).first()
+            if not b_ok:
+                errors.append(f"السطر {idx+1}: الفرع المحدد لا ينتمي للمنشأة الحالية")
+                continue
+        if item.department_id:
+            d_ok = db.query(Department).filter(Department.id == item.department_id, Department.company_id == active_cid).first()
+            if not d_ok:
+                errors.append(f"السطر {idx+1}: القسم المحدد لا ينتمي للمنشأة الحالية")
+                continue
+
         temp_pass = generate_temp_password(12)
 
-        # Create Employee
-        emp = Employee(
-            company_id=active_cid,
-            branch_id=item.branch_id,
-            department_id=item.department_id,
-            employee_number=f"EMP-{uuid.uuid4().hex[:6].upper()}",
-            full_name=item.full_name.strip(),
-            email=e_mail,
-            phone=item.phone,
-            job_title=item.role or "Employee",
-            employment_status="Active",
-        )
-        db.add(emp)
-        db.commit()
-        db.refresh(emp)
+        try:
+            emp = Employee(
+                company_id=active_cid,
+                branch_id=item.branch_id,
+                department_id=item.department_id,
+                person_id=uuid.uuid4(),
+                employee_number=f"EMP-{uuid.uuid4().hex[:6].upper()}",
+                full_name=item.full_name.strip(),
+                email=e_mail,
+                phone=item.phone,
+                job_title=item.role or "Employee",
+                employment_status="Active",
+            )
+            db.add(emp)
+            db.flush()
 
-        # Create User
-        new_u = User(
-            employee_id=emp.id,
-            username=u_name,
-            password_hash=hash_password(temp_pass),
-            email=e_mail,
-            account_status="Active",
-            is_superadmin=False,
-            must_change_password=True,
-            is_deleted=False,
-        )
-        db.add(new_u)
-        db.commit()
-        db.refresh(new_u)
+            new_u = User(
+                employee_id=emp.id,
+                username=u_name,
+                password_hash=hash_password(temp_pass),
+                email=e_mail,
+                account_status="Active",
+                is_superadmin=False,
+                must_change_password=True,
+                is_deleted=False,
+            )
+            db.add(new_u)
+            db.flush()
 
-        # Resolve role
-        role_name = item.role or "Employee"
-        role_obj = db.query(Role).filter(Role.name == role_name).first()
-        if not role_obj:
-            role_obj = Role(name=role_name, is_system_role=True)
-            db.add(role_obj)
+            role_name = item.role or "Employee"
+            role_obj = db.query(Role).filter(Role.name == role_name).first()
+            if not role_obj:
+                role_obj = Role(name=role_name, is_system_role=True)
+                db.add(role_obj)
+                db.flush()
+
+            db.add(UserRole(user_id=new_u.id, role_id=role_obj.id))
+            db.add(CompanyMembership(
+                user_id=new_u.id,
+                company_id=active_cid,
+                branch_id=item.branch_id,
+                role_id=role_obj.id,
+                status="Active",
+                is_default=True,
+                assigned_by=current_user.id,
+                assigned_at=datetime.utcnow(),
+            ))
+            if item.branch_id:
+                db.add(EmployeeBranchAssignment(
+                    employee_id=emp.id,
+                    company_id=active_cid,
+                    branch_id=item.branch_id,
+                    is_primary=True,
+                    assignment_role="Primary",
+                    status="Active",
+                ))
             db.commit()
-            db.refresh(role_obj)
-
-        db.add(UserRole(user_id=new_u.id, role_id=role_obj.id))
-        db.add(CompanyMembership(
-            user_id=new_u.id,
-            company_id=active_cid,
-            branch_id=item.branch_id,
-            role_id=role_obj.id,
-            status="Active",
-            is_default=True,
-            assigned_by=current_user.id,
-            assigned_at=datetime.utcnow(),
-        ))
-        db.commit()
-        created_count += 1
+            created_count += 1
+        except Exception as exc:
+            db.rollback()
+            errors.append(f"السطر {idx+1}: تعذر الاستيراد ({str(exc)})")
 
     log_audit(
         db=db,

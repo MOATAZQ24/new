@@ -8,6 +8,7 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Icons } from "@/components/ui/Icons";
 import { Modal } from "@/components/ui/Modal";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -69,6 +70,7 @@ export default function HrmDashboardPage() {
   const { activeCompanyId } = useAuth();
   const toast = useToast();
   const [data, setData] = useState<HrmOverviewData | null>(null);
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
@@ -79,7 +81,8 @@ export default function HrmDashboardPage() {
   const fetchOverview = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<HrmOverviewData>("/hrm/overview");
+      const bq = selectedBranchIds.length > 0 ? `?branch_ids=${encodeURIComponent(selectedBranchIds.join(","))}` : "";
+      const res = await api.get<HrmOverviewData>(`/hrm/overview${bq}`);
       setData(res.data);
       if (res.data?.workload_by_employee?.length && !selectedEmpId) {
         setSelectedEmpId(res.data.workload_by_employee[0].employee_id);
@@ -89,10 +92,13 @@ export default function HrmDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedEmpId, toast]);
+  }, [selectedBranchIds, selectedEmpId, toast]);
 
   useEffect(() => {
-    void fetchOverview();
+    const timer = window.setTimeout(() => {
+      void fetchOverview();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [activeCompanyId, fetchOverview]);
 
   const handleRecordAttendance = async (e: React.FormEvent) => {
@@ -144,6 +150,13 @@ export default function HrmDashboardPage() {
               </Link>
             </div>
           }
+        />
+
+        {/* Canonical 5-Branch Filter Bar */}
+        <BranchIntelligenceFilterBar
+          selectedBranchIds={selectedBranchIds}
+          onChangeBranchIds={setSelectedBranchIds}
+          label="تصفية القوى العاملة والحضور حسب الفروع المعتمدة"
         />
 
         {/* KPI Strip */}

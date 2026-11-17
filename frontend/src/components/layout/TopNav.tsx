@@ -289,7 +289,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
             aria-label="فتح قائمة التنقل"
             aria-expanded={mobileMenuOpen}
             aria-controls="primary-navigation"
-            className="md:hidden motion-control p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+            className="lg:hidden motion-control p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
           >
             <Icons.Menu size={20} />
           </button>
@@ -361,78 +361,80 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
         </div>
 
         {/* Live Global Search */}
-        <div className="relative hidden md:block flex-1 max-w-sm">
-          <Icons.Search
-            size={15}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
-          />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded={openPopover === "search" && (searchQuery.trim().length > 0 || searching)}
-            aria-controls={
-              openPopover === "search" && (searchQuery.trim().length > 0 || searching)
-                ? "global-search-results"
-                : undefined
-            }
-            aria-activedescendant={activeSearchIndex >= 0 ? `global-search-option-${activeSearchIndex}` : undefined}
-            aria-busy={searching}
-            aria-label="بحث في الأصول، التذاكر، الموظفين"
-            placeholder="بحث في الأصول، التذاكر، الموظفين..."
-            onFocus={() => setOpenPopover("search")}
-            onChange={(e) => {
-              const value = e.target.value;
-              searchRevisionRef.current += 1;
-              setSearchQuery(value);
-              setSearchResults(value.trim() ? getQuickRouteResults(value.trim()) : []);
-              setSearching(false);
-              setActiveSearchIndex(-1);
-              setOpenPopover("search");
-            }}
-            onKeyDown={(e) => {
-              if ((e.key === "ArrowDown" || e.key === "ArrowUp") && searchResults.length > 0) {
-                e.preventDefault();
-                setActiveSearchIndex((current) => {
-                  if (current < 0) return e.key === "ArrowDown" ? 0 : searchResults.length - 1;
-                  return e.key === "ArrowDown"
-                    ? (current + 1) % searchResults.length
-                    : (current - 1 + searchResults.length) % searchResults.length;
-                });
-              } else if (e.key === "Escape") {
-                setOpenPopover(null);
-              } else if (e.key === "Enter" && searchResults.length > 0) {
-                e.preventDefault();
-                navigateSearchItem(searchResults[Math.max(activeSearchIndex, 0)].href);
+        <div className="relative hidden lg:block flex-1 max-w-sm">
+          <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus-within:border-[#187A5A] focus-within:bg-white dark:focus-within:bg-slate-900 px-3 py-1.5 rounded-xl transition-all">
+            <Icons.Search
+              size={15}
+              className="text-slate-500 pointer-events-none shrink-0"
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={openPopover === "search" && (searchQuery.trim().length > 0 || searching)}
+              aria-controls={
+                openPopover === "search" && (searchQuery.trim().length > 0 || searching)
+                  ? "global-search-results"
+                  : undefined
               }
-            }}
-            className="w-full bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus:border-[#187A5A] focus:bg-white dark:focus:bg-slate-900 text-xs py-1.5 pr-9 pl-12 rounded-xl outline-none transition-all placeholder:text-slate-500 text-slate-900 dark:text-slate-100"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              aria-label="مسح البحث العام"
-              onClick={() => {
+              aria-activedescendant={activeSearchIndex >= 0 ? `global-search-option-${activeSearchIndex}` : undefined}
+              aria-busy={searching}
+              aria-label="بحث في الأصول، التذاكر، الموظفين"
+              placeholder="بحث في الأصول، التذاكر، الموظفين..."
+              onFocus={() => setOpenPopover("search")}
+              onChange={(e) => {
+                const value = e.target.value;
                 searchRevisionRef.current += 1;
-                setSearchQuery("");
-                setSearchResults([]);
+                setSearchQuery(value);
+                setSearchResults(value.trim() ? getQuickRouteResults(value.trim()) : []);
                 setSearching(false);
                 setActiveSearchIndex(-1);
+                setOpenPopover("search");
               }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
-            >
-              <Icons.X size={13} />
-            </button>
-          ) : (
-            <span
-              dir="ltr"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-500 bg-white/80 dark:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 pointer-events-none"
-            >
-              Ctrl+K
-            </span>
-          )}
+              onKeyDown={(e) => {
+                if ((e.key === "ArrowDown" || e.key === "ArrowUp") && searchResults.length > 0) {
+                  e.preventDefault();
+                  setActiveSearchIndex((current) => {
+                    if (current < 0) return e.key === "ArrowDown" ? 0 : searchResults.length - 1;
+                    return e.key === "ArrowDown"
+                      ? (current + 1) % searchResults.length
+                      : (current - 1 + searchResults.length) % searchResults.length;
+                  });
+                } else if (e.key === "Escape") {
+                  setOpenPopover(null);
+                } else if (e.key === "Enter" && searchResults.length > 0) {
+                  e.preventDefault();
+                  navigateSearchItem(searchResults[Math.max(activeSearchIndex, 0)].href);
+                }
+              }}
+              className="flex-1 min-w-0 bg-transparent text-xs outline-none placeholder:text-slate-500 text-slate-900 dark:text-slate-100"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                aria-label="مسح البحث العام"
+                onClick={() => {
+                  searchRevisionRef.current += 1;
+                  setSearchQuery("");
+                  setSearchResults([]);
+                  setSearching(false);
+                  setActiveSearchIndex(-1);
+                }}
+                className="p-0.5 text-slate-500 hover:text-slate-800 cursor-pointer shrink-0"
+              >
+                <Icons.X size={13} />
+              </button>
+            ) : (
+              <span
+                dir="ltr"
+                className="text-[10px] font-mono text-slate-500 bg-white/90 dark:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 pointer-events-none shrink-0"
+              >
+                Ctrl+K
+              </span>
+            )}
+          </div>
 
           {openPopover === "search" && (searchQuery.trim().length > 0 || searching) && (
             <div className="motion-popover absolute inset-inline-start-0 mt-2 w-[min(24rem,calc(100vw-2rem))] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 z-50 max-h-96 overflow-y-auto">

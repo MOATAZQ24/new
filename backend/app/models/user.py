@@ -54,6 +54,7 @@ class Employee(UUIDMixin, TimestampMixin, Base):
     employment_type: Mapped[str] = mapped_column(String(50), default="Full-Time", nullable=False)
     work_location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    person_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
 
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])

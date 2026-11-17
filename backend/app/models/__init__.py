@@ -17,6 +17,11 @@ from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermi
 from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog, TelegramBotMenuConfig, TelegramMessageTemplate
 from app.models.ai_agent import AIAgentExecution
 from app.models.enterprise import (
+    CANONICAL_BRANCH_SPEC,
+    CANONICAL_BRANCH_NAMES,
+    PhysicalBranchLocation,
+    EmployeeBranchAssignment,
+    AssetBranchTransfer,
     EmployeeAssignmentHistory,
     WorkSchedule,
     AttendanceRecord,

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
@@ -64,11 +64,12 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
     # Create session and set cookie
     session = create_session(db, user.id, request, response)
 
-    # Get roles and companies
-    roles = get_user_roles(user, db)
-
-    # Get company memberships
-    memberships = db.query(CompanyMembership).filter(CompanyMembership.user_id == user.id).all()
+    # Get active company memberships first so active company & scoped roles stay synchronized
+    memberships = (
+        db.query(CompanyMembership)
+        .filter(CompanyMembership.user_id == user.id, CompanyMembership.status == "Active")
+        .all()
+    )
     companies = []
     active_company_id = None
     for m in memberships:
@@ -101,6 +102,14 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
             })
             if active_company_id is None:
                 active_company_id = str(c.id)
+
+    if not user.is_superadmin and not companies:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="لا توجد عضوية منشأة نشطة لهذا الحساب",
+        )
+
+    roles = get_user_roles(user, db, uuid.UUID(active_company_id) if active_company_id else None)
 
     full_name = user.employee.full_name if user.employee else user.username
 
@@ -158,14 +167,18 @@ def logout(request: Request, response: Response, current_user: User = Depends(ge
 @router.get("/me")
 def get_me(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get profile of current authenticated user."""
-    roles = get_user_roles(current_user, db)
-
-    memberships = db.query(CompanyMembership).filter(CompanyMembership.user_id == current_user.id).all()
+    memberships = (
+        db.query(CompanyMembership)
+        .filter(CompanyMembership.user_id == current_user.id, CompanyMembership.status == "Active")
+        .all()
+    )
     companies = []
     active_company_id = None
+    allowed_cids = set()
     for m in memberships:
         c = db.query(Company).filter(Company.id == m.company_id).first()
         if c:
+            allowed_cids.add(str(c.id))
             c_info = {
                 "id": str(c.id),
                 "name_ar": c.company_name_ar,
@@ -182,6 +195,7 @@ def get_me(request: Request, current_user: User = Depends(get_current_user), db:
     if current_user.is_superadmin and not companies:
         all_companies = db.query(Company).all()
         for c in all_companies:
+            allowed_cids.add(str(c.id))
             companies.append({
                 "id": str(c.id),
                 "name_ar": c.company_name_ar,
@@ -193,6 +207,17 @@ def get_me(request: Request, current_user: User = Depends(get_current_user), db:
             })
             if active_company_id is None:
                 active_company_id = str(c.id)
+
+    header_cid = request.headers.get("X-Company-ID")
+    if header_cid:
+        try:
+            header_uuid = str(uuid.UUID(header_cid))
+            if current_user.is_superadmin or header_uuid in allowed_cids:
+                active_company_id = header_uuid
+        except ValueError:
+            pass
+
+    roles = get_user_roles(current_user, db, uuid.UUID(active_company_id) if active_company_id else None)
 
     full_name = current_user.employee.full_name if current_user.employee else current_user.username
 

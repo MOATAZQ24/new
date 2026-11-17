@@ -35,6 +35,7 @@ interface Profile360Data {
     hire_date: string | null;
     work_location: string | null;
     branch_name: string | null;
+    branch_names?: string[];
     department_name: string | null;
     company_name: string | null;
     manager_name: string | null;
@@ -238,7 +239,10 @@ export default function Employee360ProfilePage() {
   }, [employeeId, toast]);
 
   useEffect(() => {
-    void loadProfile();
+    const timer = window.setTimeout(() => {
+      void loadProfile();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadProfile]);
 
   const handleAttendanceAction = async (eventType: "check_in" | "check_out" | "remote") => {
@@ -315,7 +319,7 @@ export default function Employee360ProfilePage() {
           title={ov ? `ملف الموظف الشامل 360° — ${ov.full_name}` : "ملف الموظف الشامل 360°"}
           description={
             ov
-              ? `${ov.job_title || "موظف"} • الرقم الوظيفي: #${ov.employee_number} • ${ov.department_name || "بدون قسم"} • ${ov.branch_name || "المركز الرئيسي"}`
+              ? `${ov.job_title || "موظف"} • الرقم الوظيفي: #${ov.employee_number} • ${ov.department_name || "بدون قسم"} • ${ov.branch_names?.length ? ov.branch_names.join(" • ") : (ov.branch_name || "المركز الرئيسي")}`
               : "جاري تحميل الهوية الموحدة للموظف..."
           }
           icon={<Icons.User size={20} />}
@@ -442,8 +446,12 @@ export default function Employee360ProfilePage() {
                       <dd className="font-bold text-slate-900 mt-0.5">{ov.company_name || "—"}</dd>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">الفرع</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">{ov.branch_name || "المركز الرئيسي"}</dd>
+                      <dt className="text-slate-500">الفروع المعتمدة</dt>
+                      <dd className="font-bold text-slate-900 mt-0.5">
+                        {ov.branch_names && ov.branch_names.length > 0
+                          ? ov.branch_names.join(" • ")
+                          : ov.branch_name || "المركز الرئيسي"}
+                      </dd>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50">
                       <dt className="text-slate-500">القسم</dt>

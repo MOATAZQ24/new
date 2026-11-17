@@ -106,11 +106,11 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               "IG"
             )}
           </div>
-          <div className="workspace-brand-text min-w-0">
-            <span className="font-bold text-sm tracking-tight text-white leading-tight truncate">
+          <div className="workspace-brand-text flex flex-col min-w-0 flex-1 overflow-hidden">
+            <span className="block font-bold text-sm tracking-tight text-white leading-tight truncate">
               Investor Gate
             </span>
-            <span className="text-[11px] text-[#C5A46D] font-medium truncate">
+            <span className="block text-[11px] text-[#C5A46D] font-medium truncate">
               إدارة عمليات تقنية المعلومات
             </span>
           </div>
@@ -119,7 +119,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            className="hidden md:inline-flex items-center justify-center p-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="hidden lg:inline-flex items-center justify-center p-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="طي أو توسيع القائمة / Toggle sidebar"
             aria-expanded={!draft.collapsed}
             aria-controls="primary-navigation"
@@ -132,7 +132,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           {mobileOpen && (
             <button
               type="button"
-              className="md:hidden inline-flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="lg:hidden inline-flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="إغلاق قائمة التنقل"
               onClick={() => onCloseMobile?.()}
             >

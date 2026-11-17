@@ -61,12 +61,14 @@ export default function ProjectsDashboardPage() {
   const toast = useToast();
   const [data, setData] = useState<ProjectsData | null>(null);
   const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [companyBranches, setCompanyBranches] = useState<{ id: string; branch_name: string }[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string; employee_number: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [projCode, setProjCode] = useState("");
   const [projName, setProjName] = useState("");
+  const [projBranchId, setProjBranchId] = useState("");
   const [projManagerId, setProjManagerId] = useState("");
   const [projBudget, setProjBudget] = useState("250000");
   const [projEndDate, setProjEndDate] = useState("");
@@ -76,18 +78,26 @@ export default function ProjectsDashboardPage() {
     setLoading(true);
     try {
       const bq = selectedBranchIds.length > 0 ? `?branch_ids=${encodeURIComponent(selectedBranchIds.join(","))}` : "";
-      const [projRes, empRes] = await Promise.all([
+      const [projRes, empRes, brRes] = await Promise.all([
         api.get<ProjectsData>(`/projects${bq}`),
         api.get<{ id: string; full_name: string; employee_number: string }[]>("/employees?per_page=100"),
+        activeCompanyId
+          ? api.get<{ id: string; branch_name: string }[]>(`/companies/${activeCompanyId}/branches`)
+          : Promise.resolve({ data: [] as { id: string; branch_name: string }[] }),
       ]);
       setData(projRes.data);
       setEmployees(empRes.data || []);
+      const branches = brRes.data || [];
+      setCompanyBranches(branches);
+      if (branches.length > 0) {
+        setProjBranchId((prev) => prev || selectedBranchIds[0] || branches[0].id);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل بيانات المشاريع");
     } finally {
       setLoading(false);
     }
-  }, [selectedBranchIds, toast]);
+  }, [activeCompanyId, selectedBranchIds, toast]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -102,6 +112,7 @@ export default function ProjectsDashboardPage() {
       await api.post("/projects", {
         project_code: projCode,
         name: projName,
+        branch_id: projBranchId || selectedBranchIds[0] || companyBranches[0]?.id || undefined,
         manager_id: projManagerId || undefined,
         budget_sar: Number(projBudget) || 0,
         target_end_date: projEndDate || undefined,
@@ -305,20 +316,39 @@ export default function ProjectsDashboardPage() {
                 className="w-full border border-slate-200 rounded-xl p-2.5"
               />
             </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">مدير المشروع (من الدليل الموحد)</label>
-              <select
-                value={projManagerId}
-                onChange={(e) => setProjManagerId(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-2.5"
-              >
-                <option value="">اختر مدير المشروع...</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.full_name} (#{emp.employee_number})
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">الفرع المعتمد *</label>
+                <select
+                  aria-label="الفرع المعتمد للمشروع"
+                  required
+                  value={projBranchId}
+                  onChange={(e) => setProjBranchId(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl p-2.5"
+                >
+                  <option value="">اختر الفرع...</option>
+                  {companyBranches.map((br) => (
+                    <option key={br.id} value={br.id}>
+                      {br.branch_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">مدير المشروع (من الدليل الموحد)</label>
+                <select
+                  value={projManagerId}
+                  onChange={(e) => setProjManagerId(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl p-2.5"
+                >
+                  <option value="">اختر مدير المشروع...</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.full_name} (#{emp.employee_number})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

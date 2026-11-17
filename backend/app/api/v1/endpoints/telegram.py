@@ -68,6 +68,7 @@ def resolve_telegram_company(
     mem = db.query(CompanyMembership).filter(
         CompanyMembership.user_id == current_user.id,
         CompanyMembership.company_id == company_id,
+        CompanyMembership.status == "Active",
     ).first()
     if not mem:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية لإدارة بوت وتكاملات هذه المنشأة")

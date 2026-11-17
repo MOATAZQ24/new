@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const res = await api.post("/auth/forgot-password", {
+      const res = await api.post<{ message?: string }>("/auth/forgot-password", {
         identifier: identifier.trim(),
       });
       setMessage(
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       if (err instanceof ApiError && err.status === 429) {
         setError("تم تجاوز الحد المسموح به من الطلبات مؤقتاً. يرجى الانتظار 15 دقيقة قبل المحاولة مرة أخرى.");
       } else {
-        const detail = err instanceof ApiError ? err.data?.detail : undefined;
+        const detail = err instanceof ApiError ? (err.data as { detail?: string } | null)?.detail : undefined;
         setError(typeof detail === "string" ? detail : "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة لاحقاً.");
       }
     } finally {

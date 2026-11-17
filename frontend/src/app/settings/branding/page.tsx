@@ -9,7 +9,7 @@ import { useToast } from "@/context/ToastContext";
 
 export default function BrandingPage() {
   const { companyBranding, updateBranding, removeLogo } = useCustomization();
-  const { activeCompany, activeCompanyId } = useAuth();
+  const { activeCompany } = useAuth();
   const toast = useToast();
 
   // Form state
@@ -23,7 +23,7 @@ export default function BrandingPage() {
   // Logo upload
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [faviconFile, setFaviconFile] = useState<File | null>(null);
+  const [, setFaviconFile] = useState<File | null>(null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -36,14 +36,17 @@ export default function BrandingPage() {
 
   // Populate form from existing branding
   useEffect(() => {
-    if (companyBranding) {
-      setBrandNameAr(companyBranding.brand_name_ar || (activeCompany as any)?.company_name_ar || "");
-      setBrandNameEn(companyBranding.brand_name_en || (activeCompany as any)?.company_name_en || "");
+    if (!companyBranding) return;
+    const ac = activeCompany as { name_ar?: string; name_en?: string; company_name_ar?: string; company_name_en?: string } | null;
+    const t = window.setTimeout(() => {
+      setBrandNameAr(companyBranding.brand_name_ar || ac?.company_name_ar || ac?.name_ar || "");
+      setBrandNameEn(companyBranding.brand_name_en || ac?.company_name_en || ac?.name_en || "");
       setPrimaryColor(companyBranding.primary_color || "#123D32");
       setSecondaryColor(companyBranding.secondary_color || "#187A5A");
       setAccentColor(companyBranding.accent_color || "#C5A46D");
       setEnforceTheme(Boolean(companyBranding.enforce_company_theme));
-    }
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [companyBranding, activeCompany]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,8 +101,8 @@ export default function BrandingPage() {
           await updateBranding({ company_logo: base64DataUrl });
           setLogoFile(null);
           setLogoPreview(null);
-        } catch (err: any) {
-          setSaveError(err?.message || "فشل رفع الشعار");
+        } catch (err: unknown) {
+          setSaveError(err instanceof Error ? err.message : "فشل رفع الشعار");
         } finally {
           setUploadingLogo(false);
         }
@@ -109,8 +112,8 @@ export default function BrandingPage() {
         setUploadingLogo(false);
       };
       reader.readAsDataURL(logoFile);
-    } catch (err: any) {
-      setSaveError(err?.message || "فشل رفع الشعار");
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : "فشل رفع الشعار");
       setUploadingLogo(false);
     }
   };
@@ -120,8 +123,8 @@ export default function BrandingPage() {
     setRemovingLogo(true);
     try {
       await removeLogo();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إزالة الشعار");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إزالة الشعار");
     } finally {
       setRemovingLogo(false);
     }
@@ -143,8 +146,8 @@ export default function BrandingPage() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      setSaveError(err?.message || "فشل حفظ إعدادات العلامة التجارية");
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : "فشل حفظ إعدادات العلامة التجارية");
     } finally {
       setSaving(false);
     }

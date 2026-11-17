@@ -18,7 +18,9 @@ interface Props {
       permission_policy?: { actions?: Grants; scope?: string };
     };
     permissions_matrix?: {
+      effective_actions?: Grants;
       maximum_actions?: Grants;
+      max_permitted_modules?: string[];
       can_manage?: boolean;
       maximum_scope?: string;
     };
@@ -97,10 +99,12 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
           notification_preferences: preferences,
         }
       );
-      const response = await api.get(
+      const response = await api.get<Props["details"]>(
         `/telegram/links/${employeeId}/details${companyId ? `?company_id=${companyId}` : ""}`
       );
-      setGrants(response.data.permissions_matrix.effective_actions);
+      if (response.data?.permissions_matrix?.effective_actions) {
+        setGrants(response.data.permissions_matrix.effective_actions);
+      }
       setSaved(response.data);
       setMessage({ text: "تم حفظ الصلاحيات والتحقق منها من الخادم بنجاح.", variant: "success" });
     } catch (error: unknown) {

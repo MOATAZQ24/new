@@ -306,8 +306,8 @@ export default function TasksPage() {
         notify_telegram: formData.notify_telegram,
       };
       const res = editingTask
-        ? await api.put(`/tasks/${editingTask.id}`, payload)
-        : await api.post("/tasks", payload);
+        ? await api.put<{ delivery_status?: { status?: string } }>(`/tasks/${editingTask.id}`, payload)
+        : await api.post<{ delivery_status?: { status?: string } }>("/tasks", payload);
 
       setCreateModal(false);
       setSelectedEmployee(null);

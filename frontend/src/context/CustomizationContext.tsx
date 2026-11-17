@@ -34,6 +34,29 @@ export interface TableConfig {
   density?: "compact" | "normal";
 }
 
+export interface CustomizationPreferencesPayload {
+  theme?: "light" | "dark" | "system";
+  primary_color?: string;
+  secondary_color?: string;
+  background_color?: string;
+  surface_color?: string;
+  accent_color?: string;
+  arabic_font?: string;
+  english_font?: string;
+  font_size?: "small" | "medium" | "large";
+  font_weight?: "normal" | "medium" | "bold";
+  density?: "compact" | "comfortable" | "spacious";
+  border_radius?: "none" | "sm" | "rounded" | "lg";
+  sidebar_width?: number;
+  sidebar_collapsed?: boolean;
+  pinned_nav?: string[];
+  hidden_nav?: string[];
+  nav_order?: string[];
+  dashboard_layout?: DashboardWidgetConfig[];
+  table_preferences?: Record<string, TableConfig>;
+  company_branding?: CompanyBrandingData | null;
+}
+
 export interface CompanyBrandingData {
   company_logo?: string | null;
   favicon_url?: string | null;
@@ -75,7 +98,7 @@ interface CustomizationContextType {
   setDashboardLayout: (layout: DashboardWidgetConfig[]) => void;
   getTableConfig: (tableId: string) => TableConfig;
   setTableConfig: (tableId: string, cfg: TableConfig) => void;
-  savePreferences: (override?: Record<string, any>) => Promise<void>;
+  savePreferences: (override?: Record<string, unknown>) => Promise<void>;
   resetPreferences: () => Promise<void>;
   updateBranding: (branding: Partial<CompanyBrandingData>) => Promise<void>;
   removeLogo: () => Promise<void>;
@@ -128,12 +151,15 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
 
   // Compute resolved theme
   useEffect(() => {
-    if (theme === "system") {
-      const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setResolvedTheme(isDark ? "dark" : "light");
-    } else {
-      setResolvedTheme(theme);
-    }
+    const t = window.setTimeout(() => {
+      if (theme === "system") {
+        const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setResolvedTheme(isDark ? "dark" : "light");
+      } else {
+        setResolvedTheme(theme);
+      }
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [theme]);
 
   // Apply CSS custom properties and dark mode class to document
@@ -173,7 +199,7 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
     if (!user) return;
     try {
       setIsLoading(true);
-      const res = await api.get("/customization/preferences");
+      const res = await api.get<CustomizationPreferencesPayload>("/customization/preferences");
       if (res.data) {
         const d = res.data;
         if (d.theme) setThemeState(d.theme);
@@ -210,10 +236,13 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
     } finally {
       setIsLoading(false);
     }
-  }, [user, activeCompanyId]);
+  }, [user]);
 
   useEffect(() => {
-    loadPreferences();
+    const t = window.setTimeout(() => {
+      void loadPreferences();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadPreferences]);
 
   const setTheme = (t: "light" | "dark" | "system") => {
@@ -256,7 +285,7 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
     });
   };
 
-  const savePreferences = async (override?: Record<string, any>) => {
+  const savePreferences = async (override?: Record<string, unknown>) => {
     const payload = {
       theme,
       primary_color: colors.primary,
@@ -301,7 +330,7 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
 
   const updateBranding = async (branding: Partial<CompanyBrandingData>) => {
     await api.put("/customization/branding", branding);
-    const res = await api.get("/customization/branding");
+    const res = await api.get<CompanyBrandingData>("/customization/branding");
     setCompanyBranding(res.data);
   };
 

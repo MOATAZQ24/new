@@ -101,6 +101,20 @@ FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
         },
     },
     {
+        "name": "update_task",
+        "description": "Update an existing task's due date, priority, or assigned employee (for reassignment or schedule changes).",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "task_reference": {"type": "STRING", "description": "Task ref like TASK-1234ABCD, UUID, or title keywords"},
+                "due_date": {"type": "STRING", "description": "New due date (YYYY-MM-DD or natural Arabic/English date)"},
+                "priority": {"type": "STRING", "description": "Low, Medium, High, or Urgent"},
+                "assignee_name": {"type": "STRING", "description": "New employee name to assign task to"},
+                "assignee_id": {"type": "STRING", "description": "Resolved employee UUID"},
+            },
+        },
+    },
+    {
         "name": "update_task_status",
         "description": "Transition an existing task status (complete, start, accept, clarify, reject, cancel, reopen).",
         "parameters": {
@@ -157,18 +171,21 @@ FUNCTION_DECLARATIONS: List[Dict[str, Any]] = [
     },
     {
         "name": "query_operations",
-        "description": "Query overdue tasks, filtered tasks list, Help Desk tickets, technical assets, or generate an operational summary.",
+        "description": "Query overdue tasks, filtered tasks, Help Desk tickets, technical assets, branch assets, custody, asset custodian, multi-branch employees, company employee directory, subscriptions, employee attendance, CRM, projects, approvals, or operational summary.",
         "parameters": {
             "type": "OBJECT",
             "properties": {
                 "query_type": {
                     "type": "STRING",
-                    "description": "One of: overdue_tasks, tasks, tickets, assets, operational_summary",
+                    "description": "One of: overdue_tasks, tasks, tickets, assets, branch_assets, custody, asset_custodian, multi_branch_employees, company_directory, subscriptions, attendance, crm, projects, approvals, operational_summary",
                 },
-                "search": {"type": "STRING", "description": "Optional search keyword or reference"},
+                "search": {"type": "STRING", "description": "Optional search keyword, branch name, or reference"},
+                "branch_name": {"type": "STRING", "description": "Optional canonical branch name or alias (e.g. الفيصلية, مخرج 17, جدة, الدمام, العليا)"},
+                "company_name": {"type": "STRING", "description": "Optional company name for company_directory"},
+                "asset_reference": {"type": "STRING", "description": "Optional asset code, serial, or name for asset_custodian"},
                 "filter_mode": {"type": "STRING", "description": "my or team"},
-                "status": {"type": "STRING", "description": "Optional status filter: active, new, in_progress, waiting, completed, rejected, cancelled, overdue"},
-                "assignee_name": {"type": "STRING", "description": "Optional employee name to filter tasks by assignee"},
+                "status": {"type": "STRING", "description": "Optional status filter (e.g. Under Maintenance, active, new, in_progress, waiting, completed, rejected, cancelled, overdue)"},
+                "assignee_name": {"type": "STRING", "description": "Optional employee name to filter tasks or attendance"},
                 "limit": {"type": "INTEGER", "description": "Maximum records to return (default 25, max 50)"},
             },
             "required": ["query_type"],
@@ -245,7 +262,7 @@ def _parse_single_task_clause(
     explicit_notify: bool = False,
 ) -> Optional[Dict[str, Any]]:
     work = re.sub(
-        r"^(?:(?:و?\s*)?(?:أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|اضف|سج[ّ]?ل|create|add|assign|new)\s+(?:a\s+|new\s+)?(?:مهمة|task)\s*)+",
+        r"^(?:(?:و?\s*)?(?:أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|اضف|سج[ّ]?ل|اسند|أسند|إسناد|كلف|كلّف|وج[ّ]?ه|create|add|assign|new)\s+(?:a\s+|new\s+)?(?:مهمة|task)\s*)+",
         "",
         clause.strip(),
         flags=re.I,
@@ -287,7 +304,7 @@ def _parse_single_task_clause(
         else:
             # Handle trailing "لمعتز قاسم" at end of clause when title came first
             m_tail = re.match(
-                r"^(.+?)\s+(?:لـ\s*|للموظفة?\s+|إلى\s+الموظفة?\s+|الى\s+|for\s+(?:employee\s+)?)([^\s.,،]+(?:\s+[^\s.,،]+){0,2})$",
+                r"^(.+?)\s+(?:لـ\s*|للموظفة?\s+|إلى\s+الموظفة?\s+|إلى\s+|الى\s+|for\s+(?:employee\s+)?)([^\s.,،]+(?:\s+[^\s.,،]+){0,2})$",
                 work,
                 flags=re.I,
             )
@@ -416,7 +433,12 @@ def _parse_multi_task_command(text: str) -> Optional[Dict[str, Any]]:
             flags=re.I,
         )
         parsed_tasks: List[Dict[str, Any]] = []
-        for seg in raw_parts:
+        for idx_seg, seg in enumerate(raw_parts):
+            seg = (seg or "").strip()
+            if idx_seg > 0 and not re.match(r"^(?:ويندوز|وورد|وردبريس|واتساب|ويب|واجهة|وحدة|وصول|وضع|وقت|وسائل|وثائق|ورشة)\b", seg):
+                seg = re.sub(r"^(?:و\s+|و(?=[أإآاتمفصنحعسركجطشض]|ال))", "", seg)
+            else:
+                seg = re.sub(r"^(?:و(?=[أإآا])|و\s+)", "", seg)
             for pat, repl in arabic_nlp.DIALECT_ACTION_VERBS:
                 seg = pat.sub(repl, seg)
             item = _parse_single_task_clause(
@@ -441,7 +463,7 @@ def _parse_multi_task_command(text: str) -> Optional[Dict[str, Any]]:
 
     # Case B: Single task assigned to multiple employees ("أنشئ مهمة لـ معتز وسالم لمراجعة الخادم")
     m_multi_emp = re.match(
-        r"^(?:أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|create|add|assign)\s+(?:a\s+|new\s+)?(?:مهمة|task)\s+"
+        r"^(?:أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|اسند|أسند|كلف|كلّف|create|add|assign)\s+(?:a\s+|new\s+)?(?:مهمة|task)\s+"
         r"(?:لكل\s+من\s+|لـ\s*|للموظفين\s+|للموظفة?\s+|إلى\s+|to\s+|for\s+)(.+?)\s+(?:بعنوان\s+|بخصوص\s+|عن\s+|لـ\s*|:\s*|to\s+|ل(?=[أاإآء-ي]{3,}))\s*(.+)$",
         work,
         flags=re.I,
@@ -471,6 +493,33 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
     """Deterministic bilingual Arabic/English command parser into verified tool calls."""
     text = _strip_polite_wrappers(message)
     low = text.lower()
+
+    # 0A. Explicit Company Employee Directory lookup (e.g. "اعرض موظفين شركة BlinkBill")
+    m_comp_emps = re.search(
+        r"(?:موظف(?:ي|ين)|بيانات\s+موظف(?:ي|ين)|دليل\s+موظف(?:ي|ين)|employees\s+(?:of|in))\s+(?:شركة\s+|company\s+)?(.+)$",
+        text,
+        flags=re.I,
+    )
+    if m_comp_emps and re.search(r"(شركة|company)", text, flags=re.I):
+        comp_raw = re.sub(r"^(?:شركة|company)\s+", "", m_comp_emps.group(1).strip(" .،؟?"), flags=re.I).strip()
+        if comp_raw:
+            return {
+                "tool": "query_operations",
+                "args": {"query_type": "company_directory", "company_name": comp_raw, "limit": 25},
+            }
+
+    # 0B. Context-aware Asset Custodian question ("مين مسؤول عن الجهاز هذا؟")
+    if re.search(r"(?:مين|من)\s+(?:هو\s+)?(?:المسؤول|مسؤول)\s+عن\s+(?:هذا\s+الجهاز|الجهاز\s+هذا|الأصل|الجهاز)", low) and not re.search(r"(في\s+فرع|فرع\s+)", low):
+        m_code = re.search(r"(AST-[0-9A-Za-z\-]+|PR-[0-9A-Za-z\-]+)", text, re.I)
+        sel_asset_id = str(context["selected_asset_id"]) if context and context.get("selected_asset_id") else None
+        return {
+            "tool": "query_operations",
+            "args": {
+                "query_type": "asset_custodian",
+                "asset_reference": m_code.group(1) if m_code else None,
+                "selected_asset_id": sel_asset_id,
+            },
+        }
 
     # 0. Explicit Employee Search / Lookup
     m_emp_search = re.match(
@@ -507,6 +556,51 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
             },
         }
 
+    # 2A. Update Task Due Date / Priority ("غير تاريخ المهمة لبكرة.") or Reassign Existing Task ("اسند المهمة لأحمد.")
+    if (
+        not re.search(r"^(?:اعرض|عرض|أظهر|اظهر|ابحث|كم|قائمة|show|list|get|find|what|how many)\b", low)
+        and re.search(r"(مهمة|المهمة|TASK-[0-9A-Za-z]+|task)", low, re.I)
+        and not re.search(r"(أنشئ|انشئ|إنشاء|انشاء|اعمل|اضف|أضف|حو[ّ]?ل|تذك|create|new task|add task|convert|ticket)", low)
+    ):
+        task_ref_match = re.search(r"(TASK-[0-9A-Za-z]+)", text, re.I)
+        task_ref = task_ref_match.group(1).upper() if task_ref_match else None
+        sel_task_id = str(context["selected_task_id"]) if context and context.get("selected_task_id") else None
+
+        if re.search(r"(تاريخ|موعد|ميعاد|أولوية|اولوية|due\s*date|deadline|reschedule|priority)", low):
+            due_iso, _ = _extract_date_from_text(text)
+            if due_iso == "after_tomorrow_iso":
+                due_iso = (date.today() + timedelta(days=2)).isoformat()
+            prio_val = None
+            if re.search(r"(عاجل|طارئ|مرتفع|منخفض|متوسط|urgent|high|low|medium)", low):
+                prio_val, _ = _extract_priority_from_text(text)
+            if due_iso or prio_val:
+                return {
+                    "tool": "update_task",
+                    "args": {
+                        "task_reference": task_ref,
+                        "selected_task_id": sel_task_id,
+                        "due_date": due_iso,
+                        "priority": prio_val,
+                    },
+                }
+
+        m_reassign = re.match(
+            r"^(?:اسند|أسند|إسناد|حول|حوّل|وج[ّ]?ه|assign|reassign)\s+(?:هذه\s+)?(?:المهمة|task)\s*(?:TASK-[0-9A-Za-z]+\s*)?(?:إلى|الى|لـ|ل|to\s+|for\s+)(.+)$",
+            text,
+            flags=re.I,
+        )
+        if m_reassign:
+            cand_emp = tools.clean_employee_query(m_reassign.group(1).strip(" .،؟?"))
+            if cand_emp:
+                return {
+                    "tool": "update_task",
+                    "args": {
+                        "task_reference": task_ref,
+                        "selected_task_id": sel_task_id,
+                        "assignee_name": cand_emp,
+                    },
+                }
+
     # 2. Update Task Status (guard against pure read queries starting with "اعرض"/"show")
     if (
         not re.search(r"^(?:اعرض|عرض|أظهر|اظهر|ابحث|كم|قائمة|show|list|get|find|what|how many)\b", low)
@@ -541,13 +635,31 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
             },
         }
 
+    # 3A-pre. Detect conflicting compound task creation + reassignment to a team/another target
+    m_compound_conflict = re.match(
+        r"^(?:أنشئ|انشئ|إنشاء|أضف|اضف|اسند|أسند)\s+(?:مهمة\s+)?(?:لـ\s*|للموظف\s+|ل|إلى\s+)(.+?)\s+(?:وبعدها|ثم)\s+(?:اسندها|أسندها|حولها|حوّلها)\s+(?:إلى|الى|لـ|ل)\s*(.+)$",
+        text,
+        flags=re.I,
+    )
+    if m_compound_conflict:
+        first_target = tools.clean_employee_query(m_compound_conflict.group(1))
+        second_target = m_compound_conflict.group(2).strip(" .،؟?")
+        return {
+            "tool": "__clarify_compound__",
+            "args": {
+                "first_target": first_target,
+                "second_target": second_target,
+                "title": f"متابعة طلب {second_target}".strip(),
+            },
+        }
+
     # 3A. Multi-Task & Multi-Assignee Commands (BEFORE single task or list queries)
     multi_plan = _parse_multi_task_command(text)
     if multi_plan:
         return multi_plan
 
     # 3B. Create & Assign Single Task
-    if re.search(r"(أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|اضف|سج[ّ]?ل|create|add|assign|new)\s+(?:a\s+|new\s+)?(مهمة|مهمه|task)", low):
+    if re.search(r"(أنشئ|انشئ|أنشي|انشي|إنشاء|انشاء|إضافة|أضف|اضف|سج[ّ]?ل|اسند|أسند|إسناد|كلف|كلّف|وج[ّ]?ه|create|add|assign|new)\s+(?:a\s+|new\s+)?(مهمة|مهمه|task)", low):
         explicit_notify = bool(re.search(r"(وأرسل|ارسل|أرسل|تنبيه|إشعار|اشعار|notify)", low))
         due_token, work = _extract_date_from_text(text)
         if due_token == "after_tomorrow_iso":
@@ -640,7 +752,20 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
         return {"tool": "query_operations", "args": {"query_type": "overdue_tasks", "filter_mode": mode, "assignee_name": emp_ovd, "limit": 25}}
 
     if re.search(r"(حضور|انصراف|غياب|تقرير\s+الحضور|attendance)", low):
-        return {"tool": "query_operations", "args": {"query_type": "attendance", "limit": 25}}
+        m_att_emp = re.search(
+            r"(?:للموظفة?\s+|الموظفة?\s+|عن\s+الموظفة?\s+|لـ\s*|for\s+|of\s+)([^\s؟?.,،]+(?:\s+[^\s؟?.,،]+){0,2})$",
+            text.strip(" .؟?"),
+            flags=re.I,
+        )
+        att_emp = None
+        if m_att_emp:
+            cand = tools.clean_employee_query(m_att_emp.group(1))
+            if cand and not re.search(r"(اليوم|الاسبوع|الشهر|فريق|الشركة|الموظفين|today|all|team)", cand, re.I):
+                att_emp = cand
+        return {
+            "tool": "query_operations",
+            "args": {"query_type": "attendance", "assignee_name": att_emp, "limit": 25},
+        }
 
     if re.search(r"(اشتراك|اشتراكات|ينتهي\s+خلال|تجديد|subscription)", low):
         return {"tool": "query_operations", "args": {"query_type": "subscriptions", "limit": 25}}
@@ -679,12 +804,40 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
             },
         }
 
+    if re.search(r"(أكثر\s+من\s+فرع|اكثر\s+من\s+فرع|فروع\s+متعددة|multi[\s\-]?branch)", low):
+        return {"tool": "query_operations", "args": {"query_type": "multi_branch_employees", "limit": 25}}
+
+    if re.search(r"(قارن\s+أصول|مقارنة\s+أصول|تحت\s+الصيانة\s+في\s+كل\s+فرع|مسؤول\s+عن\s+الأجهزة\s+في\s+فرع|كم\s+جهاز\s+في\s+فرع)", low):
+        extracted_branches = []
+        for token in ["السلي", "مخرج 17", "الفيصلية", "مخرج 18", "العليا", "الدمام", "جدة", "جده"]:
+            if token in text:
+                extracted_branches.append(token)
+        return {
+            "tool": "query_operations",
+            "args": {
+                "query_type": "branch_assets",
+                "branch_name": ",".join(extracted_branches) if extracted_branches else None,
+            },
+        }
+
     if re.search(r"(تذاكر|التذاكر|بلاغات|tickets)", low):
         return {"tool": "query_operations", "args": {"query_type": "tickets", "limit": 25}}
 
-    if re.search(r"(أصول|الأصول|أجهزة|الأجهزة|لابتوب|تحت\s+الصيانة|assets)", low):
+    if re.search(r"(أصول|الأصول|أجهزة|الأجهزة|جهاز|لابتوب|تحت\s+الصيانة|assets)", low):
         st = "Under Maintenance" if re.search(r"(تحت\s+الصيانة|صيانة|maintenance)", low) else None
-        return {"tool": "query_operations", "args": {"query_type": "assets", "status": st, "limit": 25}}
+        extracted_branches = []
+        for token in ["السلي", "مخرج 17", "الفيصلية", "مخرج 18", "العليا", "الدمام", "جدة", "جده"]:
+            if token in text:
+                extracted_branches.append(token)
+        return {
+            "tool": "query_operations",
+            "args": {
+                "query_type": "assets",
+                "status": st,
+                "branch_name": ",".join(extracted_branches) if extracted_branches else None,
+                "limit": 25,
+            },
+        }
 
     return {"tool": None, "args": {}}
 
@@ -707,9 +860,10 @@ def _format_grounded_response(tool_name: str, res: Dict[str, Any]) -> str:
 
     if rtype == "employee_list":
         items = d.get("items") or []
+        comp_lbl = f" في شركة «{d['company_name']}»" if d.get("company_name") else ""
         if not items:
-            return "لم يتم العثور على موظفين مطابقين."
-        lines = [f"👤 نتائج دليل الموظفين ({len(items)}):"]
+            return f"لم يتم العثور على موظفين مطابقين{comp_lbl}."
+        lines = [f"👤 نتائج دليل الموظفين{comp_lbl} ({len(items)}):"]
         for it in items:
             tg = "مرتبط بـ Telegram ✅" if it.get("telegram_linked") else "غير مرتبط بـ Telegram"
             dept = f" • {it['department_name']}" if it.get("department_name") else ""
@@ -793,13 +947,28 @@ def _format_grounded_response(tool_name: str, res: Dict[str, Any]) -> str:
     if rtype == "asset_list":
         items = d.get("items") or []
         total_cnt = d.get("total_count", len(items))
+        br_lbl = f" في فرع «{d['branch_filter']}»" if d.get("branch_filter") else ""
+        st_lbl = " تحت الصيانة" if (d.get("status_filter") == "Under Maintenance") else ""
         if not items:
-            return "لا توجد أصول أو عهد مطابقة حالياً."
-        lines = [f"💻 الأصول والعهد — عرض {len(items)} من أصل {total_cnt}:"]
+            return f"💻 لا توجد أصول{st_lbl}{br_lbl} مطابقة حالياً (العدد: 0)."
+        lines = [f"💻 الأصول والعهد{st_lbl}{br_lbl} — عرض {len(items)} من أصل {total_cnt}:"]
         for it in items[:10]:
             who = f" → {it['assigned_to']}" if it.get("assigned_to") else ""
             lines.append(f"• {it['asset_code']}: {it['asset_name']} ({it.get('asset_type') or 'عهدة'} • {it['status']}){who}")
         return "\n".join(lines)
+
+    if rtype == "asset_custodian":
+        cust_lbl = (
+            f"{d['custodian_name']} (#{d.get('employee_number') or '—'})"
+            if d.get("custodian_name")
+            else "غير مسند لأي موظف حالياً (متاح بالمخزون)"
+        )
+        return (
+            f"🖥️ تفاصيل عهدة ومسؤولية الجهاز:\n"
+            f"• الجهاز: {d.get('asset_name')} ({d.get('asset_code')})\n"
+            f"• الفرع: {d.get('branch_name') or '—'} | الحالة: {d.get('status')}\n"
+            f"• المسؤول الحالي: {cust_lbl}"
+        )
 
     if rtype == "subscriptions_summary":
         items = d.get("items") or []
@@ -811,10 +980,16 @@ def _format_grounded_response(tool_name: str, res: Dict[str, Any]) -> str:
         return "\n".join(lines)
 
     if rtype == "attendance_summary":
-        return (
-            f"🕒 ملخص سجل الحضور والانصراف الفعلي:\n"
-            f"• إجمالي السجلات: {d.get('total_records', 0)} | حضور: {d.get('present_count', 0)} | تأخير: {d.get('late_count', 0)} | غياب مؤكد: {d.get('absent_count', 0)}"
-        )
+        emp_hdr = f" للموظف «{d['employee_name']}»" if d.get("employee_name") else ""
+        att_items = d.get("items") or []
+        lines = [
+            f"🕒 سجل الحضور والانصراف الفعلي{emp_hdr}:",
+            f"• إجمالي السجلات: {d.get('total_records', 0)} | حضور: {d.get('present_count', 0)} | تأخير: {d.get('late_count', 0)} | غياب مؤكد: {d.get('absent_count', 0)}",
+        ]
+        for r in att_items[:6]:
+            t_in = f" (دخول {r['check_in']})" if r.get("check_in") else ""
+            lines.append(f"• {r.get('attendance_date')}: {r.get('status')}{t_in}")
+        return "\n".join(lines)
 
     if rtype == "crm_summary":
         return (
@@ -827,6 +1002,19 @@ def _format_grounded_response(tool_name: str, res: Dict[str, Any]) -> str:
 
     if rtype == "approvals_summary":
         return f"✅ مركز الاعتمادات الموحد: يوجد ({d.get('pending_approvals', 0)}) طلب بانتظار الاعتماد."
+
+    if rtype == "branch_assets_summary":
+        kpis = d.get("kpis") or {}
+        comp = d.get("branch_comparison") or []
+        lines = [
+            f"🏢 تحليلات الأصول حسب الفروع المعتمدة (إجمالي الأصول بعد منع التكرار: {kpis.get('total_assets', 0)} | تحت الصيانة: {kpis.get('maintenance_assets', 0)}):"
+        ]
+        for b in comp:
+            cust_str = f" — المسؤولون/المستلمون: {', '.join(b['custodians'])}" if b.get("custodians") else ""
+            lines.append(
+                f"• {b['branch_name']}: إجمالي ({b['total_assets']}) [تقنية: {b['it_assets']} • عامة: {b['general_assets']} • مسلّمة: {b['assigned']} • متاحة: {b['available']} • تحت الصيانة: {b['under_maintenance']}]{cust_str}"
+            )
+        return "\n".join(lines)
 
     return "تمت معالجة الطلب."
 
@@ -1053,6 +1241,8 @@ def _execute_tool_dispatch(
         return tools.tool_create_task(db, current_user, target_cid, args, confirmed=confirmed, ip_address=ip_address, progress_cb=progress_cb)
     if tool_name == "create_tasks_batch":
         return tools.tool_create_tasks_batch(db, current_user, target_cid, args, confirmed=confirmed, ip_address=ip_address, progress_cb=progress_cb)
+    if tool_name == "update_task":
+        return tools.tool_update_task(db, current_user, target_cid, args, confirmed=confirmed, ip_address=ip_address, progress_cb=progress_cb)
     if tool_name == "update_task_status":
         return tools.tool_update_task_status(db, current_user, target_cid, args, confirmed=confirmed, ip_address=ip_address, progress_cb=progress_cb)
     if tool_name == "send_employee_notification":
@@ -1101,15 +1291,24 @@ def _is_affirmative_reply(msg: str) -> bool:
 
 def _is_negative_reply(msg: str) -> bool:
     low = msg.strip().lower().strip(".!؟")
-    return low in {"لا", "إلغاء", "الغاء", "تراجع", "ألغ", "الغ", "رفض", "no", "cancel", "abort", "stop"}
+    if low in {"لا", "إلغاء", "الغاء", "تراجع", "ألغ", "الغ", "رفض", "no", "cancel", "abort", "stop"}:
+        return True
+    # Explicit cancellation phrases for previous/pending confirmation (never match "لا، أقصد ...")
+    if re.search(r"^(?:ألغِ?|الغي?|إلغاء|الغاء|تراجع\s+عن|أوقف|لا\s+تنفذ|cancel|abort)\s+(?:العملية|الإجراء|الأمر|المهمة|التنفيذ|التأكيد|previous|pending|action|it)", low, re.I):
+        if not re.search(r"TASK-[0-9A-Za-z]+", msg, re.I):
+            return True
+    return False
 
 
 def _pick_candidate_choice(msg: str, candidates: Optional[List[Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
-    """Select a candidate from an ambiguous list ONLY when uniquely identified by index, ID, employee number, or distinguishing detail. Never auto-selects the first match when multiple candidates match!"""
+    """Select a candidate from an ambiguous list ONLY when uniquely identified by index, ordinal, ID, employee number, or distinguishing detail. Never auto-selects the first match when multiple candidates match!"""
     if not candidates:
         return None
     raw = msg.strip().strip(".!؟")
-    low = raw.lower()
+    # Strip conversational correction lead-ins ("لا، أقصد ...", "أقصد ...", "قصدت ...")
+    stripped_corr = re.sub(r"^(?:لا\s*[،,]?\s*)?(?:أقصد|اقصد|قصدت|بل|أريد|اريد|اختر|اختار|i\s+mean|actually|no,?\s*i\s+mean)\s+", "", raw, flags=re.I).strip()
+    low = stripped_corr.lower()
+
     idx_map = {
         "1": 0, "الأول": 0, "الاول": 0, "اول واحد": 0, "أول واحد": 0, "الموظف الأول": 0, "الموظف الاول": 0, "first": 0,
         "2": 1, "الثاني": 1, "ثاني واحد": 1, "الموظف الثاني": 1, "second": 1,
@@ -1119,14 +1318,26 @@ def _pick_candidate_choice(msg: str, candidates: Optional[List[Dict[str, Any]]])
     if low in idx_map and idx_map[low] < len(candidates):
         return candidates[idx_map[low]]
 
-    norm_msg = arabic_nlp.normalize_arabic_key(raw)
+    # Also match ordinal inside corrected reply ("أحمد الثاني" -> index 1)
+    for tok, pos in (
+        (r"(?:الأول|الاول|\bfirst\b)", 0),
+        (r"(?:الثاني|الثانية|\bsecond\b)", 1),
+        (r"(?:الثالث|الثالثة|\bthird\b)", 2),
+        (r"(?:الرابع|الرابعة|\bfourth\b)", 3),
+    ):
+        if re.search(tok, low, re.I) and pos < len(candidates):
+            return candidates[pos]
+
+    norm_msg = arabic_nlp.normalize_arabic_key(stripped_corr)
     if not norm_msg:
         return None
 
-    # 1. Match by exact employee_id UUID, short_id, employee_number, or username
+    # 1. Match by exact employee_id UUID, task_id, task reference, short_id, employee_number, or username
     id_matches = [
         c for c in candidates
         if str(c.get("employee_id") or "").lower() == low
+        or str(c.get("task_id") or "").lower() == low
+        or (c.get("reference") and str(c["reference"]).lower() in low)
         or str(c.get("short_id") or "").lower() == low.lstrip("#")
         or str(c.get("employee_number") or "").lower() == low.lstrip("#")
         or (c.get("username") and str(c["username"]).lower() == low.lstrip("@"))
@@ -1141,21 +1352,40 @@ def _pick_candidate_choice(msg: str, candidates: Optional[List[Dict[str, Any]]])
         if len(tg_matches) == 1:
             return tg_matches[0]
 
-    # 3. Match by distinguishing job_title, department_name, or branch_name
-    attr_matches = []
+    # 3. Match by distinguishing branch/department/job attributes, scoring overlapping tokens (preserving branch numbers like 17, 18)
+    tokens = [tok for tok in norm_msg.split() if len(tok) >= 3 or tok.isdigit()]
+    stop_words = {"اللي", "في", "من", "على", "عن", "فرع", "قسم", "الموظف", "احمد", "معتز"}
+    dist_tokens = [tok for tok in tokens if tok not in stop_words] or tokens
+
+    scored_matches: List[Tuple[int, Dict[str, Any]]] = []
     for c in candidates:
+        branch_blob = " ".join(c.get("branch_names") or [])
         attrs = " ".join(
-            arabic_nlp.normalize_arabic_key(c.get(k))
-            for k in ("job_title", "department_name", "branch_name", "employee_number", "username")
-            if c.get(k)
+            arabic_nlp.normalize_arabic_key(v)
+            for v in (
+                c.get("job_title"),
+                c.get("department_name"),
+                c.get("branch_name"),
+                branch_blob,
+                c.get("employee_number"),
+                c.get("username"),
+                c.get("title"),
+                c.get("reference"),
+            )
+            if v
         )
-        if attrs and any(tok in attrs for tok in norm_msg.split() if len(tok) >= 3):
-            attr_matches.append(c)
-    if len(attr_matches) == 1:
-        return attr_matches[0]
+        if attrs:
+            score = sum(1 for tok in dist_tokens if tok in attrs.split() or (len(tok) >= 3 and tok in attrs))
+            if score > 0:
+                scored_matches.append((score, c))
+    if scored_matches:
+        max_score = max(s for s, _ in scored_matches)
+        top_matches = [c for s, c in scored_matches if s == max_score]
+        if len(top_matches) == 1:
+            return top_matches[0]
 
     # 4. Match by full_name ONLY if exactly 1 candidate has that full_name!
-    clean_emp = tools.clean_employee_query(raw)
+    clean_emp = tools.clean_employee_query(stripped_corr)
     if clean_emp:
         from app.services.task_assignment import normalize_name
         norm_q = normalize_name(clean_emp)
@@ -1175,6 +1405,9 @@ def _apply_clarification_answer(
     """Merge follow-up employee name, candidate selection, or missing field back into pending intent cleanly."""
     clean_emp = tools.clean_employee_query(msg)
     picked = None if resolved_employee_id else _pick_candidate_choice(msg, candidates)
+    if picked and picked.get("task_id"):
+        p_args["task_reference"] = str(picked["task_id"])
+        return
     chosen_emp_id = resolved_employee_id or (picked.get("employee_id") if picked else None)
 
     if p_tool == "create_tasks_batch" and isinstance(p_args.get("tasks"), list) and p_args["tasks"]:
@@ -1191,7 +1424,7 @@ def _apply_clarification_answer(
         return
 
     if chosen_emp_id:
-        if p_tool in {"create_task", "convert_ticket_to_task", "query_operations"}:
+        if p_tool in {"create_task", "convert_ticket_to_task", "query_operations", "update_task"}:
             p_args["assignee_id"] = str(chosen_emp_id)
         elif p_tool == "send_employee_notification":
             p_args["employee_id"] = str(chosen_emp_id)
@@ -1320,7 +1553,12 @@ def process_agent_request(
                 return cached
 
         # 1b. Follow-up parameter modification on open confirmation ("خليها بكرة" / "خلي الأولوية عاجلة")
-        mod_patch = _extract_followup_modification(payload.message) if not payload.confirmation_token else None
+        mod_patch = (
+            _extract_followup_modification(payload.message)
+            if payload.confirm_decision not in {"confirm", "cancel"}
+            and not (_is_affirmative_reply(payload.message) or _is_negative_reply(payload.message))
+            else None
+        )
         if mod_patch:
             latest_open_conf = (
                 db.query(AIAgentExecution)
@@ -1353,6 +1591,13 @@ def process_agent_request(
         # 2. Confirmation Token Resume Flow (explicit button or typed confirmation against active token)
         active_conf_token = payload.confirmation_token
         conf_decision = payload.confirm_decision
+        if active_conf_token and not conf_decision:
+            if _is_negative_reply(payload.message):
+                conf_decision = "cancel"
+            elif _is_affirmative_reply(payload.message) or not payload.message.strip():
+                conf_decision = "confirm"
+            else:
+                active_conf_token = None
         if not active_conf_token and (_is_affirmative_reply(payload.message) or _is_negative_reply(payload.message)):
             latest_conf = (
                 db.query(AIAgentExecution)
@@ -1430,29 +1675,72 @@ def process_agent_request(
         # 3. Conversation Memory & Follow-Up Clarification Resume Flow
         ctx_dict = payload.context.model_dump() if payload.context else None
         standalone_plan = _offline_plan_intent(payload.message, ctx_dict)
+
+        if standalone_plan.get("tool") == "__clarify_compound__":
+            c_args = standalone_plan.get("args") or {}
+            first_t = c_args.get("first_target") or "غير محدد"
+            second_t = c_args.get("second_target") or "الجهة الأخرى"
+            pending_task = {
+                "tool": "create_task",
+                "args": {"title": c_args.get("title") or "مهمة متابعة", "assignee_name": first_t},
+                "missing_field": "assignee",
+            }
+            clar_res = {
+                "status": "needs_clarification",
+                "reply": (
+                    f"⚠️ تضمن طلبك إسنادين مختلفين في نفس الجملة: إنشاء مهمة إلى «{first_t}» ثم إسنادها إلى «{second_t}».\n"
+                    f"بما أن النظام يسند المهمة لموظف محدد في المرة الواحدة، يرجى توضيح اختيارك:\n"
+                    f"1) إسناد المهمة إلى «{first_t}»\n"
+                    f"2) أم كتابة اسم الفني المحدد داخل «{second_t}»؟"
+                ),
+                "steps": [{"key": "clarify_compound", "label": "يرجى حسم التعارض وتحديد المسند إليه النهائي", "status": "warning"}],
+                "pending_intent": pending_task,
+                "duplicate": False,
+                "engine_source": "Offline Agent Planner",
+            }
+            _save_execution_record(
+                db, target_cid, current_user,
+                f"clarif:{idem_key or secrets.token_hex(6)}",
+                "create_task",
+                {"message": payload.message, "pending_action": pending_task},
+                clar_res,
+            )
+            return clar_res
+
         is_explicit_new_cmd = bool(
             standalone_plan.get("tool")
             and not (standalone_plan["tool"] == "resolve_employee" and len(payload.message.split()) <= 2)
         )
 
         active_pending = None if (is_explicit_new_cmd and not payload.resolved_employee_id) else payload.pending_intent
-        saved_candidates = None
-        if not is_explicit_new_cmd and not _is_negative_reply(payload.message):
-            latest_clarif = (
+        saved_candidates = (active_pending or {}).get("candidates") if isinstance(active_pending, dict) else None
+        is_candidate_correction = bool(
+            re.match(r"^(?:لا|لأ|no)[،,\s]+(?:أقصد|اقصد|قصد|المقصود|i\s+mean)", payload.message.strip(), re.I)
+        )
+        if ((not is_explicit_new_cmd and not _is_negative_reply(payload.message)) or is_candidate_correction) and (
+            not active_pending or not saved_candidates
+        ):
+            clarif_rows = (
                 db.query(AIAgentExecution)
                 .filter(
                     AIAgentExecution.company_id == target_cid,
                     AIAgentExecution.user_id == current_user.id,
-                    AIAgentExecution.status == "needs_clarification",
+                    AIAgentExecution.status.in_(["needs_clarification", "superseded"]),
                     AIAgentExecution.created_at >= datetime.utcnow() - timedelta(minutes=30),
                 )
                 .order_by(AIAgentExecution.created_at.desc())
-                .first()
+                .limit(10)
+                .all()
             )
-            if latest_clarif:
-                if not active_pending and latest_clarif.request_payload:
-                    active_pending = latest_clarif.request_payload.get("pending_action")
-                saved_candidates = (latest_clarif.result_payload or {}).get("clarification_options")
+            for row_c in clarif_rows:
+                row_cands = (row_c.result_payload or {}).get("clarification_options")
+                row_pa = (row_c.request_payload or {}).get("pending_action")
+                if row_cands or row_pa:
+                    if not active_pending and row_pa:
+                        active_pending = row_pa
+                    if not saved_candidates and row_cands:
+                        saved_candidates = row_cands
+                    break
 
         if active_pending and _is_negative_reply(payload.message) and not payload.resolved_employee_id:
             _close_open_clarifications(db, target_cid, current_user.id)
@@ -1589,13 +1877,18 @@ def _build_agent_response(
     )
     reply = override_reply or _format_grounded_response(tool_name, tool_res)
 
+    clarif_opts = tool_res.get("candidates") or tool_res.get("task_candidates") or tool_res.get("ticket_candidates")
+    pending_action_out = tool_res.get("pending_action")
+    if isinstance(pending_action_out, dict) and clarif_opts and not pending_action_out.get("candidates"):
+        pending_action_out = {**pending_action_out, "candidates": clarif_opts}
+
     resp: Dict[str, Any] = {
         "status": norm_status,
         "reply": reply,
         "steps": steps,
         "result_card": tool_res.get("data"),
-        "clarification_options": tool_res.get("candidates") or tool_res.get("task_candidates") or tool_res.get("ticket_candidates"),
-        "pending_intent": tool_res.get("pending_action"),
+        "clarification_options": clarif_opts,
+        "pending_intent": pending_action_out,
         "suggested_followups": tool_res.get("suggested_followups") or [],
         "duplicate": bool(tool_res.get("duplicate", False)),
         "idempotency_key": idem_key,
@@ -1609,6 +1902,7 @@ def _build_agent_response(
             "confirmation_token": token,
             "action_label": conf.get("action_label", "تأكيد التنفيذ"),
             "summary": conf.get("summary", "تأكيد تنفيذ العملية"),
+            "preview": conf.get("args", tool_args),
         }
         pending_exec_key = f"conf:{token}"
         _save_execution_record(

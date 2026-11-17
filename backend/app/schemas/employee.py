@@ -18,15 +18,33 @@ class EmployeeBase(BaseModel):
     avatar_url: Optional[str] = None
 
 
+class EmployeeBranchAssignmentInput(BaseModel):
+    company_id: Optional[uuid.UUID] = None
+    branch_id: uuid.UUID
+    department_id: Optional[uuid.UUID] = None
+    role_name: Optional[str] = "Employee"
+    job_title: Optional[str] = None
+    is_primary: bool = False
+
+
 class EmployeeCreate(EmployeeBase):
     company_id: uuid.UUID
+    person_id: Optional[uuid.UUID] = None
     branch_id: Optional[uuid.UUID] = None
     department_id: Optional[uuid.UUID] = None
+    branch_ids: Optional[List[uuid.UUID]] = None
+    company_ids: Optional[List[uuid.UUID]] = None
+    assignments: Optional[List[EmployeeBranchAssignmentInput]] = None
+    role_name: Optional[str] = "Employee"
+    create_user_account: Optional[bool] = False
+    username: Optional[str] = None
+    password: Optional[str] = None
 
 
 class EmployeeUpdate(BaseModel):
     branch_id: Optional[uuid.UUID] = None
     department_id: Optional[uuid.UUID] = None
+    branch_ids: Optional[List[uuid.UUID]] = None
     employee_number: Optional[str] = None
     full_name: Optional[str] = None
     job_title: Optional[str] = None

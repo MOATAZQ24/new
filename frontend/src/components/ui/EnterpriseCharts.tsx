@@ -109,7 +109,7 @@ export function EnterpriseDonutChart({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                 <span className="text-lg font-black font-mono text-slate-900 dark:text-white">
-                  {total.toLocaleString()}
+                  {total.toLocaleString("en-US")}
                 </span>
                 <span className="text-[10px] font-semibold text-slate-500">
                   {totalLabel}
@@ -138,7 +138,7 @@ export function EnterpriseDonutChart({
                     </span>
                   </div>
                   <div className="font-mono text-slate-900 dark:text-white font-bold shrink-0">
-                    {item.value.toLocaleString()} {unit}{" "}
+                    {item.value.toLocaleString("en-US")} {unit}{" "}
                     <span className="text-[10px] text-slate-500 font-normal">
                       ({pct}%)
                     </span>
@@ -183,7 +183,7 @@ export function EnterpriseBarChart({
           )}
         </div>
         <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-          الإجمالي: {total.toLocaleString()} {unit}
+          الإجمالي: {total.toLocaleString("en-US")} {unit}
         </span>
       </div>
 
@@ -204,7 +204,7 @@ export function EnterpriseBarChart({
                     {item.label}
                   </span>
                   <span className="font-mono font-bold text-slate-900 dark:text-white">
-                    {item.value.toLocaleString()} {unit}
+                    {item.value.toLocaleString("en-US")} {unit}
                     {item.badge ? ` • ${item.badge}` : ""}
                   </span>
                 </div>

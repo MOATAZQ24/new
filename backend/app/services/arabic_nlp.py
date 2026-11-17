@@ -95,12 +95,12 @@ SPELLING_CORRECTIONS: List[Tuple[re.Pattern, str]] = [
 
 PROMPT_INJECTION_PATTERNS = re.compile(
     r"(?:"
-    r"ignore\s+(?:all\s+|any\s+)?(?:previous|prior|system)\s+(?:instructions|prompts|rules)"
-    r"|تجاهل\s+(?:كل\s+|جميع\s+)?(?:التعليمات|الأوامر|القواعد)\s*(?:السابقة|النظام)?"
-    r"|تجاوز\s+(?:الصلاحيات|الحماية|الشركة|العزل)"
+    r"ignore\s+(?:all\s+|any\s+)?(?:previous|prior|system)\s+(?:instructions|prompts|rules|permissions)"
+    r"|(?:تجاهل|تجاوز|ألغ|الغاء|إلغاء)\s+(?:كل\s+|جميع\s+)?(?:التعليمات|الأوامر|القواعد|الصلاحيات|الحماية|العزل|القيود)\b"
+    r"|(?:كل\s+الشركات|جميع\s+الشركات|all\s+tenants|all\s+companies)\s+.*?(?:تجاهل|تجاوز|bypass)"
     r"|bypass\s+(?:rbac|permissions|security|tenant|auth)"
     r"|\b(?:drop\s+table|union\s+select|delete\s+from\s+users|insert\s+into\s+users|update\s+users\s+set)\b"
-    r"|(?:اعرض|اطبع|أظهر|هات|كشف|reveal|print|show|dump)\s+.*?(?:api[_\s]?key|bot[_\s]?token|password[_\s]?hash|secret[_\s]?key|مفتاح\s*api|توكن\s*البوت|كلمة\s*المرور\s*المشفرة)"
+    r"|(?:اعرض|اطبع|أظهر|هات|كشف|استخرج|read|reveal|print|show|dump|list|get)\s+.*?(?:api[_\s]?key|bot[_\s]?token|password[_\s]?hash|passwords?|secret[_\s]?key|vault|secrets?|كلمات\s+المرور|كلمة\s+المرور|الأسرار|اسرار|مفتاح\s*api|توكن\s*البوت)"
     r")",
     flags=re.I,
 )
@@ -191,8 +191,8 @@ def extract_natural_date_riyadh(text: str, base_date: Optional[date] = None) -> 
         cleaned = (work[:m_dat.start()] + " " + work[m_dat.end():]).strip()
         return (today + timedelta(days=2)).isoformat(), cleaned
 
-    # 4. Tomorrow ("غدًا", "غدا", "بكرة", "بكره", "tomorrow")
-    m_tom = re.search(r"(?:في\s+|موعدها\s+|خليها\s+)?(غدا|غداً|غدًا|بكرة|بكره|\btomorrow\b)", work, flags=re.I)
+    # 4. Tomorrow ("غدًا", "غدا", "بكرة", "لبكرة", "بكره", "tomorrow")
+    m_tom = re.search(r"(?:في\s+|موعدها\s+|خليها\s+|ل(?=بكر|غد))?(غدا|غداً|غدًا|بكرة|بكره|\btomorrow\b)", work, flags=re.I)
     if m_tom:
         cleaned = (work[:m_tom.start()] + " " + work[m_tom.end():]).strip()
         return (today + timedelta(days=1)).isoformat(), cleaned

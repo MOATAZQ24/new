@@ -12,6 +12,9 @@ import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { Pagination } from "@/components/ui/Pagination";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
+import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
@@ -23,6 +26,74 @@ const assetColumns = [
   { id: "status", label: "الحالة" }, { id: "employee", label: "الموظف المعين له" },
   { id: "qr", label: "رمز QR" }, { id: "custody", label: "إجراء العهدة" }, { id: "actions", label: "الإجراءات" },
 ];
+interface AssetBranchOption {
+  id: string;
+  branch_name: string;
+}
+
+interface AssetEmployeeOption {
+  id: string;
+  full_name: string;
+  employee_number: string;
+  job_title?: string | null;
+}
+
+interface CustodyHistoryItem {
+  id: string;
+  employee_name: string;
+  assignment_date: string;
+  actual_return_date?: string | null;
+  status: string;
+}
+
+interface AssetRow {
+  id: string;
+  asset_code: string;
+  asset_name: string;
+  asset_type: string;
+  asset_category?: string;
+  brand?: string | null;
+  model?: string | null;
+  serial_number?: string | null;
+  condition?: string | null;
+  status: string;
+  notes?: string | null;
+  branch_id?: string | null;
+  branch_name?: string | null;
+  assigned_employee_name?: string | null;
+  qr_code_data?: string | null;
+  custody_history?: CustodyHistoryItem[];
+  [key: string]: unknown;
+}
+
+interface AssetAnalyticsData {
+  kpis?: {
+    total_assets?: number;
+    it_assets?: number;
+    general_assets?: number;
+    assigned_assets?: number;
+    available_assets?: number;
+    maintenance_assets?: number;
+    retired_assets?: number;
+    warranty_expiring_30d?: number;
+    awaiting_return?: number;
+  };
+  distributions?: {
+    by_branch?: Record<string, number>;
+    by_type?: Record<string, number>;
+  };
+}
+
+interface CustodyReceiptData {
+  employee_name: string;
+  employee_number: string;
+  asset_name: string;
+  asset_code: string;
+  serial_number?: string | null;
+  assignment_date?: string | null;
+  legal_text?: string | null;
+}
+
 export default function AssetsPage() {
   const { activeCompanyId, user } = useAuth();
   const toast = useToast();
@@ -30,24 +101,31 @@ export default function AssetsPage() {
   const { info: workspaceInfo } = useWorkspace();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [assets, setAssets] = useState<any[]>([]);
+  const [assets, setAssets] = useState<AssetRow[]>([]);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [analytics, setAnalytics] = useState<AssetAnalyticsData | null>(null);
+  const [companyBranches, setCompanyBranches] = useState<AssetBranchOption[]>([]);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferTargetBranchId, setTransferTargetBranchId] = useState("");
+  const [transferReason, setTransferReason] = useState("");
   const [copiedSerial, setCopiedSerial] = useState<string | null>(null);
 
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<any>(null);
+  const [selectedAsset, setSelectedAsset] = useState<AssetRow | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Handover (Assign Custody) Modal
   const [showHandoverModal, setShowHandoverModal] = useState(false);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<AssetEmployeeOption[]>([]);
   const [handoverEmployeeId, setHandoverEmployeeId] = useState("");
   const [handoverCondition, setHandoverCondition] = useState("Good");
   const [handoverExpectedReturn, setHandoverExpectedReturn] = useState("");
@@ -61,11 +139,13 @@ export default function AssetsPage() {
 
   // Custody Receipt Modal
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+  const [receiptData, setReceiptData] = useState<CustodyReceiptData | null>(null);
 
   // New Asset Form
   const [assetCode, setAssetCode] = useState("");
   const [assetName, setAssetName] = useState("");
+  const [assetCategory, setAssetCategory] = useState("IT");
+  const [assetBranchId, setAssetBranchId] = useState("");
   const [assetType, setAssetType] = useState("Laptop");
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
@@ -90,12 +170,18 @@ export default function AssetsPage() {
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      let url = `/assets?search=${encodeURIComponent(debouncedSearch)}&page=${page}&per_page=${tablePreference.per_page}&sort=${encodeURIComponent(tablePreference.sort)}`;
+      const branchQuery = selectedBranchIds.length > 0 ? `&branch_ids=${encodeURIComponent(selectedBranchIds.join(","))}` : "";
+      const catQuery = categoryFilter ? `&asset_category=${encodeURIComponent(categoryFilter)}` : "";
+      let url = `/assets?search=${encodeURIComponent(debouncedSearch)}&page=${page}&per_page=${tablePreference.per_page}&sort=${encodeURIComponent(tablePreference.sort)}${branchQuery}${catQuery}`;
       if (typeFilter) url += `&asset_type=${typeFilter}`;
       if (statusFilter) url += `&status=${statusFilter}`;
-      const res = await api.get(url);
+      const [res, anaRes] = await Promise.all([
+        api.get<AssetRow[]>(url),
+        api.get<AssetAnalyticsData>(`/assets/analytics?${branchQuery.replace(/^&/, "")}${catQuery}`),
+      ]);
       setAssets(res.data || []);
       setTotalPages(res.pagination?.total_pages || 1);
+      setAnalytics(anaRes.data || null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل سجل الأصول");
     } finally {
@@ -104,8 +190,34 @@ export default function AssetsPage() {
   };
 
   useEffect(() => {
-    fetchAssets();
-  }, [typeFilter, statusFilter, activeCompanyId, page, tablePreference.per_page, tablePreference.sort, debouncedSearch]);
+    if (typeof window === "undefined") return;
+    if (selectedAsset?.id) {
+      sessionStorage.setItem("ig_selected_asset_id", selectedAsset.id);
+    } else {
+      sessionStorage.removeItem("ig_selected_asset_id");
+    }
+  }, [selectedAsset]);
+
+  useEffect(() => {
+    if (!activeCompanyId) return;
+    api
+      .get<AssetBranchOption[]>(`/companies/${activeCompanyId}/branches`)
+      .then((res) => {
+        const brs = res.data || [];
+        setCompanyBranches(brs);
+        if (brs.length > 0 && !assetBranchId) {
+          setAssetBranchId(brs[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      void fetchAssets();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [typeFilter, statusFilter, categoryFilter, selectedBranchIds, activeCompanyId, page, tablePreference.per_page, tablePreference.sort, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!workspaceInfo) return;
@@ -125,8 +237,10 @@ export default function AssetsPage() {
     try {
       await api.post("/assets", {
         company_id: activeCompanyId,
+        branch_id: assetBranchId || undefined,
         asset_code: assetCode,
         asset_name: assetName,
+        asset_category: assetCategory,
         asset_type: assetType,
         brand,
         model,
@@ -144,12 +258,13 @@ export default function AssetsPage() {
       setNotes("");
       toast.success("تم تسجيل الأصل بنجاح");
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل إضافة الأصل");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل إضافة الأصل");
     }
   };
 
-  const openEditAsset = (ast: any) => {
+  const openEditAsset = (ast: AssetRow) => {
+    setSelectedAsset(ast);
     setEditId(ast.id);
     setEditName(ast.asset_name);
     setEditType(ast.asset_type);
@@ -178,8 +293,8 @@ export default function AssetsPage() {
       setShowEditModal(false);
       toast.success("تم تحديث بيانات الأصل");
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحديث بيانات الأصل");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحديث بيانات الأصل");
     }
   };
 
@@ -189,14 +304,15 @@ export default function AssetsPage() {
       await api.delete(`/assets/${assetId}`);
       toast.success("تم حذف الأصل");
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل حذف الأصل");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف الأصل");
     }
   };
 
-  const openAssetDetails = async (ast: any) => {
+  const openAssetDetails = async (ast: AssetRow) => {
+    setSelectedAsset(ast);
     try {
-      const res = await api.get(`/assets/${ast.id}`);
+      const res = await api.get<AssetRow>(`/assets/${ast.id}`);
       setSelectedAsset(res.data);
       setShowHistoryModal(true);
     } catch (e) {
@@ -205,10 +321,10 @@ export default function AssetsPage() {
   };
 
   // Open Handover (Assign Custody)
-  const openHandover = async (ast: any) => {
+  const openHandover = async (ast: AssetRow) => {
     setSelectedAsset(ast);
     try {
-      const empRes = await api.get("/employees?status=Active");
+      const empRes = await api.get<AssetEmployeeOption[]>("/employees?status=Active");
       setEmployees(empRes.data || []);
       setHandoverEmployeeId(empRes.data && empRes.data.length > 0 ? empRes.data[0].id : "");
       setHandoverCondition(ast.condition || "Good");
@@ -235,17 +351,17 @@ export default function AssetsPage() {
       setShowHandoverModal(false);
       toast.success("تم تسليم العهدة بنجاح");
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تسليم العهدة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تسليم العهدة");
     }
   };
 
   // Open Return Custody
-  const openReturn = async (ast: any) => {
+  const openReturn = async (ast: AssetRow) => {
     setSelectedAsset(ast);
     try {
-      const detailRes = await api.get(`/assets/${ast.id}`);
-      const activeC = detailRes.data?.custody_history?.find((c: any) => c.status === "Active");
+      const detailRes = await api.get<AssetRow>(`/assets/${ast.id}`);
+      const activeC = detailRes.data?.custody_history?.find((c) => c.status === "Active");
       if (activeC) {
         setActiveCustodyId(activeC.id);
         setReturnCondition(ast.condition || "Good");
@@ -270,22 +386,46 @@ export default function AssetsPage() {
       setShowReturnModal(false);
       toast.success("تم استرجاع العهدة بنجاح");
       fetchAssets();
-    } catch (err: any) {
-      toast.error(err?.message || "فشل استرجاع العهدة");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل استرجاع العهدة");
     }
   };
 
   const openReceipt = async (custodyId: string) => {
     try {
-      const res = await api.get(`/custody/receipt/${custodyId}`);
+      const res = await api.get<CustodyReceiptData>(`/custody/receipt/${custodyId}`);
       setReceiptData(res.data);
       setShowReceiptModal(true);
-    } catch (err: any) {
-      toast.error(err?.message || "فشل تحميل سند التسليم");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل سند التسليم");
     }
   };
 
-  const assetFilterCount = [search.trim(), typeFilter, statusFilter].filter(Boolean).length;
+  const openTransferBranch = (ast: AssetRow) => {
+    setSelectedAsset(ast);
+    const otherBranch = companyBranches.find((b) => b.id !== ast.branch_id) || companyBranches[0];
+    setTransferTargetBranchId(otherBranch ? otherBranch.id : "");
+    setTransferReason("");
+    setShowTransferModal(true);
+  };
+
+  const handleTransferBranchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAsset || !transferTargetBranchId) return;
+    try {
+      await api.post(`/assets/${selectedAsset.id}/transfer-branch`, {
+        to_branch_id: transferTargetBranchId,
+        reason: transferReason || undefined,
+      });
+      toast.success("تم نقل الأصل إلى الفرع الجديد وتحديث سجل التحويلات");
+      setShowTransferModal(false);
+      fetchAssets();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل نقل الأصل");
+    }
+  };
+
+  const assetFilterCount = [search.trim(), typeFilter, statusFilter, categoryFilter, selectedBranchIds.length > 0 ? "b" : ""].filter(Boolean).length;
 
   return (
     <DashboardLayout>
@@ -308,6 +448,71 @@ export default function AssetsPage() {
         }
       />
 
+      {/* Canonical 5-Branch Filter Bar */}
+      <BranchIntelligenceFilterBar
+        selectedBranchIds={selectedBranchIds}
+        onChangeBranchIds={(ids) => {
+          setSelectedBranchIds(ids);
+          setPage(1);
+        }}
+        label="تحليلات ومقارنة الأصول حسب الفروع الخمسة المعتمدة (منع تكرار الأصول عند تعدد فروع الموظف)"
+      />
+
+      {/* Branch-Aware Asset KPI Cards & Charts */}
+      {analytics && (
+        <div className="space-y-5 my-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              title="إجمالي الأصول (بدون تكرار)"
+              value={analytics.kpis?.total_assets ?? 0}
+              subtitle={`تقنية (IT): ${analytics.kpis?.it_assets ?? 0} • عامة: ${analytics.kpis?.general_assets ?? 0}`}
+              icon={<Icons.Assets size={20} />}
+              accentColor="border-[#123D32]"
+            />
+            <StatsCard
+              title="الأصول المسلمة vs المتاحة"
+              value={`${analytics.kpis?.assigned_assets ?? 0} / ${analytics.kpis?.available_assets ?? 0}`}
+              subtitle="مسلّمة كعهدة / متاحة في المستودع"
+              icon={<Icons.Custody size={20} />}
+              accentColor="border-[#187A5A]"
+            />
+            <StatsCard
+              title="الأصول تحت الصيانة"
+              value={analytics.kpis?.maintenance_assets ?? 0}
+              subtitle={`متقاعد أو تالف: ${analytics.kpis?.retired_assets ?? 0}`}
+              icon={<Icons.Maintenance size={20} />}
+              accentColor="border-amber-500"
+            />
+            <StatsCard
+              title="تنبيهات الضمان والاسترجاع"
+              value={analytics.kpis?.warranty_expiring_30d ?? 0}
+              subtitle={`بانتظار الإرجاع: ${analytics.kpis?.awaiting_return ?? 0}`}
+              icon={<Icons.Clock size={20} />}
+              accentColor="border-[#C5A46D]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <EnterpriseBarChart
+              title="مقارنة الأصول بين الفروع المعتمدة"
+              subtitle="توزيع الأصول حسب الموقع الفعلي للفرع"
+              unit="أصل"
+              items={Object.entries(analytics.distributions?.by_branch || {}).map(
+                ([label, value]) => ({ label, value: Number(value) || 0 })
+              )}
+            />
+            <EnterpriseDonutChart
+              title="توزيع الأصول حسب الفئة والنوع (اضغط للتصفية)"
+              subtitle="الأجهزة التقنية والمعدات المسجلة في الفروع المحددة"
+              totalLabel="أصل"
+              items={Object.entries(analytics.distributions?.by_type || {}).map(
+                ([label, value]) => ({ label, value: Number(value) || 0 })
+              )}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Filters and Search Bar */}
       <DataToolbar
         searchValue={search}
@@ -315,11 +520,22 @@ export default function AssetsPage() {
         searchPlaceholder="بحث بالكود، الاسم، السيريال..."
         searchLabel="بحث في الأصول التقنية"
         activeFilterCount={assetFilterCount}
-        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setPage(1); }}
+        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setPage(1); }}
         onRefresh={() => void fetchAssets()}
         refreshing={loading}
         filters={
           <>
+            <select
+              aria-label="تصفية حسب الفئة"
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع الفئات (تقنية وعامة)</option>
+              <option value="IT">أصول تقنية (IT)</option>
+              <option value="General">أصول عامة (General)</option>
+            </select>
+
             <select
               aria-label="تصفية حسب نوع الأصل"
               value={typeFilter}
@@ -353,7 +569,7 @@ export default function AssetsPage() {
         }
       />
 
-      <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setPage(1); }} />
+      <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter, asset_category: categoryFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setCategoryFilter(filters.asset_category || ""); setPage(1); }} />
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       {/* Assets Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
@@ -368,7 +584,7 @@ export default function AssetsPage() {
               assetFilterCount > 0 ? (
                 <button
                   type="button"
-                  onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setPage(1); }}
+                  onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setPage(1); }}
                   className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
                 >
                   عرض جميع الأصول
@@ -394,7 +610,13 @@ export default function AssetsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {assets.map((ast) => (
-                <PreferenceRow tableId="/assets" columns={assetColumns} key={ast.id} className="hover:bg-slate-50/60 transition-colors">
+                <PreferenceRow
+                  tableId="/assets"
+                  columns={assetColumns}
+                  key={ast.id}
+                  onClick={() => setSelectedAsset(ast)}
+                  className={`cursor-pointer transition-colors ${selectedAsset?.id === ast.id ? "bg-emerald-50/60" : "hover:bg-slate-50/60"}`}
+                >
                   <td className="p-3.5 font-mono font-bold text-[#187A5A]">
                     <bdi dir="ltr">{ast.asset_code}</bdi>
                   </td>
@@ -410,7 +632,7 @@ export default function AssetsPage() {
                       <div className="flex items-center gap-1.5">
                         <span>{ast.serial_number}</span>
                         <button
-                          onClick={() => copyToClipboard(ast.serial_number)}
+                          onClick={() => copyToClipboard(ast.serial_number || "")}
                           className="text-slate-400 hover:text-slate-800 p-0.5 cursor-pointer"
                           title="نسخ الرقم التسلسلي"
                         >
@@ -430,7 +652,9 @@ export default function AssetsPage() {
                     {ast.assigned_employee_name ? (
                       <span className="text-blue-700">{ast.assigned_employee_name}</span>
                     ) : (
-                      <span className="text-slate-400 font-normal">غير معين (في المستودع)</span>
+                      <span className="text-slate-400 font-normal">
+                        {ast.status === "Assigned" ? "عهدة غير محددة الموظف" : "غير معين (في المستودع)"}
+                      </span>
                     )}
                   </td>
                   <td className="p-3.5 text-center">
@@ -475,6 +699,16 @@ export default function AssetsPage() {
                         السجل
                       </button>
                       {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => openTransferBranch(ast)}
+                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 text-[#123D32] font-semibold text-[11px] cursor-pointer"
+                          title="نقل الأصل إلى فرع آخر"
+                        >
+                          نقل فرع
+                        </button>
+                      )}
+                      {canManage && (
                         <>
                           <button
                             type="button"
@@ -508,6 +742,48 @@ export default function AssetsPage() {
 
       {/* Add Asset Modal */}
       <Modal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        title={`نقل الأصل بين الفروع المعتمدة: ${selectedAsset?.asset_code || ""}`}
+      >
+        <form onSubmit={handleTransferBranchSubmit} className="space-y-4 text-xs">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            الفرع الحالي: <strong>{selectedAsset?.branch_name || "غير محدد"}</strong>
+          </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">الفرع الجديد المستهدف *</label>
+            <select
+              value={transferTargetBranchId}
+              onChange={(e) => setTransferTargetBranchId(e.target.value)}
+              required
+              className="w-full border border-slate-200 rounded-xl p-2.5"
+            >
+              {companyBranches.map((br) => (
+                <option key={br.id} value={br.id}>
+                  {br.branch_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">سبب النقل</label>
+            <input
+              type="text"
+              value={transferReason}
+              onChange={(e) => setTransferReason(e.target.value)}
+              placeholder="مثال: نقل الجهاز لفرع الدمام لتغطية احتياج القسم"
+              className="w-full border border-slate-200 rounded-xl p-2.5"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="submit" className="px-4 py-2 rounded-xl bg-[#123D32] text-white font-bold cursor-pointer">
+              تأكيد النقل الفعلي
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         title="تسجيل أصل تقني جديد"
@@ -540,6 +816,38 @@ export default function AssetsPage() {
                 placeholder="مثال: MacBook Pro 14"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                الفرع الفعلي للأصل *
+              </label>
+              <select
+                value={assetBranchId}
+                onChange={(e) => setAssetBranchId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                {companyBranches.map((br) => (
+                  <option key={br.id} value={br.id}>
+                    {br.branch_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                تصنيف الأصل *
+              </label>
+              <select
+                value={assetCategory}
+                onChange={(e) => setAssetCategory(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="IT">أصل تقني (IT Asset)</option>
+                <option value="General">أصل عام / مكتبي (General Asset)</option>
+              </select>
             </div>
           </div>
 
@@ -874,7 +1182,7 @@ export default function AssetsPage() {
           </div>
 
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            بتأكيد التسليم يتم تحويل حالة الأصل تلقائياً إلى "مسلّم كعهدة" وتوثيق سند الاستلام القانوني.
+            بتأكيد التسليم يتم تحويل حالة الأصل تلقائياً إلى &quot;مسلّم كعهدة&quot; وتوثيق سند الاستلام القانوني.
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
@@ -933,7 +1241,7 @@ export default function AssetsPage() {
           </div>
 
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-800">
-            سيتم إنهاء العهدة الحالية وتحويل الأصل تلقائياً إلى حالة "متاح" في المستودع.
+            سيتم إنهاء العهدة الحالية وتحويل الأصل تلقائياً إلى حالة &quot;متاح&quot; في المستودع.
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
@@ -1028,9 +1336,9 @@ export default function AssetsPage() {
             <span>سجل تسليم وإرجاع العهدة ({selectedAsset?.custody_history?.length || 0})</span>
           </h4>
 
-          {selectedAsset?.custody_history?.length > 0 ? (
+          {selectedAsset?.custody_history && selectedAsset.custody_history.length > 0 ? (
             <div className="space-y-2 max-h-72 overflow-y-auto">
-              {selectedAsset.custody_history.map((h: any) => (
+              {selectedAsset.custody_history.map((h) => (
                 <div
                   key={h.id}
                   className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"

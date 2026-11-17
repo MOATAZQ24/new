@@ -1,5 +1,6 @@
+import secrets
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -12,6 +13,7 @@ from app.core.security import (
     hash_password,
     get_user_roles,
     resolve_company_scope,
+    validate_company_fk,
 )
 from app.core.rbac import require_permission, Module, Action
 from app.core.response import success_response, paginate
@@ -42,8 +44,10 @@ def list_employees(
     per_page: int = Query(20, ge=1, le=100),
     company_id: Optional[uuid.UUID] = None,
     branch_id: Optional[uuid.UUID] = None,
+    branch_ids: Optional[str] = None,
     department_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
+    multi_branch_only: bool = False,
     search: Optional[str] = None,
     current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
@@ -51,13 +55,16 @@ def list_employees(
 ):
     """List employees with server-side company isolation and canonical Arabic/typo-tolerant search."""
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    parsed_branches = enterprise_service.parse_branch_ids_filter(db, target_cid, branch_id, branch_ids)
     matched = enterprise_service.search_canonical_directory(
         db=db,
         company_id=target_cid,
         search=search,
-        branch_id=branch_id,
+        branch_ids=parsed_branches,
         department_id=department_id,
         status_filter=status_filter,
+        multi_branch_only=multi_branch_only,
         limit=500,
     )
     total = len(matched)
@@ -74,11 +81,43 @@ def create_employee(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """Create a new employee with company isolation."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-    validate_employee_location(db, target_cid, payload.branch_id, payload.department_id)
+    """Create a canonical employee supporting multi-branch and multi-company assignments."""
+    from app.models.enterprise import EmployeeBranchAssignment
 
-    # Check unique employee_number in company
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    canonical_branches = enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    default_branch_id = canonical_branches[2].id if len(canonical_branches) >= 3 else canonical_branches[0].id
+
+    effective_branch_ids: List[uuid.UUID] = []
+    if payload.branch_id:
+        effective_branch_ids.append(payload.branch_id)
+    for bid in payload.branch_ids or []:
+        if bid not in effective_branch_ids:
+            effective_branch_ids.append(bid)
+    if not effective_branch_ids:
+        effective_branch_ids.append(default_branch_id)
+
+    primary_branch_id = effective_branch_ids[0]
+    validate_employee_location(db, target_cid, primary_branch_id, payload.department_id)
+    for bid in effective_branch_ids:
+        validate_company_fk(db, Branch, bid, target_cid, "الفرع")
+    validate_company_fk(db, Employee, payload.manager_id, target_cid, "المدير المباشر")
+
+    # Validate any additional company IDs upfront before writing anything
+    extra_company_ids: List[uuid.UUID] = []
+    for cid in payload.company_ids or []:
+        if cid != target_cid and cid not in extra_company_ids:
+            if not current_user.is_superadmin:
+                admin_mem = db.query(CompanyMembership).filter(
+                    CompanyMembership.user_id == current_user.id,
+                    CompanyMembership.company_id == cid,
+                    CompanyMembership.status == "Active",
+                ).first()
+                if not admin_mem or not admin_mem.role or admin_mem.role.name not in ("Company Admin", "IT Manager"):
+                    raise HTTPException(status_code=403, detail="ليس لديك صلاحية إضافة موظف لهذه المنشأة الإضافية")
+            extra_company_ids.append(cid)
+
+    # Check unique employee_number in primary company and extra companies
     existing = db.query(Employee).filter(
         Employee.company_id == target_cid,
         Employee.employee_number == payload.employee_number.strip(),
@@ -86,33 +125,192 @@ def create_employee(
     if existing:
         raise HTTPException(status_code=400, detail="الرقم الوظيفي مسجل مسبقاً في هذه الشركة")
 
-    emp = Employee(
-        company_id=target_cid,
-        branch_id=payload.branch_id,
-        department_id=payload.department_id,
-        manager_id=payload.manager_id,
-        employee_number=payload.employee_number.strip(),
-        full_name=payload.full_name.strip(),
-        job_title=payload.job_title,
-        email=payload.email,
-        phone=payload.phone,
-        employment_status=payload.employment_status,
-        hire_date=payload.hire_date or date.today(),
-        employment_type=payload.employment_type or "Full-Time",
-        work_location=payload.work_location,
-        avatar_url=payload.avatar_url,
-    )
-    db.add(emp)
-    db.flush()
-    enterprise_service.record_employee_assignment_history(
-        db=db,
-        employee=emp,
-        change_type="Onboarding",
-        changed_by_id=current_user.id,
-        notes="تسجيل الموظف في الدليل الموحد للمنشأة",
-    )
-    db.commit()
-    db.refresh(emp)
+    if payload.create_user_account:
+        u_name = (payload.username or "").strip()
+        u_email = (payload.email or "").strip()
+        if not u_name or not u_email:
+            raise HTTPException(status_code=400, detail="اسم المستخدم والبريد الإلكتروني مطلوبان عند إنشاء حساب دخول")
+        if db.query(User).filter(User.username == u_name).first():
+            raise HTTPException(status_code=400, detail="اسم المستخدم مسجل مسبقاً في النظام")
+        if db.query(User).filter(User.email == u_email).first():
+            raise HTTPException(status_code=400, detail="البريد الإلكتروني مسجل لحساب دخول آخر")
+
+    shared_person_id = payload.person_id or uuid.uuid4()
+    created_temp_password: Optional[str] = None
+    created_user_id: Optional[str] = None
+
+    # Pre-ensure branches in extra companies before entering main write transaction
+    extra_default_branches: dict[uuid.UUID, uuid.UUID] = {}
+    for cid in extra_company_ids:
+        c_branches = enterprise_service.ensure_canonical_five_branches(db, cid)
+        extra_default_branches[cid] = c_branches[2].id if len(c_branches) >= 3 else c_branches[0].id
+
+    try:
+        emp = Employee(
+            person_id=shared_person_id,
+            company_id=target_cid,
+            branch_id=primary_branch_id,
+            department_id=payload.department_id,
+            manager_id=payload.manager_id,
+            employee_number=payload.employee_number.strip(),
+            full_name=payload.full_name.strip(),
+            job_title=payload.job_title,
+            email=payload.email,
+            phone=payload.phone,
+            employment_status=payload.employment_status,
+            hire_date=payload.hire_date or date.today(),
+            employment_type=payload.employment_type or "Full-Time",
+            work_location=payload.work_location,
+            avatar_url=payload.avatar_url,
+        )
+        db.add(emp)
+        db.flush()
+
+        # Persist primary & secondary branch assignments in the active company
+        for idx, bid in enumerate(effective_branch_ids):
+            db.add(
+                EmployeeBranchAssignment(
+                    employee_id=emp.id,
+                    company_id=target_cid,
+                    branch_id=bid,
+                    department_id=payload.department_id,
+                    role_name=payload.role_name or "Employee",
+                    job_title=payload.job_title,
+                    is_primary=(idx == 0),
+                    status="Active",
+                )
+            )
+
+        # Optional additional assignments across branches/companies
+        for extra in payload.assignments or []:
+            asg_cid = resolve_company_scope(current_user, active_cid, extra.company_id or target_cid)
+            br_extra = db.query(Branch).filter(Branch.id == extra.branch_id, Branch.company_id == asg_cid).first()
+            if not br_extra:
+                raise HTTPException(status_code=400, detail="أحد الفروع الإضافية المحددة غير صالح لهذه المنشأة")
+            if not (asg_cid == target_cid and br_extra.id in effective_branch_ids):
+                db.add(
+                    EmployeeBranchAssignment(
+                        employee_id=emp.id,
+                        company_id=asg_cid,
+                        branch_id=br_extra.id,
+                        department_id=extra.department_id,
+                        role_name=extra.role_name or payload.role_name or "Employee",
+                        job_title=extra.job_title or payload.job_title,
+                        is_primary=extra.is_primary,
+                        status="Active",
+                    )
+                )
+
+        # Create companion Employee records in additional selected companies sharing person_id
+        for extra_cid in extra_company_ids:
+            dup_in_extra = db.query(Employee).filter(
+                Employee.company_id == extra_cid,
+                Employee.employee_number == payload.employee_number.strip(),
+            ).first()
+            if dup_in_extra:
+                raise HTTPException(status_code=400, detail="الرقم الوظيفي مسجل مسبقاً في المنشأة الإضافية")
+            extra_emp = Employee(
+                person_id=shared_person_id,
+                company_id=extra_cid,
+                branch_id=extra_default_branches[extra_cid],
+                employee_number=payload.employee_number.strip(),
+                full_name=payload.full_name.strip(),
+                job_title=payload.job_title,
+                email=payload.email,
+                phone=payload.phone,
+                employment_status=payload.employment_status,
+                hire_date=payload.hire_date or date.today(),
+                employment_type=payload.employment_type or "Full-Time",
+                work_location=payload.work_location,
+            )
+            db.add(extra_emp)
+            db.flush()
+            db.add(
+                EmployeeBranchAssignment(
+                    employee_id=extra_emp.id,
+                    company_id=extra_cid,
+                    branch_id=extra_default_branches[extra_cid],
+                    role_name=payload.role_name or "Employee",
+                    job_title=payload.job_title,
+                    is_primary=True,
+                    status="Active",
+                )
+            )
+            enterprise_service.record_employee_assignment_history(
+                db=db,
+                employee=extra_emp,
+                change_type="Onboarding",
+                changed_by_id=current_user.id,
+                notes="تسكين مرتبط متعدد المنشآت لنفس الشخص",
+            )
+
+        # Optional atomic login account + memberships
+        if payload.create_user_account:
+            raw_pw = payload.password or f"Ig!{secrets.token_hex(5)}"
+            if not payload.password:
+                created_temp_password = raw_pw
+            new_user = User(
+                employee_id=emp.id,
+                username=payload.username.strip(),
+                password_hash=hash_password(raw_pw),
+                email=payload.email.strip(),
+                account_status="Active",
+                is_superadmin=False,
+                must_change_password=True,
+                is_deleted=False,
+            )
+            db.add(new_user)
+            db.flush()
+            created_user_id = str(new_user.id)
+
+            r_name = payload.role_name or "Employee"
+            role_obj = db.query(Role).filter(Role.name == r_name).first()
+            if not role_obj:
+                role_obj = Role(name=r_name, is_system_role=True)
+                db.add(role_obj)
+                db.flush()
+            db.add(UserRole(user_id=new_user.id, role_id=role_obj.id))
+            db.add(
+                CompanyMembership(
+                    user_id=new_user.id,
+                    company_id=target_cid,
+                    branch_id=primary_branch_id,
+                    role_id=role_obj.id,
+                    status="Active",
+                    is_default=True,
+                    assigned_by=current_user.id,
+                    assigned_at=datetime.utcnow(),
+                )
+            )
+            for extra_cid in extra_company_ids:
+                db.add(
+                    CompanyMembership(
+                        user_id=new_user.id,
+                        company_id=extra_cid,
+                        branch_id=extra_default_branches[extra_cid],
+                        role_id=role_obj.id,
+                        status="Active",
+                        is_default=False,
+                        assigned_by=current_user.id,
+                        assigned_at=datetime.utcnow(),
+                    )
+                )
+
+        enterprise_service.record_employee_assignment_history(
+            db=db,
+            employee=emp,
+            change_type="Onboarding",
+            changed_by_id=current_user.id,
+            notes="تسجيل الموظف في الدليل الموحد للمنشأة",
+        )
+        db.commit()
+        db.refresh(emp)
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"فشل إضافة الموظف وتم التراجع عن التغييرات: {str(exc)}")
 
     log_audit(
         db=db,
@@ -121,10 +319,24 @@ def create_employee(
         resource_id=str(emp.id),
         user_id=current_user.id,
         company_id=target_cid,
-        new_values=payload.model_dump(mode="json"),
+        new_values=payload.model_dump(mode="json", exclude={"password"}),
     )
 
-    return success_response(data={"id": str(emp.id)}, message="تم إضافة الموظف بنجاح")
+    resp_data = {
+        "id": str(emp.id),
+        "person_id": str(shared_person_id),
+        "branch_ids": [str(b) for b in effective_branch_ids],
+        "company_ids": [str(target_cid)] + [str(c) for c in extra_company_ids],
+    }
+    if created_user_id:
+        resp_data["user_id"] = created_user_id
+    if created_temp_password:
+        resp_data["temporary_password"] = created_temp_password
+
+    return success_response(
+        data=resp_data,
+        message="تم إضافة الموظف بنجاح وربطه بالفروع المعتمدة",
+    )
 
 
 @router.get("/{employee_id}/profile360")
@@ -224,14 +436,43 @@ def update_employee(
     if not current_user.is_superadmin and emp.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية التعديل على هذا الموظف")
 
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    if payload.branch_ids is not None:
+        for bid in payload.branch_ids:
+            validate_company_fk(db, Branch, bid, emp.company_id, "الفرع")
+
+    effective_branch_id = payload.branch_id or (
+        payload.branch_ids[0] if payload.branch_ids else emp.branch_id
+    )
     validate_employee_location(
-        db, emp.company_id, payload.branch_id or emp.branch_id,
+        db, emp.company_id, effective_branch_id,
         payload.department_id or emp.department_id,
+    )
+    if payload.manager_id is not None:
+        if payload.manager_id == emp.id:
+            raise HTTPException(status_code=400, detail="لا يمكن تعيين الموظف مديراً لنفسه")
+        validate_company_fk(db, Employee, payload.manager_id, emp.company_id, "المدير المباشر")
+
+    existing_branch_ids = [
+        r[0]
+        for r in db.query(EmployeeBranchAssignment.branch_id)
+        .filter(
+            EmployeeBranchAssignment.employee_id == emp.id,
+            EmployeeBranchAssignment.company_id == emp.company_id,
+            EmployeeBranchAssignment.status == "Active",
+        )
+        .all()
+    ]
+    new_branch_ids_set = set(payload.branch_ids) if payload.branch_ids is not None else None
+    branch_list_changed = (
+        new_branch_ids_set is not None and new_branch_ids_set != set(existing_branch_ids)
     )
 
     org_changed = any(
         [
             payload.branch_id is not None and payload.branch_id != emp.branch_id,
+            branch_list_changed,
             payload.department_id is not None and payload.department_id != emp.department_id,
             payload.job_title is not None and payload.job_title != emp.job_title,
             payload.employment_status is not None and payload.employment_status != emp.employment_status,
@@ -239,56 +480,114 @@ def update_employee(
         ]
     )
 
-    if payload.full_name is not None:
-        emp.full_name = payload.full_name
-    if payload.job_title is not None:
-        emp.job_title = payload.job_title
-    if payload.email is not None:
-        emp.email = payload.email
-    if payload.phone is not None:
-        emp.phone = payload.phone
-    if payload.manager_id is not None:
-        emp.manager_id = payload.manager_id
-    if payload.hire_date is not None:
-        emp.hire_date = payload.hire_date
-    if payload.employment_type is not None:
-        emp.employment_type = payload.employment_type
-    if payload.work_location is not None:
-        emp.work_location = payload.work_location
-    if payload.avatar_url is not None:
-        emp.avatar_url = payload.avatar_url
-    if payload.employment_status is not None:
-        emp.employment_status = payload.employment_status
-        # If employee is terminated, resigned, or inactive, cascade deactivate user account, sessions, and Telegram link
-        if payload.employment_status in ["Terminated", "Resigned", "Inactive"]:
-            from app.models.user import UserSession
-            from app.models.telegram import TelegramUserLink
+    try:
+        if payload.full_name is not None:
+            emp.full_name = payload.full_name
+        if payload.job_title is not None:
+            emp.job_title = payload.job_title
+        if payload.email is not None:
+            emp.email = payload.email
+        if payload.phone is not None:
+            emp.phone = payload.phone
+        if payload.manager_id is not None:
+            emp.manager_id = payload.manager_id
+        if payload.hire_date is not None:
+            emp.hire_date = payload.hire_date
+        if payload.employment_type is not None:
+            emp.employment_type = payload.employment_type
+        if payload.work_location is not None:
+            emp.work_location = payload.work_location
+        if payload.avatar_url is not None:
+            emp.avatar_url = payload.avatar_url
+        if payload.employment_status is not None:
+            emp.employment_status = payload.employment_status
+            # If employee is terminated, resigned, or inactive, cascade deactivate user account & sessions while preserving employee record and historical data
+            if payload.employment_status in ["Terminated", "Resigned", "Inactive"]:
+                from app.models.user import UserSession
 
-            linked_user = db.query(User).filter(User.employee_id == emp.id).first()
-            if linked_user:
-                linked_user.account_status = "Inactive"
-                db.query(UserSession).filter(UserSession.user_id == linked_user.id).update({"is_active": False})
-            db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp.id).update({"is_verified": False})
-    if payload.branch_id is not None:
-        emp.branch_id = payload.branch_id
-    if payload.department_id is not None:
-        emp.department_id = payload.department_id
+                linked_user = db.query(User).filter(User.employee_id == emp.id).first()
+                if linked_user:
+                    linked_user.account_status = "Inactive"
+                    db.query(UserSession).filter(UserSession.user_id == linked_user.id).update({"is_active": False})
+                db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp.id).update({"is_verified": False})
+        if payload.branch_id is not None:
+            emp.branch_id = payload.branch_id
+        if payload.department_id is not None:
+            emp.department_id = payload.department_id
 
-    if org_changed:
-        change_kind = (
-            "Deactivation"
-            if emp.employment_status in ("Terminated", "Resigned", "Inactive", "Suspended")
-            else "Transfer"
-        )
-        enterprise_service.record_employee_assignment_history(
-            db=db,
-            employee=emp,
-            change_type=change_kind,
-            changed_by_id=current_user.id,
-            notes=payload.change_reason or "تحديث بيانات التسكين الوظيفي",
-        )
+        if payload.branch_ids is not None:
+            db.query(EmployeeBranchAssignment).filter(
+                EmployeeBranchAssignment.employee_id == emp.id,
+                EmployeeBranchAssignment.company_id == emp.company_id,
+            ).delete()
+            deduped_bids: List[uuid.UUID] = []
+            for bid in payload.branch_ids:
+                if bid not in deduped_bids:
+                    deduped_bids.append(bid)
+            if deduped_bids:
+                emp.branch_id = deduped_bids[0]
+                for idx, bid in enumerate(deduped_bids):
+                    db.add(
+                        EmployeeBranchAssignment(
+                            employee_id=emp.id,
+                            company_id=emp.company_id,
+                            branch_id=bid,
+                            department_id=emp.department_id,
+                            job_title=emp.job_title,
+                            is_primary=(idx == 0),
+                            status="Active",
+                        )
+                    )
+        elif payload.branch_id is not None:
+            # Keep EmployeeBranchAssignment synchronized with primary branch changes
+            db.query(EmployeeBranchAssignment).filter(
+                EmployeeBranchAssignment.employee_id == emp.id,
+                EmployeeBranchAssignment.company_id == emp.company_id,
+            ).update({"is_primary": False})
+            existing_primary_row = db.query(EmployeeBranchAssignment).filter(
+                EmployeeBranchAssignment.employee_id == emp.id,
+                EmployeeBranchAssignment.company_id == emp.company_id,
+                EmployeeBranchAssignment.branch_id == payload.branch_id,
+            ).first()
+            if existing_primary_row:
+                existing_primary_row.is_primary = True
+                existing_primary_row.department_id = emp.department_id
+                existing_primary_row.job_title = emp.job_title
+                existing_primary_row.status = "Active"
+            else:
+                db.add(
+                    EmployeeBranchAssignment(
+                        employee_id=emp.id,
+                        company_id=emp.company_id,
+                        branch_id=payload.branch_id,
+                        department_id=emp.department_id,
+                        job_title=emp.job_title,
+                        is_primary=True,
+                        status="Active",
+                    )
+                )
 
-    db.commit()
+        if org_changed:
+            change_kind = (
+                "Deactivation"
+                if emp.employment_status in ("Terminated", "Resigned", "Inactive", "Suspended")
+                else "Transfer"
+            )
+            enterprise_service.record_employee_assignment_history(
+                db=db,
+                employee=emp,
+                change_type=change_kind,
+                changed_by_id=current_user.id,
+                notes=payload.change_reason or "تحديث بيانات التسكين الوظيفي",
+            )
+
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"فشل تحديث الموظف وتم التراجع عن التغييرات: {str(exc)}")
 
     log_audit(
         db=db,
