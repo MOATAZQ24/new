@@ -97,7 +97,7 @@ def run_tests():
         token_info = generate_telegram_link_token(db, employee_id=emp1.id, company_id=c1.id, expires_in_minutes=15)
         assert token_info["token"], "Token was not generated"
         assert token_info["pin_code"], "PIN code was not generated"
-        assert token_info["deep_link"].startswith("https://t.me/"), "Deep link format invalid"
+        assert token_info["command"].startswith("/start "), "Command format invalid"
         assert token_info["is_verified"] is False, "New token must be unverified"
 
         link_record = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp1.id).first()
@@ -273,7 +273,7 @@ def run_tests():
             action_str=f"act:accept:{task1.id}",
         )
         assert res_unauth["success"] is False
-        assert res_unauth["status"] == "Unauthorized"
+        assert res_unauth["status"] in ("Unauthorized", "UNLINKED")
         print("  ✓ Authentication: Unregistered Telegram users strictly rejected")
 
         # ── Test 11: Outbox Dispatcher Processing ─────────────────────────

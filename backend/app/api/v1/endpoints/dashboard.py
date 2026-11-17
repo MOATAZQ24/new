@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id
+from app.core.security import get_current_user, get_user_company_id, resolve_company_scope
 from app.core.response import success_response
 from app.models.company import Company
 from app.models.user import Employee, User
@@ -28,7 +28,7 @@ def get_dashboard_data(
     db: Session = Depends(get_db),
 ):
     from app.api.v1.endpoints.workspace import authorize_company, workspace_permissions
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     authorize_company(db, current_user, target_cid)
     today = date.today()
 
@@ -67,13 +67,10 @@ def get_dashboard_data(
                 if 0 <= days <= 30:
                     upcoming_renewals += 1
 
-    # Tasks
-    open_tasks = db.query(Task).filter(Task.company_id == target_cid, Task.status.notin_(["Completed", "Cancelled"])).count()
-    overdue_tasks = db.query(Task).filter(
-        Task.company_id == target_cid,
-        Task.status.notin_(["Completed", "Cancelled"]),
-        Task.due_date < today,
-    ).count()
+    # Tasks (using authoritative workflow stage definitions)
+    from app.services import task_workflow as wf
+    open_tasks = db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("active")).count()
+    overdue_tasks = db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("overdue", today)).count()
 
     # Tickets
     open_tickets = db.query(HelpDeskTicket).filter(
@@ -102,10 +99,11 @@ def get_dashboard_data(
     }
 
     task_statuses = {
-        "قيد الانتظار (To Do)": db.query(Task).filter(Task.company_id == target_cid, Task.status == "To Do").count(),
-        "قيد التنفيذ (In Progress)": db.query(Task).filter(Task.company_id == target_cid, Task.status == "In Progress").count(),
-        "معلّق (On Hold)": db.query(Task).filter(Task.company_id == target_cid, Task.status == "On Hold").count(),
-        "مكتمل (Completed)": db.query(Task).filter(Task.company_id == target_cid, Task.status == "Completed").count(),
+        "بانتظار القبول (New)": db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("new")).count(),
+        "قيد التنفيذ (In Progress)": db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("in_progress")).count(),
+        "بانتظار التوضيح (Waiting)": db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("waiting")).count(),
+        "مكتمل (Completed)": db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("completed")).count(),
+        "مرفوض (Rejected)": db.query(Task).filter(Task.company_id == target_cid, wf.stage_condition("rejected")).count(),
     }
 
     ticket_priorities = {

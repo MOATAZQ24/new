@@ -3,7 +3,7 @@
  * Automatically attaches cookies, X-Company-ID header, and handles errors.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export const API_BASE = "/api/v1";
 
 export interface ApiResponse<T = any> {
   data: T;
@@ -101,6 +101,7 @@ export async function apiRequest<T = any>(
   }
 
   const response = await fetch(url, {
+    cache: "no-store",
     ...options,
     headers,
     credentials: "include", // Sends HttpOnly session cookies

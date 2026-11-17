@@ -40,6 +40,7 @@ class TaskCreate(TaskBase):
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None
     attachments: Optional[Any] = None
+    notify_telegram: Optional[bool] = True
 
 
 class TaskUpdate(BaseModel):
@@ -91,6 +92,8 @@ class TaskResponse(TaskBase):
     blocker_reason: Optional[str] = None
     blocked_at: Optional[datetime] = None
     unblocked_at: Optional[datetime] = None
+    acknowledged_at: Optional[datetime] = None
+    is_acknowledged: Optional[bool] = False
     accepted_at: Optional[datetime] = None
     submitted_for_review_at: Optional[datetime] = None
     reviewer_id: Optional[uuid.UUID] = None

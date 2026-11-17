@@ -8,3 +8,8 @@ __pycache__
 *.db.bak
 .telegram_offset.json
 .telegram_worker_status.json
+.lan-runtime/
+.telegram_poller.lock
+*.db
+/backups/
+/backend/backups/

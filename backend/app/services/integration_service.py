@@ -30,7 +30,7 @@ def get_or_create_default_configs(db: Session, company_id: Optional[uuid.UUID]) 
         {
             "service_name": "gemini",
             "display_name": "الذكاء الاصطناعي Google Gemini (تحليل التذاكر والأصول)",
-            "config_data": {"api_key": "", "model": "gemini-2.0-flash", "auto_classify_tickets": True},
+            "config_data": {"api_key": "", "model": "gemini-3-flash-preview", "auto_classify_tickets": True},
         },
     ]
 

@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
+import { api, ApiError } from "@/lib/api";
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const token = searchParams.get("token") || "";
 
   const [verifying, setVerifying] = useState(true);
@@ -19,33 +18,40 @@ function ResetPasswordContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const isVerifying = Boolean(token) && verifying;
+  const isTokenValid = Boolean(token) && tokenValid;
+  const displayedTokenError = token
+    ? tokenError
+    : "رابط استعادة كلمة المرور مفقود أو غير مكتمل.";
 
   useEffect(() => {
-    if (!token) {
-      setVerifying(false);
-      setTokenValid(false);
-      setTokenError("رابط استعادة كلمة المرور مفقود أو غير مكتمل.");
-      return;
-    }
+    if (!token) return;
 
+    let active = true;
     const verifyToken = async () => {
       try {
         setVerifying(true);
         await api.post("/auth/verify-reset-token", { token });
+        if (!active) return;
         setTokenValid(true);
         setTokenError(null);
-      } catch (err: any) {
+      } catch (err) {
+        if (!active) return;
+        const detail = err instanceof ApiError ? err.data?.detail : undefined;
         setTokenValid(false);
         setTokenError(
-          err.response?.data?.detail ||
+          (typeof detail === "string" ? detail : null) ||
             "انتهت صلاحية رابط الاستعادة أو تم استخدامه مسبقاً. يرجى طلب رابط جديد."
         );
       } finally {
-        setVerifying(false);
+        if (active) setVerifying(false);
       }
     };
 
-    verifyToken();
+    void verifyToken();
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,9 +75,11 @@ function ResetPasswordContent() {
         new_password: newPassword,
       });
       setSubmitSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
+      const detail = err instanceof ApiError ? err.data?.detail : undefined;
       setSubmitError(
-        err.response?.data?.detail || "فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
+        (typeof detail === "string" ? detail : null) ||
+          "فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
       );
     } finally {
       setSubmitting(false);
@@ -79,7 +87,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4" dir="rtl">
+    <main className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 space-y-6">
         
         {/* Header */}
@@ -94,7 +102,7 @@ function ResetPasswordContent() {
         </div>
 
         {/* Verification Loader */}
-        {verifying && (
+        {isVerifying && (
           <div className="p-8 text-center text-xs text-slate-500 space-y-2">
             <div className="inline-block w-6 h-6 border-2 border-[#187A5A] border-t-transparent rounded-full animate-spin"></div>
             <p>جاري التحقق من صلاحية رابط الاستعادة...</p>
@@ -102,14 +110,14 @@ function ResetPasswordContent() {
         )}
 
         {/* Invalid or Expired Token State */}
-        {!verifying && !tokenValid && (
+        {!isVerifying && !isTokenValid && (
           <div className="space-y-4 py-2">
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs leading-relaxed space-y-2">
+            <div role="alert" aria-live="assertive" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-red-900">
                 <span>⚠️</span>
                 <span>الرابط غير صالح أو منتهي الصلاحية</span>
               </div>
-              <p>{tokenError}</p>
+              <p>{displayedTokenError}</p>
               <p className="text-[11px] text-red-700">
                 روابط الاستعادة صالحة لمدة 15 دقيقة فقط وتستخدم لمرة واحدة حرصاً على أمان النظام.
               </p>
@@ -133,9 +141,9 @@ function ResetPasswordContent() {
         )}
 
         {/* Success State */}
-        {!verifying && tokenValid && submitSuccess && (
+        {!isVerifying && isTokenValid && submitSuccess && (
           <div className="space-y-5 py-2">
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
+            <div role="status" aria-live="polite" className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-emerald-900">
                 <span>✓</span>
                 <span>تم تغيير كلمة المرور بنجاح!</span>
@@ -155,41 +163,46 @@ function ResetPasswordContent() {
         )}
 
         {/* Password Reset Form */}
-        {!verifying && tokenValid && !submitSuccess && (
+        {!isVerifying && isTokenValid && !submitSuccess && (
           <form onSubmit={handleSubmit} className="space-y-4">
             {submitError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+              <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{submitError}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label htmlFor="new-password" className="block text-xs font-bold text-slate-700 mb-1.5">
                 كلمة المرور الجديدة <span className="text-red-500">*</span>
               </label>
               <input
+                id="new-password"
                 type="password"
                 required
                 minLength={6}
+                autoComplete="new-password"
+                aria-describedby="new-password-help"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#187A5A] focus:ring-2 focus:ring-[#187A5A]/10 text-xs text-slate-800 outline-none transition-all"
               />
-              <span className="text-[10px] text-slate-400 mt-1 block">
+              <span id="new-password-help" className="text-[10px] text-slate-400 mt-1 block">
                 يجب ألا تقل عن 6 خانات (يفضل استخدام أحرف وأرقام ورموز)
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label htmlFor="confirm-password" className="block text-xs font-bold text-slate-700 mb-1.5">
                 تأكيد كلمة المرور الجديدة <span className="text-red-500">*</span>
               </label>
               <input
+                id="confirm-password"
                 type="password"
                 required
                 minLength={6}
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
@@ -217,7 +230,7 @@ function ResetPasswordContent() {
         )}
 
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -225,9 +238,9 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4">
+        <main className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4">
           <p className="text-xs text-slate-500">جاري التحميل...</p>
-        </div>
+        </main>
       }
     >
       <ResetPasswordContent />

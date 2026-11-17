@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { Icons } from "@/components/ui/Icons";
+import { useDialogAccessibility } from "@/components/ui/useDialogAccessibility";
 
 export function MustChangePasswordModal() {
   const { user, refreshUser, logout } = useAuth();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,6 +18,7 @@ export function MustChangePasswordModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  useDialogAccessibility(Boolean(user?.must_change_password), dialogRef);
 
   // If user does not require password change or isn't logged in, don't show
   if (!user || !user.must_change_password) {
@@ -72,14 +75,21 @@ export function MustChangePasswordModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden text-right">
+    <div className="motion-backdrop-enter fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="must-change-password-title"
+        className="motion-popover bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden text-right"
+        tabIndex={-1}
+      >
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-[#123D32] to-[#187A5A] p-6 text-white text-center relative">
           <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Icons.ShieldAlert size={32} className="text-[#C5A46D]" />
           </div>
-          <h2 className="text-xl font-bold">تغيير كلمة المرور الإلزامي</h2>
+          <h2 id="must-change-password-title" className="text-xl font-bold">تغيير كلمة المرور الإلزامي</h2>
           <p className="text-xs text-white/80 mt-1">
             مرحباً {user.full_name || user.username}، حسابك مسجل بكلمة مرور مؤقتة تتطلب التعيين الفوري قبل المتابعة.
           </p>
@@ -114,6 +124,7 @@ export function MustChangePasswordModal() {
                 <div className="relative">
                   <input
                     type={showOld ? "text" : "password"}
+                    autoFocus
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     required

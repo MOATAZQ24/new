@@ -6,16 +6,25 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
 import { api } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function EmployeesPage() {
   const { activeCompanyId, user } = useAuth();
+  const toast = useToast();
   const [tab, setTab] = useState<"employees" | "users">("employees");
   const [employees, setEmployees] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 220);
   const [statusFilter, setStatusFilter] = useState("");
 
   // Modals
@@ -27,6 +36,9 @@ export default function EmployeesPage() {
   const [detailsTab, setDetailsTab] = useState<"custody" | "tasks">("custody");
   const [empTasks, setEmpTasks] = useState<any[]>([]);
   const [showAssignTaskModal, setShowAssignTaskModal] = useState(false);
+  const [showTelegramLinkModal, setShowTelegramLinkModal] = useState(false);
+  const [sendingEmpTest, setSendingEmpTest] = useState(false);
+  const [empTestMessage, setEmpTestMessage] = useState<string | null>(null);
 
   // New employee form
   const [empNumber, setEmpNumber] = useState("");
@@ -61,12 +73,12 @@ export default function EmployeesPage() {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      let url = `/employees?search=${encodeURIComponent(search)}`;
+      let url = `/employees?search=${encodeURIComponent(debouncedSearch)}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       const res = await api.get(url);
       setEmployees(res.data || []);
     } catch (e) {
-      console.error(e);
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الموظفين");
     } finally {
       setLoading(false);
     }
@@ -75,10 +87,10 @@ export default function EmployeesPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/employees/users/list?search=${encodeURIComponent(search)}`);
+      const res = await api.get(`/employees/users/list?search=${encodeURIComponent(debouncedSearch)}`);
       setUsers(res.data || []);
     } catch (e) {
-      console.error(e);
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل حسابات المستخدمين");
     } finally {
       setLoading(false);
     }
@@ -87,7 +99,7 @@ export default function EmployeesPage() {
   useEffect(() => {
     if (tab === "employees") fetchEmployees();
     else fetchUsers();
-  }, [tab, activeCompanyId, statusFilter]);
+  }, [tab, activeCompanyId, statusFilter, debouncedSearch]);
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +121,7 @@ export default function EmployeesPage() {
       setPhone("");
       fetchEmployees();
     } catch (err: any) {
-      alert(err?.message || "فشل إضافة الموظف");
+      toast.error(err?.message || "فشل إضافة الموظف");
     }
   };
 
@@ -136,7 +148,7 @@ export default function EmployeesPage() {
       setShowEditEmpModal(false);
       fetchEmployees();
     } catch (err: any) {
-      alert(err?.message || "فشل تحديث بيانات الموظف");
+      toast.error(err?.message || "فشل تحديث بيانات الموظف");
     }
   };
 
@@ -146,7 +158,7 @@ export default function EmployeesPage() {
       await api.delete(`/employees/${empId}`);
       fetchEmployees();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف الموظف");
+      toast.error(err?.message || "فشل حذف الموظف");
     }
   };
 
@@ -167,7 +179,7 @@ export default function EmployeesPage() {
       setUserPassword("");
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل إنشاء حساب المستخدم");
+      toast.error(err?.message || "فشل إنشاء حساب المستخدم");
     }
   };
 
@@ -180,9 +192,26 @@ export default function EmployeesPage() {
       setSelectedEmp(empRes.data);
       setEmpTasks(taskRes.data || []);
       setDetailsTab("custody");
+      setEmpTestMessage(null);
       setEmpDetailsModal(true);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSendDirectEmpTest = async (empId: string) => {
+    setSendingEmpTest(true);
+    setEmpTestMessage(null);
+    try {
+      const res = await api.post(`/telegram/test-notification`, {
+        employee_id: empId,
+        custom_message: `🔔 مرحباً ${selectedEmp?.full_name}، رسالة اختبار مباشرة للتحقق من الاتصال عبر منصة Investor Gate OS.`,
+      });
+      setEmpTestMessage(res.message || "تم إرسال رسالة الاختبار لحساب تليجرام بنجاح!");
+    } catch (err: any) {
+      setEmpTestMessage(err?.response?.data?.detail || err?.message || "فشل إرسال رسالة الاختبار");
+    } finally {
+      setSendingEmpTest(false);
     }
   };
 
@@ -208,189 +237,211 @@ export default function EmployeesPage() {
       const taskRes = await api.get(`/tasks?assigned_to_id=${selectedEmp.id}`);
       setEmpTasks(taskRes.data || []);
     } catch (err: any) {
-      alert(err?.message || "فشل إسناد المهمة");
+      toast.error(err?.message || "فشل إسناد المهمة");
     }
   };
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            موظفو IT وإدارة المستخدمين (IT Staff & Service Desk)
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            سجل الموظفين والتقنيين والعهد المسلمة والمهام التشغيلية وصلاحيات النظام (RBAC)
-          </p>
-        </div>
-
-        {/* Tab switch & Add buttons */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-200/60 p-1 rounded-xl">
-            <button
-              onClick={() => setTab("employees")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                tab === "employees"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              سجل الموظفين والتقنيين
-            </button>
-            <button
-              onClick={() => setTab("users")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                tab === "users"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              حسابات المستخدمين
-            </button>
-          </div>
-
-          <Link
-            href="/users"
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
-            title="الانتقال إلى وحدة إدارة المستخدمين والصلاحيات المتقدمة والشركات المتعددة"
-          >
-            <Icons.Users size={16} />
-            <span>بوابة المستخدمين والصلاحيات المتقدمة</span>
-          </Link>
-
-          {canManage && (
-            tab === "employees" ? (
+      <PageHeader
+        title="موظفو IT وإدارة المستخدمين (IT Staff & Service Desk)"
+        description="سجل الموظفين والتقنيين والعهد المسلمة والمهام التشغيلية وصلاحيات النظام (RBAC)"
+        icon={<Icons.Users size={20} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center bg-slate-200/70 p-1 rounded-xl">
               <button
-                onClick={() => setShowAddEmpModal(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                type="button"
+                onClick={() => setTab("employees")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  tab === "employees"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
-                <Icons.Plus size={16} />
-                <span>إضافة موظف</span>
+                سجل الموظفين والتقنيين
               </button>
-            ) : (
               <button
-                onClick={() => setShowAddUserModal(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                type="button"
+                onClick={() => setTab("users")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  tab === "users"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
-                <Icons.Plus size={16} />
-                <span>إنشاء حساب مستخدم</span>
+                حسابات المستخدمين
               </button>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Content Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        {/* Search & Filter Bar */}
-        <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative w-72">
-              <Icons.Search
-                size={16}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                type="text"
-                placeholder="بحث بالاسم، الرقم الوظيفي، البريد..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (tab === "employees" ? fetchEmployees() : fetchUsers())}
-                className="w-full bg-slate-50 border border-slate-200 text-xs py-2 pr-9 pl-3 rounded-xl outline-none focus:border-[#187A5A]"
-              />
             </div>
 
-            {tab === "employees" && (
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
-              >
-                <option value="">جميع الحالات</option>
-                <option value="Active">على رأس العمل (Active)</option>
-                <option value="On Leave">في إجازة (On Leave)</option>
-                <option value="Suspended">موقوف (Suspended)</option>
-                <option value="Terminated">منتهي الخدمة (Terminated)</option>
-              </select>
+            <Link
+              href="/users"
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-xs transition-colors border border-slate-200"
+              title="الانتقال إلى وحدة إدارة المستخدمين والصلاحيات المتقدمة والشركات المتعددة"
+            >
+              <Icons.Users size={15} />
+              <span>بوابة المستخدمين</span>
+            </Link>
+
+            {canManage && (
+              tab === "employees" ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAddEmpModal(true)}
+                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <Icons.Plus size={16} />
+                  <span>إضافة موظف</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowAddUserModal(true)}
+                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <Icons.Plus size={16} />
+                  <span>إنشاء حساب مستخدم</span>
+                </button>
+              )
             )}
           </div>
+        }
+      />
 
-          <button
-            onClick={() => (tab === "employees" ? fetchEmployees() : fetchUsers())}
-            className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl cursor-pointer"
-            title="تحديث البيانات"
-          >
-            <Icons.Refresh size={16} />
-          </button>
-        </div>
+      {/* Search & Filter Toolbar */}
+      <DataToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="بحث بالاسم، الرقم الوظيفي، البريد..."
+        searchLabel="بحث في الموظفين والمستخدمين"
+        activeFilterCount={[search.trim(), statusFilter].filter(Boolean).length}
+        onResetFilters={() => {
+          setSearch("");
+          setStatusFilter("");
+        }}
+        onRefresh={() => (tab === "employees" ? void fetchEmployees() : void fetchUsers())}
+        refreshing={loading}
+        filters={
+          tab === "employees" ? (
+            <select
+              aria-label="تصفية حسب حالة التوظيف"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 text-xs sm:text-sm py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Active">على رأس العمل (Active)</option>
+              <option value="On Leave">في إجازة (On Leave)</option>
+              <option value="Suspended">موقوف (Suspended)</option>
+              <option value="Terminated">منتهي الخدمة (Terminated)</option>
+            </select>
+          ) : null
+        }
+      />
 
-        {tab === "employees" ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
-                <tr>
-                  <th className="p-3.5">الرقم الوظيفي</th>
-                  <th className="p-3.5">اسم الموظف</th>
-                  <th className="p-3.5">المسمى الوظيفي</th>
-                  <th className="p-3.5">القسم</th>
-                  <th className="p-3.5">البريد الإلكتروني</th>
-                  <th className="p-3.5">الحالة</th>
-                  <th className="p-3.5 text-center">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-3.5 font-mono font-bold text-[#187A5A]">
-                      {emp.employee_number}
-                    </td>
-                    <td className="p-3.5 font-bold text-slate-800">
-                      {emp.full_name}
-                    </td>
-                    <td className="p-3.5 text-slate-600">{emp.job_title || "-"}</td>
-                    <td className="p-3.5 text-slate-600">{emp.department_name || "-"}</td>
-                    <td className="p-3.5 font-mono text-slate-500">{emp.email || "-"}</td>
-                    <td className="p-3.5">
-                      <StatusBadge status={emp.employment_status} />
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => openEmployeeDetails(emp)}
-                          className="px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] transition-colors cursor-pointer"
-                        >
-                          الملف والمهام والعهد
-                        </button>
-                        {canManage && (
-                          <>
-                            <button
-                              onClick={() => openEditEmployee(emp)}
-                              className="p-1 text-slate-400 hover:text-slate-800 transition-colors"
-                              title="تعديل الموظف"
-                            >
-                              <Icons.Edit size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteEmployee(emp.id, emp.full_name)}
-                              className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
-                              title="حذف الموظف"
-                            >
-                              <Icons.Trash size={14} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
+      {/* Content Table */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {loading ? (
+          <TableSkeleton variant="table" rows={5} cols={tab === "employees" ? 6 : 5} />
+        ) : tab === "employees" ? (
+          employees.length === 0 ? (
+            <EmptyState
+              icon={<Icons.Users size={26} />}
+              title="لا يوجد موظفون مطابقون"
+              description="يمكنك تعديل معايير البحث أو إضافة موظف جديد للربط مع النظام و Telegram"
+              action={
+                (search || statusFilter) ? (
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(""); setStatusFilter(""); }}
+                    className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                  >
+                    عرض جميع الموظفين
+                  </button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+                  <tr>
+                    <th className="p-3.5">الرقم الوظيفي</th>
+                    <th className="p-3.5">اسم الموظف</th>
+                    <th className="p-3.5">المسمى الوظيفي</th>
+                    <th className="p-3.5">القسم</th>
+                    <th className="p-3.5">البريد الإلكتروني</th>
+                    <th className="p-3.5">الحالة</th>
+                    <th className="p-3.5 text-center">الإجراءات</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {employees.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="p-3.5 font-mono font-bold text-[#187A5A]">
+                        <bdi dir="ltr">{emp.employee_number}</bdi>
+                      </td>
+                      <td className="p-3.5 font-bold text-slate-900">
+                        {emp.full_name}
+                      </td>
+                      <td className="p-3.5 text-slate-700">{emp.job_title || "-"}</td>
+                      <td className="p-3.5 text-slate-700">{emp.department_name || "-"}</td>
+                      <td className="p-3.5 font-mono text-slate-600">
+                        <bdi dir="ltr">{emp.email || "-"}</bdi>
+                      </td>
+                      <td className="p-3.5">
+                        <StatusBadge status={emp.employment_status} />
+                      </td>
+                      <td className="p-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEmployeeDetails(emp)}
+                            className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] transition-colors cursor-pointer"
+                          >
+                            الملف والمهام والعهد
+                          </button>
+                          {canManage && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openEditEmployee(emp)}
+                                aria-label={`تعديل الموظف ${emp.full_name}`}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="تعديل الموظف"
+                              >
+                                <Icons.Edit size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEmployee(emp.id, emp.full_name)}
+                                aria-label={`حذف الموظف ${emp.full_name}`}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                                title="حذف الموظف"
+                              >
+                                <Icons.Trash size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : users.length === 0 ? (
+          <EmptyState
+            icon={<Icons.User size={26} />}
+            title="لا توجد حسابات مستخدمين مطابقة"
+            description="تأكد من كلمات البحث أو أنشئ حساباً جديداً"
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
+              <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
                 <tr>
                   <th className="p-3.5">اسم المستخدم</th>
                   <th className="p-3.5">الموظف المرتبط</th>
@@ -402,25 +453,25 @@ export default function EmployeesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-3.5 font-bold font-mono text-slate-800">
-                      {u.username}
+                  <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="p-3.5 font-bold font-mono text-slate-900">
+                      <bdi dir="ltr">{u.username}</bdi>
                       {u.is_superadmin && (
-                        <span className="mr-2 px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-[10px]">
+                        <span className="ms-2 px-1.5 py-0.5 bg-purple-50 text-purple-800 rounded text-[10px]">
                           Super Admin
                         </span>
                       )}
                     </td>
-                    <td className="p-3.5 text-slate-700 font-semibold">
+                    <td className="p-3.5 text-slate-800 font-semibold">
                       {u.full_name || "بدون ارتباط"}
                     </td>
-                    <td className="p-3.5 font-mono text-slate-500">{u.email}</td>
+                    <td className="p-3.5 font-mono text-slate-600"><bdi dir="ltr">{u.email}</bdi></td>
                     <td className="p-3.5">
                       <div className="flex flex-wrap gap-1">
                         {u.roles?.map((r: string) => (
                           <span
                             key={r}
-                            className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-semibold"
+                            className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded text-[10px] font-semibold"
                           >
                             {r}
                           </span>
@@ -430,8 +481,8 @@ export default function EmployeesPage() {
                     <td className="p-3.5">
                       <StatusBadge status={u.account_status} />
                     </td>
-                    <td className="p-3.5 text-slate-400 font-mono">
-                      {u.last_login ? new Date(u.last_login).toLocaleString("ar-SA") : "لم يسجل بعد"}
+                    <td className="p-3.5 text-slate-600 font-mono">
+                      <bdi dir="ltr">{u.last_login ? new Date(u.last_login).toLocaleString("ar-SA") : "لم يسجل بعد"}</bdi>
                     </td>
                   </tr>
                 ))}
@@ -755,6 +806,61 @@ export default function EmployeesPage() {
             </div>
           </div>
 
+          {/* Telegram Account Integration Card */}
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">✈️</span>
+              <div>
+                <span className="font-bold text-slate-800 block">ربط إشعارات Telegram:</span>
+                {selectedEmp?.is_telegram_linked ? (
+                  <span className="text-emerald-700 font-medium inline-flex items-center gap-1">
+                    🟢 مرتبط ومفعل ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "حساب مؤكد"})
+                  </span>
+                ) : (
+                  <span className="text-slate-500 font-medium">
+                    ⚪ غير مرتبط — اربط حساب الموظف لتصل إليه تكليفات المهام والإشعارات التشغيلية فوراً
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {!selectedEmp?.is_telegram_linked ? (
+                <button
+                  type="button"
+                  onClick={() => setShowTelegramLinkModal(true)}
+                  className="px-3.5 py-1.5 bg-[#187A5A] hover:bg-[#123D32] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  ربط Telegram
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowTelegramLinkModal(true)}
+                    className="px-3 py-1.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                  >
+                    <span>⚙️ إدارة وصلاحيات Telegram</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendDirectEmpTest(selectedEmp.id)}
+                    disabled={sendingEmpTest}
+                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-blue-200 disabled:opacity-50"
+                  >
+                    {sendingEmpTest ? "جاري الإرسال..." : "🔔 إرسال رسالة اختبار"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {empTestMessage && (
+            <div className="p-2.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-xs">
+              {empTestMessage}
+            </div>
+          )}
+
           {/* Sub tabs */}
           <div className="flex items-center justify-between border-b border-slate-200 pb-2">
             <div className="flex items-center gap-2">
@@ -933,6 +1039,22 @@ export default function EmployeesPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Manual Telegram Linking Modal */}
+      {showTelegramLinkModal && selectedEmp && (
+        <TelegramLinkingModal
+          isOpen={showTelegramLinkModal}
+          onClose={() => setShowTelegramLinkModal(false)}
+          employeeId={selectedEmp.id}
+          employeeName={selectedEmp.full_name}
+          companyId={activeCompanyId || undefined}
+          onVerified={async () => {
+            const empRes = await api.get(`/employees/${selectedEmp.id}`);
+            setSelectedEmp(empRes.data);
+            fetchEmployees();
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Icons } from "@/components/ui/Icons";
 import { useCustomization } from "@/context/CustomizationContext";
+import { useToast } from "@/context/ToastContext";
+import { useWorkspace } from "@/context/WorkspaceContext";
 
 const ARABIC_FONTS = [
   "IBM Plex Sans Arabic",
@@ -35,63 +37,50 @@ const BORDER_RADIUS_OPTIONS = [
 ] as const;
 
 export default function AppearancePage() {
+  const toast = useToast();
+  const { saved: savedWorkspace } = useWorkspace();
   const {
     theme, colors, typography, density, borderRadius, sidebarWidth,
     setTheme, setColors, setTypography, setDensity, setBorderRadius, setSidebarWidth,
     savePreferences, resetPreferences,
   } = useCustomization();
 
-  // Local draft state (apply only on Save)
-  const [draftTheme, setDraftTheme] = useState(theme);
-  const [draftColors, setDraftColors] = useState(colors);
-  const [draftTypography, setDraftTypography] = useState(typography);
-  const [draftDensity, setDraftDensity] = useState(density);
-  const [draftRadius, setDraftRadius] = useState(borderRadius);
-  const [draftSidebarWidth, setDraftSidebarWidth] = useState(sidebarWidth);
+  const draftTheme = theme;
+  const draftColors = colors;
+  const draftTypography = typography;
+  const draftDensity = density;
+  const draftRadius = borderRadius;
+  const draftSidebarWidth = sidebarWidth;
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [resetting, setResetting] = useState(false);
 
-  // Sync drafts when context loads/changes from server
-  useEffect(() => { setDraftTheme(theme); }, [theme]);
-  useEffect(() => { setDraftColors(colors); }, [colors]);
-  useEffect(() => { setDraftTypography(typography); }, [typography]);
-  useEffect(() => { setDraftDensity(density); }, [density]);
-  useEffect(() => { setDraftRadius(borderRadius); }, [borderRadius]);
-  useEffect(() => { setDraftSidebarWidth(sidebarWidth); }, [sidebarWidth]);
-
   // Live preview: apply drafts to context immediately as user changes them
   const handleColorChange = (key: keyof typeof colors, value: string) => {
     const updated = { ...draftColors, [key]: value };
-    setDraftColors(updated);
     setColors(updated); // live preview
   };
 
   const handleThemeChange = (t: "light" | "dark" | "system") => {
-    setDraftTheme(t);
     setTheme(t);
   };
 
   const handleDensityChange = (d: typeof density) => {
-    setDraftDensity(d);
     setDensity(d);
   };
 
   const handleRadiusChange = (r: typeof borderRadius) => {
-    setDraftRadius(r);
     setBorderRadius(r);
   };
 
   const handleSidebarWidthChange = (w: number) => {
-    setDraftSidebarWidth(w);
     setSidebarWidth(w);
   };
 
   const handleTypographyChange = (key: keyof typeof typography, value: string) => {
     const updated = { ...draftTypography, [key]: value } as typeof typography;
-    setDraftTypography(updated);
     setTypography(updated);
   };
 
@@ -103,27 +92,48 @@ export default function AppearancePage() {
       await savePreferences();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      setSaveError(err?.message || "فشل حفظ إعدادات المظهر");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "فشل حفظ إعدادات المظهر");
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    // Revert context back to what it was before drafts
-    setTheme(theme);
-    setColors(colors);
-    setTypography(typography);
-    setDensity(density);
-    setBorderRadius(borderRadius);
-    setSidebarWidth(sidebarWidth);
-    setDraftTheme(theme);
-    setDraftColors(colors);
-    setDraftTypography(typography);
-    setDraftDensity(density);
-    setDraftRadius(borderRadius);
-    setDraftSidebarWidth(sidebarWidth);
+    const appearance = savedWorkspace.appearance;
+    const savedTheme = appearance.theme === "light" || appearance.theme === "dark"
+      ? appearance.theme
+      : "system";
+    const savedColors: typeof colors = {
+      primary: appearance.primary,
+      secondary: appearance.secondary,
+      background: appearance.background,
+      surface: appearance.surface,
+      accent: appearance.accent,
+    };
+    const savedTypography: typeof typography = {
+      arabicFont: appearance.arabic_font,
+      englishFont: appearance.english_font,
+      fontSize: appearance.font_size < 16 ? "small" : appearance.font_size > 16 ? "large" : "medium",
+      fontWeight: appearance.font_weight >= 700 ? "bold" : appearance.font_weight >= 500 ? "medium" : "normal",
+    };
+    const savedDensity: typeof density = appearance.density === "compact" || appearance.density === "spacious"
+      ? appearance.density
+      : "comfortable";
+    const savedRadius: typeof borderRadius = appearance.radius <= 0
+      ? "none"
+      : appearance.radius <= 6
+      ? "sm"
+      : appearance.radius >= 16
+      ? "lg"
+      : "rounded";
+
+    setTheme(savedTheme);
+    setColors(savedColors);
+    setTypography(savedTypography);
+    setDensity(savedDensity);
+    setBorderRadius(savedRadius);
+    setSidebarWidth(appearance.sidebar_width);
   };
 
   const handleReset = async () => {
@@ -131,8 +141,8 @@ export default function AppearancePage() {
     setResetting(true);
     try {
       await resetPreferences();
-    } catch (err: any) {
-      alert(err?.message || "فشل استعادة الإعدادات الافتراضية");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل استعادة الإعدادات الافتراضية");
     } finally {
       setResetting(false);
     }
@@ -177,7 +187,7 @@ export default function AppearancePage() {
               {saved ? (
                 <>
                   <Icons.Check size={16} />
-                  <span>تم الحفظ!</span>
+                  <span aria-live="polite">تم الحفظ!</span>
                 </>
               ) : (
                 <>
@@ -190,7 +200,7 @@ export default function AppearancePage() {
         </div>
 
         {saveError && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-sm font-semibold flex items-center gap-2 border border-red-200 dark:border-red-800">
+          <div role="alert" className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-sm font-semibold flex items-center gap-2 border border-red-200 dark:border-red-800">
             <Icons.AlertCircle size={16} />
             {saveError}
           </div>
@@ -208,6 +218,7 @@ export default function AppearancePage() {
               <button
                 key={t}
                 onClick={() => handleThemeChange(t)}
+                aria-pressed={draftTheme === t}
                 className={`p-4 rounded-xl border-2 text-right transition flex flex-col gap-2 ${
                   draftTheme === t
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
@@ -254,10 +265,12 @@ export default function AppearancePage() {
               { key: "accent" as const, label: "لون التأكيد (Accent)", hint: "الذهبي للعناصر المميزة" },
             ].map(({ key, label, hint }) => (
               <div key={key} className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</label>
+                <label htmlFor={`color-${key}-picker`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
+                    id={`color-${key}-picker`}
+                    aria-label={`${label} — اختيار اللون`}
                     value={draftColors[key]}
                     onChange={(e) => handleColorChange(key, e.target.value)}
                     className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-800"
@@ -265,6 +278,7 @@ export default function AppearancePage() {
                   <div className="flex-1">
                     <input
                       type="text"
+                      aria-label={`${label} — قيمة اللون`}
                       value={draftColors[key]}
                       onChange={(e) => {
                         if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) {
@@ -293,7 +307,6 @@ export default function AppearancePage() {
                     surface: "#FFFFFF",
                     accent: "#C5A46D",
                   };
-                  setDraftColors(defaults);
                   setColors(defaults);
                 }}
                 className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center"
@@ -314,10 +327,11 @@ export default function AppearancePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Arabic Font */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="arabic-font" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 خط العربية
               </label>
               <select
+                id="arabic-font"
                 value={draftTypography.arabicFont}
                 onChange={(e) => handleTypographyChange("arabicFont", e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
@@ -336,10 +350,11 @@ export default function AppearancePage() {
 
             {/* English Font */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="english-font" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 خط الإنجليزية والأرقام
               </label>
               <select
+                id="english-font"
                 value={draftTypography.englishFont}
                 onChange={(e) => handleTypographyChange("englishFont", e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
@@ -366,6 +381,7 @@ export default function AppearancePage() {
                   <button
                     key={s}
                     onClick={() => handleTypographyChange("fontSize", s)}
+                    aria-pressed={draftTypography.fontSize === s}
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg border-2 transition ${
                       draftTypography.fontSize === s
                         ? "border-primary bg-primary/5 text-primary"
@@ -388,6 +404,7 @@ export default function AppearancePage() {
                   <button
                     key={w}
                     onClick={() => handleTypographyChange("fontWeight", w)}
+                    aria-pressed={draftTypography.fontWeight === w}
                     className={`flex-1 py-2 text-xs rounded-lg border-2 transition ${
                       draftTypography.fontWeight === w
                         ? "border-primary bg-primary/5 text-primary font-bold"
@@ -415,6 +432,7 @@ export default function AppearancePage() {
               <button
                 key={value}
                 onClick={() => handleDensityChange(value)}
+                aria-pressed={draftDensity === value}
                 className={`p-4 rounded-xl border-2 text-right transition ${
                   draftDensity === value
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
@@ -446,6 +464,7 @@ export default function AppearancePage() {
               <button
                 key={value}
                 onClick={() => handleRadiusChange(value)}
+                aria-pressed={draftRadius === value}
                 className={`p-4 border-2 transition flex flex-col items-center gap-3 ${
                   draftRadius === value
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
@@ -473,10 +492,12 @@ export default function AppearancePage() {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm text-slate-700 dark:text-slate-300">عرض الشريط الجانبي الموسّع</label>
+              <label htmlFor="sidebar-width" className="text-sm text-slate-700 dark:text-slate-300">عرض الشريط الجانبي الموسّع</label>
               <span className="text-sm font-bold text-primary">{draftSidebarWidth} px</span>
             </div>
             <input
+              id="sidebar-width"
+              aria-valuetext={`${draftSidebarWidth} px`}
               type="range"
               min={200}
               max={320}

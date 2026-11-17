@@ -157,7 +157,15 @@ def get_user_company_id(
     db: Session = Depends(get_db),
 ) -> uuid.UUID:
     """Get active company_id from X-Company-ID header, query param, or user default membership."""
-    company_id_str = request.headers.get("X-Company-ID") or request.query_params.get("company_id")
+    header_cid = request.headers.get("X-Company-ID")
+    query_cid = request.query_params.get("company_id")
+    if header_cid and query_cid and not user.is_superadmin:
+        try:
+            if uuid.UUID(header_cid) != uuid.UUID(query_cid):
+                raise HTTPException(status_code=403, detail="معرف الشركة لا يطابق نطاق العمل الحالي")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="معرف الشركة غير صالح")
+    company_id_str = header_cid or query_cid
 
     if company_id_str:
         try:
@@ -175,6 +183,7 @@ def get_user_company_id(
             .filter(
                 CompanyMembership.user_id == user.id,
                 CompanyMembership.company_id == cid,
+                CompanyMembership.status == "Active",
             )
             .first()
         )
@@ -188,13 +197,14 @@ def get_user_company_id(
     # Find default membership
     membership = (
         db.query(CompanyMembership)
-        .filter(CompanyMembership.user_id == user.id, CompanyMembership.is_default == True)
+        .filter(CompanyMembership.user_id == user.id, CompanyMembership.is_default == True,
+                CompanyMembership.status == "Active")
         .first()
     )
     if not membership:
         membership = (
             db.query(CompanyMembership)
-            .filter(CompanyMembership.user_id == user.id)
+            .filter(CompanyMembership.user_id == user.id, CompanyMembership.status == "Active")
             .first()
         )
 
@@ -210,25 +220,29 @@ def get_user_company_id(
     return membership.company_id
 
 
+def resolve_company_scope(
+    current_user: User,
+    active_cid: uuid.UUID,
+    requested_cid: Optional[uuid.UUID] = None,
+) -> uuid.UUID:
+    """Safely resolve target company ID. Non-SuperAdmins are strictly locked to their active_cid context."""
+    if requested_cid and requested_cid != active_cid and not current_user.is_superadmin:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية خارج نطاق الشركة الحالية")
+    return requested_cid or active_cid
+
+
 def require_role(allowed_roles: List[str]):
     """Ensure current user has at least one of the allowed roles, taking company-specific roles into account."""
     def role_checker(
         request: Request,
         user: User = Depends(get_current_user),
+        active_cid: uuid.UUID = Depends(get_user_company_id),
         db: Session = Depends(get_db),
     ) -> User:
         if user.is_superadmin:
             return user
 
-        cid = None
-        cid_str = request.headers.get("X-Company-ID") or request.query_params.get("company_id")
-        if cid_str:
-            try:
-                cid = uuid.UUID(cid_str)
-            except ValueError:
-                pass
-
-        user_roles = get_user_roles(user, db, company_id=cid)
+        user_roles = get_user_roles(user, db, company_id=active_cid)
         if not any(role in allowed_roles for role in user_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

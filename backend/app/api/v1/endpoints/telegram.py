@@ -2,15 +2,20 @@
 
 import os
 import uuid
+import hashlib
+import secrets
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Header
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
+from typing import Literal
+from app.core.rbac import has_module_permission
+from app.services.telegram_permissions import crm_grants, effective_grants, policy_for, maximum_scope, POLICY_KEY
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles
 from app.core.response import success_response, paginate
 from app.models.user import User, Employee, CompanyMembership
 from app.models.telegram import (
@@ -73,7 +78,7 @@ def resolve_telegram_company(
 
 class GenerateTokenRequest(BaseModel):
     employee_id: uuid.UUID
-    expires_in_minutes: Optional[int] = 30
+    expires_in_minutes: int = Field(default=30, ge=1, le=60)
 
 
 class VerifyTokenRequest(BaseModel):
@@ -110,6 +115,15 @@ class TelegramConfigUpdate(BaseModel):
     notify_on_completed: Optional[bool] = True
     notify_on_overdue: Optional[bool] = True
     notify_on_reassigned: Optional[bool] = True
+
+
+class UpdateTelegramPermissionsRequest(BaseModel):
+    allowed_modules: Optional[List[str]] = None
+    notification_preferences: Optional[Dict[str, Any]] = None
+    notifications_enabled: Optional[bool] = None
+    actions: Optional[Dict[str, List[Literal['view', 'create', 'update', 'manage']]]] = None
+    data_scope: Optional[Literal['Self', 'Company']] = None
+    role_template: Optional[Literal['custom', 'read_only', 'crm']] = None
 
 
 class BotMenuCreate(BaseModel):
@@ -476,8 +490,8 @@ def list_employee_telegram_links(
         is_linked = bool(link and link.is_verified)
         is_pending = bool(link and not link.is_verified and link.token_expires_at > datetime.utcnow())
 
-        branch_name = emp.branch.name_ar if getattr(emp, "branch", None) else None
-        department_name = emp.department.name_ar if getattr(emp, "department", None) else None
+        branch_name = getattr(emp.branch, "branch_name", None) if getattr(emp, "branch", None) else None
+        department_name = getattr(emp.department, "department_name", None) if getattr(emp, "department", None) else None
 
         last_action = None
         if link and link.telegram_user_id:
@@ -530,21 +544,27 @@ def create_link_token(
     if not current_user.is_superadmin and emp.company_id != target_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية لإدارة موظفي شركة أخرى")
 
-    result = generate_telegram_link_token(
-        db=db,
-        employee_id=emp.id,
-        company_id=emp.company_id,
-        expires_in_minutes=payload.expires_in_minutes or 30,
-    )
+    try:
+        result = generate_telegram_link_token(
+            db=db, employee_id=emp.id, company_id=emp.company_id,
+            expires_in_minutes=payload.expires_in_minutes,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
     return success_response(data=result, message="تم توليد رمز الربط بنجاح (صالح لمدة 30 دقيقة)")
 
 
 @router.post("/links/verify")
 def verify_link(
     payload: VerifyTokenRequest,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """Verify an employee Telegram token (used by Bot or Admin manual binding)."""
+    candidate = db.query(TelegramUserLink).filter(TelegramUserLink.verification_token == payload.token.strip()).first()
+    if candidate and candidate.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية لإدارة الربط في هذه المنشأة")
     try:
         res = verify_telegram_link(
             db=db,
@@ -556,6 +576,59 @@ def verify_link(
         return success_response(data=res, message="تم ربط حساب التليجرام بالموظف بنجاح!")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/links/{employee_id}/status")
+def get_employee_link_status(
+    employee_id: uuid.UUID,
+    company_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Check live Telegram link verification status for an employee (for frontend live polling)."""
+    target_cid = resolve_telegram_company(current_user, active_cid, company_id, db)
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    if not current_user.is_superadmin and emp.company_id != target_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية لموظفي شركة أخرى")
+
+    link = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee_id).first()
+    _, _, bot_username = get_telegram_config(db, target_cid)
+
+    now = datetime.utcnow()
+    is_verified = bool(link and link.is_verified)
+    is_pending = bool(link and not link.is_verified and link.token_expires_at > now)
+    last_error = None
+    last_result = None
+    if link and not is_verified:
+        token_ref = hashlib.sha256(link.verification_token.encode()).hexdigest()
+        attempts = db.query(TelegramActionLog).filter(
+            TelegramActionLog.company_id == link.company_id,
+            TelegramActionLog.action == "verify_telegram_link",
+        ).order_by(TelegramActionLog.created_at.desc()).all()
+        attempt = next((a for a in attempts if (a.details or {}).get("employee_id") == str(emp.id)
+                        and (a.details or {}).get("token_ref") == token_ref), None)
+        if attempt:
+            last_error, last_result = attempt.error_message, attempt.status
+
+    return success_response(data={
+        "employee_id": str(emp.id),
+        "employee_name": emp.full_name,
+        "is_verified": is_verified,
+        "is_pending": is_pending,
+        "expires_at": link.token_expires_at.isoformat() if link else None,
+        "last_error": last_error,
+        "last_result": last_result,
+        "worker_status": get_telegram_worker_status(),
+        "telegram_username": link.telegram_username if link else None,
+        "telegram_chat_id": link.telegram_chat_id if link else None,
+        "telegram_user_id": link.telegram_user_id if link else None,
+        "linked_at": link.linked_at.isoformat() if (link and link.is_verified and link.linked_at) else None,
+        "bot_username": bot_username,
+    })
 
 
 @router.delete("/links/{employee_id}")
@@ -580,6 +653,254 @@ def unlink_employee(
         raise HTTPException(status_code=404, detail="لا يوجد ربط تليجرام مسجل لهذا الموظف")
 
     return success_response(message="تم إلغاء ربط حساب التليجرام بنجاح")
+
+
+def get_crm_max_permitted_modules(user: Optional[User], employee: Employee, db: Session) -> List[str]:
+    return [m for m, actions in crm_grants(user, employee.company_id, db).items() if 'view' in actions]
+
+
+@router.get("/links/{employee_id}/details")
+def get_employee_telegram_details(
+    employee_id: uuid.UUID,
+    company_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Retrieve full Telegram connection, RBAC permissions, and audit logs for an employee."""
+    target_cid = resolve_telegram_company(current_user, active_cid, company_id, db)
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    if not current_user.is_superadmin and emp.company_id != target_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية لموظفي شركة أخرى")
+
+    link = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee_id).first()
+    _, _, bot_username = get_telegram_config(db, target_cid)
+
+    # Resolve associated User & Membership
+    user = None
+    if link and link.user_id:
+        user = db.query(User).filter(User.id == link.user_id).first()
+    if not user:
+        user = db.query(User).filter(User.employee_id == emp.id).first()
+    if not user and emp.email:
+        user = db.query(User).filter(User.email == emp.email).first()
+
+    roles = []
+    if user:
+        roles = get_user_roles(user, db, emp.company_id)
+    if not roles:
+        roles.append("Employee")
+
+    max_modules = get_crm_max_permitted_modules(user, emp, db)
+    current_allowed = link.allowed_modules if (link and link.allowed_modules is not None) else max_modules
+    maximum = crm_grants(user, emp.company_id, db)
+
+    # Load recent activity logs
+    activity_logs = []
+    if link and link.telegram_user_id:
+        logs = (
+            db.query(TelegramActionLog)
+            .filter(
+                TelegramActionLog.company_id == emp.company_id,
+                TelegramActionLog.telegram_user_id == link.telegram_user_id,
+            )
+            .order_by(TelegramActionLog.created_at.desc())
+            .limit(15)
+            .all()
+        )
+        for lg in logs:
+            activity_logs.append({
+                "id": str(lg.id),
+                "action": lg.action,
+                "status": lg.status,
+                "created_at": lg.created_at.isoformat() if lg.created_at else None,
+                "error_message": lg.error_message,
+                "ip_address": lg.ip_address,
+                "details": lg.details,
+            })
+
+    modules_meta = [
+        {"id": "tasks", "name": "المهام التشغيلية", "description": "استعراض وتحديث وتأكيد استلام المهام المسندة"},
+        {"id": "tickets", "name": "تذاكر الدعم الفني", "description": "استعراض ومتابعة تذاكر الدعم الفني الخاصة بالموظف"},
+        {"id": "custody", "name": "العهدة والأجهزة", "description": "استعراض الأجهزة والعهد التقنية المسلمة للموظف"},
+        {"id": "assets", "name": "الأصول التقنية", "description": "استعراض أصول المنشأة الفنية وحالتها (للفنيين والمدراء)"},
+        {"id": "subscriptions", "name": "الاشتراكات والتراخيص", "description": "استعراض اشتراكات البرمجيات وتواريخ التجديد (للفنيين والمدراء)"},
+        {"id": "reports", "name": "تقارير العمليات", "description": "استعراض المؤشرات اللحظية لأداء العمليات (للإدارة فقط)"},
+        {"id": "notifications", "name": "سجل الإشعارات", "description": "استعراض أحدث التنبيهات والإشعارات الواردة"},
+        {"id": "search", "name": "البحث الفوري", "description": "إمكانية البحث السريع في السجلات المصرح بها"},
+    ]
+
+    return success_response(data={
+        "employee": {
+            "id": str(emp.id),
+            "full_name": emp.full_name,
+            "job_title": emp.job_title or "موظف",
+            "department": emp.department.department_name if emp.department else None,
+            "email": emp.email,
+            "phone": emp.phone,
+        },
+        "link": {
+            "is_verified": bool(link and link.is_verified),
+            "telegram_username": link.telegram_username if link else None,
+            "telegram_chat_id": link.telegram_chat_id if link else None,
+            "telegram_user_id": link.telegram_user_id if link else None,
+            "linked_at": link.linked_at.isoformat() if (link and link.linked_at) else None,
+            "notifications_enabled": getattr(link, "notifications_enabled", True) if link else True,
+            "allowed_modules": current_allowed,
+            "permission_policy": policy_for(link),
+            "data_scope": getattr(link, "data_scope", "Self") or "Self",
+            "notification_preferences": getattr(link, "notification_preferences", None) or {
+                "task_assigned": True,
+                "task_status_changed": True,
+                "ticket_created": True,
+                "overdue_alerts": True,
+            },
+        },
+        "user": {
+            "user_id": str(user.id) if user else None,
+            "username": user.username if user else None,
+            "account_status": user.account_status if user else "Not Created",
+            "is_superadmin": bool(user and user.is_superadmin),
+            "roles": roles,
+        },
+        "permissions_matrix": {
+            "maximum_actions": maximum,
+            "effective_actions": effective_grants(link, maximum),
+            "maximum_scope": maximum_scope(user, emp.company_id, db),
+            "can_manage": has_module_permission(current_user, 'users', 'manage_access', emp.company_id, db),
+            "max_permitted_modules": max_modules,
+            "available_modules": modules_meta,
+            "available_scopes": [
+                {"id": "Self", "name": "بيانات الموظف فقط (Self-only)", "description": "يصل الموظف فقط لمهامه وتذاكره وعهدته الشخصية"},
+                {"id": "Branch", "name": "فرع الموظف الحالي (Branch-wide)", "description": "يصل الموظف للأصول والمهام ضمن فرعه المسجل"},
+                {"id": "Company", "name": "كامل المنشأة (Company-wide)", "description": "يصل الموظف لبيانات المنشأة بالكامل (للفنيين والمدراء)"},
+            ],
+            "role_templates": [
+                {
+                    "id": "employee",
+                    "name": "قالب موظف قياسي",
+                    "data_scope": "Self",
+                    "modules": ["tasks", "tickets", "custody", "notifications", "search"],
+                    "description": "استعراض المهام المسندة والتذاكر والعهدة الشخصية فقط",
+                },
+                {
+                    "id": "technician",
+                    "name": "قالب فني دعم وتقنية",
+                    "data_scope": "Branch",
+                    "modules": ["tasks", "tickets", "custody", "assets", "subscriptions", "notifications", "search"],
+                    "description": "إدارة الأصول وتذاكر الدعم والاشتراكات والمهام الفنية",
+                },
+                {
+                    "id": "manager",
+                    "name": "قالب مدير عمليات وتقنية",
+                    "data_scope": "Company",
+                    "modules": ["tasks", "tickets", "custody", "assets", "subscriptions", "reports", "notifications", "search"],
+                    "description": "صلاحية شاملة تشمل التقارير ومؤشرات العمليات اللحظية",
+                },
+            ],
+        },
+        "bot_username": bot_username,
+        "activity_logs": activity_logs,
+    })
+
+
+@router.put("/links/{employee_id}/permissions")
+def update_employee_telegram_permissions(
+    employee_id: uuid.UUID,
+    payload: UpdateTelegramPermissionsRequest,
+    company_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Update Telegram module access and notification preferences with strict CRM RBAC enforcement."""
+    target_cid = resolve_telegram_company(current_user, active_cid, company_id, db)
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    if not current_user.is_superadmin and emp.company_id != target_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية لموظفي شركة أخرى")
+
+    link = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="حساب Telegram غير مرتبط بهذا الموظف")
+
+    # Resolve user and membership to verify CRM maximum capabilities
+    user = None
+    if link.user_id:
+        user = db.query(User).filter(User.id == link.user_id).first()
+    if not user:
+        user = db.query(User).filter(User.employee_id == emp.id).first()
+
+    max_permitted = get_crm_max_permitted_modules(user, emp, db)
+    if not has_module_permission(current_user, 'users', 'manage_access', emp.company_id, db):
+        raise HTTPException(status_code=403, detail='ليس لديك صلاحية إدارة وصول المستخدمين في هذه المنشأة')
+    maximum = crm_grants(user, emp.company_id, db)
+    policy = dict(policy_for(link))
+    if payload.actions is not None:
+        if any(m not in maximum or any(a not in maximum[m] for a in acts) for m, acts in payload.actions.items()):
+            raise HTTPException(status_code=400, detail='الإجراءات تتجاوز صلاحيات CRM')
+        policy['actions'] = payload.actions
+    if payload.data_scope is not None:
+        if payload.data_scope == 'Company' and maximum_scope(user, emp.company_id, db) != 'Company':
+            raise HTTPException(status_code=400, detail='نطاق البيانات يتجاوز صلاحيات CRM')
+        policy['scope'] = payload.data_scope
+    if payload.role_template is not None:
+        policy['template'] = payload.role_template
+
+    if payload.allowed_modules is not None:
+        # Enforce that Telegram permissions NEVER exceed CRM permissions
+        excess = [m for m in payload.allowed_modules if m not in max_permitted]
+        if excess:
+            raise HTTPException(
+                status_code=400,
+                detail=f"لا يمكن منح صلاحيات تيليجرام تتجاوز صلاحيات المستخدم في النظام. الوحدات غير المسموح بها لدور الموظف: {', '.join(excess)}"
+            )
+        link.allowed_modules = payload.allowed_modules
+
+    if payload.notification_preferences is not None:
+        link.notification_preferences = {k: v for k, v in payload.notification_preferences.items() if k != POLICY_KEY}
+
+    link.notification_preferences = {**(link.notification_preferences or {}), POLICY_KEY: policy}
+
+    if payload.notifications_enabled is not None:
+        link.notifications_enabled = payload.notifications_enabled
+
+    if payload.data_scope is not None:
+        if payload.data_scope not in ("Self", "Branch", "Company"):
+            raise HTTPException(status_code=400, detail="نطاق الوصول للبيانات غير صالح. الخيارات المتاحة: Self, Branch, Company")
+        link.data_scope = payload.data_scope
+
+    db.add(TelegramActionLog(
+        company_id=emp.company_id,
+        telegram_user_id=link.telegram_user_id or "admin_action",
+        telegram_chat_id=link.telegram_chat_id,
+        action="update_telegram_permissions",
+        status="Success",
+        details={
+            "updated_by": current_user.username,
+            "permission_policy": policy,
+            "allowed_modules": link.allowed_modules,
+            "data_scope": link.data_scope,
+            "notifications_enabled": link.notifications_enabled,
+        },
+        ip_address="internal_api",
+    ))
+    db.commit()
+
+    return success_response(
+        data={
+            "allowed_modules": link.allowed_modules,
+            "data_scope": link.data_scope,
+            "notification_preferences": link.notification_preferences,
+            "notifications_enabled": link.notifications_enabled,
+        },
+        message="تم تحديث صلاحيات وإعدادات تيليجرام للموظف بنجاح"
+    )
 
 
 # ── Outbox & Dispatcher ───────────────────────────────────────────────
@@ -621,6 +942,7 @@ def list_outbox_notifications(
             "max_retries": i.max_retries,
             "idempotency_key": i.idempotency_key,
             "last_error": i.last_error,
+            "telegram_api_result": (i.payload or {}).get("telegram_api_result"),
             "scheduled_at": i.scheduled_at,
             "sent_at": i.sent_at,
             "created_at": i.created_at,
@@ -713,64 +1035,23 @@ async def telegram_webhook(
     """Authenticated Telegram Bot Webhook endpoint.
     Handles /start token verification and inline button callback queries.
     """
+    expected_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+    if not expected_secret or not x_telegram_bot_api_secret_token or not secrets.compare_digest(expected_secret, x_telegram_bot_api_secret_token):
+        raise HTTPException(status_code=403, detail="Webhook authentication required")
+    if os.getenv('TELEGRAM_UPDATE_MODE', 'polling') != 'webhook':
+        raise HTTPException(status_code=409, detail='Webhook receiver disabled in polling mode')
+    bot_token = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
+    if not bot_token:
+        raise HTTPException(status_code=503, detail='Webhook bot identity is not configured')
     try:
         body = await request.json()
     except Exception:
         return {"ok": True}
 
-    client_ip = request.client.host if request.client else "127.0.0.1"
+    from app.workers.telegram_poller import process_telegram_update
+    process_telegram_update(db, bot_token, body)
+    return {'ok': True}
 
-    # Handle Callback Query (Inline Button Click)
-    if "callback_query" in body:
-        cq = body["callback_query"]
-        sender = cq.get("from", {})
-        sender_id = str(sender.get("id"))
-        chat_id = str(cq.get("message", {}).get("chat", {}).get("id", sender_id))
-        callback_data = cq.get("data", "")
-
-        result = execute_bot_action(
-            db=db,
-            telegram_user_id=sender_id,
-            telegram_chat_id=chat_id,
-            action_str=callback_data,
-            ip_address=client_ip,
-        )
-        return {"ok": True, "result": result}
-
-    # Handle Direct Message (e.g. /start <token>)
-    if "message" in body:
-        msg = body["message"]
-        text = msg.get("text", "").strip()
-        sender = msg.get("from", {})
-        sender_id = str(sender.get("id"))
-        chat_id = str(msg.get("chat", {}).get("id"))
-        username = sender.get("username")
-
-        if text.startswith("/start "):
-            token = text[7:].strip()
-            try:
-                verify_telegram_link(
-                    db=db,
-                    token=token,
-                    telegram_user_id=sender_id,
-                    telegram_chat_id=chat_id,
-                    telegram_username=username,
-                )
-                return {"ok": True, "action": "verified"}
-            except Exception as e:
-                return {"ok": True, "error": str(e)}
-
-        if text == "/mytasks" or text == "/my_tasks":
-            result = execute_bot_action(
-                db=db,
-                telegram_user_id=sender_id,
-                telegram_chat_id=chat_id,
-                action_str="cmd:my_tasks",
-                ip_address=client_ip,
-            )
-            return {"ok": True, "result": result}
-
-    return {"ok": True}
 
 
 # ── No-Code Telegram Bot Menu Builder ────────────────────────────────────────
@@ -1040,7 +1321,7 @@ def preview_message_template(
         "due_date": "2026-11-20",
         "description": "ترقية حزم الأمان وضبط إعدادات الشبكة ومراقبة استهلاك الموارد.",
         "new_status": "قيد التنفيذ 🚀",
-        "actor_name": current_user.full_name or current_user.username,
+        "actor_name": current_user.username,
         **(payload.sample_data or {}),
     }
 
@@ -1083,7 +1364,7 @@ def test_send_template(
         raw_content = tmpl.content_ar if tmpl else ""
 
     sample_context = {
-        "employee_name": current_user.full_name or current_user.username,
+        "employee_name": current_user.username,
         "company_name": "بوابة المستثمر",
         "branch_name": "الفرع الرئيسي",
         "department_name": "تقنية المعلومات",

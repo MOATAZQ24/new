@@ -53,12 +53,17 @@ def _migrate_columns():
             ("tasks", "blocker_reason", "TEXT", "TEXT"),
             ("tasks", "blocked_at", "DATETIME", "TIMESTAMP"),
             ("tasks", "unblocked_at", "DATETIME", "TIMESTAMP"),
+            ("tasks", "acknowledged_at", "DATETIME", "TIMESTAMP"),
             ("tasks", "accepted_at", "DATETIME", "TIMESTAMP"),
             ("tasks", "submitted_for_review_at", "DATETIME", "TIMESTAMP"),
             ("tasks", "reviewer_id", "CHAR(32)", "UUID"),
             ("tasks", "review_notes", "TEXT", "TEXT"),
             ("tasks", "rework_count", "INTEGER DEFAULT 0", "INTEGER DEFAULT 0"),
             ("notifications", "priority", "VARCHAR(50) DEFAULT 'Normal'", "VARCHAR(50) DEFAULT 'Normal'"),
+            ("telegram_user_links", "notifications_enabled", "BOOLEAN DEFAULT 1", "BOOLEAN DEFAULT TRUE"),
+            ("telegram_user_links", "allowed_modules", "TEXT", "JSONB"),
+            ("telegram_user_links", "notification_preferences", "TEXT", "JSONB"),
+            ("telegram_user_links", "data_scope", "VARCHAR(50) DEFAULT 'Self'", "VARCHAR(50) DEFAULT 'Self'"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:
@@ -75,8 +80,14 @@ def _migrate_columns():
                 else:
                     conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {pg_type}"))
                     conn.commit()
-            except Exception:
-                pass
+            except Exception as exc:
+                conn.rollback()
+                raise RuntimeError(
+                    f"Schema migration failed for {table}.{col}; startup aborted"
+                ) from exc
+
+
+_migrate_columns()
 
 
 def init_db():

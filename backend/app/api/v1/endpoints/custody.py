@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
+from app.core.rbac import require_permission, Module, Action
 from app.core.response import success_response, paginate
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.user import User, Employee
@@ -24,12 +25,12 @@ def list_custody(
     employee_id: Optional[uuid.UUID] = None,
     asset_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(Module.CUSTODY, Action.VIEW)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """List asset custody records with filtering."""
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = db.query(AssetCustody).filter(AssetCustody.company_id == target_cid)
 
     if employee_id:
@@ -78,7 +79,7 @@ def list_custody(
 @router.post("/assign")
 def assign_asset(
     payload: AssetCustodyAssign,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    current_user: User = Depends(require_permission(Module.CUSTODY, Action.ASSIGN)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -105,8 +106,27 @@ def assign_asset(
     if not employee:
         raise HTTPException(status_code=404, detail="الموظف غير موجود")
 
+    if employee.company_id != asset.company_id:
+        raise HTTPException(
+            status_code=400,
+            detail="الموظف لا ينتمي لنفس منشأة الأصل التقني (مخالفة العزل المؤسسي)",
+        )
+
+    if employee.employment_status != "Active":
+        raise HTTPException(status_code=400, detail="لا يمكن تسليم عهدة لموظف غير نشط")
+    if asset.status not in ("Available",):
+        raise HTTPException(status_code=400, detail="الأصل غير متاح للتسليم")
+
     # Atomic transaction
     try:
+        claimed = db.query(TechnicalAsset).filter(
+            TechnicalAsset.id == asset.id,
+            TechnicalAsset.status == "Available",
+            TechnicalAsset.assigned_employee_id.is_(None),
+        ).update({"status": "Assigned", "assigned_employee_id": employee.id}, synchronize_session=False)
+        if claimed != 1:
+            raise HTTPException(status_code=409, detail="تغيرت حالة الأصل، يرجى إعادة المحاولة")
+        db.refresh(asset)
         custody = AssetCustody(
             asset_id=asset.id,
             company_id=asset.company_id,
@@ -126,13 +146,31 @@ def assign_asset(
         asset.assigned_employee_id = employee.id
         asset.condition = payload.condition_on_assignment
 
+        db.flush()
+        log_audit(
+            db=db,
+            action="ASSIGN_ASSET",
+            resource_type="AssetCustody",
+            resource_id=str(custody.id),
+            user_id=current_user.id,
+            company_id=asset.company_id,
+            new_values={
+                "asset_code": asset.asset_code,
+                "employee_name": employee.full_name,
+                "condition": payload.condition_on_assignment,
+            },
+            commit=False,
+        )
         db.commit()
         db.refresh(custody)
-    except Exception as e:
+    except HTTPException:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"فشلت عملية تسليم العهدة: {str(e)}")
+        raise
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="فشلت عملية تسليم العهدة")
 
-    # Notification & Audit
+    # Deliver notifications only after the custody and audit transaction commits
     if employee.user:
         create_notification(
             db=db,
@@ -145,19 +183,7 @@ def assign_asset(
             related_record_id=custody.id,
         )
 
-    log_audit(
-        db=db,
-        action="ASSIGN_ASSET",
-        resource_type="AssetCustody",
-        resource_id=str(custody.id),
-        user_id=current_user.id,
-        company_id=asset.company_id,
-        new_values={
-            "asset_code": asset.asset_code,
-            "employee_name": employee.full_name,
-            "condition": payload.condition_on_assignment,
-        },
-    )
+
 
     return success_response(
         data={"custody_id": str(custody.id)},
@@ -169,7 +195,7 @@ def assign_asset(
 def return_asset(
     custody_id: uuid.UUID,
     payload: AssetCustodyReturn,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    current_user: User = Depends(require_permission(Module.CUSTODY, Action.ASSIGN)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -186,8 +212,18 @@ def return_asset(
 
     asset = custody.asset
     employee = custody.employee
+    if not asset or asset.company_id != custody.company_id:
+        raise HTTPException(status_code=409, detail="بيانات العهدة غير متسقة")
 
     try:
+        released = db.query(TechnicalAsset).filter(
+            TechnicalAsset.id == asset.id,
+            TechnicalAsset.status == "Assigned",
+            TechnicalAsset.assigned_employee_id == custody.employee_id,
+        ).update({"status": "Available", "assigned_employee_id": None}, synchronize_session=False)
+        if released != 1:
+            raise HTTPException(status_code=409, detail="تغيرت حالة الأصل، يرجى إعادة المحاولة")
+        db.refresh(asset)
         custody.status = "Returned"
         custody.actual_return_date = datetime.utcnow()
         custody.condition_on_return = payload.condition_on_return
@@ -199,10 +235,27 @@ def return_asset(
         asset.assigned_employee_id = None
         asset.condition = payload.condition_on_return
 
+        db.flush()
+        log_audit(
+            db=db,
+            action="RETURN_ASSET",
+            resource_type="AssetCustody",
+            resource_id=str(custody.id),
+            user_id=current_user.id,
+            company_id=custody.company_id,
+            new_values={
+                "asset_code": asset.asset_code,
+                "return_condition": payload.condition_on_return,
+            },
+            commit=False,
+        )
         db.commit()
-    except Exception as e:
+    except HTTPException:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"فشلت عملية استرجاع العهدة: {str(e)}")
+        raise
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="فشلت عملية استرجاع العهدة")
 
     if employee and employee.user:
         create_notification(
@@ -216,18 +269,7 @@ def return_asset(
             related_record_id=custody.id,
         )
 
-    log_audit(
-        db=db,
-        action="RETURN_ASSET",
-        resource_type="AssetCustody",
-        resource_id=str(custody.id),
-        user_id=current_user.id,
-        company_id=custody.company_id,
-        new_values={
-            "asset_code": asset.asset_code,
-            "return_condition": payload.condition_on_return,
-        },
-    )
+
 
     return success_response(message="تم استرجاع الأصل وتحديث حالة العهدة بنجاح")
 
@@ -236,7 +278,7 @@ def return_asset(
 def transfer_asset(
     custody_id: uuid.UUID,
     payload: AssetCustodyTransfer,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    current_user: User = Depends(require_permission(Module.CUSTODY, Action.ASSIGN)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -244,6 +286,9 @@ def transfer_asset(
     old_custody = db.query(AssetCustody).filter(AssetCustody.id == custody_id).first()
     if not old_custody:
         raise HTTPException(status_code=404, detail="سجل العهدة غير موجود")
+
+    if not current_user.is_superadmin and old_custody.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية لهذا السجل")
 
     if old_custody.status != "Active":
         raise HTTPException(status_code=400, detail="العهدة ليست نشطة")
@@ -253,7 +298,24 @@ def transfer_asset(
         raise HTTPException(status_code=404, detail="الموظف الجديد غير موجود")
 
     asset = old_custody.asset
+    if not asset or asset.company_id != old_custody.company_id:
+        raise HTTPException(status_code=409, detail="بيانات العهدة غير متسقة")
+    if new_emp.employment_status != "Active" or new_emp.id == old_custody.employee_id:
+        raise HTTPException(status_code=400, detail="يجب اختيار موظف نشط آخر")
+    if new_emp.company_id != asset.company_id:
+        raise HTTPException(
+            status_code=400,
+            detail="الموظف المنقول إليه لا ينتمي لنفس منشأة الأصل التقني (مخالفة العزل المؤسسي)",
+        )
     try:
+        moved = db.query(TechnicalAsset).filter(
+            TechnicalAsset.id == asset.id,
+            TechnicalAsset.status == "Assigned",
+            TechnicalAsset.assigned_employee_id == old_custody.employee_id,
+        ).update({"assigned_employee_id": new_emp.id}, synchronize_session=False)
+        if moved != 1:
+            raise HTTPException(status_code=409, detail="تغيرت حالة الأصل، يرجى إعادة المحاولة")
+        db.refresh(asset)
         # Close old custody
         old_custody.status = "Transferred"
         old_custody.actual_return_date = datetime.utcnow()
@@ -276,20 +338,26 @@ def transfer_asset(
         asset.assigned_employee_id = new_emp.id
         asset.condition = payload.condition
 
+        db.flush()
+        log_audit(
+            db=db,
+            action="TRANSFER_ASSET",
+            resource_type="AssetCustody",
+            resource_id=str(new_custody.id),
+            user_id=current_user.id,
+            company_id=asset.company_id,
+            new_values={"asset": asset.asset_code, "to_employee": new_emp.full_name},
+            commit=False,
+        )
         db.commit()
-    except Exception as e:
+    except HTTPException:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"فشلت عملية النقل: {str(e)}")
+        raise
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="فشلت عملية النقل")
 
-    log_audit(
-        db=db,
-        action="TRANSFER_ASSET",
-        resource_type="AssetCustody",
-        resource_id=str(new_custody.id),
-        user_id=current_user.id,
-        company_id=asset.company_id,
-        new_values={"asset": asset.asset_code, "to_employee": new_emp.full_name},
-    )
+
 
     return success_response(message=f"تم نقل العهدة إلى الموظف {new_emp.full_name} بنجاح")
 
@@ -297,27 +365,34 @@ def transfer_asset(
 @router.get("/receipt/{custody_id}")
 def get_custody_receipt(
     custody_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(Module.CUSTODY, Action.VIEW)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """Generate handover receipt data."""
+    """Generate handover receipt data with tenant isolation."""
     custody = db.query(AssetCustody).filter(AssetCustody.id == custody_id).first()
     if not custody:
         raise HTTPException(status_code=404, detail="العهدة غير موجودة")
+
+    if not current_user.is_superadmin and custody.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لإيصال هذه العهدة")
 
     asset = custody.asset
     emp = custody.employee
     company = custody.company
 
+    dept_name = getattr(emp.department, "department_name", None) if (emp and getattr(emp, "department", None)) else None
+    br_name = getattr(emp.branch, "branch_name", None) if (emp and getattr(emp, "branch", None)) else None
+
     receipt_data = {
         "receipt_number": f"RCV-{str(custody.id)[:8].upper()}",
-        "company_name_ar": company.company_name_ar,
-        "company_name_en": company.company_name_en,
-        "employee_name": emp.full_name,
-        "employee_number": emp.employee_number,
-        "job_title": emp.job_title,
-        "department": emp.department.department_name if emp.department else None,
-        "branch": emp.branch.branch_name if emp.branch else None,
+        "company_name_ar": company.company_name_ar if company else "",
+        "company_name_en": company.company_name_en if company else "",
+        "employee_name": emp.full_name if emp else "غير محدد",
+        "employee_number": emp.employee_number if emp else "",
+        "job_title": emp.job_title if emp else "",
+        "department": dept_name,
+        "branch": br_name,
         "asset_code": asset.asset_code,
         "asset_name": asset.asset_name,
         "asset_type": asset.asset_type,

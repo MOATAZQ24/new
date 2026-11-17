@@ -5,10 +5,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Icons } from "@/components/ui/Icons";
 import { useCustomization } from "@/context/CustomizationContext";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function BrandingPage() {
   const { companyBranding, updateBranding, removeLogo } = useCustomization();
   const { activeCompany, activeCompanyId } = useAuth();
+  const toast = useToast();
 
   // Form state
   const [brandNameAr, setBrandNameAr] = useState("");
@@ -50,11 +52,11 @@ export default function BrandingPage() {
 
     // Validate: image only, max 2MB
     if (!file.type.startsWith("image/")) {
-      alert("يُسمح فقط برفع صور (PNG، JPG، SVG، WebP)");
+      toast.warning("يُسمح فقط برفع صور (PNG، JPG، SVG، WebP)");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      alert("الحد الأقصى لحجم الملف هو 2 ميغابايت");
+      toast.warning("الحد الأقصى لحجم الملف هو 2 ميغابايت");
       return;
     }
 
@@ -69,11 +71,11 @@ export default function BrandingPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("يُسمح فقط برفع صور");
+      toast.warning("يُسمح فقط برفع صور");
       return;
     }
     if (file.size > 512 * 1024) {
-      alert("الحد الأقصى لحجم الـ Favicon هو 512 كيلوبايت");
+      toast.warning("الحد الأقصى لحجم الـ Favicon هو 512 كيلوبايت");
       return;
     }
 
@@ -119,7 +121,7 @@ export default function BrandingPage() {
     try {
       await removeLogo();
     } catch (err: any) {
-      alert(err?.message || "فشل إزالة الشعار");
+      toast.error(err?.message || "فشل إزالة الشعار");
     } finally {
       setRemovingLogo(false);
     }
@@ -391,7 +393,7 @@ export default function BrandingPage() {
                           if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) setter(e.target.value);
                         }}
                         maxLength={7}
-                        className="flex-1 px-2 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
+                        className="flex-1 min-w-0 w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
                       />
                     </div>
                     <div className="h-6 rounded-md border border-slate-200 dark:border-slate-700" style={{ backgroundColor: value }} />

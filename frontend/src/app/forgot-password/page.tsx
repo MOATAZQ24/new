@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [identifier, setIdentifier] = useState("");
@@ -26,11 +26,12 @@ export default function ForgotPasswordPage() {
           "إذا كان الحساب مسجلاً في النظام، فسيتم إرسال رابط استعادة كلمة المرور إلى البريد الإلكتروني المسجل خلال لحظات."
       );
       setSubmitted(true);
-    } catch (err: any) {
-      if (err.response?.status === 429) {
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 429) {
         setError("تم تجاوز الحد المسموح به من الطلبات مؤقتاً. يرجى الانتظار 15 دقيقة قبل المحاولة مرة أخرى.");
       } else {
-        setError(err.response?.data?.detail || "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة لاحقاً.");
+        const detail = err instanceof ApiError ? err.data?.detail : undefined;
+        setError(typeof detail === "string" ? detail : "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة لاحقاً.");
       }
     } finally {
       setLoading(false);
@@ -38,7 +39,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4" dir="rtl">
+    <main className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 space-y-6">
         
         {/* Branding Header */}
@@ -53,7 +54,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+          <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
             <span>⚠️</span>
             <span>{error}</span>
           </div>
@@ -61,7 +62,7 @@ export default function ForgotPasswordPage() {
 
         {submitted ? (
           <div className="space-y-5 py-2">
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
+            <div role="status" aria-live="polite" className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-emerald-900">
                 <span>✓</span>
                 <span>تم إرسال تعليمات الاستعادة</span>
@@ -84,12 +85,14 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label htmlFor="account-identifier" className="block text-xs font-bold text-slate-700 mb-1.5">
                 اسم المستخدم أو البريد الإلكتروني
               </label>
               <input
+                id="account-identifier"
                 type="text"
                 required
+                autoComplete="username"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="مثال: admin أو user@investorgate.sa"
@@ -117,6 +120,6 @@ export default function ForgotPasswordPage() {
         )}
 
       </div>
-    </div>
+    </main>
   );
 }

@@ -8,8 +8,12 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { Modal } from "@/components/ui/Modal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function UsersManagementPage() {
+  const toast = useToast();
   const { user: currentUser, activeCompanyId } = useAuth();
 
   // State
@@ -269,7 +273,7 @@ export default function UsersManagementPage() {
       await api.post(`/users/${user.id}/status`, { account_status: newStatus });
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل تغيير حالة الحساب");
+      toast.error(err?.message || "فشل تغيير حالة الحساب");
     }
   };
 
@@ -282,7 +286,7 @@ export default function UsersManagementPage() {
       await api.delete(`/users/${user.id}`);
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف حساب المستخدم");
+      toast.error(err?.message || "فشل حذف حساب المستخدم");
     }
   };
 
@@ -292,7 +296,7 @@ export default function UsersManagementPage() {
       await api.post(`/users/${user.id}/restore`);
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل استعادة حساب المستخدم");
+      toast.error(err?.message || "فشل استعادة حساب المستخدم");
     }
   };
 
@@ -302,7 +306,7 @@ export default function UsersManagementPage() {
       await api.post(`/users/${user.id}/unlock`);
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل إلغاء قفل الحساب");
+      toast.error(err?.message || "فشل إلغاء قفل الحساب");
     }
   };
 
@@ -336,7 +340,7 @@ export default function UsersManagementPage() {
         setTempPasswordGenerated(res.data.temporary_password);
         setShowTempPassModal(true);
       } else {
-        alert("تمت إعادة تعيين كلمة المرور بنجاح");
+        toast.success("تمت إعادة تعيين كلمة المرور بنجاح");
       }
     } catch (err: any) {
       setActionError(err?.message || "فشل إعادة تعيين كلمة المرور");
@@ -357,7 +361,7 @@ export default function UsersManagementPage() {
       setUserCompanies(res.data || []);
       setShowCompanyModal(true);
     } catch (err: any) {
-      alert(err?.message || "فشل تحميل عضويات الشركات للمستخدم");
+      toast.error(err?.message || "فشل تحميل عضويات الشركات للمستخدم");
     }
   };
 
@@ -393,7 +397,7 @@ export default function UsersManagementPage() {
       setUserCompanies(res.data || []);
       fetchUsers();
     } catch (err: any) {
-      alert(err?.message || "فشل إزالة صلاحية الشركة");
+      toast.error(err?.message || "فشل إزالة صلاحية الشركة");
     }
   };
 
@@ -405,7 +409,7 @@ export default function UsersManagementPage() {
       setUserActivity(res.data || []);
       setShowActivityModal(true);
     } catch (err: any) {
-      alert(err?.message || "فشل تحميل سجل النشاط للمستخدم");
+      toast.error(err?.message || "فشل تحميل سجل النشاط للمستخدم");
     }
   };
 
@@ -627,18 +631,18 @@ export default function UsersManagementPage() {
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400">
-                      <div className="inline-block animate-spin mb-2">
-                        <Icons.Refresh size={24} />
-                      </div>
-                      <p>جاري تحميل قائمة المستخدمين والصلاحيات...</p>
+                    <td colSpan={7}>
+                      <TableSkeleton variant="table" rows={5} cols={6} />
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400">
-                      <Icons.Users size={32} className="mx-auto mb-2 text-slate-300" />
-                      <p className="font-semibold text-slate-600 dark:text-slate-300">لا يوجد مستخدمون مطابقون</p>
+                    <td colSpan={7}>
+                      <EmptyState
+                        icon={<Icons.Users size={26} />}
+                        title="لا يوجد مستخدمون مطابقون"
+                        description="جرّب تغيير معايير البحث أو الدور الوظيفي"
+                      />
                     </td>
                   </tr>
                 ) : (

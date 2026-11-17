@@ -8,12 +8,20 @@ import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 export default function CompaniesPage() {
+  const toast = useToast();
   const { user } = useAuth();
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [statusFilter, setStatusFilter] = useState("");
 
   // Modals
@@ -68,7 +76,7 @@ export default function CompaniesPage() {
     try {
       let url = "/companies";
       const params = new URLSearchParams();
-      if (search) params.append("search", search);
+      if (debouncedSearch.trim()) params.append("search", debouncedSearch.trim());
       if (statusFilter) params.append("status", statusFilter);
       const q = params.toString();
       if (q) url += `?${q}`;
@@ -76,7 +84,7 @@ export default function CompaniesPage() {
       const res = await api.get(url);
       setCompanies(res.data || []);
     } catch (e) {
-      console.error(e);
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الشركات");
     } finally {
       setLoading(false);
     }
@@ -84,7 +92,7 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     fetchCompanies();
-  }, [statusFilter]);
+  }, [statusFilter, debouncedSearch]);
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +165,7 @@ export default function CompaniesPage() {
       await api.delete(`/companies/${companyId}`);
       fetchCompanies();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف الشركة");
+      toast.error(err?.message || "فشل حذف الشركة");
     }
   };
 
@@ -222,7 +230,7 @@ export default function CompaniesPage() {
       await refreshBranchesAndDepts(selectedCompany.id);
       fetchCompanies();
     } catch (err: any) {
-      alert(err?.message || "فشل حفظ بيانات الفرع");
+      toast.error(err?.message || "فشل حفظ بيانات الفرع");
     }
   };
 
@@ -235,7 +243,7 @@ export default function CompaniesPage() {
         fetchCompanies();
       }
     } catch (err: any) {
-      alert(err?.message || "فشل حذف الفرع");
+      toast.error(err?.message || "فشل حذف الفرع");
     }
   };
 
@@ -276,7 +284,7 @@ export default function CompaniesPage() {
       setShowDeptModal(false);
       await refreshBranchesAndDepts(selectedCompany.id);
     } catch (err: any) {
-      alert(err?.message || "فشل حفظ بيانات القسم");
+      toast.error(err?.message || "فشل حفظ بيانات القسم");
     }
   };
 
@@ -287,99 +295,92 @@ export default function CompaniesPage() {
       if (selectedCompany) {
         await refreshBranchesAndDepts(selectedCompany.id);
       }
+      toast.success("تم حذف القسم");
     } catch (err: any) {
-      alert(err?.message || "فشل حذف القسم");
+      toast.error(err?.message || "فشل حذف القسم");
     }
   };
+
+  const companyFilterCount = [search.trim(), statusFilter].filter(Boolean).length;
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            إدارة الشركات والفروع
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            هيكل المنظمة المتعدد للشركات وفروعها وأقسامها الإدارية
-          </p>
-        </div>
-
-        {isSuperAdmin && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-          >
-            <Icons.Plus size={16} />
-            <span>إضافة شركة جديدة</span>
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="إدارة الشركات والفروع"
+        description="هيكل المنظمة المتعدد للشركات وفروعها وأقسامها الإدارية"
+        icon={<Icons.Companies size={20} />}
+        actions={
+          isSuperAdmin ? (
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              <Icons.Plus size={16} />
+              <span>إضافة شركة جديدة</span>
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Filters and Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <Icons.Search
-              size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              type="text"
-              placeholder="بحث بالاسم أو الكود..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && fetchCompanies()}
-              className="w-full bg-slate-50 border border-slate-200 text-xs py-2 pr-9 pl-3 rounded-xl outline-none focus:border-[#187A5A]"
-            />
-          </div>
-
+      <DataToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="بحث بالاسم أو الكود..."
+        searchLabel="بحث في الشركات"
+        onSearchSubmit={fetchCompanies}
+        activeFilterCount={companyFilterCount}
+        onResetFilters={() => { setSearch(""); setStatusFilter(""); }}
+        onRefresh={() => void fetchCompanies()}
+        refreshing={loading}
+        filters={
           <select
+            aria-label="تصفية حسب حالة الشركة"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
+            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
           >
             <option value="">جميع الحالات</option>
             <option value="Active">نشطة (Active)</option>
             <option value="Inactive">غير نشطة (Inactive)</option>
             <option value="Suspended">موقوفة (Suspended)</option>
           </select>
-        </div>
-
-        <button
-          onClick={fetchCompanies}
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
-          title="تحديث البيانات"
-        >
-          <Icons.Refresh size={16} />
-        </button>
-      </div>
+        }
+      />
 
       {/* Companies Grid */}
       {loading ? (
-        <div className="text-center py-12 text-slate-400 text-xs">جاري تحميل الشركات...</div>
+        <TableSkeleton variant="cards" rows={3} />
       ) : companies.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs">
-          لا توجد شركات مطابقة لمعايير البحث
+        <div className="bg-white rounded-2xl border border-slate-200">
+          <EmptyState
+            icon={<Icons.Companies size={26} />}
+            title="لا توجد شركات مطابقة لمعايير البحث"
+            description="يمكنك تعديل البحث أو إضافة شركة جديدة ضمن هيكل المنظمة"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {companies.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+              className="motion-card bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-start justify-between">
                   <div className="w-12 h-12 rounded-xl bg-[#123D32] text-[#C5A46D] font-black text-lg flex items-center justify-center shadow-xs">
-                    {c.company_code}
+                    <bdi dir="ltr">{c.company_code}</bdi>
                   </div>
                   <div className="flex items-center gap-2">
                     <StatusBadge status={c.status} />
                     {isSuperAdmin && (
                       <button
+                        type="button"
                         onClick={() => handleDeleteCompany(c.id, c.company_name_ar)}
-                        className="text-slate-400 hover:text-rose-600 p-1 transition-colors"
+                        aria-label={`حذف شركة ${c.company_name_ar}`}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                         title="حذف الشركة"
                       >
                         <Icons.Trash size={15} />
@@ -392,29 +393,29 @@ export default function CompaniesPage() {
                   <h2 className="text-base font-bold text-slate-900 leading-tight">
                     {c.company_name_ar}
                   </h2>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">
+                  <p className="text-xs text-slate-600 font-medium mt-0.5">
                     {c.company_name_en}
                   </p>
                 </div>
 
-                <div className="mt-4 space-y-1.5 text-xs text-slate-600">
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-400">كود الشركة:</span>
+                <div className="mt-4 space-y-1.5 text-xs text-slate-700">
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">كود الشركة:</span>
                     <span className="font-mono font-bold text-[#187A5A]">
-                      {c.company_code}
+                      <bdi dir="ltr">{c.company_code}</bdi>
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-400">البريد الإلكتروني:</span>
-                    <span className="font-mono">{c.contact_email || "-"}</span>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">البريد الإلكتروني:</span>
+                    <span className="font-mono"><bdi dir="ltr">{c.contact_email || "-"}</bdi></span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-50">
-                    <span className="text-slate-400">الهاتف:</span>
-                    <span className="font-mono">{c.contact_phone || "-"}</span>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">الهاتف:</span>
+                    <span className="font-mono"><bdi dir="ltr">{c.contact_phone || "-"}</bdi></span>
                   </div>
                   <div className="flex justify-between py-1">
-                    <span className="text-slate-400">عدد الفروع / الموظفين:</span>
-                    <span className="font-bold">
+                    <span className="text-slate-600">عدد الفروع / الموظفين:</span>
+                    <span className="font-bold text-slate-900">
                       {c.branches_count} فروع • {c.employees_count} موظف
                     </span>
                   </div>
@@ -424,8 +425,9 @@ export default function CompaniesPage() {
               <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between">
                 {canManage ? (
                   <button
+                    type="button"
                     onClick={() => openEditCompany(c)}
-                    className="flex items-center gap-1 text-slate-500 hover:text-slate-800 text-xs font-semibold transition-colors"
+                    className="flex items-center gap-1 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     <Icons.Edit size={14} />
                     <span>تعديل</span>
@@ -433,8 +435,9 @@ export default function CompaniesPage() {
                 ) : <span />}
 
                 <button
+                  type="button"
                   onClick={() => openCompanyDetails(c)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="motion-control flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   <Icons.Eye size={14} />
                   <span>عرض الفروع والأقسام</span>

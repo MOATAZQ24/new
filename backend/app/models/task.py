@@ -53,6 +53,7 @@ class Task(UUIDMixin, TimestampMixin, Base):
 
     start_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     due_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    acknowledged_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     accepted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     submitted_for_review_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

@@ -4,15 +4,34 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, hash_password, get_user_roles
+from app.core.security import (
+    get_current_user,
+    get_user_company_id,
+    require_role,
+    hash_password,
+    get_user_roles,
+    resolve_company_scope,
+)
+from app.core.rbac import require_permission, Module, Action
 from app.core.response import success_response, paginate
 from app.models.user import Employee, User, Role, UserRole, CompanyMembership
 from app.models.company import Company, Branch, Department
 from app.models.asset import TechnicalAsset, AssetCustody
+from app.models.telegram import TelegramUserLink
 from app.schemas.employee import EmployeeCreate, EmployeeUpdate, UserCreate, UserUpdate
 from app.services.audit_service import log_audit
 
 router = APIRouter(prefix="/employees", tags=["Employees & Users"])
+
+
+def validate_employee_location(db: Session, company_id: uuid.UUID, branch_id, department_id):
+    for model, record_id in ((Branch, branch_id), (Department, department_id)):
+        if record_id:
+            record = db.query(model).filter(model.id == record_id, model.company_id == company_id).first()
+            if not record:
+                raise HTTPException(status_code=400, detail="الفرع أو القسم لا يتبع للشركة الحالية")
+            if model is Department and branch_id and record.branch_id and record.branch_id != branch_id:
+                raise HTTPException(status_code=400, detail="القسم لا يتبع للفرع المحدد")
 
 
 @router.get("")
@@ -24,12 +43,12 @@ def list_employees(
     department_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     search: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """List employees with server-side company isolation."""
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = db.query(Employee).filter(Employee.company_id == target_cid)
 
     if branch_id:
@@ -55,12 +74,21 @@ def list_employees(
         .all()
     )
 
+    telegram_links = {
+        l.employee_id: l
+        for l in db.query(TelegramUserLink).filter(TelegramUserLink.company_id == target_cid).all()
+    }
+
     data = []
     for emp in employees:
         b_name = emp.branch.branch_name if emp.branch else None
         d_name = emp.department.department_name if emp.department else None
         c_name = emp.company.company_name_ar if emp.company else None
         has_account = emp.user is not None
+        tlink = telegram_links.get(emp.id)
+        is_t_linked = bool(tlink and tlink.is_verified)
+        t_user = tlink.telegram_username if (tlink and tlink.is_verified) else None
+        t_notifs = bool(tlink.notifications_enabled) if (tlink and tlink.is_verified) else False
 
         data.append({
             "id": str(emp.id),
@@ -77,6 +105,9 @@ def list_employees(
             "department_name": d_name,
             "company_name": c_name,
             "has_user_account": has_account,
+            "is_telegram_linked": is_t_linked,
+            "telegram_username": t_user,
+            "telegram_notifications_enabled": t_notifs,
             "created_at": emp.created_at,
         })
 
@@ -87,12 +118,13 @@ def list_employees(
 @router.post("")
 def create_employee(
     payload: EmployeeCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.CREATE)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
     """Create a new employee with company isolation."""
-    target_cid = payload.company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    validate_employee_location(db, target_cid, payload.branch_id, payload.department_id)
 
     # Check unique employee_number in company
     existing = db.query(Employee).filter(
@@ -133,7 +165,7 @@ def create_employee(
 @router.get("/{employee_id}")
 def get_employee(
     employee_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -166,6 +198,11 @@ def get_employee(
                 "condition": c.condition_on_assignment,
             })
 
+    tlink = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp.id).first()
+    is_t_linked = bool(tlink and tlink.is_verified)
+    t_user = tlink.telegram_username if (tlink and tlink.is_verified) else None
+    t_notifs = bool(tlink.notifications_enabled) if (tlink and tlink.is_verified) else False
+
     data = {
         "id": str(emp.id),
         "company_id": str(emp.company_id),
@@ -181,6 +218,9 @@ def get_employee(
         "department_name": emp.department.department_name if emp.department else None,
         "company_name": emp.company.company_name_ar if emp.company else None,
         "has_user_account": emp.user is not None,
+        "is_telegram_linked": is_t_linked,
+        "telegram_username": t_user,
+        "telegram_notifications_enabled": t_notifs,
         "assigned_assets": assigned_assets,
         "created_at": emp.created_at,
     }
@@ -191,7 +231,7 @@ def get_employee(
 def update_employee(
     employee_id: uuid.UUID,
     payload: EmployeeUpdate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.EDIT)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -201,6 +241,11 @@ def update_employee(
 
     if not current_user.is_superadmin and emp.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية التعديل على هذا الموظف")
+
+    validate_employee_location(
+        db, emp.company_id, payload.branch_id or emp.branch_id,
+        payload.department_id or emp.department_id,
+    )
 
     if payload.full_name is not None:
         emp.full_name = payload.full_name
@@ -212,6 +257,16 @@ def update_employee(
         emp.phone = payload.phone
     if payload.employment_status is not None:
         emp.employment_status = payload.employment_status
+        # If employee is terminated, resigned, or inactive, cascade deactivate user account, sessions, and Telegram link
+        if payload.employment_status in ["Terminated", "Resigned", "Inactive"]:
+            from app.models.user import UserSession
+            from app.models.telegram import TelegramUserLink
+
+            linked_user = db.query(User).filter(User.employee_id == emp.id).first()
+            if linked_user:
+                linked_user.account_status = "Inactive"
+                db.query(UserSession).filter(UserSession.user_id == linked_user.id).update({"is_active": False})
+            db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp.id).update({"is_verified": False})
     if payload.branch_id is not None:
         emp.branch_id = payload.branch_id
     if payload.department_id is not None:
@@ -235,7 +290,7 @@ def update_employee(
 @router.delete("/{employee_id}")
 def delete_employee(
     employee_id: uuid.UUID,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.DELETE)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -249,6 +304,17 @@ def delete_employee(
     active_c = db.query(AssetCustody).filter(AssetCustody.employee_id == emp.id, AssetCustody.status == "Active").count()
     if active_c > 0:
         raise HTTPException(status_code=400, detail="لا يمكن حذف الموظف لوجود عهد نشطة مسجلة باسمه. يرجى استرجاع العهد أولاً.")
+
+    from app.models.task import Task
+    active_tasks = db.query(Task).filter(
+        Task.assigned_to_id == emp.id,
+        Task.status.notin_(["Completed", "Cancelled"]),
+    ).count()
+    if active_tasks > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"لا يمكن حذف الموظف لوجود {active_tasks} مهمة نشطة مسندة إليه. يرجى إعادة إسناد المهام أولاً.",
+        )
 
     log_audit(
         db=db,
@@ -271,10 +337,15 @@ def list_users(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    current_user: User = Depends(require_permission(Module.USERS, Action.VIEW)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    query = db.query(User)
+    query = db.query(User).filter(User.is_deleted == False)
+    if not current_user.is_superadmin:
+        query = query.filter(User.company_memberships.any(
+            (CompanyMembership.company_id == active_cid) & (CompanyMembership.status == "Active")
+        ))
     if search:
         s = f"%{search}%"
         query = query.filter((User.username.ilike(s)) | (User.email.ilike(s)))
@@ -289,8 +360,12 @@ def list_users(
 
     data = []
     for u in users:
-        roles = get_user_roles(u, db)
-        memberships = db.query(CompanyMembership).filter(CompanyMembership.user_id == u.id).all()
+        roles = get_user_roles(u, db, company_id=active_cid)
+        memberships_query = db.query(CompanyMembership).filter(
+            CompanyMembership.user_id == u.id, CompanyMembership.status == "Active")
+        if not current_user.is_superadmin:
+            memberships_query = memberships_query.filter(CompanyMembership.company_id == active_cid)
+        memberships = memberships_query.all()
         companies_list = []
         for m in memberships:
             c = db.query(Company).filter(Company.id == m.company_id).first()
@@ -317,7 +392,7 @@ def list_users(
 @router.post("/users/create")
 def create_user(
     payload: UserCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    current_user: User = Depends(require_permission(Module.USERS, Action.CREATE)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
@@ -329,49 +404,58 @@ def create_user(
     if existing_e:
         raise HTTPException(status_code=400, detail="البريد الإلكتروني مسجل مسبقاً")
 
+    target_cids = list(dict.fromkeys(payload.company_ids or [active_cid]))
+    for cid in target_cids:
+        resolve_company_scope(current_user, active_cid, cid)
+        if not db.query(Company).filter(Company.id == cid).first():
+            raise HTTPException(status_code=400, detail="الشركة غير موجودة")
+    role_names = list(dict.fromkeys(payload.role_names or ["Employee"]))
+    if not current_user.is_superadmin and (payload.is_superadmin or "Super Admin" in role_names):
+        raise HTTPException(status_code=403, detail="لا يمكن منح صلاحية مدير النظام")
+    from app.core.rbac import ROLE_PERMISSION_MATRIX
+    roles = []
+    for role_name in role_names:
+        if role_name not in ROLE_PERMISSION_MATRIX:
+            raise HTTPException(status_code=400, detail="الدور غير صالح")
+        role = db.query(Role).filter(Role.name == role_name).first()
+        if not role:
+            raise HTTPException(status_code=400, detail="الدور غير موجود")
+        roles.append(role)
+    # Preserve legacy global role lists; the first role defines the company membership.
+    primary_role = roles[0]
+    if payload.employee_id:
+        employee = db.query(Employee).filter(Employee.id == payload.employee_id).first()
+        if not employee or employee.company_id not in target_cids:
+            raise HTTPException(status_code=400, detail="الموظف لا يتبع للشركات المحددة")
+        if employee.employment_status != "Active" or employee.user:
+            raise HTTPException(status_code=400, detail="الموظف غير نشط أو مرتبط بحساب بالفعل")
     new_user = User(
         employee_id=payload.employee_id,
-        username=payload.username.strip(),
-        password_hash=hash_password(payload.password),
-        email=payload.email.strip(),
-        account_status=payload.account_status,
+        username=payload.username.strip(), password_hash=hash_password(payload.password),
+        email=payload.email.strip(), account_status=payload.account_status,
         is_superadmin=payload.is_superadmin if current_user.is_superadmin else False,
     )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    # Assign roles
-    role_names = payload.role_names or ["Employee"]
-    for rname in role_names:
-        r = db.query(Role).filter(Role.name == rname).first()
-        if not r:
-            r = Role(name=rname, is_system_role=True)
-            db.add(r)
-            db.commit()
-            db.refresh(r)
-        ur = UserRole(user_id=new_user.id, role_id=r.id)
-        db.add(ur)
-
-    # Assign company memberships
-    target_cids = payload.company_ids or [active_cid]
-    for idx, cid in enumerate(target_cids):
-        cm = CompanyMembership(
-            user_id=new_user.id,
-            company_id=cid,
-            is_default=(idx == 0),
-        )
-        db.add(cm)
-
-    db.commit()
-
-    log_audit(
-        db=db,
-        action="CREATE",
-        resource_type="User",
-        resource_id=str(new_user.id),
-        user_id=current_user.id,
-        new_values={"username": new_user.username, "roles": role_names},
-    )
+    try:
+        db.add(new_user)
+        db.flush()
+        for role in roles:
+            db.add(UserRole(user_id=new_user.id, role_id=role.id))
+        for idx, cid in enumerate(target_cids):
+            db.add(CompanyMembership(
+                user_id=new_user.id, company_id=cid, role_id=primary_role.id,
+                status="Active", is_default=(idx == 0), assigned_by=current_user.id,
+            ))
+        if payload.employee_id:
+            tlink = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == payload.employee_id).first()
+            if tlink:
+                tlink.user_id = new_user.id
+        # log_audit commits the user, role, membership and audit together.
+        log_audit(db=db, action="CREATE", resource_type="User",
+                  resource_id=str(new_user.id), user_id=current_user.id,
+                  company_id=active_cid,
+                  new_values={"username": new_user.username, "roles": role_names})
+    except Exception:
+        db.rollback()
+        raise
 
     return success_response(data={"id": str(new_user.id)}, message="تم إنشاء حساب المستخدم بنجاح")

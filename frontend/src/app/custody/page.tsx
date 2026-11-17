@@ -5,11 +5,16 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function CustodyPage() {
   const { activeCompanyId } = useAuth();
+  const toast = useToast();
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("Active");
@@ -80,7 +85,7 @@ export default function CustodyPage() {
       setShowAssignModal(false);
       fetchRecords();
     } catch (err: any) {
-      alert(err?.message || "فشل تسليم العهدة");
+      toast.error(err?.message || "فشل تسليم العهدة");
     }
   };
 
@@ -95,7 +100,7 @@ export default function CustodyPage() {
       setShowReturnModal(false);
       fetchRecords();
     } catch (err: any) {
-      alert(err?.message || "فشل استرجاع العهدة");
+      toast.error(err?.message || "فشل استرجاع العهدة");
     }
   };
 
@@ -105,43 +110,41 @@ export default function CustodyPage() {
       setReceiptData(res.data);
       setShowReceiptModal(true);
     } catch (err: any) {
-      alert(err?.message || "فشل تحميل سند التسليم");
+      toast.error(err?.message || "فشل تحميل سند التسليم");
     }
   };
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            عهدة الأصول والتسليم (Asset Custody & Handover)
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            إدارة تسليم العهد للموظفين، وتوليد السندات، وتتبع الإرجاع والنقل
-          </p>
-        </div>
-
-        <button
-          onClick={openAssignModal}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
-        >
-          <Icons.Plus size={16} />
-          <span>تسليم عهدة جديدة</span>
-        </button>
-      </div>
+      <PageHeader
+        title="عهدة الأصول والتسليم (Asset Custody & Handover)"
+        description="إدارة تسليم العهد للموظفين، وتوليد السندات، وتتبع الإرجاع والنقل"
+        icon={<Icons.Custody size={20} />}
+        actions={
+          <button
+            type="button"
+            onClick={openAssignModal}
+            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            <Icons.Plus size={16} />
+            <span>تسليم عهدة جديدة</span>
+          </button>
+        }
+      />
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {["Active", "Returned", "Transferred", ""].map((st) => (
             <button
               key={st}
+              type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === st
                   ? "bg-[#187A5A] text-white shadow-xs"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               {st === "Active"
@@ -156,18 +159,31 @@ export default function CustodyPage() {
         </div>
 
         <button
+          type="button"
           onClick={fetchRecords}
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
+          disabled={loading}
+          aria-label="تحديث سجل العهد"
+          title="تحديث البيانات"
+          className="motion-control p-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer"
         >
-          <Icons.Refresh size={16} />
+          <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
         </button>
       </div>
 
       {/* Custody Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {loading ? (
+          <TableSkeleton variant="table" rows={5} cols={6} />
+        ) : records.length === 0 ? (
+          <EmptyState
+            icon={<Icons.Custody size={26} />}
+            title="لا توجد سجلات عهد مطابقة"
+            description="يمكنك تغيير حالة العهدة أو تسليم عهدة تقنية جديدة الآن"
+          />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
+            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
               <tr>
                 <th className="p-3.5">الأصل التقني</th>
                 <th className="p-3.5">الموظف المستلم</th>
@@ -180,18 +196,18 @@ export default function CustodyPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {records.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-800">
+                <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="p-3.5 font-bold text-slate-900">
                     <div>{r.asset_name}</div>
                     <div className="text-[11px] font-mono text-[#187A5A] font-semibold">
-                      {r.asset_code}
+                      <bdi dir="ltr">{r.asset_code}</bdi>
                     </div>
                   </td>
-                  <td className="p-3.5 font-bold text-slate-700">
+                  <td className="p-3.5 font-bold text-slate-800">
                     {r.employee_name}
                   </td>
-                  <td className="p-3.5 text-slate-600 font-mono">
-                    {new Date(r.assignment_date).toLocaleDateString("ar-SA")}
+                  <td className="p-3.5 text-slate-700 font-mono">
+                    <bdi dir="ltr">{new Date(r.assignment_date).toLocaleDateString("ar-SA")}</bdi>
                   </td>
                   <td className="p-3.5">
                     <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px]">
@@ -201,27 +217,31 @@ export default function CustodyPage() {
                   <td className="p-3.5">
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="p-3.5 text-slate-400 font-mono">
+                  <td className="p-3.5 text-slate-600 font-mono">
+                    <bdi dir="ltr">
                     {r.actual_return_date
                       ? new Date(r.actual_return_date).toLocaleDateString("ar-SA")
                       : "-"}
+                    </bdi>
                   </td>
                   <td className="p-3.5 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <button
+                        type="button"
                         onClick={() => openReceipt(r.id)}
-                        className="px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px]"
+                        className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
                       >
                         سند الاستلام
                       </button>
 
                       {r.status === "Active" && (
                         <button
+                          type="button"
                           onClick={() => {
                             setSelectedRecord(r);
                             setShowReturnModal(true);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 font-semibold text-[11px]"
+                          className="motion-control px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 font-semibold text-[11px] cursor-pointer"
                         >
                           إرجاع العهدة
                         </button>
@@ -233,6 +253,7 @@ export default function CustodyPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Assign Modal */}

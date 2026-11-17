@@ -5,6 +5,14 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatsCard from "@/components/ui/StatsCard";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { AlertBanner } from "@/components/ui/AlertBanner";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
+import { useToast } from "@/context/ToastContext";
+import EmployeeCombobox from "@/components/ui/EmployeeCombobox";
 import { 
   LifeBuoyIcon, PlusIcon, SearchIcon, ClockIcon, 
   CheckCircleIcon, AlertCircleIcon, MessageSquareIcon, 
@@ -83,12 +91,16 @@ export default function TicketsPage() {
     related_asset_id: "",
     notes: "",
   });
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 220);
+  const toast = useToast();
 
   const loadTickets = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const params: Record<string, string> = {};
-      if (search) params.search = search;
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       if (statusFilter) params.status = statusFilter;
       if (priorityFilter) params.priority = priorityFilter;
       if (categoryFilter) params.category = categoryFilter;
@@ -97,10 +109,11 @@ export default function TicketsPage() {
       setTickets(res.data || []);
     } catch (err) {
       console.error("Failed to load tickets", err);
+      setLoadError(err instanceof Error ? err.message : "تعذر تحميل تذاكر الدعم الفني");
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, priorityFilter, categoryFilter]);
+  }, [debouncedSearch, statusFilter, priorityFilter, categoryFilter]);
 
   const loadDependencies = useCallback(async () => {
     try {
@@ -155,9 +168,10 @@ export default function TicketsPage() {
         related_asset_id: "",
         notes: "",
       });
+      toast.success("تم فتح تذكرة الدعم الفني بنجاح");
       loadTickets();
     } catch (err) {
-      console.error("Failed to create ticket", err);
+      toast.error(err instanceof Error ? err.message : "تعذر فتح تذكرة الدعم الفني");
     }
   };
 
@@ -168,9 +182,10 @@ export default function TicketsPage() {
       // Refresh
       const res = await api.get<TicketDetail>(`/tickets/${selectedTicket.id}`);
       setSelectedTicket(res.data);
+      toast.success(`تم تحديث حالة التذكرة إلى ${newStatus}`);
       loadTickets();
     } catch (err) {
-      console.error("Failed to update status", err);
+      toast.error(err instanceof Error ? err.message : "فشل تحديث حالة التذكرة");
     }
   };
 
@@ -187,8 +202,9 @@ export default function TicketsPage() {
       setIsInternal(false);
       const res = await api.get<TicketDetail>(`/tickets/${selectedTicket.id}`);
       setSelectedTicket(res.data);
+      toast.success("تمت إضافة الرد بنجاح");
     } catch (err) {
-      console.error("Failed to post comment", err);
+      toast.error(err instanceof Error ? err.message : "تعذر إرسال الرد");
     } finally {
       setCommentSubmitting(false);
     }
@@ -202,11 +218,11 @@ export default function TicketsPage() {
         ? `/tickets/${selectedTicket.id}/convert-to-task?assigned_to_id=${convertAssignee}`
         : `/tickets/${selectedTicket.id}/convert-to-task`;
       await api.post(url);
-      alert("تم تحويل التذكرة إلى مهمة تشغيلية بنجاح!");
+      toast.success("تم تحويل التذكرة إلى مهمة تشغيلية بنجاح!");
       setDetailModal(false);
       loadTickets();
     } catch (err) {
-      console.error("Failed to convert ticket", err);
+      toast.error(err instanceof Error ? err.message : "فشل تحويل التذكرة إلى مهمة");
     } finally {
       setConvertLoading(false);
     }
@@ -217,101 +233,159 @@ export default function TicketsPage() {
   const openCount = tickets.filter(t => t.status === "Open" || t.status === "Assigned").length;
   const inProgressCount = tickets.filter(t => t.status === "In Progress").length;
   const resolvedCount = tickets.filter(t => t.status === "Resolved" || t.status === "Closed").length;
+  const ticketFilterCount = [search.trim(), categoryFilter, statusFilter, priorityFilter].filter(Boolean).length;
+  const resetTicketFilters = () => {
+    setSearch("");
+    setCategoryFilter("");
+    setStatusFilter("");
+    setPriorityFilter("");
+  };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">مكتب المساعدة والدعم الفني (Help Desk)</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              إدارة بلاغات وتذاكر الدعم الفني، متابعة حل الأعطال، والتواصل مع الموظفين
-            </p>
-          </div>
-          <button
-            onClick={() => setCreateModal(true)}
-            className="inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
-          >
-            <PlusIcon className="w-5 h-5" />
-            فتح تذكرة دعم جديدة
-          </button>
-        </div>
+        <PageHeader
+          title="مكتب المساعدة والدعم الفني (Help Desk)"
+          description="إدارة بلاغات وتذاكر الدعم الفني، متابعة حل الأعطال، وتحويل البلاغات إلى مهام تشغيلية"
+          icon={<LifeBuoyIcon className="w-5 h-5" />}
+          actions={
+            <button
+              type="button"
+              onClick={() => setCreateModal(true)}
+              className="motion-control inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer"
+            >
+              <PlusIcon className="w-5 h-5" />
+              فتح تذكرة دعم جديدة
+            </button>
+          }
+        />
 
-        {/* Stats */}
+        {/* Interactive Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard title="إجمالي التذاكر" value={totalTickets} icon={<LifeBuoyIcon className="w-5 h-5" />} accentColor="border-blue-500" />
-          <StatsCard title="التذاكر المفتوحة" value={openCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-amber-500" />
-          <StatsCard title="قيد المعالجة" value={inProgressCount} icon={<ClockIcon className="w-5 h-5" />} accentColor="border-blue-500" />
-          <StatsCard title="تم حلها وإغلاقها" value={resolvedCount} icon={<CheckCircleIcon className="w-5 h-5" />} accentColor="border-green-500" />
+          <StatsCard
+            title="إجمالي التذاكر"
+            value={totalTickets}
+            icon={<LifeBuoyIcon className="w-5 h-5" />}
+            accentColor="border-blue-500"
+            active={!statusFilter}
+            onClick={() => setStatusFilter("")}
+          />
+          <StatsCard
+            title="التذاكر المفتوحة"
+            value={openCount}
+            icon={<AlertCircleIcon className="w-5 h-5" />}
+            accentColor="border-amber-500"
+            active={statusFilter === "Open"}
+            onClick={() => setStatusFilter(statusFilter === "Open" ? "" : "Open")}
+          />
+          <StatsCard
+            title="قيد المعالجة"
+            value={inProgressCount}
+            icon={<ClockIcon className="w-5 h-5" />}
+            accentColor="border-[#187A5A]"
+            active={statusFilter === "In Progress"}
+            onClick={() => setStatusFilter(statusFilter === "In Progress" ? "" : "In Progress")}
+          />
+          <StatsCard
+            title="تم حلها وإغلاقها"
+            value={resolvedCount}
+            icon={<CheckCircleIcon className="w-5 h-5" />}
+            accentColor="border-emerald-600"
+            active={statusFilter === "Resolved"}
+            onClick={() => setStatusFilter(statusFilter === "Resolved" ? "" : "Resolved")}
+          />
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm flex flex-wrap gap-3 items-center justify-between">
-          <div className="relative flex-1 min-w-[240px]">
-            <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="بحث برقم التذكرة (TCK-...)، عنوان المشكلة، أو التفاصيل..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pr-9 pl-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-            />
-          </div>
+        <DataToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="بحث برقم التذكرة (TCK-...)، عنوان المشكلة، أو التفاصيل..."
+          searchLabel="بحث في التذاكر"
+          activeFilterCount={ticketFilterCount}
+          onResetFilters={resetTicketFilters}
+          onRefresh={() => void loadTickets()}
+          refreshing={loading}
+          filters={
+            <>
+              <select
+                aria-label="تصفية حسب التصنيف"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              >
+                <option value="">جميع التصنيفات</option>
+                <option value="Hardware">أجهزة وعتاد (Hardware)</option>
+                <option value="Software">برمجيات وأنظمة (Software)</option>
+                <option value="Network">شبكات واتصالات (Network)</option>
+                <option value="Access">صلاحيات ووصول (Access)</option>
+                <option value="Email">بريد إلكتروني (Email)</option>
+                <option value="Other">أخرى</option>
+              </select>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-            >
-              <option value="">جميع التصنيفات</option>
-              <option value="Hardware">أجهزة وعتاد (Hardware)</option>
-              <option value="Software">برمجيات وأنظمة (Software)</option>
-              <option value="Network">شبكات واتصالات (Network)</option>
-              <option value="Access">صلاحيات ووصول (Access)</option>
-              <option value="Email">بريد إلكتروني (Email)</option>
-              <option value="Other">أخرى</option>
-            </select>
+              <select
+                aria-label="تصفية حسب الحالة"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              >
+                <option value="">جميع الحالات</option>
+                <option value="Open">مفتوحة (Open)</option>
+                <option value="Assigned">مسندة لفني</option>
+                <option value="In Progress">قيد المعالجة</option>
+                <option value="Waiting for User">في انتظار رد المستخدم</option>
+                <option value="Resolved">تم الحل</option>
+                <option value="Closed">مغلقة</option>
+              </select>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-            >
-              <option value="">جميع الحالات</option>
-              <option value="Open">مفتوحة (Open)</option>
-              <option value="Assigned">مسندة لفني</option>
-              <option value="In Progress">قيد المعالجة</option>
-              <option value="Waiting for User">في انتظار رد المستخدم</option>
-              <option value="Resolved">تم الحل</option>
-              <option value="Closed">مغلقة</option>
-            </select>
+              <select
+                aria-label="تصفية حسب الأولوية"
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              >
+                <option value="">جميع الأولويات</option>
+                <option value="Urgent">عاجل</option>
+                <option value="High">مرتفع</option>
+                <option value="Medium">متوسط</option>
+                <option value="Low">منخفض</option>
+              </select>
+            </>
+          }
+        />
 
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-            >
-              <option value="">جميع الأولويات</option>
-              <option value="Urgent">عاجل</option>
-              <option value="High">مرتفع</option>
-              <option value="Medium">متوسط</option>
-              <option value="Low">منخفض</option>
-            </select>
-          </div>
-        </div>
+        {loadError && (
+          <AlertBanner
+            variant="error"
+            title="تعذر تحميل تذاكر الدعم"
+            message={loadError}
+            onRetry={() => void loadTickets()}
+            onDismiss={() => setLoadError(null)}
+          />
+        )}
 
         {/* Tickets Table */}
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">جاري تحميل تذاكر الدعم الفني...</div>
+            <TableSkeleton variant="table" rows={5} cols={7} />
           ) : tickets.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <LifeBuoyIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-base font-medium">لا توجد تذاكر دعم تطابق معايير البحث</p>
-              <p className="text-xs text-gray-400 mt-1">يمكن إضافة تذكرة دعم فني جديدة عند حدوث أي عطل</p>
-            </div>
+            <EmptyState
+              icon={<LifeBuoyIcon className="w-7 h-7" />}
+              title="لا توجد تذاكر دعم تطابق معايير البحث"
+              description="يمكنك إضافة تذكرة دعم فني جديدة عند حدوث أي عطل أو إعادة ضبط الفلاتر"
+              action={
+                ticketFilterCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={resetTicketFilters}
+                    className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                  >
+                    عرض جميع التذاكر
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-right">
@@ -603,34 +677,32 @@ export default function TicketsPage() {
               </div>
 
               {/* Convert to Task Box */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-amber-50/50 rounded-lg border border-amber-200/80">
-                <div className="flex items-center gap-2">
-                  <CheckSquareIcon className="w-5 h-5 text-[#C5A46D]" />
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900">هل تتطلب هذه التذكرة تدخلاً كبيراً أو مشروعاً صغيراً؟</h4>
-                    <p className="text-xs text-gray-500">يمكنك تحويل هذه التذكرة تلقائياً إلى مهمة فنية في قائمة المهام</p>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-amber-50/70 rounded-xl border border-amber-200/80">
+                  <div className="flex items-center gap-2.5">
+                    <CheckSquareIcon className="w-5 h-5 text-[#C5A46D] shrink-0" />
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">هل تتطلب هذه التذكرة تدخلاً كبيراً أو مشروعاً صغيراً؟</h4>
+                      <p className="text-xs text-slate-600">يمكنك تحويل هذه التذكرة تلقائياً إلى مهمة فنية في قائمة المهام</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <div className="min-w-[220px] flex-1 sm:flex-initial">
+                      <EmployeeCombobox
+                        value={convertAssignee}
+                        companyId={currentCompany?.id}
+                        onChange={(emp) => setConvertAssignee(emp?.id || "")}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleConvertToTask}
+                      disabled={convertLoading}
+                      className="motion-control px-3.5 py-2 text-xs font-semibold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-xl whitespace-nowrap cursor-pointer"
+                    >
+                      {convertLoading ? "جاري التحويل..." : "تحويل لمهمة"}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <select
-                    value={convertAssignee}
-                    onChange={(e) => setConvertAssignee(e.target.value)}
-                    className="px-2 py-1 text-xs rounded border border-gray-300"
-                  >
-                    <option value="">إسناد للفني...</option>
-                    {employees.map(emp => (
-                      <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleConvertToTask}
-                    disabled={convertLoading}
-                    className="px-3 py-1 text-xs font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded whitespace-nowrap"
-                  >
-                    {convertLoading ? "جاري التحويل..." : "تحويل لمهمة"}
-                  </button>
-                </div>
-              </div>
 
               {/* Comments & History */}
               <div className="space-y-3">

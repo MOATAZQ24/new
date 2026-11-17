@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
 from app.core.response import success_response, paginate
 from app.models.maintenance import MaintenanceRecord
 from app.models.asset import TechnicalAsset
@@ -31,7 +31,7 @@ def list_maintenance(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = db.query(MaintenanceRecord).filter(MaintenanceRecord.company_id == target_cid)
 
     if action_type:

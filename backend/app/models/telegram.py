@@ -16,6 +16,7 @@ from sqlalchemy import (
     Index,
     JSON,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -52,6 +53,10 @@ class TelegramUserLink(UUIDMixin, TimestampMixin, Base):
     verification_token: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
     token_expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    notifications_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    allowed_modules: Mapped[Optional[Any]] = mapped_column(JSON, default=None, nullable=True)
+    notification_preferences: Mapped[Optional[Any]] = mapped_column(JSON, default=dict, nullable=True)
+    data_scope: Mapped[str] = mapped_column(String(50), default="Self", nullable=False)
     linked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
@@ -61,6 +66,9 @@ class TelegramUserLink(UUIDMixin, TimestampMixin, Base):
 
     __table_args__ = (
         Index("idx_telegram_link_user", "telegram_user_id", "is_verified"),
+        Index("uq_telegram_verified_identity", "telegram_user_id", unique=True,
+              sqlite_where=text("is_verified = 1 AND telegram_user_id IS NOT NULL"),
+              postgresql_where=text("is_verified = true AND telegram_user_id IS NOT NULL")),
     )
 
 

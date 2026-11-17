@@ -255,28 +255,28 @@ export default function AuditPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-xs bg-gray-50 p-3 rounded-lg border">
                 <div>
-                  <span className="text-gray-400 block">المستخدم:</span>
-                  <strong className="text-gray-800">{selectedLog.user_name}</strong>
+                  <span className="text-slate-600 block">المستخدم:</span>
+                  <strong className="text-slate-900">{selectedLog.user_name}</strong>
                 </div>
                 <div>
-                  <span className="text-gray-400 block">نوع الإجراء:</span>
+                  <span className="text-slate-600 block">نوع الإجراء:</span>
                   <span>{selectedLog.action}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block">المورد / الكيان:</span>
-                  <span className="font-mono">{selectedLog.resource_type}</span>
+                  <span className="text-slate-600 block">المورد / الكيان:</span>
+                  <span className="font-mono"><bdi dir="ltr">{selectedLog.resource_type}</bdi></span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block">معرف المورد (UUID):</span>
-                  <span className="font-mono">{selectedLog.resource_id || "-"}</span>
+                  <span className="text-slate-600 block">معرف المورد (UUID):</span>
+                  <span className="font-mono"><bdi dir="ltr">{selectedLog.resource_id || "-"}</bdi></span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block">عنوان IP:</span>
-                  <span className="font-mono">{selectedLog.ip_address || "127.0.0.1"}</span>
+                  <span className="text-slate-600 block">عنوان IP:</span>
+                  <span className="font-mono"><bdi dir="ltr">{selectedLog.ip_address || "127.0.0.1"}</bdi></span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block">التوقيت:</span>
-                  <span dir="ltr">{selectedLog.created_at}</span>
+                  <span className="text-slate-600 block">التوقيت:</span>
+                  <bdi dir="ltr">{selectedLog.created_at}</bdi>
                 </div>
               </div>
 

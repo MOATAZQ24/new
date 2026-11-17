@@ -28,6 +28,7 @@ def log_audit(
     old_values: Optional[Any] = None,
     new_values: Optional[Any] = None,
     ip_address: Optional[str] = None,
+    commit: bool = True,
 ) -> AuditLog:
     """Log an audit entry. All values are JSON-safe serialized before storage."""
     entry = AuditLog(
@@ -41,5 +42,8 @@ def log_audit(
         ip_address=ip_address,
     )
     db.add(entry)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return entry

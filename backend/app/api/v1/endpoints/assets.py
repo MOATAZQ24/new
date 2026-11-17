@@ -7,7 +7,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
 from app.core.response import success_response, paginate
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.user import User, Employee
@@ -51,7 +51,7 @@ def list_assets(
 ):
     """List technical assets with company isolation."""
     from app.api.v1.endpoints.workspace import authorize_company
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     authorize_company(db, current_user, target_cid)
     query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
 
@@ -322,6 +322,17 @@ def delete_asset(
 
     if not current_user.is_superadmin and asset.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الحذف")
+
+    # Safety check: prevent deleting asset under active custody
+    active_custody_count = db.query(AssetCustody).filter(
+        AssetCustody.asset_id == asset.id,
+        AssetCustody.status == "Active",
+    ).count()
+    if active_custody_count > 0 or asset.status == "Assigned":
+        raise HTTPException(
+            status_code=400,
+            detail="لا يمكن حذف الأصل لوجود عهدة نشطة مسجلة عليه حالياً. يرجى استرجاع العهدة أولاً.",
+        )
 
     log_audit(
         db=db,

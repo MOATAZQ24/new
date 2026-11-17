@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles
+from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope
 from app.core.response import success_response, paginate
 from app.models.ticket import HelpDeskTicket, TicketComment
 from app.models.task import Task
@@ -42,7 +42,7 @@ def list_tickets(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid)
 
     # If simple employee role, only show their submitted tickets
@@ -173,6 +173,9 @@ def get_ticket(
     if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
 
+    if not current_user.is_superadmin and ticket.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
+
     user_roles = get_user_roles(current_user, db)
     is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
 
@@ -238,6 +241,9 @@ def update_ticket_status(
         raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
 
     if not current_user.is_superadmin and ticket.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
+
+    if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية التعديل")
 
     old_status = ticket.status
@@ -301,6 +307,9 @@ def add_ticket_comment(
     if not ticket:
         raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
 
+    if not current_user.is_superadmin and ticket.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
+
     user_roles = get_user_roles(current_user, db)
     is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
 
@@ -332,6 +341,9 @@ def convert_ticket_to_task(
     ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
+
+    if not current_user.is_superadmin and ticket.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
 
     task = Task(
         company_id=ticket.company_id,
@@ -376,6 +388,9 @@ def ai_assist_ticket(
     ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
+
+    if not current_user.is_superadmin and ticket.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
     if not current_user.is_superadmin and ticket.company_id != active_cid:
         raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
 

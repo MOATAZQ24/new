@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
@@ -8,9 +8,14 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import { useDialogAccessibility } from "@/components/ui/useDialogAccessibility";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DigitalAssetsPage() {
   const { activeCompanyId, activeCompany } = useAuth();
+  const toast = useToast();
 
   // State
   const [assets, setAssets] = useState<any[]>([]);
@@ -29,7 +34,9 @@ export default function DigitalAssetsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const [drawerTab, setDrawerTab] = useState<"details" | "secrets" | "permissions">("details");
+  useDialogAccessibility(drawerOpen && Boolean(selectedAsset), drawerRef, () => setDrawerOpen(false));
 
   // Secret Operations State
   const [showAddSecretModal, setShowAddSecretModal] = useState(false);
@@ -175,7 +182,7 @@ export default function DigitalAssetsPage() {
       setDrawerOpen(true);
       setDrawerTab("details");
     } catch (err: any) {
-      alert(err?.message || "فشل تحميل تفاصيل الأصل الرقمي");
+      toast.error(err?.message || "فشل تحميل تفاصيل الأصل الرقمي");
     }
   };
 
@@ -337,7 +344,7 @@ export default function DigitalAssetsPage() {
       }
       fetchAssets();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف الأصل الرقمي");
+      toast.error(err?.message || "فشل حذف الأصل الرقمي");
     }
   };
 
@@ -460,9 +467,10 @@ export default function DigitalAssetsPage() {
     }
     try {
       await api.delete(`/digital-assets/secrets/${secret.secret_id}`);
+      toast.success("تم حذف السر نهائياً من الخزنة");
       refreshSelectedAsset();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف السر من الخزنة");
+      toast.error(err?.message || "فشل حذف السر من الخزنة");
     }
   };
 
@@ -502,7 +510,7 @@ export default function DigitalAssetsPage() {
       await api.delete(`/digital-assets/permissions/${perm.permission_id}`);
       refreshSelectedAsset();
     } catch (err: any) {
-      alert(err?.message || "فشل إلغاء الصلاحية");
+      toast.error(err?.message || "فشل إلغاء الصلاحية");
     }
   };
 
@@ -697,25 +705,18 @@ export default function DigitalAssetsPage() {
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-400">
-                      <div className="inline-block animate-spin mb-2">
-                        <Icons.Refresh size={24} />
-                      </div>
-                      <p>جاري تحميل الأصول الرقمية...</p>
+                    <td colSpan={8}>
+                      <TableSkeleton variant="table" rows={5} cols={7} />
                     </td>
                   </tr>
                 ) : assets.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-400">
-                      <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
-                        <Icons.Lock size={24} />
-                      </div>
-                      <p className="font-semibold text-slate-600 dark:text-slate-300">
-                        لا توجد أصول رقمية مطابقة
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        يمكنك إضافة أصل رقمي جديد وربطه بخزنة HashiCorp Vault الآن
-                      </p>
+                    <td colSpan={8}>
+                      <EmptyState
+                        icon={<Icons.Lock size={26} />}
+                        title="لا توجد أصول رقمية مطابقة"
+                        description="يمكنك إضافة أصل رقمي جديد وربطه بخزنة HashiCorp Vault الآن"
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -870,8 +871,15 @@ export default function DigitalAssetsPage() {
 
         {/* Asset Details & Secrets Drawer (Slide-over) */}
         {drawerOpen && selectedAsset && (
-          <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs flex justify-end">
-            <div className="w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-r border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200">
+          <div className="motion-backdrop-enter fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs flex justify-end">
+            <div
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="digital-asset-drawer-title"
+              className="motion-drawer w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-r border-slate-200 dark:border-slate-800"
+              tabIndex={-1}
+            >
               {/* Drawer Header */}
               <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -880,7 +888,7 @@ export default function DigitalAssetsPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                      <h2 id="digital-asset-drawer-title" className="text-xl font-bold text-slate-900 dark:text-white">
                         {selectedAsset.name}
                       </h2>
                       <StatusBadge status={selectedAsset.status} />

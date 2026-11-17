@@ -5,6 +5,9 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/ui/StatsCard";
+import { AlertBanner } from "@/components/ui/AlertBanner";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Icons } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -45,19 +48,29 @@ export default function DashboardPage() {
     <DashboardLayout>
       <DashboardWorkspace>
       {/* Page Header */}
-      <div style={{ order: -2 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            لوحة تحكم العمليات التشغيلية (IT Operations Dashboard)
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            نظرة شاملة ومؤشرات أداء فورية لـ{" "}
-            <span className="font-bold text-[#187A5A]">
-              {activeCompany ? activeCompany.name_ar : "الشركة الحالية"}
+      <div style={{ order: -2 }} className="lg:col-span-12">
+        <PageHeader
+          title="لوحة تحكم العمليات التشغيلية"
+          description={`نظرة شاملة ومؤشرات أداء فورية لـ ${activeCompany ? activeCompany.name_ar : "الشركة الحالية"}`}
+          icon={<Icons.Dashboard size={20} />}
+          badge={
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#187A5A]/10 text-[#123D32] font-bold border border-[#187A5A]/20">
+              <bdi>{activeCompany?.code || "IGT"}</bdi>
             </span>
-          </p>
-        </div>
-
+          }
+          actions={
+            <button
+              type="button"
+              onClick={() => void fetchDashboard()}
+              disabled={loading}
+              aria-label="تحديث بيانات لوحة التحكم"
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              <Icons.Refresh size={14} className={loading ? "animate-spin" : ""} />
+              <span>تحديث</span>
+            </button>
+          }
+        />
       </div>
         {/* Quick Action Buttons */}
         <DashboardWidget id="quick_actions" allowed={data?.available_widgets}>
@@ -93,8 +106,32 @@ export default function DashboardPage() {
         </div>
         </DashboardWidget>
 
-      {failure && <div role="alert" style={{ order: -1 }}>{failure} <button onClick={() => void fetchDashboard()}>إعادة المحاولة / Retry</button></div>}
-      {loading && <p role="status" style={{ order: -1 }}>تحميل لوحة المعلومات…</p>}
+      {failure && (
+        <div style={{ order: -1 }} className="lg:col-span-12">
+          <AlertBanner
+            variant="error"
+            title="تعذر تحميل بيانات لوحة التحكم"
+            message={failure}
+            onRetry={() => void fetchDashboard()}
+          />
+        </div>
+      )}
+      {loading && !data && (
+        <div style={{ order: -1 }} className="lg:col-span-12 space-y-5" aria-busy="true" role="status" aria-label="جاري تحميل البيانات">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-28 rounded-xl bg-white border border-slate-200 p-4 animate-pulse space-y-3">
+                <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                <div className="h-7 w-1/3 bg-slate-200 rounded" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="h-56 rounded-xl bg-white border border-slate-200 animate-pulse" />
+            <div className="h-56 rounded-xl bg-white border border-slate-200 animate-pulse" />
+          </div>
+        </div>
+      )}
       {/* Critical Alerts Banner (if any) */}
       <DashboardWidget id="critical_tickets" allowed={data?.available_widgets}>
       {(data?.critical_tickets ?? 0) > 0 && (
@@ -226,13 +263,62 @@ export default function DashboardPage() {
       </div>
 
       </DashboardWidget>
-      <DashboardWidget id="maintenance" allowed={data?.available_widgets}><div className="bg-white rounded-xl border p-5"><h2 className="font-bold">ملخص الصيانة / Maintenance</h2><Link href="/maintenance">عمليات معلقة: {data?.pending_maintenance ?? "…"}</Link></div></DashboardWidget>
-      <DashboardWidget id="recent_tasks" allowed={data?.available_widgets}><div className="bg-white rounded-xl border p-5"><h2 className="font-bold mb-3">المهام الأخيرة / Recent tasks</h2>{data?.recent_tasks?.length ? data.recent_tasks.map((task: { id: string; title: string; status: string }) => <Link className="flex justify-between py-2 border-b" href="/tasks" key={task.id}><bdi>{task.title}</bdi><bdi>{task.status}</bdi></Link>) : <p>لا توجد مهام / No tasks</p>}</div></DashboardWidget>
+      <DashboardWidget id="maintenance" allowed={data?.available_widgets}>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-full flex flex-col justify-between gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900">ملخص الصيانة والتغييرات</h2>
+            <div className="p-2 rounded-lg bg-amber-50 text-amber-700">
+              <Icons.Maintenance size={16} />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div>
+              <div className="text-xs font-semibold text-slate-600">عمليات صيانة معلقة أو جارية</div>
+              <div className="motion-counter text-3xl font-black text-slate-900 mt-1">
+                {data?.pending_maintenance ?? 0}
+              </div>
+            </div>
+            <Link
+              href="/maintenance"
+              className="motion-control inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-semibold transition-colors"
+            >
+              <span>متابعة الصيانة</span>
+              <Icons.ChevronLeft size={14} />
+            </Link>
+          </div>
+        </div>
+      </DashboardWidget>
+      <DashboardWidget id="recent_tasks" allowed={data?.available_widgets}>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-full flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-slate-900">المهام التشغيلية الأخيرة</h2>
+            <Link href="/tasks" className="text-xs font-semibold text-[#187A5A] hover:underline">
+              عرض الكل
+            </Link>
+          </div>
+          {data?.recent_tasks?.length ? (
+            <div className="divide-y divide-slate-100 flex-1">
+              {data.recent_tasks.map((task: { id: string; title: string; status: string }) => (
+                <Link
+                  className="motion-control flex items-center justify-between gap-3 py-2.5 px-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors"
+                  href="/tasks"
+                  key={task.id}
+                >
+                  <span className="text-xs font-semibold text-slate-800 truncate"><bdi>{task.title}</bdi></span>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 shrink-0"><bdi>{task.status}</bdi></span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState compact title="لا توجد مهام حديثة" description="ستظهر أحدث المهام المسندة هنا فور إنشائها" />
+          )}
+        </div>
+      </DashboardWidget>
       {/* Analytics & Activity Section */}
       
         {/* Asset Status Breakdown */}
         <DashboardWidget id="asset_status" allowed={data?.available_widgets}>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-full">
           <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
             <span>توزيع حالات الأصول</span>
             <Icons.Assets size={16} className="text-[#187A5A]" />
@@ -268,7 +354,7 @@ export default function DashboardPage() {
         </DashboardWidget>
         {/* Task & Ticket Distribution */}
         <DashboardWidget id="ticket_priorities" allowed={data?.available_widgets}>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-full">
           <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
             <span>أولويات تذاكر الدعم</span>
             <Icons.HelpDesk size={16} className="text-[#187A5A]" />
@@ -322,16 +408,16 @@ export default function DashboardPage() {
                 >
                   <div>
                     <span className="font-semibold text-slate-800">{act.action}</span>
-                    <span className="text-slate-400 mx-1.5">•</span>
-                    <span className="text-slate-600">{act.resource_type}</span>
+                    <span className="text-slate-500 mx-1.5">•</span>
+                    <span className="text-slate-700">{act.resource_type}</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-[11px] text-slate-600 font-mono">
                     {act.user_name}
                   </span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-slate-400 py-4 text-center">لا توجد عمليات مسجلة حديثاً</p>
+              <p className="text-xs text-slate-600 py-4 text-center">لا توجد عمليات مسجلة حديثاً</p>
             )}
           </div>
         </div>
@@ -341,15 +427,39 @@ export default function DashboardPage() {
   );
 }
 
+const WIDGET_SPANS: Record<string, string> = {
+  quick_actions: "lg:col-span-12",
+  critical_tickets: "lg:col-span-12",
+  subscriptions: "lg:col-span-12",
+  kpis: "lg:col-span-12",
+  asset_status: "lg:col-span-6",
+  ticket_priorities: "lg:col-span-6",
+  recent_tasks: "lg:col-span-6",
+  maintenance: "lg:col-span-6",
+  activity: "lg:col-span-12",
+};
+
 function DashboardWidget({ id, allowed, children }: { id: string; allowed?: string[]; children: React.ReactNode }) {
   const { draft } = useWorkspace();
   const index = draft.widgets.findIndex(w => w.id === id);
   if (!allowed?.includes(id) || index < 0 || !draft.widgets[index].enabled) return null;
-  return <section style={{ order: index }} data-widget={id}>{children}</section>;
+  return (
+    <section
+      style={{ order: index }}
+      data-widget={id}
+      className={`${WIDGET_SPANS[id] || "lg:col-span-12"} min-w-0`}
+    >
+      {children}
+    </section>
+  );
 }
 
 function DashboardWorkspace({ children }: { children: React.ReactNode }) {
   const { draft } = useWorkspace();
   const order = (child: React.ReactNode) => React.isValidElement<{ id?: string }>(child) && child.props.id ? draft.widgets.findIndex(w => w.id === child.props.id) : -1;
-  return <div className="flex flex-col gap-6">{React.Children.toArray(children).sort((a, b) => order(a) - order(b))}</div>;
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+      {React.Children.toArray(children).sort((a, b) => order(a) - order(b))}
+    </div>
+  );
 }

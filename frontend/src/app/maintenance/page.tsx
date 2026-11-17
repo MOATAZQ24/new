@@ -5,11 +5,16 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function MaintenancePage() {
   const { activeCompanyId, user } = useAuth();
+  const toast = useToast();
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionFilter, setActionFilter] = useState("");
@@ -91,7 +96,7 @@ export default function MaintenancePage() {
       setRollbackPlan("");
       fetchRecords();
     } catch (err: any) {
-      alert(err?.message || "فشل تسجيل العملية");
+      toast.error(err?.message || "فشل تسجيل العملية");
     }
   };
 
@@ -101,7 +106,7 @@ export default function MaintenancePage() {
       fetchRecords();
       if (showDetailModal) setShowDetailModal(false);
     } catch (err: any) {
-      alert(err?.message || "فشل تحديث حالة الاعتماد");
+      toast.error(err?.message || "فشل تحديث حالة الاعتماد");
     }
   };
 
@@ -119,8 +124,9 @@ export default function MaintenancePage() {
         </div>
 
         <button
+          type="button"
           onClick={openAddModal}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+          className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Icons.Plus size={16} />
           <span>طلب صيانة / تغيير جديد</span>
@@ -128,16 +134,17 @@ export default function MaintenancePage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {["", "Configuration Change", "Maintenance", "Replacement"].map((act) => (
             <button
               key={act}
+              type="button"
               onClick={() => setActionFilter(act)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 actionFilter === act
                   ? "bg-[#187A5A] text-white shadow-xs"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               {act === ""
@@ -152,18 +159,31 @@ export default function MaintenancePage() {
         </div>
 
         <button
+          type="button"
           onClick={fetchRecords}
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
+          disabled={loading}
+          aria-label="تحديث سجل الصيانة"
+          title="تحديث البيانات"
+          className="motion-control p-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer"
         >
-          <Icons.Refresh size={16} />
+          <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
         </button>
       </div>
 
       {/* Records Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {loading ? (
+          <TableSkeleton variant="table" rows={5} cols={6} />
+        ) : records.length === 0 ? (
+          <EmptyState
+            icon={<Icons.Maintenance size={26} />}
+            title="لا توجد طلبات صيانة أو تغيير مطابقة"
+            description="يمكنك تغيير تصنيف الإجراء أو تسجيل طلب صيانة أو تغيير إعدادات جديد"
+          />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
+            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
               <tr>
                 <th className="p-3.5">عنوان الإجراء</th>
                 <th className="p-3.5">النوع</th>
@@ -176,10 +196,10 @@ export default function MaintenancePage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {records.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-800">
+                <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="p-3.5 font-bold text-slate-900">
                     <div>{r.title}</div>
-                    <div className="text-[11px] text-slate-400 font-normal line-clamp-1">
+                    <div className="text-[11px] text-slate-600 font-normal line-clamp-1">
                       {r.description || "-"}
                     </div>
                   </td>
@@ -188,7 +208,7 @@ export default function MaintenancePage() {
                       {r.action_type}
                     </span>
                   </td>
-                  <td className="p-3.5 text-slate-700 font-medium">
+                  <td className="p-3.5 text-slate-800 font-medium">
                     {r.target_name || `${r.target_type}`}
                   </td>
                   <td className="p-3.5">
@@ -197,16 +217,17 @@ export default function MaintenancePage() {
                   <td className="p-3.5">
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="p-3.5 text-slate-600 font-semibold">
+                  <td className="p-3.5 text-slate-700 font-semibold">
                     {r.assigned_technician_name || "غير محدد"}
                   </td>
                   <td className="p-3.5 text-center">
                     <button
+                      type="button"
                       onClick={() => {
                         setSelectedRecord(r);
                         setShowDetailModal(true);
                       }}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px]"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
                     >
                       عرض وتقييم المخاطر
                     </button>
@@ -216,6 +237,7 @@ export default function MaintenancePage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Add Modal */}

@@ -5,14 +5,22 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { api } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function InfrastructurePage() {
   const { activeCompanyId } = useAuth();
+  const toast = useToast();
   const [devices, setDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 220);
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -38,13 +46,13 @@ export default function InfrastructurePage() {
   const fetchDevices = async () => {
     setLoading(true);
     try {
-      let url = `/infrastructure?search=${search}`;
+      let url = `/infrastructure?search=${encodeURIComponent(debouncedSearch)}`;
       if (typeFilter) url += `&device_type=${typeFilter}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       const res = await api.get(url);
       setDevices(res.data || []);
     } catch (e) {
-      console.error(e);
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل أجهزة البنية التحتية");
     } finally {
       setLoading(false);
     }
@@ -52,7 +60,7 @@ export default function InfrastructurePage() {
 
   useEffect(() => {
     fetchDevices();
-  }, [typeFilter, statusFilter, activeCompanyId]);
+  }, [typeFilter, statusFilter, activeCompanyId, debouncedSearch]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,91 +92,87 @@ export default function InfrastructurePage() {
       setNotes("");
       fetchDevices();
     } catch (err: any) {
-      alert(err?.message || "فشل إضافة جهاز البنية التحتية");
+      toast.error(err?.message || "فشل إضافة جهاز البنية التحتية");
     }
   };
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            سجل البنية التحتية والشبكات (IT Infrastructure)
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            إدارة الخوادم، أجهزة التوجيه، جدران الحماية، محولات الشبكة، ونقاط الوصول
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
-        >
-          <Icons.Plus size={16} />
-          <span>إضافة جهاز بنية تحتية</span>
-        </button>
-      </div>
+      <PageHeader
+        title="سجل البنية التحتية والشبكات (IT Infrastructure)"
+        description="إدارة الخوادم، أجهزة التوجيه، جدران الحماية، محولات الشبكة، ونقاط الوصول"
+        icon={<Icons.Infrastructure size={20} />}
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            <Icons.Plus size={16} />
+            <span>إضافة جهاز بنية تحتية</span>
+          </button>
+        }
+      />
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <Icons.Search
-              size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              type="text"
-              placeholder="بحث باسم الجهاز، IP، الهوست..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && fetchDevices()}
-              className="w-full bg-slate-50 border border-slate-200 text-xs py-2 pr-9 pl-3 rounded-xl outline-none focus:border-[#187A5A]"
-            />
-          </div>
+      <DataToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="بحث باسم الجهاز، IP، الهوست..."
+        searchLabel="بحث في البنية التحتية"
+        activeFilterCount={[search.trim(), typeFilter, statusFilter].filter(Boolean).length}
+        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); }}
+        onRefresh={() => void fetchDevices()}
+        refreshing={loading}
+        filters={
+          <>
+            <select
+              aria-label="تصفية حسب نوع الجهاز"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع أنواع الأجهزة</option>
+              <option value="Server">خادم (Server)</option>
+              <option value="Firewall">جدار حماية (Firewall)</option>
+              <option value="Router">راوتر (Router)</option>
+              <option value="Switch">سويتش (Switch)</option>
+              <option value="Access Point">نقطة وصول (Access Point)</option>
+              <option value="NAS">وحدة تخزين شبكي (NAS)</option>
+              <option value="Other">أخرى (Other)</option>
+            </select>
 
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
-          >
-            <option value="">جميع أنواع الأجهزة</option>
-            <option value="Server">خادم (Server)</option>
-            <option value="Firewall">جدار حماية (Firewall)</option>
-            <option value="Router">راوتر (Router)</option>
-            <option value="Switch">سويتش (Switch)</option>
-            <option value="Access Point">نقطة وصول (Access Point)</option>
-            <option value="NAS">وحدة تخزين شبكي (NAS)</option>
-            <option value="Other">أخرى (Other)</option>
-          </select>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
-          >
-            <option value="">جميع الحالات</option>
-            <option value="Active">نشط (Active)</option>
-            <option value="Offline">غير متصل (Offline)</option>
-            <option value="Maintenance">تحت الصيانة (Maintenance)</option>
-            <option value="Decommissioned">خارج الخدمة (Decommissioned)</option>
-          </select>
-        </div>
-
-        <button
-          onClick={fetchDevices}
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
-        >
-          <Icons.Refresh size={16} />
-        </button>
-      </div>
+            <select
+              aria-label="تصفية حسب حالة الجهاز"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Active">نشط (Active)</option>
+              <option value="Offline">غير متصل (Offline)</option>
+              <option value="Maintenance">تحت الصيانة (Maintenance)</option>
+              <option value="Decommissioned">خارج الخدمة (Decommissioned)</option>
+            </select>
+          </>
+        }
+      />
 
       {/* Devices Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {loading ? (
+          <TableSkeleton variant="table" rows={5} cols={7} />
+        ) : devices.length === 0 ? (
+          <EmptyState
+            icon={<Icons.Infrastructure size={26} />}
+            title="لا توجد أجهزة بنية تحتية مطابقة"
+            description="يمكنك تعديل الفلاتر أو إضافة خادم أو جهاز شبكة جديد"
+          />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
+            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
               <tr>
                 <th className="p-3.5">اسم الجهاز</th>
                 <th className="p-3.5">النوع</th>
@@ -182,32 +186,33 @@ export default function InfrastructurePage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {devices.map((d) => (
-                <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-800">
+                <tr key={d.id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="p-3.5 font-bold text-slate-900">
                     <div>{d.device_name}</div>
-                    <div className="text-[11px] text-slate-400 font-normal">
+                    <div className="text-[11px] text-slate-600 font-normal">
                       {d.network_name || "-"}
                     </div>
                   </td>
                   <td className="p-3.5 text-slate-700 font-semibold">{d.device_type}</td>
                   <td className="p-3.5 font-mono font-bold text-[#187A5A]">
-                    {d.management_ip || "-"}
+                    <bdi dir="ltr">{d.management_ip || "-"}</bdi>
                   </td>
-                  <td className="p-3.5 text-slate-600">
+                  <td className="p-3.5 text-slate-700">
                     {d.manufacturer} {d.model}
                   </td>
-                  <td className="p-3.5 font-mono text-slate-500">{d.hostname || "-"}</td>
-                  <td className="p-3.5 text-slate-600">{d.location || "-"}</td>
+                  <td className="p-3.5 font-mono text-slate-600"><bdi dir="ltr">{d.hostname || "-"}</bdi></td>
+                  <td className="p-3.5 text-slate-700">{d.location || "-"}</td>
                   <td className="p-3.5">
                     <StatusBadge status={d.status} />
                   </td>
                   <td className="p-3.5 text-center">
                     <button
+                      type="button"
                       onClick={() => {
                         setSelectedDevice(d);
                         setShowDetailsModal(true);
                       }}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px]"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
                     >
                       التفاصيل والربط
                     </button>
@@ -217,6 +222,7 @@ export default function InfrastructurePage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Add Device Modal */}

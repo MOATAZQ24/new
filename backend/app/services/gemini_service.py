@@ -30,36 +30,37 @@ def analyze_ticket_ai(
     key = api_key or os.getenv("GEMINI_API_KEY", "").strip()
     full_text = f"{title}\n{description or ''}"
 
-    # If live Gemini API key is configured, query Gemini REST API
+    # If live Gemini API key is configured, query Gemini REST API using active supported models
     if key and len(key) > 20:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
-            prompt = (
-                f"أنت خبير دعم فني وتشغيل لنظام IT Operations. حلل تذكرة الدعم الفني التالية بدقة باللغة العربية:\n"
-                f"العنوان: {title}\n"
-                f"الوصف: {description or 'لا يوجد'}\n"
-                f"أعد الإجابة بتنسيق JSON حصراً بالمفاتيح التالية:\n"
-                f"- summary: ملخص تنفيذي موجز في سطر واحد\n"
-                f"- suggested_category: التصنيف الفني المقترح (الشبكات، الخوادم، البرمجيات، الأجهزة، أمن المعلومات)\n"
-                f"- suggested_priority: الأولوية المقترحة (Low, Medium, High, Urgent)\n"
-                f"- troubleshooting_steps: مصفوفة من 3 إلى 4 خطوات فنية للتشخيص والحل"
-            )
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"},
-            }
-            body = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                candidate = data.get("candidates", [{}])[0]
-                content = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
-                result = json.loads(content)
-                result["source"] = "Gemini AI (Live)"
-                result["disclaimer"] = DISCLAIMER_TEXT
-                return result
-        except Exception as e:
-            logger.warning(f"Live Gemini API call failed, falling back to heuristic engine: {e}")
+        prompt = (
+            f"أنت خبير دعم فني وتشغيل لنظام IT Operations. حلل تذكرة الدعم الفني التالية بدقة باللغة العربية:\n"
+            f"العنوان: {title}\n"
+            f"الوصف: {description or 'لا يوجد'}\n"
+            f"أعد الإجابة بتنسيق JSON حصراً بالمفاتيح التالية:\n"
+            f"- summary: ملخص تنفيذي موجز في سطر واحد\n"
+            f"- suggested_category: التصنيف الفني المقترح (الشبكات، الخوادم، البرمجيات، الأجهزة، أمن المعلومات)\n"
+            f"- suggested_priority: الأولوية المقترحة (Low, Medium, High, Urgent)\n"
+            f"- troubleshooting_steps: مصفوفة من 3 إلى 4 خطوات فنية للتشخيص والحل"
+        )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"},
+        }
+        body = json.dumps(payload).encode("utf-8")
+        for model_name in ("gemini-3-flash-preview", "gemini-flash-latest", "gemini-2.5-flash-lite"):
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={key}"
+                req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    candidate = data.get("candidates", [{}])[0]
+                    content = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
+                    result = json.loads(content)
+                    result["source"] = f"Gemini AI ({model_name})"
+                    result["disclaimer"] = DISCLAIMER_TEXT
+                    return result
+            except Exception as e:
+                logger.warning("Gemini API call failed on %s: %s", model_name, e)
 
     # Air-gapped / Local Rule-based Heuristic Engine
     lower_text = full_text.lower()
@@ -71,17 +72,19 @@ def analyze_ticket_ai(
         "التحقق من حالة الحساب وصلاحيات المستخدم المسجلة في Active Directory / DB",
     ]
 
-    if any(k in lower_text for k in ["انقطاع", "توقف الخادم", "حريق", "فقدان البيانات", "database down", "security breach"]):
-        suggested_prio = "Urgent"
-        suggested_cat = "الخوادم والبنية التحتية"
-        steps.insert(0, "تفعيل خطة التعافي من الكوارث والتأكد من توفر أحدث نسخة احتياطية سليمة")
-    elif any(k in lower_text for k in ["شبكة", "واي فاي", "بطء الاتصال", "switch", "router", "vpn"]):
+    if any(k in lower_text for k in ["راوتر", "سويتش", "شبكة", "واي فاي", "بطء الاتصال", "انقطاع اتصال", "switch", "router", "vpn"]):
         suggested_cat = "الشبكات والاتصالات"
+        if any(k in lower_text for k in ["انقطاع", "عاجلة", "عاجل", "طارئ", "حرج"]):
+            suggested_prio = "Urgent"
         steps = [
             "فحص مؤشرات الـ Switch وجدار الحماية للتأكد من عدم وجود تشبع في الحزمة (Bandwidth Saturation)",
             "إعادة تعيين جلسة الـ VPN وفحص تعارض عناوين IP على الخادم المحلي",
             "اختبار مسار الحزم (Traceroute) نحو البوابة الافتراضية",
         ]
+    elif any(k in lower_text for k in ["انقطاع", "توقف الخادم", "حريق", "فقدان البيانات", "database down", "security breach"]):
+        suggested_prio = "Urgent"
+        suggested_cat = "الخوادم والبنية التحتية"
+        steps.insert(0, "تفعيل خطة التعافي من الكوارث والتأكد من توفر أحدث نسخة احتياطية سليمة")
     elif any(k in lower_text for k in ["كلمة المرور", "تسجيل الدخول", "login", "auth", "حساب"]):
         suggested_cat = "الحسابات والمصادقة"
         steps = [

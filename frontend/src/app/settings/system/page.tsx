@@ -99,8 +99,7 @@ export default function SystemSettingsPage() {
   };
 
   const handleDownloadBackup = (filename: string) => {
-    const token = localStorage.getItem("token");
-    const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/system/backups/${filename}/download`;
+    const downloadUrl = `/api/v1/system/backups/${encodeURIComponent(filename)}/download`;
     // Open download in new tab / initiate download
     window.open(downloadUrl, "_blank");
   };
@@ -112,7 +111,7 @@ export default function SystemSettingsPage() {
           <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
             🔒
           </div>
-          <h2 className="text-xl font-bold text-gray-900">صلاحية وصول مقيدة</h2>
+          <h1 className="text-xl font-bold text-gray-900">صلاحية وصول مقيدة</h1>
           <p className="text-sm text-gray-600 leading-relaxed">
             قسم صيانة النظام والتعافي من الكوارث مخصص حصراً لمدير النظام الرئيسي (Super Admin). ليس لديك الصلاحيات الكافية للوصول إلى هذه الشاشة.
           </p>

@@ -6,8 +6,10 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 interface IntegrationItem {
   id: string;
@@ -118,6 +120,7 @@ interface MessageTemplateItem {
 }
 
 export default function IntegrationsCenterPage() {
+  const toast = useToast();
   const { activeCompanyId, user, currentCompany } = useAuth();
   
   // Multi-Company selection state (for Super Admin)
@@ -163,7 +166,8 @@ export default function IntegrationsCenterPage() {
     notify_on_reassigned: true,
   });
 
-  // Token Generation Modal
+  // Telegram Linking State
+  const [linkModalEmployee, setLinkModalEmployee] = useState<{ id: string; name: string } | null>(null);
   const [tokenModalOpen, setTokenModalOpen] = useState(false);
   const [generatedTokenData, setGeneratedTokenData] = useState<any>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
@@ -345,7 +349,7 @@ export default function IntegrationsCenterPage() {
       });
       fetchIntegrations();
     } catch (err: any) {
-      alert(err?.message || "فشل تحديث الحالة");
+      toast.error(err?.message || "فشل تحديث الحالة");
     }
   };
 
@@ -384,7 +388,7 @@ export default function IntegrationsCenterPage() {
       setActiveModal(null);
       fetchIntegrations();
     } catch (err: any) {
-      alert(err?.message || "فشل حفظ الإعدادات");
+      toast.error(err?.message || "فشل حفظ الإعدادات");
     } finally {
       setSavingConfig(false);
     }
@@ -481,7 +485,7 @@ export default function IntegrationsCenterPage() {
       setTokenModalOpen(true);
       fetchTelegramData();
     } catch (err: any) {
-      alert(err?.message || "فشل توليد رمز الربط");
+      toast.error(err?.message || "فشل توليد رمز الربط");
     } finally {
       setGeneratingToken(false);
     }
@@ -493,7 +497,7 @@ export default function IntegrationsCenterPage() {
       await api.delete(`/telegram/links/${employeeId}${getCompanyQuery()}`);
       fetchTelegramData();
     } catch (err: any) {
-      alert(err?.message || "فشل إلغاء الربط");
+      toast.error(err?.message || "فشل إلغاء الربط");
     }
   };
 
@@ -503,7 +507,7 @@ export default function IntegrationsCenterPage() {
       await api.delete(`/telegram/links/${employeeId}${getCompanyQuery()}`).catch(() => {});
       await handleGenerateToken(employeeId);
     } catch (err: any) {
-      alert(err?.message || "فشل إعادة الربط");
+      toast.error(err?.message || "فشل إعادة الربط");
     }
   };
 
@@ -511,10 +515,10 @@ export default function IntegrationsCenterPage() {
     try {
       const res = await api.post("/telegram/outbox/dispatch");
       const d = res.data;
-      alert(`تم تشغيل المعالج! تمت معالجة ${d.processed} عنصر (مرسل: ${d.sent}، بانتظار البوت: ${d.ready_awaiting_token})`);
+      toast.success(`تم تشغيل المعالج! تمت معالجة ${d.processed} عنصر (مرسل: ${d.sent}، بانتظار البوت: ${d.ready_awaiting_token})`);
       fetchTelegramData();
     } catch (err: any) {
-      alert(err?.message || "فشل تشغيل المعالج");
+      toast.error(err?.message || "فشل تشغيل المعالج");
     }
   };
 
@@ -529,7 +533,7 @@ export default function IntegrationsCenterPage() {
     let fullAction = simActionType;
     if (simActionType !== "cmd:my_tasks") {
       if (!simTaskId) {
-        alert("يرجى اختيار المهمة للمحاكاة");
+        toast.warning("يرجى اختيار المهمة للمحاكاة");
         setSimulating(false);
         return;
       }
@@ -571,7 +575,7 @@ export default function IntegrationsCenterPage() {
 
   const handleSaveMenuItem = async () => {
     if (!editingMenuItem || !editingMenuItem.label || !editingMenuItem.action) {
-      alert("يرجى كتابة عنوان الزر وتحديد الإجراء");
+      toast.warning("يرجى كتابة عنوان الزر وتحديد الإجراء");
       return;
     }
     setSavingMenuItem(true);
@@ -585,7 +589,7 @@ export default function IntegrationsCenterPage() {
       setEditingMenuItem(null);
       fetchMenuData();
     } catch (err: any) {
-      alert(err?.message || "فشل حفظ عنصر القائمة");
+      toast.error(err?.message || "فشل حفظ عنصر القائمة");
     } finally {
       setSavingMenuItem(false);
     }
@@ -597,7 +601,7 @@ export default function IntegrationsCenterPage() {
       await api.delete(`/telegram/menu/${id}${getCompanyQuery()}`);
       fetchMenuData();
     } catch (err: any) {
-      alert(err?.message || "فشل حذف الزر");
+      toast.error(err?.message || "فشل حذف الزر");
     }
   };
 
@@ -618,7 +622,7 @@ export default function IntegrationsCenterPage() {
       await api.post(`/telegram/menu/reorder${getCompanyQuery()}`, payload);
       fetchMenuData();
     } catch (err: any) {
-      alert(err?.message || "فشل إعادة الترتيب");
+      toast.error(err?.message || "فشل إعادة الترتيب");
     }
   };
 
@@ -774,7 +778,7 @@ export default function IntegrationsCenterPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100/70 p-1.5 rounded-2xl border border-slate-200/60">
+        <div className="flex flex-wrap items-center gap-2 bg-slate-100/70 p-1.5 rounded-2xl border border-slate-200/60 max-w-full">
           <button
             onClick={() => setActiveTab("general")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
@@ -1069,7 +1073,7 @@ export default function IntegrationsCenterPage() {
                       type="password"
                       value={botTokenInput}
                       onChange={(e) => setBotTokenInput(e.target.value)}
-                      placeholder={tgStatus?.has_bot_token ? "رمز التوكن محفوظ بأمان (اتركه فارغاً للإبقاء عليه)" : "9152657560:AAHwCR2m-hi..."}
+                      placeholder={tgStatus?.has_bot_token ? "رمز التوكن محفوظ بأمان (اتركه فارغاً للإبقاء عليه)" : "123456789:ABC..."}
                       className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#187A5A] focus:border-[#187A5A]"
                     />
                     <span className="text-[11px] text-slate-400 mt-1 block">
@@ -1369,11 +1373,10 @@ export default function IntegrationsCenterPage() {
                             <div className="flex items-center justify-center gap-1.5">
                               {!emp.is_linked ? (
                                 <button
-                                  onClick={() => handleGenerateToken(emp.employee_id)}
-                                  disabled={generatingToken}
-                                  className="px-3 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                  onClick={() => setLinkModalEmployee({ id: emp.employee_id, name: emp.full_name })}
+                                  className="px-3 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
                                 >
-                                  توليد رابط الربط
+                                  ربط Telegram
                                 </button>
                               ) : (
                                 <>
@@ -1385,11 +1388,11 @@ export default function IntegrationsCenterPage() {
                                     <Icons.Send size={12} />
                                   </button>
                                   <button
-                                    onClick={() => handleRelinkEmployee(emp.employee_id, emp.full_name)}
-                                    title="إعادة الربط برمز جديد"
-                                    className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold cursor-pointer"
+                                    onClick={() => setLinkModalEmployee({ id: emp.employee_id, name: emp.full_name })}
+                                    title="إدارة وصلاحيات Telegram وسجل الأنشطة"
+                                    className="px-2.5 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold cursor-pointer shadow-xs"
                                   >
-                                    إعادة الربط
+                                    إدارة الصلاحيات
                                   </button>
                                   <button
                                     onClick={() => handleUnlinkEmployee(emp.employee_id, emp.full_name)}
@@ -1876,60 +1879,18 @@ export default function IntegrationsCenterPage() {
           </Modal>
         )}
 
-        {/* MODAL: Employee Token Generation */}
-        {tokenModalOpen && generatedTokenData && (
-          <Modal
-            isOpen={tokenModalOpen}
-            onClose={() => setTokenModalOpen(false)}
-            title="رمز ورابط ربط حساب Telegram للموظف"
-          >
-            <div className="space-y-4 text-center">
-              <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold">
-                تم توليد رمز ربط مشفر وأحادي الاستخدام ينتهي بعد 30 دقيقة.
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-500 block mb-1">رمز التحقق السريع (6 أرقام):</span>
-                <span className="text-3xl font-mono font-bold tracking-widest text-[#123D32] bg-slate-100 px-6 py-2 rounded-xl inline-block border border-slate-200">
-                  {generatedTokenData.code}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-500 block mb-1">رابط الربط الفوري المباشر:</span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={generatedTokenData.deep_link}
-                    className="w-full text-xs font-mono p-2 bg-slate-50 border border-slate-200 rounded-lg text-left"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedTokenData.deep_link);
-                      alert("تم نسخ الرابط!");
-                    }}
-                    className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 cursor-pointer"
-                    title="نسخ"
-                  >
-                    <Icons.Copy size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <a
-                  href={generatedTokenData.deep_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2"
-                >
-                  <Icons.ExternalLink size={14} />
-                  <span>فتح الرابط في Telegram الآن</span>
-                </a>
-              </div>
-            </div>
-          </Modal>
+        {/* MODAL: Employee Telegram Linking (Manual /start Command & Live Polling) */}
+        {linkModalEmployee && (
+          <TelegramLinkingModal
+            isOpen={!!linkModalEmployee}
+            onClose={() => setLinkModalEmployee(null)}
+            employeeId={linkModalEmployee.id}
+            employeeName={linkModalEmployee.name}
+            companyId={selectedCompanyId || undefined}
+            onVerified={() => {
+              fetchTelegramData();
+            }}
+          />
         )}
 
         {/* MODAL: Bot Action Simulation */}

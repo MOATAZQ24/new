@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 interface ReportItem {
   type: string;
@@ -81,6 +82,7 @@ const reportsList: ReportItem[] = [
 
 export default function ReportsPage() {
   const { currentCompany, user } = useAuth();
+  const toast = useToast();
   const [downloading, setDownloading] = useState<string | null>(null);
 
   // Import Modal State
@@ -95,8 +97,7 @@ export default function ReportsPage() {
   const handleExport = (reportType: string, format: "excel" | "html") => {
     setDownloading(`${reportType}-${format}`);
     const companyParam = currentCompany ? `&company_id=${currentCompany.id}` : "";
-    const baseUrl = typeof window !== "undefined" ? window.location.origin.replace(":3000", ":8000") : "http://localhost:8000";
-    const url = `${baseUrl}/api/v1/reports/export?report_type=${reportType}&format_type=${format}${companyParam}`;
+    const url = `/api/v1/reports/export?report_type=${reportType}&format_type=${format}${companyParam}`;
 
     if (format === "html") {
       window.open(url, "_blank");
@@ -145,13 +146,13 @@ export default function ReportsPage() {
 
   const handleExecuteImport = async (dryRun: boolean) => {
     if (!importFileContent.trim()) {
-      alert("يرجى اختيار ملف CSV أو لصق بيانات الجدول");
+      toast.warning("يرجى اختيار ملف CSV أو لصق بيانات الجدول");
       return;
     }
 
     const rows = parseCsvToObjects(importFileContent);
     if (rows.length === 0) {
-      alert("لم يتم العثور على صفوف بيانات صالحة في الملف");
+      toast.warning("لم يتم العثور على صفوف بيانات صالحة في الملف");
       return;
     }
 
@@ -165,7 +166,7 @@ export default function ReportsPage() {
       });
       setImportResult(res.data);
     } catch (err: any) {
-      alert(err?.message || "فشل استيراد البيانات");
+      toast.error(err?.message || "فشل استيراد البيانات");
     } finally {
       setImportLoading(false);
     }

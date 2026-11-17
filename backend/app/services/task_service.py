@@ -33,6 +33,7 @@ TASK_STATUS_BLOCKED = "Blocked"
 TASK_STATUS_WAITING = "Waiting for Response"
 TASK_STATUS_SUBMITTED = "Submitted for Review"
 TASK_STATUS_REWORK = "Rework Required"
+TASK_STATUS_REJECTED = "Rejected"
 TASK_STATUS_COMPLETED = "Completed"
 TASK_STATUS_CANCELLED = "Cancelled"
 
@@ -54,6 +55,7 @@ VALID_STATUSES = {
     TASK_STATUS_WAITING,
     TASK_STATUS_SUBMITTED,
     TASK_STATUS_REWORK,
+    TASK_STATUS_REJECTED,
     TASK_STATUS_COMPLETED,
     TASK_STATUS_CANCELLED,
 }
@@ -68,12 +70,14 @@ ALLOWED_TRANSITIONS: Dict[str, List[str]] = {
         TASK_STATUS_ACCEPTED,
         TASK_STATUS_IN_PROGRESS,
         TASK_STATUS_BLOCKED,
+        TASK_STATUS_REJECTED,
         TASK_STATUS_CANCELLED,
     ],
     TASK_STATUS_ACCEPTED: [
         TASK_STATUS_IN_PROGRESS,
         TASK_STATUS_BLOCKED,
         TASK_STATUS_WAITING,
+        TASK_STATUS_REJECTED,
         TASK_STATUS_CANCELLED,
     ],
     TASK_STATUS_IN_PROGRESS: [
@@ -102,6 +106,10 @@ ALLOWED_TRANSITIONS: Dict[str, List[str]] = {
         TASK_STATUS_IN_PROGRESS,
         TASK_STATUS_BLOCKED,
         TASK_STATUS_SUBMITTED,
+        TASK_STATUS_CANCELLED,
+    ],
+    TASK_STATUS_REJECTED: [
+        TASK_STATUS_ASSIGNED,  # Admin / manager reassign or reopen
         TASK_STATUS_CANCELLED,
     ],
     TASK_STATUS_COMPLETED: [
@@ -347,6 +355,63 @@ def unblock_task(task: Task, user: User, db: Session) -> Task:
         user_id=user.id,
         company_id=task.company_id,
         new_values={"status": TASK_STATUS_IN_PROGRESS, "is_blocked": False},
+    )
+    return task
+
+
+def reject_task(task: Task, reason: Optional[str], user: User, db: Session) -> Task:
+    """Assignee employee or manager rejects the task with a reason."""
+    is_mgr = is_manager_or_admin(user, db, task.company_id)
+    is_assignee = is_task_assignee(task, user)
+
+    if not (is_assignee or is_mgr):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="فقط الموظف المسندة إليه المهمة أو المسؤول يمكنه رفض المهمة",
+        )
+
+    clean_reason = (reason or "").strip() or "اعتذار الفني عن استلام المهمة"
+    validate_transition(task, TASK_STATUS_REJECTED, user, db)
+
+    task.status = TASK_STATUS_REJECTED
+    task.blocker_reason = f"سبب الرفض: {clean_reason}"
+    db.commit()
+
+    emp_name = user.employee.full_name if getattr(user, "employee", None) else user.username
+    comment = TaskComment(
+        task_id=task.id,
+        user_id=user.id,
+        content=f"❌ رفض الفني {emp_name} المهمة. سبب الرفض: {clean_reason}",
+    )
+    db.add(comment)
+    db.commit()
+
+    if task.assigned_by_id and str(task.assigned_by_id) != str(user.id):
+        create_notification(
+            db=db,
+            recipient_user_id=task.assigned_by_id,
+            company_id=task.company_id,
+            event_type="task_rejected",
+            title="تم رفض المهمة",
+            message=f"قام الموظف {emp_name} برفض المهمة: {task.title}. السبب: {clean_reason}",
+            related_record_type="task",
+            related_record_id=task.id,
+        )
+
+    try:
+        enqueue_task_notification(db=db, task=task, event_type="task.rejected", custom_message=f"❌ تم رفض المهمة: {task.title}. السبب: {clean_reason}")
+        db.commit()
+    except Exception:
+        pass
+
+    log_audit(
+        db=db,
+        action="TASK_REJECTED",
+        resource_type="Task",
+        resource_id=str(task.id),
+        user_id=user.id,
+        company_id=task.company_id,
+        new_values={"status": TASK_STATUS_REJECTED, "rejection_reason": clean_reason, "rejected_by": emp_name},
     )
     return task
 

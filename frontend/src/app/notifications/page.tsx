@@ -55,6 +55,7 @@ export default function NotificationsPage() {
       setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
       );
+      window.dispatchEvent(new Event("notifications:updated"));
     } catch (err) {
       console.error("Failed to mark notification read", err);
     }
@@ -65,6 +66,7 @@ export default function NotificationsPage() {
       await api.post("/notifications/read-all");
       const now = new Date().toISOString();
       setNotifications(prev => prev.map(n => ({ ...n, read_at: now })));
+      window.dispatchEvent(new Event("notifications:updated"));
     } catch (err) {
       console.error("Failed to mark all read", err);
     }
@@ -163,7 +165,7 @@ export default function NotificationsPage() {
                 return (
                   <div
                     key={n.id}
-                    className={`p-4 transition-colors flex items-start justify-between gap-4 ${
+                    className={`motion-notification p-4 transition-colors flex items-start justify-between gap-4 ${
                       isUrgent && !isRead
                         ? "bg-rose-50/60 border-r-4 border-rose-500 font-medium"
                         : isRead

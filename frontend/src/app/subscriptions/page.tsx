@@ -6,17 +6,24 @@ import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { api } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function SubscriptionsPage() {
   const { activeCompanyId } = useAuth();
+  const toast = useToast();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [cycleFilter, setCycleFilter] = useState("");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 220);
   const [showAddModal, setShowAddModal] = useState(false);
 
   // New Subscription Form
@@ -36,7 +43,7 @@ export default function SubscriptionsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      let url = `/subscriptions?search=${search}`;
+      let url = `/subscriptions?search=${encodeURIComponent(debouncedSearch)}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       if (cycleFilter) url += `&billing_cycle=${cycleFilter}`;
 
@@ -47,7 +54,7 @@ export default function SubscriptionsPage() {
       setSubscriptions(listRes.data || []);
       setSummary(sumRes.data || null);
     } catch (e) {
-      console.error(e);
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل الاشتراكات");
     } finally {
       setLoading(false);
     }
@@ -55,7 +62,7 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [statusFilter, cycleFilter, activeCompanyId]);
+  }, [statusFilter, cycleFilter, activeCompanyId, debouncedSearch]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +92,7 @@ export default function SubscriptionsPage() {
       setNotes("");
       fetchData();
     } catch (err: any) {
-      alert(err?.message || "فشل إضافة الاشتراك");
+      toast.error(err?.message || "فشل إضافة الاشتراك");
     }
   };
 
@@ -145,60 +152,59 @@ export default function SubscriptionsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <Icons.Search
-              size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              type="text"
-              placeholder="بحث باسم الخدمة أو المزود..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && fetchData()}
-              className="w-full bg-slate-50 border border-slate-200 text-xs py-2 pr-9 pl-3 rounded-xl outline-none focus:border-[#187A5A]"
-            />
-          </div>
+      <DataToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="بحث باسم الخدمة أو المزود..."
+        searchLabel="بحث في الاشتراكات"
+        activeFilterCount={[search.trim(), statusFilter, cycleFilter].filter(Boolean).length}
+        onResetFilters={() => { setSearch(""); setStatusFilter(""); setCycleFilter(""); }}
+        onRefresh={() => void fetchData()}
+        refreshing={loading}
+        filters={
+          <>
+            <select
+              aria-label="تصفية حسب حالة الاشتراك"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Active">نشط (Active)</option>
+              <option value="Expiring Soon">قريب الانتهاء (Expiring Soon)</option>
+              <option value="Expired">منتهي (Expired)</option>
+              <option value="Suspended">معلق (Suspended)</option>
+            </select>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
-          >
-            <option value="">جميع الحالات</option>
-            <option value="Active">نشط (Active)</option>
-            <option value="Expiring Soon">قريب الانتهاء (Expiring Soon)</option>
-            <option value="Expired">منتهي (Expired)</option>
-            <option value="Suspended">معلق (Suspended)</option>
-          </select>
-
-          <select
-            value={cycleFilter}
-            onChange={(e) => setCycleFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none text-slate-700"
-          >
-            <option value="">جميع دورات الفوترة</option>
-            <option value="Monthly">شهري (Monthly)</option>
-            <option value="Quarterly">ربع سنوي (Quarterly)</option>
-            <option value="Annual">سنوي (Annual)</option>
-          </select>
-        </div>
-
-        <button
-          onClick={fetchData}
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
-        >
-          <Icons.Refresh size={16} />
-        </button>
-      </div>
+            <select
+              aria-label="تصفية حسب دورة الفوترة"
+              value={cycleFilter}
+              onChange={(e) => setCycleFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع دورات الفوترة</option>
+              <option value="Monthly">شهري (Monthly)</option>
+              <option value="Quarterly">ربع سنوي (Quarterly)</option>
+              <option value="Annual">سنوي (Annual)</option>
+            </select>
+          </>
+        }
+      />
 
       {/* Subscriptions Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {loading ? (
+          <TableSkeleton variant="table" rows={5} cols={6} />
+        ) : subscriptions.length === 0 ? (
+          <EmptyState
+            icon={<Icons.Subscriptions size={26} />}
+            title="لا توجد اشتراكات مطابقة"
+            description="يمكنك تعديل الفلاتر أو إضافة اشتراك أو ترخيص تقني جديد"
+          />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-semibold">
+            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
               <tr>
                 <th className="p-3.5">اسم الخدمة</th>
                 <th className="p-3.5">المزود (Provider)</th>
@@ -215,33 +221,33 @@ export default function SubscriptionsPage() {
                 const isOverdue = s.days_to_renewal !== null && s.days_to_renewal < 0;
 
                 return (
-                  <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-3.5 font-bold text-slate-800">
+                  <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="p-3.5 font-bold text-slate-900">
                       <div>{s.service_name}</div>
-                      <div className="text-[11px] text-slate-400 font-normal">
-                        {s.account_email || "-"}
+                      <div className="text-[11px] text-slate-600 font-normal">
+                        <bdi dir="ltr">{s.account_email || "-"}</bdi>
                       </div>
                     </td>
-                    <td className="p-3.5 text-slate-700 font-semibold">{s.provider || "-"}</td>
-                    <td className="p-3.5 text-slate-600">
+                    <td className="p-3.5 text-slate-800 font-semibold">{s.provider || "-"}</td>
+                    <td className="p-3.5 text-slate-700">
                       <span className="font-semibold">{s.package_type}</span> • {s.subscription_type}
                     </td>
                     <td className="p-3.5 font-mono font-bold text-slate-900">
-                      {s.price.toLocaleString()} {s.currency}{" "}
-                      <span className="text-[10px] text-slate-400 font-normal">/ {s.billing_cycle}</span>
+                      <bdi dir="ltr">{s.price.toLocaleString()} {s.currency}</bdi>{" "}
+                      <span className="text-[11px] text-slate-600 font-normal">/ {s.billing_cycle}</span>
                     </td>
                     <td className="p-3.5">
-                      <div className="font-mono text-slate-700">
-                        {s.renewal_date || "-"}
+                      <div className="font-mono text-slate-800">
+                        <bdi dir="ltr">{s.renewal_date || "-"}</bdi>
                       </div>
                       {s.days_to_renewal !== null && (
                         <div
-                          className={`text-[10px] font-bold ${
+                          className={`text-[11px] font-bold ${
                             isOverdue
-                              ? "text-rose-600"
+                              ? "text-rose-700"
                               : isExpiring
-                              ? "text-amber-600"
-                              : "text-slate-400"
+                              ? "text-amber-700"
+                              : "text-slate-600"
                           }`}
                         >
                           {isOverdue
@@ -253,14 +259,14 @@ export default function SubscriptionsPage() {
                     <td className="p-3.5">
                       <StatusBadge status={s.status} />
                     </td>
-                    <td className="p-3.5 text-slate-600">
+                    <td className="p-3.5 text-slate-700">
                       {s.auto_renewal ? (
                         <span className="text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
                           <Icons.Check size={13} />
                           مفعّل
                         </span>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">يدوي</span>
+                        <span className="text-slate-600 text-[11px]">يدوي</span>
                       )}
                     </td>
                   </tr>
@@ -269,6 +275,7 @@ export default function SubscriptionsPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Add Subscription Modal */}

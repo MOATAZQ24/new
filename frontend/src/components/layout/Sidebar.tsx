@@ -1,17 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/ui/Icons";
-import { useWorkspace, mediaUrl } from "@/context/WorkspaceContext";
 import { useAuth } from "@/context/AuthContext";
+import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 
 interface NavItem {
   name: string;
   href: string;
   icon: keyof typeof Icons;
-  badge?: string;
 }
 
 const navItems: NavItem[] = [
@@ -33,83 +32,163 @@ const navItems: NavItem[] = [
   { name: "الإعدادات", href: "/settings", icon: "Settings" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { activeCompany } = useAuth();
   const { draft, setDraft, save } = useWorkspace();
-  const configured = draft.navigation.length ? draft.navigation.flatMap(pref => {
-    const item = navItems.find(item => item.href === pref.href);
-    return item && (!pref.hidden || pref.href === "/settings") ? [{ ...item, icon: pref.icon === "default" ? item.icon : pref.icon, pinned: pref.pinned }] : [];
-  }) : navItems.map(item => ({ ...item, pinned: false }));
-  const orderedItems = [...configured.filter(i => i.pinned), ...configured.filter(i => !i.pinned)];
+
+  const configured = draft.navigation.length
+    ? draft.navigation.flatMap((pref) => {
+        const item = navItems.find((nav) => nav.href === pref.href);
+        return item && (!pref.hidden || pref.href === "/settings")
+          ? [
+              {
+                ...item,
+                icon: pref.icon === "default" ? item.icon : pref.icon,
+                pinned: pref.pinned,
+              },
+            ]
+          : [];
+      })
+    : navItems.map((item) => ({ ...item, pinned: false }));
+  const orderedItems = [
+    ...configured.filter((i) => i.pinned),
+    ...configured.filter((i) => !i.pinned),
+  ];
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseMobile?.();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen, onCloseMobile]);
+
+  const handleToggleCollapse = () => {
+    const next = { ...draft, collapsed: !draft.collapsed };
+    setDraft(next);
+    void save(next).catch(() => setDraft(draft));
+  };
 
   return (
-    <aside data-collapsed={draft.collapsed} className="workspace-sidebar w-64 bg-[#123D32] text-white flex flex-col h-screen fixed right-0 top-0 z-40 border-l border-[#187A5A]/30 select-none shadow-xl">
-      <button type="button" className="p-2 text-sm" aria-label="طي أو توسيع القائمة / Toggle sidebar" onClick={() => { const next = { ...draft, collapsed: !draft.collapsed }; setDraft(next); void save(next).catch(() => setDraft(draft)); }}>☰</button>
-      {/* Brand & Logo Header */}
-      <div className="p-5 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md">
-            {activeCompany?.company_logo?.startsWith("/workspace/") ? <img src={mediaUrl(activeCompany.company_logo)} alt="" className="w-10 h-10 object-contain" /> : "IG"}
+    <aside
+      data-collapsed={draft.collapsed}
+      data-mobile-open={mobileOpen}
+      aria-label="القائمة الرئيسية للنظام"
+      className="workspace-sidebar w-64 bg-[#123D32] text-white flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-[#187A5A]/30 select-none shadow-xl"
+    >
+      {/* Brand & Collapse Header */}
+      <div className="workspace-sidebar-header p-4 border-b border-white/10 flex items-center justify-between gap-2">
+        <Link
+          href="/"
+          onClick={() => onCloseMobile?.()}
+          className="flex items-center gap-3 min-w-0"
+          title="Investor Gate - الرئيسية"
+        >
+          <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md shrink-0">
+            {activeCompany?.company_logo?.startsWith("/workspace/") ? (
+              <img
+                src={mediaUrl(activeCompany.company_logo)}
+                alt=""
+                className="w-10 h-10 object-contain rounded-lg"
+              />
+            ) : (
+              "IG"
+            )}
           </div>
-          <div>
-            <h1 className="font-bold text-base tracking-tight text-white leading-tight">
+          <div className="workspace-brand-text min-w-0">
+            <span className="font-bold text-sm tracking-tight text-white leading-tight truncate">
               Investor Gate
-            </h1>
-            <p className="text-[11px] text-[#C5A46D] font-medium">
+            </span>
+            <span className="text-[11px] text-[#C5A46D] font-medium truncate">
               إدارة عمليات تقنية المعلومات
-            </p>
+            </span>
           </div>
+        </Link>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            className="hidden md:inline-flex items-center justify-center p-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="طي أو توسيع القائمة / Toggle sidebar"
+            aria-expanded={!draft.collapsed}
+            aria-controls="primary-navigation"
+            title={draft.collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+            onClick={handleToggleCollapse}
+          >
+            {draft.collapsed ? <Icons.ChevronLeft size={17} /> : <Icons.ChevronRight size={17} />}
+          </button>
+
+          {mobileOpen && (
+            <button
+              type="button"
+              className="md:hidden inline-flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label="إغلاق قائمة التنقل"
+              onClick={() => onCloseMobile?.()}
+            >
+              <Icons.X size={18} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Active Company Badge */}
-      <div className="px-4 py-2.5 bg-black/20 mx-3 my-2 rounded-lg border border-white/5 flex items-center justify-between">
+      <div className="workspace-company-pill px-3.5 py-2.5 bg-black/20 mx-3 my-2.5 rounded-lg border border-white/10 flex items-center justify-between gap-2">
         <div className="truncate">
-          <div className="text-[10px] text-white/50">الشركة النشطة</div>
+          <div className="text-[10px] text-white/70">الشركة النشطة</div>
           <div className="text-xs font-semibold text-white truncate">
             {activeCompany ? activeCompany.name_ar : "بوابة المستثمر"}
           </div>
         </div>
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#187A5A] text-white font-mono">
-          {activeCompany?.code || "IGT"}
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#187A5A] text-white font-mono shrink-0">
+          <bdi>{activeCompany?.code || "IGT"}</bdi>
         </span>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+      <nav id="primary-navigation" className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
         {orderedItems.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const IconComp = Icons[item.icon as keyof typeof Icons];
 
           return (
             <Link
               key={item.href}
-              href={item.href} title={item.name}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+              href={item.href}
+              title={item.name}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => onCloseMobile?.()}
+              className={`motion-nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                 isActive
                   ? "bg-[#187A5A] text-white font-bold shadow-sm"
-                  : "text-white/75 hover:bg-white/10 hover:text-white"
+                  : "text-white/85 hover:bg-white/10 hover:text-white"
               }`}
             >
               <span
-                className={`${
-                  isActive ? "text-[#C5A46D]" : "text-white/60"
+                className={`shrink-0 ${
+                  isActive ? "text-[#C5A46D]" : "text-white/75"
                 }`}
               >
                 {IconComp && <IconComp size={18} />}
               </span>
-              <span className="workspace-nav-label flex-1">{item.pinned ? "★ " : ""}{item.name}</span>
+              <span className="workspace-nav-label flex-1 truncate">
+                {item.pinned ? "★ " : ""}
+                {item.name}
+              </span>
             </Link>
           );
         })}
       </nav>
 
       {/* System Footer info */}
-      <div className="p-3 border-t border-white/10 text-[10px] text-white/40 text-center">
+      <div className="workspace-footer-text p-3 border-t border-white/10 text-[10px] text-white/65 text-center">
         الإصدار 1.0.0 Enterprise • نظام ذاتي الاستضافة
       </div>
     </aside>

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import get_current_user, get_user_company_id, require_role
+from app.core.security import get_current_user, get_user_company_id, require_role, resolve_company_scope
 from app.core.response import success_response
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
@@ -93,7 +93,7 @@ def export_report(
     """Export system data to Excel/CSV or printable HTML."""
     from app.api.v1.endpoints.workspace import authorize_company, shared_settings
     from app.models.company import Company
-    target_cid = company_id or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
     authorize_company(db, current_user, target_cid)
     company_name = db.get(Company, target_cid).company_name_ar
     branding = shared_settings(db, target_cid)

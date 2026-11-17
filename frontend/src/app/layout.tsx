@@ -3,6 +3,7 @@ import "./globals.css";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CustomizationProvider } from "@/context/CustomizationContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#F5F7F8] dark:bg-slate-900 text-[#1e293b] dark:text-slate-100 font-sans antialiased">
         <AuthProvider>
           <WorkspaceProvider>
-            <CustomizationProvider>{children}</CustomizationProvider>
+            <CustomizationProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </CustomizationProvider>
           </WorkspaceProvider>
         </AuthProvider>
       </body>

@@ -29,6 +29,7 @@ class TestITOperationsSystem(unittest.TestCase):
         cls.company_igt = cls.db.query(Company).filter(Company.company_code == "IGT").first()
         cls.company_ait = cls.db.query(Company).filter(Company.company_code == "AIT").first()
         cls.company_nhg = cls.db.query(Company).filter(Company.company_code == "NHG").first()
+        cls.db.commit()
 
         assert cls.company_igt is not None, "IGT company not found. Run seed_data.py first!"
         assert cls.company_ait is not None, "AIT company not found."
@@ -116,9 +117,9 @@ class TestITOperationsSystem(unittest.TestCase):
         asset_id = res_create.json()["data"]["id"]
 
         # Get an employee from Company IGT
-        emp = self.company_igt.branches[0].departments[0].company.branches[0].departments[0]
         from app.models.user import Employee
         first_emp = self.db.query(Employee).filter(Employee.company_id == self.company_igt.id).first()
+        self.db.commit()
 
         # 2. Assign asset to employee
         assign_payload = {

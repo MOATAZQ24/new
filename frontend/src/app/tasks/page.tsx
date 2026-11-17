@@ -1,32 +1,46 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatsCard from "@/components/ui/StatsCard";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
-import { 
-  CheckSquareIcon, PlusIcon, SearchIcon, FilterIcon, 
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DataToolbar } from "@/components/ui/DataToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { AlertBanner } from "@/components/ui/AlertBanner";
+import {
+  CheckSquareIcon, PlusIcon,
   ClockIcon, MessageSquareIcon, SendIcon, AlertCircleIcon, UserIcon
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import EmployeeCombobox, { type EmployeeOption } from "@/components/ui/EmployeeCombobox";
 
 interface TaskItem {
   id: string;
+  reference?: string;
   company_id: string;
   branch_id?: string;
   title: string;
   description?: string;
   assigned_to_id?: string;
   assigned_to_name?: string;
+  assigned_by_id?: string;
   assigned_by_name?: string;
   reviewer_id?: string;
   reviewer_name?: string;
   priority: string;
   status: string;
+  stage?: string;
+  stage_label?: string;
   start_date?: string;
   due_date?: string;
+  acknowledged_at?: string;
+  is_acknowledged?: boolean;
   accepted_at?: string;
   submitted_for_review_at?: string;
   completed_at?: string;
@@ -37,10 +51,26 @@ interface TaskItem {
   review_notes?: string;
   rework_count: number;
   related_asset_name?: string;
+  related_asset_id?: string;
   notes?: string;
   is_overdue: boolean;
   comments_count: number;
   created_at: string;
+  updated_at?: string;
+}
+
+interface TaskSummary {
+  total: number;
+  new: number;
+  in_progress: number;
+  waiting: number;
+  completed: number;
+  rejected: number;
+  cancelled: number;
+  active: number;
+  overdue: number;
+  version: string;
+  unknown_status: number;
 }
 
 interface CommentItem {
@@ -52,29 +82,51 @@ interface CommentItem {
 
 interface TaskDetail extends TaskItem {
   comments: CommentItem[];
+  telegram_info?: {
+    is_employee_linked: boolean;
+    telegram_username?: string;
+    notifications_enabled: boolean;
+    delivery_status: string;
+    sent_at?: string;
+    last_error?: string;
+    retry_count: number;
+    outbox_id?: string;
+  };
 }
 
 export default function TasksPage() {
   const { currentCompany, user } = useAuth();
+  const toast = useToast();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [summary, setSummary] = useState<TaskSummary | null>(null);
+  const versionRef = useRef<string>("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 220);
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
+  const [filterAssigneeId, setFilterAssigneeId] = useState("");
+  const [overdueOnly, setOverdueOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<"all" | "my">("all");
 
   // Options for form
-  const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeOption | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskDetail | null>(null);
   const [assets, setAssets] = useState<{ id: string; asset_name: string; asset_code: string }[]>([]);
+  const [filterEmployees, setFilterEmployees] = useState<EmployeeOption[]>([]);
 
-  // Modals
+  // Modals & Feedback
   const [createModal, setCreateModal] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
   const [newComment, setNewComment] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   // Collaboration Action Modals
   const [blockModal, setBlockModal] = useState(false);
@@ -102,46 +154,102 @@ export default function TasksPage() {
     due_date: "",
     related_asset_id: "",
     notes: "",
+    notify_telegram: true,
   });
 
-  const loadTasks = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params: Record<string, string> = {};
-      if (search) params.search = search;
-      if (statusFilter) params.status = statusFilter;
-      if (priorityFilter) params.priority = priorityFilter;
-      if (filterMode === "my") params.filter_mode = "my";
+  const buildBaseParams = useCallback(() => {
+    const params: Record<string, string> = {};
+    if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
+    if (priorityFilter) params.priority = priorityFilter;
+    if (filterAssigneeId) params.assigned_to_id = filterAssigneeId;
+    if (filterMode === "my") params.filter_mode = "my";
+    return params;
+  }, [debouncedSearch, priorityFilter, filterAssigneeId, filterMode]);
 
-      const res = await api.get<TaskItem[]>("/tasks", { params });
-      setTasks(res.data || []);
+  const loadTasks = useCallback(async (silent = false) => {
+    try {
+      if (!silent) {
+        setLoading(true);
+        setLoadError(null);
+      }
+      const baseParams = buildBaseParams();
+      const listParams: Record<string, string> = { ...baseParams, per_page: "100" };
+      if (statusFilter) listParams.status = statusFilter;
+      if (overdueOnly) listParams.overdue = "true";
+
+      const [listRes, summaryRes] = await Promise.all([
+        api.get<TaskItem[]>("/tasks", { params: listParams }),
+        api.get<TaskSummary>("/tasks/summary", { params: baseParams }),
+      ]);
+      setTasks(listRes.data || []);
+      if (summaryRes.data) {
+        setSummary(summaryRes.data);
+        versionRef.current = summaryRes.data.version || "";
+      }
     } catch (err) {
       console.error("Failed to load tasks", err);
+      if (!silent) {
+        setLoadError(err instanceof Error ? err.message : "تعذر تحميل المهام من الخادم");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  }, [search, statusFilter, priorityFilter, filterMode]);
+  }, [buildBaseParams, statusFilter, overdueOnly]);
 
   const loadDependencies = useCallback(async () => {
     try {
-      const [empRes, astRes] = await Promise.all([
-        api.get<{ id: string; full_name: string }[]>("/employees?per_page=100"),
-        api.get<{ id: string; asset_name: string; asset_code: string }[]>("/assets?per_page=100")
+      const [astRes, empRes] = await Promise.all([
+        api.get<{ id: string; asset_name: string; asset_code: string }[]>("/assets?per_page=100"),
+        api.get<EmployeeOption[]>("/tasks/assignees?limit=30").catch(() => ({ data: [] as EmployeeOption[] })),
       ]);
-      setEmployees(empRes.data || []);
       setAssets(astRes.data || []);
+      setFilterEmployees(empRes.data || []);
     } catch (err) {
       console.error("Failed to load dependencies", err);
     }
   }, []);
 
   useEffect(() => {
-    loadTasks();
+    const timer = window.setTimeout(() => { void loadTasks(); }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadTasks, currentCompany]);
 
   useEffect(() => {
-    loadDependencies();
+    const timer = window.setTimeout(() => { void loadDependencies(); }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadDependencies, currentCompany]);
+
+  // Real-time Dashboard synchronization with Telegram & background updates
+  useEffect(() => {
+    const checkUpdates = async () => {
+      try {
+        const summaryRes = await api.get<TaskSummary>("/tasks/summary", { params: buildBaseParams() });
+        if (summaryRes.data && summaryRes.data.version !== versionRef.current) {
+          await loadTasks(true);
+          if (detailModal && selectedTask?.id) {
+            const detailRes = await api.get<TaskDetail>(`/tasks/${selectedTask.id}`);
+            if (detailRes.data) setSelectedTask(detailRes.data);
+          }
+        }
+      } catch {
+        // Ignore transient polling errors
+      }
+    };
+    const interval = window.setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        void checkUpdates();
+      }
+    }, 3000);
+    const onFocus = () => { void checkUpdates(); };
+    const onTasksUpdated = () => { void loadTasks(true); };
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("tasks:updated", onTasksUpdated);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("tasks:updated", onTasksUpdated);
+    };
+  }, [buildBaseParams, loadTasks, detailModal, selectedTask?.id]);
 
   const refreshSelectedTask = async (taskId: string) => {
     try {
@@ -155,6 +263,7 @@ export default function TasksPage() {
 
   const handleOpenDetail = async (taskId: string) => {
     setActionError(null);
+    setResendMessage(null);
     try {
       const res = await api.get<TaskDetail>(`/tasks/${taskId}`);
       setSelectedTask(res.data);
@@ -164,12 +273,26 @@ export default function TasksPage() {
     }
   };
 
+  const handleResendTelegram = async (taskId: string) => {
+    setResendLoading(true);
+    setResendMessage(null);
+    try {
+      const res = await api.post(`/tasks/${taskId}/resend-telegram`);
+      setResendMessage(res.message || "تمت إعادة إرسال إشعار المهمة عبر Telegram بنجاح!");
+      await refreshSelectedTask(taskId);
+    } catch (err: unknown) {
+      setResendMessage(err instanceof Error ? err.message : "فشلت إعادة الإرسال");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateLoading(true);
     setCreateError(null);
     try {
-      await api.post("/tasks", {
+      const payload = {
         company_id: currentCompany?.id || undefined,
         title: formData.title.trim(),
         description: formData.description?.trim() || null,
@@ -180,8 +303,15 @@ export default function TasksPage() {
         due_date: formData.due_date || null,
         related_asset_id: formData.related_asset_id || null,
         notes: formData.notes?.trim() || null,
-      });
+        notify_telegram: formData.notify_telegram,
+      };
+      const res = editingTask
+        ? await api.put(`/tasks/${editingTask.id}`, payload)
+        : await api.post("/tasks", payload);
+
       setCreateModal(false);
+      setSelectedEmployee(null);
+      setEditingTask(null);
       setFormData({
         title: "",
         description: "",
@@ -192,11 +322,25 @@ export default function TasksPage() {
         due_date: "",
         related_asset_id: "",
         notes: "",
+        notify_telegram: true,
       });
+
+      const dStatus = res.data?.delivery_status?.status;
+      if (editingTask) {
+        setToastMessage("تم تحديث المهمة والإسناد بنجاح ✓");
+      } else if (dStatus === "Sent") {
+        setToastMessage("تم إنشاء المهمة بنجاح، وتم تسليم إشعار Telegram للموظف فوراً! 🟢");
+      } else if (dStatus === "Pending") {
+        setToastMessage("تم إنشاء المهمة بنجاح، وإدراج إشعار Telegram في قائمة الإرسال الفوري 🟡");
+      } else {
+        setToastMessage("تم إنشاء المهمة بنجاح ✓");
+      }
+      setTimeout(() => setToastMessage(null), 6000);
+
       loadTasks();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to create task", err);
-      setCreateError(err.message || "حدث خطأ أثناء إنشاء المهمة");
+      setCreateError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء المهمة");
     } finally {
       setCreateLoading(false);
     }
@@ -209,8 +353,8 @@ export default function TasksPage() {
     try {
       await api.post(`/tasks/${taskId}/accept`);
       await refreshSelectedTask(taskId);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل قبول المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل قبول المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -222,8 +366,8 @@ export default function TasksPage() {
     try {
       await api.post(`/tasks/${taskId}/start`);
       await refreshSelectedTask(taskId);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل بدء العمل على المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل بدء العمل على المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -238,8 +382,8 @@ export default function TasksPage() {
       setBlockModal(false);
       setBlockerReasonInput("");
       await refreshSelectedTask(selectedTask.id);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل تعليق المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل تعليق المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -251,8 +395,8 @@ export default function TasksPage() {
     try {
       await api.post(`/tasks/${taskId}/unblock`);
       await refreshSelectedTask(taskId);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل إزالة المعوق واستئناف المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل إزالة المعوق واستئناف المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -267,8 +411,8 @@ export default function TasksPage() {
       setSubmitModal(false);
       setSubmissionNotesInput("");
       await refreshSelectedTask(selectedTask.id);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل رفع المهمة للمراجعة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل رفع المهمة للمراجعة");
     } finally {
       setActionLoading(false);
     }
@@ -283,8 +427,8 @@ export default function TasksPage() {
       setApproveModal(false);
       setApprovalNotesInput("");
       await refreshSelectedTask(selectedTask.id);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل اعتماد المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل اعتماد المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -299,8 +443,8 @@ export default function TasksPage() {
       setReworkModal(false);
       setReworkNotesInput("");
       await refreshSelectedTask(selectedTask.id);
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "فشل طلب التعديل على المهمة");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "فشل طلب التعديل على المهمة");
     } finally {
       setActionLoading(false);
     }
@@ -321,106 +465,197 @@ export default function TasksPage() {
     }
   };
 
+  const handleWorkflowAction = async (taskId: string, action: "complete" | "clarify" | "reopen" | "cancel", reason?: string) => {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await api.post(`/tasks/${taskId}/${action}`, reason ? { reason } : {});
+      await refreshSelectedTask(taskId);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "تعذر تنفيذ الإجراء على المهمة");
+      setActionError(err instanceof Error ? err.message : "تعذر تنفيذ الإجراء على المهمة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // User role check
   const isManagerOrAdmin = user?.is_superadmin || user?.roles?.some(r => ["Super Admin", "Company Admin", "IT Manager"].includes(r));
 
-  // KPIs
-  const totalTasks = tasks.length;
-  const inProgressCount = tasks.filter(t => t.status === "In Progress").length;
-  const reviewPendingCount = tasks.filter(t => t.status === "Submitted for Review").length;
-  const blockedCount = tasks.filter(t => t.is_blocked || t.status === "Blocked").length;
+  // Authoritative KPIs from database summary endpoint (falls back to list counts before first response)
+  const totalTasks = summary ? summary.total : tasks.length;
+  const newCount = summary ? summary.new : tasks.filter(t => t.stage === "new" || ["Draft", "Assigned", "To Do", "Pending", "Pending Acceptance"].includes(t.status)).length;
+  const inProgressCount = summary ? summary.in_progress : tasks.filter(t => t.stage === "in_progress" || ["Accepted", "In Progress", "Rework Required", "Blocked", "On Hold", "Submitted for Review"].includes(t.status)).length;
+  const completedCount = summary ? summary.completed : tasks.filter(t => t.stage === "completed" || ["Completed", "Done", "Approved / Completed"].includes(t.status)).length;
+  const overdueCount = summary ? summary.overdue : tasks.filter(t => t.is_overdue).length;
+  const activeFilterCount = [search.trim(), statusFilter, priorityFilter, filterAssigneeId, overdueOnly ? "1" : ""].filter(Boolean).length;
+
+  const resetAllFilters = () => {
+    setSearch("");
+    setStatusFilter("");
+    setPriorityFilter("");
+    setFilterAssigneeId("");
+    setOverdueOnly(false);
+  };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة المهام التشغيلية والتشاركية</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              متابعة المهام الفنية، تتبع المعوقات، والاعتماد الإداري متعدد المستويات
-            </p>
-          </div>
-          <button
-            onClick={() => { setCreateError(null); setCreateModal(true); }}
-            className="inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
-          >
-            <PlusIcon className="w-5 h-5" />
-            إضافة مهمة جديدة
-          </button>
-        </div>
+        <PageHeader
+          title="إدارة المهام التشغيلية والتشاركية"
+          description="متابعة المهام الفنية، تتبع المعوقات، والتكامل الفوري مع Telegram والاعتماد متعدد المستويات"
+          icon={<CheckSquareIcon className="w-5 h-5" />}
+          actions={
+            <button
+              type="button"
+              onClick={() => { setEditingTask(null); setSelectedEmployee(null); setFormData({ title: "", description: "", assigned_to_id: "", priority: "Medium", status: "Assigned", start_date: "", due_date: "", related_asset_id: "", notes: "", notify_telegram: true }); setCreateError(null); setCreateModal(true); }}
+              className="motion-control inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer"
+            >
+              <PlusIcon className="w-5 h-5" />
+              إضافة مهمة جديدة
+            </button>
+          }
+        />
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard title="إجمالي المهام" value={totalTasks} icon={<CheckSquareIcon className="w-5 h-5" />} accentColor="border-blue-500" />
-          <StatsCard title="قيد التنفيذ" value={inProgressCount} icon={<ClockIcon className="w-5 h-5" />} accentColor="border-[#187A5A]" />
-          <StatsCard title="مرفوعة للمراجعة" value={reviewPendingCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-purple-500" />
-          <StatsCard title="معلّقة لوجود معوّق" value={blockedCount} icon={<AlertCircleIcon className="w-5 h-5" />} accentColor="border-rose-500" />
+        {/* Interactive Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatsCard
+            title="إجمالي المهام"
+            value={totalTasks}
+            icon={<CheckSquareIcon className="w-5 h-5" />}
+            accentColor="border-blue-500"
+            active={!statusFilter && !overdueOnly}
+            onClick={() => { setStatusFilter(""); setOverdueOnly(false); }}
+          />
+          <StatsCard
+            title="بانتظار القبول (جديدة)"
+            value={newCount}
+            icon={<ClockIcon className="w-5 h-5" />}
+            accentColor="border-amber-500"
+            active={statusFilter === "new"}
+            onClick={() => { setStatusFilter(statusFilter === "new" ? "" : "new"); setOverdueOnly(false); }}
+          />
+          <StatsCard
+            title="قيد التنفيذ"
+            value={inProgressCount}
+            icon={<ClockIcon className="w-5 h-5" />}
+            accentColor="border-[#187A5A]"
+            active={statusFilter === "in_progress"}
+            onClick={() => { setStatusFilter(statusFilter === "in_progress" ? "" : "in_progress"); setOverdueOnly(false); }}
+          />
+          <StatsCard
+            title="مكتملة"
+            value={completedCount}
+            icon={<CheckSquareIcon className="w-5 h-5" />}
+            accentColor="border-emerald-600"
+            active={statusFilter === "completed"}
+            onClick={() => { setStatusFilter(statusFilter === "completed" ? "" : "completed"); setOverdueOnly(false); }}
+          />
+          <StatsCard
+            title="متأخرة عن الموعد"
+            value={overdueCount}
+            icon={<AlertCircleIcon className="w-5 h-5" />}
+            accentColor="border-rose-500"
+            active={overdueOnly || statusFilter === "overdue"}
+            onClick={() => { setOverdueOnly(!overdueOnly); if (!overdueOnly) setStatusFilter(""); }}
+          />
         </div>
 
         {/* Filters & Tabs */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm space-y-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center gap-2 border-b md:border-b-0 pb-2 md:pb-0 w-full md:w-auto">
-              <button
-                onClick={() => setFilterMode("all")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  filterMode === "all"
-                    ? "bg-[#187A5A] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                جميع المهام
-              </button>
-              <button
-                onClick={() => setFilterMode("my")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  filterMode === "my"
-                    ? "bg-[#187A5A] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                مهامي المسندة إلي
-              </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              {/* Search */}
-              <div className="relative flex-1 md:w-64">
-                <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="بحث في عنوان المهمة أو الوصف..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pr-9 pl-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                />
+        <DataToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="بحث في عنوان المهمة أو الوصف..."
+          searchLabel="بحث في المهام"
+          activeFilterCount={activeFilterCount}
+          onResetFilters={resetAllFilters}
+          onRefresh={() => void loadTasks()}
+          refreshing={loading}
+          topSlot={
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFilterMode("all")}
+                  className={`motion-control px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-colors cursor-pointer ${
+                    filterMode === "all"
+                      ? "bg-[#187A5A] text-white shadow-xs"
+                      : "text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  جميع المهام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode("my")}
+                  className={`motion-control px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-colors cursor-pointer ${
+                    filterMode === "my"
+                      ? "bg-[#187A5A] text-white shadow-xs"
+                      : "text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  مهامي المسندة إلي
+                </button>
               </div>
-
-              {/* Status Filter (All 9 States) */}
+              <span className="text-xs text-slate-600">
+                النتائج المعروضة: <strong className="text-slate-900 font-bold"><bdi>{tasks.length}</bdi></strong>
+              </span>
+            </div>
+          }
+          filters={
+            <>
               <select
+                aria-label="تصفية حسب المرحلة أو الحالة"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
               >
-                <option value="">جميع الحالات (9 حالات)</option>
-                <option value="Draft">مسودة (Draft)</option>
-                <option value="Assigned">تم الإسناد (Assigned)</option>
-                <option value="Accepted">تم القبول (Accepted)</option>
-                <option value="In Progress">قيد التنفيذ (In Progress)</option>
-                <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
-                <option value="Waiting for Response">بانتظار الرد (Waiting)</option>
-                <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
-                <option value="Rework Required">مطلوب تعديلات (Rework)</option>
-                <option value="Completed">معتمد ومكتمل (Completed)</option>
-                <option value="Cancelled">ملغي (Cancelled)</option>
+                <option value="">جميع الحالات والمراحل ({summary?.total ?? totalTasks})</option>
+                <optgroup label="مراحل دورة العمل الموحدة (Stages)">
+                  <option value="active">🔄 المهام النشطة ({summary?.active ?? "-"})</option>
+                  <option value="new">📨 بانتظار القبول / جديدة ({summary?.new ?? "-"})</option>
+                  <option value="in_progress">🔵 قيد التنفيذ ({summary?.in_progress ?? "-"})</option>
+                  <option value="waiting">🟡 بانتظار التوضيح ({summary?.waiting ?? "-"})</option>
+                  <option value="overdue">🔴 متأخرة عن الموعد ({summary?.overdue ?? "-"})</option>
+                  <option value="completed">🟢 مكتملة ({summary?.completed ?? "-"})</option>
+                  <option value="rejected">⛔ مرفوضة ({summary?.rejected ?? "-"})</option>
+                  <option value="cancelled">⚫ ملغاة ({summary?.cancelled ?? "-"})</option>
+                </optgroup>
+                <optgroup label="الحالات التفصيلية (Exact Status)">
+                  <option value="Draft">مسودة (Draft)</option>
+                  <option value="Assigned">تم الإسناد (Assigned)</option>
+                  <option value="Accepted">تم القبول (Accepted)</option>
+                  <option value="In Progress">قيد التنفيذ (In Progress)</option>
+                  <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
+                  <option value="Waiting for Response">بانتظار التوضيح (Waiting)</option>
+                  <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
+                  <option value="Rework Required">مطلوب تعديلات (Rework)</option>
+                  <option value="Completed">معتمد ومكتمل (Completed)</option>
+                  <option value="Rejected">مرفوض (Rejected)</option>
+                  <option value="Cancelled">ملغي (Cancelled)</option>
+                </optgroup>
               </select>
 
-              {/* Priority Filter */}
+              {filterEmployees.length > 0 && (
+                <select
+                  aria-label="تصفية حسب الموظف المسند إليه"
+                  value={filterAssigneeId}
+                  onChange={(e) => setFilterAssigneeId(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                >
+                  <option value="">جميع الموظفين</option>
+                  {filterEmployees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                  ))}
+                </select>
+              )}
+
               <select
+                aria-label="تصفية حسب الأولوية"
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
               >
                 <option value="">جميع الأولويات</option>
                 <option value="Urgent">عاجل جداً (Urgent)</option>
@@ -428,31 +663,119 @@ export default function TasksPage() {
                 <option value="Medium">متوسط (Medium)</option>
                 <option value="Low">منخفض (Low)</option>
               </select>
+
+              <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer select-none px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100">
+                <input
+                  type="checkbox"
+                  checked={overdueOnly}
+                  onChange={(e) => setOverdueOnly(e.target.checked)}
+                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500"
+                />
+                <span>المتأخرة فقط</span>
+              </label>
+            </>
+          }
+          bottomSlot={
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+              {[
+                { key: "", label: "الكل", count: summary?.total },
+                { key: "active", label: "🔄 النشطة", count: summary?.active },
+                { key: "new", label: "📨 بانتظار القبول", count: summary?.new },
+                { key: "in_progress", label: "🔵 قيد التنفيذ", count: summary?.in_progress },
+                { key: "waiting", label: "🟡 بانتظار التوضيح", count: summary?.waiting },
+                { key: "overdue", label: "🔴 المتأخرة", count: summary?.overdue },
+                { key: "completed", label: "🟢 المكتملة", count: summary?.completed },
+                { key: "rejected", label: "⛔ المرفوضة", count: summary?.rejected },
+              ].map((chip) => (
+                <button
+                  key={chip.key || "all"}
+                  type="button"
+                  onClick={() => setStatusFilter(chip.key)}
+                  className={`motion-control inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                    statusFilter === chip.key
+                      ? "bg-[#123D32] text-white border-[#123D32]"
+                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  <span>{chip.label}</span>
+                  {chip.count !== undefined && (
+                    <span className={`px-1.5 py-0.2 rounded-full text-[11px] ${statusFilter === chip.key ? "bg-white/20 text-white" : "bg-white text-slate-700 border border-slate-200"}`}>
+                      {chip.count}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
+          }
+        />
+
+        {loadError && (
+          <AlertBanner
+            variant="error"
+            title="تعذر تحديث قائمة المهام"
+            message={loadError}
+            onRetry={() => void loadTasks()}
+            onDismiss={() => setLoadError(null)}
+          />
+        )}
+
+        {/* Toast Feedback */}
+        {toastMessage && (
+          <div className="motion-toast p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-sm font-bold flex items-center justify-between shadow-xs">
+            <span>{toastMessage}</span>
+            <button
+              type="button"
+              onClick={() => setToastMessage(null)}
+              aria-label="إغلاق الرسالة"
+              className="text-emerald-700 hover:text-emerald-950 font-mono text-xs px-2 py-1 rounded hover:bg-emerald-100 cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Task List */}
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">جاري تحميل المهام...</div>
+            <TableSkeleton variant="list" rows={5} />
           ) : tasks.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <CheckSquareIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-base font-medium">لا توجد مهام تطابق معايير البحث</p>
-              <p className="text-xs text-gray-400 mt-1">ابدأ بإضافة مهمة جديدة لمتابعة الأعمال الفنية</p>
-            </div>
+            <EmptyState
+              icon={<CheckSquareIcon className="w-7 h-7" />}
+              title="لا توجد مهام تطابق معايير البحث"
+              description="يمكنك تعديل فلاتر الحالة أو إنشاء مهمة جديدة لمتابعة الأعمال الفنية"
+              action={
+                activeFilterCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={resetAllFilters}
+                    className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                  >
+                    عرض جميع المهام
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <div className="divide-y divide-gray-100">
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="p-5 hover:bg-gray-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="motion-task-row p-5 hover:bg-gray-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <PriorityBadge priority={task.priority} />
                       <StatusBadge status={task.status} />
+                      {task.stage_label && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200">
+                          {task.stage_label}
+                        </span>
+                      )}
+                      {task.reference && (
+                        <span dir="ltr" className="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                          #{task.reference}
+                        </span>
+                      )}
                       
                       {task.is_blocked && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
@@ -473,6 +796,16 @@ export default function TasksPage() {
                         </span>
                       )}
 
+                      {task.acknowledged_at ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                          ✓ تم تأكيد الاستلام ({task.acknowledged_at.slice(0, 10)})
+                        </span>
+                      ) : task.assigned_to_name && (task.stage === "new" || task.status === "Assigned" || task.status === "To Do" || task.status === "Pending" || task.status === "Pending Acceptance") ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-300">
+                          ⏳ بانتظار تأكيد الاستلام
+                        </span>
+                      ) : null}
+
                       <h3 
                         onClick={() => handleOpenDetail(task.id)}
                         className="text-base font-semibold text-gray-900 cursor-pointer hover:text-[#187A5A] transition-colors"
@@ -485,22 +818,22 @@ export default function TasksPage() {
                       <p className="text-sm text-gray-600 line-clamp-1">{task.description}</p>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pt-1">
                       {task.assigned_to_name && (
                         <span className="inline-flex items-center gap-1">
-                          <UserIcon className="w-3.5 h-3.5 text-gray-400" />
-                          المسند إليه: <strong className="text-gray-700">{task.assigned_to_name}</strong>
+                          <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+                          المسند إليه: <strong className="text-slate-900">{task.assigned_to_name}</strong>
                         </span>
                       )}
                       {task.reviewer_name && (
-                        <span className="inline-flex items-center gap-1 text-purple-700">
+                        <span className="inline-flex items-center gap-1 text-purple-800">
                           المراجع / المعتمد: <strong>{task.reviewer_name}</strong>
                         </span>
                       )}
                       {task.due_date && (
                         <span className="inline-flex items-center gap-1">
-                          <ClockIcon className="w-3.5 h-3.5 text-gray-400" />
-                          موعد التسليم: <span dir="ltr">{task.due_date}</span>
+                          <ClockIcon className="w-3.5 h-3.5 text-slate-500" />
+                          موعد التسليم: <bdi dir="ltr">{task.due_date}</bdi>
                         </span>
                       )}
                       {task.comments_count > 0 && (
@@ -513,8 +846,8 @@ export default function TasksPage() {
                   </div>
 
                   {/* Actions Bar in Table */}
-                  <div className="flex items-center gap-2">
-                    {task.status === "Assigned" && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(task.stage === "new" || task.status === "Assigned" || task.status === "To Do") && (
                       <button
                         onClick={() => handleAcceptTask(task.id)}
                         className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
@@ -529,6 +862,15 @@ export default function TasksPage() {
                         className="px-3 py-1.5 text-xs font-medium text-[#187A5A] bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors"
                       >
                         بدء العمل
+                      </button>
+                    )}
+
+                    {(task.stage === "in_progress" || task.stage === "waiting" || task.status === "In Progress") && task.status !== "Submitted for Review" && (
+                      <button
+                        onClick={() => handleWorkflowAction(task.id, "complete")}
+                        className="px-3 py-1.5 text-xs font-medium text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
+                      >
+                        ☑️ إنهاء المهمة
                       </button>
                     )}
 
@@ -567,7 +909,7 @@ export default function TasksPage() {
         <Modal
           isOpen={createModal}
           onClose={() => setCreateModal(false)}
-          title="إضافة مهمة جديدة"
+          title={editingTask ? "تعديل المهمة" : "إضافة مهمة جديدة"}
           maxWidth="max-w-2xl"
         >
           <form onSubmit={handleCreateTask} className="space-y-4">
@@ -604,17 +946,56 @@ export default function TasksPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">الموظف / الفني المسند إليه</label>
-                <select
+                <EmployeeCombobox
                   value={formData.assigned_to_id}
-                  onChange={(e) => setFormData({ ...formData, assigned_to_id: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                >
-                  <option value="">-- اختياري (غير محدد) --</option>
-                  {employees.map((emp) => (
-                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                  ))}
-                </select>
+                  initialName={editingTask?.assigned_to_name}
+                  companyId={currentCompany?.id}
+                  onResolve={setSelectedEmployee}
+                  onChange={(employee) => {
+                    setSelectedEmployee(employee);
+                    setFormData(current => ({ ...current, assigned_to_id: employee?.id || "", notify_telegram: employee?.is_telegram_linked ?? true }));
+                  }}
+                />
+
+                {/* Live Telegram Connection & Notification Capability Indicator */}
+                {formData.assigned_to_id && (() => {
+                  const selectedEmp = selectedEmployee;
+                  if (!selectedEmp) return null;
+                  return (
+                    <div className="mt-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-gray-700">حالة الربط بـ Telegram:</span>
+                        {selectedEmp.is_telegram_linked ? (
+                          <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            🟢 مرتبط ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                            ⚪ غير مرتبط
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
+                        <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.notify_telegram && !!selectedEmp.is_telegram_linked}
+                            disabled={!selectedEmp.is_telegram_linked}
+                            onChange={(e) => setFormData({ ...formData, notify_telegram: e.target.checked })}
+                            className="rounded border-gray-300 text-[#187A5A] focus:ring-[#187A5A]"
+                          />
+                          <span>إرسال إشعار فوري عبر Telegram</span>
+                        </label>
+                        {selectedEmp.is_telegram_linked ? (
+                          <span className="text-[10px] text-emerald-600 bg-emerald-100/60 px-1.5 py-0.5 rounded font-medium">متاح للإرسال</span>
+                        ) : (
+                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">يتطلب ربط الحساب أولاً</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div>
@@ -702,7 +1083,7 @@ export default function TasksPage() {
                 className="px-5 py-2 text-sm font-medium text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm flex items-center gap-2"
               >
                 {createLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
-                {createLoading ? "جاري الحفظ..." : "حفظ وإنشاء المهمة"}
+                {createLoading ? "جاري الحفظ..." : editingTask ? "حفظ تعديلات المهمة" : "حفظ وإنشاء المهمة"}
               </button>
             </div>
           </form>
@@ -717,6 +1098,11 @@ export default function TasksPage() {
             maxWidth="max-w-3xl"
           >
             <div className="space-y-6">
+              {isManagerOrAdmin && <button type="button" className="rounded-lg bg-[#187A5A] px-4 py-2 text-sm text-white" onClick={() => {
+                setEditingTask(selectedTask); setSelectedEmployee(null); setCreateError(null);
+                setFormData({ title: selectedTask.title, description: selectedTask.description || "", assigned_to_id: selectedTask.assigned_to_id || "", priority: selectedTask.priority, status: selectedTask.status, start_date: selectedTask.start_date || "", due_date: selectedTask.due_date || "", related_asset_id: selectedTask.related_asset_id || "", notes: selectedTask.notes || "", notify_telegram: true });
+                setDetailModal(false); setCreateModal(true);
+              }}>تعديل المهمة والإسناد</button>}
               {actionError && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
                   <AlertCircleIcon className="w-4 h-4 text-red-500" />
@@ -776,18 +1162,31 @@ export default function TasksPage() {
               )}
 
               {/* Completed Status Card */}
-              {selectedTask.status === "Completed" && (
+              {(selectedTask.stage === "completed" || selectedTask.status === "Completed") && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
                   <span className="text-2xl">🎉</span>
                   <div>
                     <h4 className="text-sm font-bold text-emerald-900">تم اعتماد واكتمال المهمة بنجاح</h4>
                     <p className="text-xs text-emerald-700">
-                      معتمدة بواسطة: <strong>{selectedTask.reviewer_name || "المسؤول"}</strong>
+                      معتمدة بواسطة: <strong>{selectedTask.reviewer_name || selectedTask.assigned_to_name || "المسؤول"}</strong>
                       {selectedTask.completed_at && ` في ${selectedTask.completed_at.slice(0, 16).replace("T", " ")}`}
                     </p>
                     {selectedTask.review_notes && (
                       <p className="text-xs text-emerald-800 mt-1 italic">ملاحظات الاعتماد: {selectedTask.review_notes}</p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Rejected Status Card */}
+              {(selectedTask.stage === "rejected" || selectedTask.status === "Rejected") && (
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center gap-3">
+                  <span className="text-2xl">⛔</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-rose-900">تم رفض المهمة</h4>
+                    <p className="text-xs text-rose-700">
+                      {selectedTask.review_notes || selectedTask.blocker_reason || "تم تسجيل رفض المهمة من قبل الموظف المسند إليه."}
+                    </p>
                   </div>
                 </div>
               )}
@@ -846,6 +1245,96 @@ export default function TasksPage() {
                       <span>{selectedTask.related_asset_name}</span>
                     </div>
                   )}
+                  {selectedTask.acknowledged_at && (
+                    <div>
+                      <span className="text-gray-400 block">تأكيد استلام الموظف:</span>
+                      <span className="text-emerald-700 font-bold">
+                        ✓ {selectedTask.acknowledged_at.slice(0, 16).replace("T", " ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Telegram Notification & Acknowledgement Pipeline Card */}
+              <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">✈️</span>
+                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                      إشعار Telegram وتأكيد استلام المهمة (Delivery & Acknowledgement)
+                    </h4>
+                  </div>
+                  {selectedTask.assigned_to_id && (
+                    <button
+                      onClick={() => handleResendTelegram(selectedTask.id)}
+                      disabled={resendLoading}
+                      className="text-xs font-medium text-[#187A5A] hover:text-[#123D32] bg-white hover:bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                    >
+                      {resendLoading ? "جاري الإرسال..." : "🔄 إعادة إرسال الإشعار لـ Telegram"}
+                    </button>
+                  )}
+                </div>
+
+                {resendMessage && (
+                  <div className="text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                    {resendMessage}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
+                    <span className="text-gray-500 block">حالة التسليم عبر Telegram:</span>
+                    <div className="flex items-center gap-2">
+                      {selectedTask.telegram_info?.delivery_status === "Sent" ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          🟢 تم الإرسال للموظف
+                        </span>
+                      ) : selectedTask.telegram_info?.delivery_status === "Pending" ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          🟡 بانتظار الإرسال
+                        </span>
+                      ) : selectedTask.telegram_info?.delivery_status === "Failed" ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                          🔴 تعذر التسليم
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 font-medium">
+                          {selectedTask.telegram_info?.is_employee_linked ? "تم تجهيز الإشعار" : "الموظف غير مرتبط بـ Telegram"}
+                        </span>
+                      )}
+                      {selectedTask.telegram_info?.sent_at && (
+                        <span className="text-[11px] text-gray-400">
+                          ({selectedTask.telegram_info.sent_at.slice(0, 16).replace("T", " ")})
+                        </span>
+                      )}
+                    </div>
+                    {selectedTask.telegram_info?.last_error && selectedTask.telegram_info.delivery_status === "Failed" && (
+                      <p className="text-[11px] text-rose-600 mt-1">{selectedTask.telegram_info.last_error}</p>
+                    )}
+                  </div>
+
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
+                    <span className="text-gray-500 block">تأكيد استلام الموظف للمهمة:</span>
+                    {selectedTask.acknowledged_at ? (
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                          ✓ تم تأكيد الاستلام من الفني
+                        </span>
+                        <span className="text-[11px] text-emerald-800 font-medium">
+                          {selectedTask.acknowledged_at.slice(0, 16).replace("T", " ")}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-amber-700">
+                        <span className="text-sm">⏳</span>
+                        <span className="font-medium">بانتظار تأكيد الاستلام من الفني عبر Telegram</span>
+                      </div>
+                    )}
+                    <p className="text-[11px] text-gray-400">
+                      * تأكيد الاستلام يثبت إشعار الفني وبدء المتابعة، ولا يعني اكتمال تنفيذ المهمة.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -897,6 +1386,28 @@ export default function TasksPage() {
                       className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm transition-colors"
                     >
                       📋 رفع للمراجعة والاعتماد (Submit for Review)
+                    </button>
+                  )}
+
+                  {/* Direct Complete Action (Unified Workflow) */}
+                  {(selectedTask.stage === "new" || selectedTask.stage === "in_progress" || selectedTask.stage === "waiting") && selectedTask.status !== "Submitted for Review" && (
+                    <button
+                      onClick={() => handleWorkflowAction(selectedTask.id, "complete")}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors"
+                    >
+                      ☑️ إنهاء المهمة (Complete)
+                    </button>
+                  )}
+
+                  {/* Manager Reopen / Cancel Actions */}
+                  {isManagerOrAdmin && (selectedTask.stage === "completed" || selectedTask.stage === "rejected" || selectedTask.stage === "cancelled") && (
+                    <button
+                      onClick={() => handleWorkflowAction(selectedTask.id, "reopen")}
+                      disabled={actionLoading}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                    >
+                      ♻️ إعادة فتح المهمة (Reopen)
                     </button>
                   )}
 

@@ -209,14 +209,14 @@ export default function SettingsPage() {
           </div>
 
           {passSuccess && (
-            <div className="p-3 mb-4 text-xs font-semibold text-green-800 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <div role="status" aria-live="polite" className="p-3 mb-4 text-xs font-semibold text-green-800 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
               <CheckCircleIcon className="w-4 h-4" />
               {passSuccess}
             </div>
           )}
 
           {passError && (
-            <div className="p-3 mb-4 text-xs font-semibold text-red-800 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <div role="alert" className="p-3 mb-4 text-xs font-semibold text-red-800 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
               <AlertCircleIcon className="w-4 h-4" />
               {passError}
             </div>
@@ -224,11 +224,13 @@ export default function SettingsPage() {
 
           <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="current-password" className="block text-xs font-medium text-gray-700 mb-1">
                 كلمة المرور الحالية <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
+                id="current-password"
+                autoComplete="current-password"
                 required
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
@@ -237,11 +239,14 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="new-password" className="block text-xs font-medium text-gray-700 mb-1">
                 كلمة المرور الجديدة <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
+                id="new-password"
+                autoComplete="new-password"
+                minLength={8}
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -250,11 +255,13 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="confirm-new-password" className="block text-xs font-medium text-gray-700 mb-1">
                 تأكيد كلمة المرور الجديدة <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
+                id="confirm-new-password"
+                autoComplete="new-password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

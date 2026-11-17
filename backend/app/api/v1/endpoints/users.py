@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import (
+    resolve_company_scope,
     get_current_user,
     get_user_company_id,
     require_role,
@@ -25,6 +26,7 @@ from app.core.rbac import (
 )
 from app.core.response import success_response, paginate
 from app.models.user import User, Employee, Role, UserRole, CompanyMembership, UserSession
+from app.models.telegram import TelegramUserLink
 from app.models.company import Company, Branch, Department
 from app.schemas.user import (
     UserCreateForm,
@@ -67,7 +69,7 @@ def list_users(
         query = query.filter(User.is_deleted == False)
 
     # Multi-tenant isolation: Super Admin sees all or filtered company; Company Admin sees their company's users
-    target_cid = company_filter or active_cid
+    target_cid = resolve_company_scope(current_user, active_cid, company_filter)
     if not current_user.is_superadmin:
         query = query.join(CompanyMembership, CompanyMembership.user_id == User.id).filter(
             CompanyMembership.company_id == target_cid,
@@ -109,6 +111,8 @@ def list_users(
             .filter(CompanyMembership.user_id == u.id, CompanyMembership.status == "Active")
             .all()
         )
+        if not current_user.is_superadmin:
+            memberships = [m for m in memberships if m.company_id == target_cid]
         companies_data = []
         for m in memberships:
             comp = db.query(Company).filter(Company.id == m.company_id).first()
@@ -260,6 +264,12 @@ def create_user(
     )
     db.add(membership)
     db.commit()
+
+    # Synchronize any existing TelegramUserLink for this employee to the newly created user account
+    tlink = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == employee.id).first()
+    if tlink:
+        tlink.user_id = new_user.id
+        db.commit()
 
     # Log audit
     log_audit(
