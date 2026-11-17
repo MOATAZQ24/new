@@ -29,6 +29,10 @@ class Module:
     DASHBOARD = "dashboard"
     COMPANIES = "companies"
     EMPLOYEES = "employees"
+    HRM = "hrm"
+    CRM = "crm"
+    PROJECTS = "projects"
+    APPROVALS = "approvals"
     USERS = "users"
     ASSETS = "assets"
     CUSTODY = "custody"
@@ -63,6 +67,10 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
             Module.DASHBOARD,
             Module.COMPANIES,
             Module.EMPLOYEES,
+            Module.HRM,
+            Module.CRM,
+            Module.PROJECTS,
+            Module.APPROVALS,
             Module.USERS,
             Module.ASSETS,
             Module.CUSTODY,
@@ -81,7 +89,11 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
     "Company Admin": {
         Module.DASHBOARD: {Action.VIEW, Action.EXPORT},
         Module.COMPANIES: {Action.VIEW, Action.EDIT, Action.MANAGE_ACCESS},
-        Module.EMPLOYEES: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.EXPORT},
+        Module.EMPLOYEES: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.HRM: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.CRM: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.PROJECTS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.APPROVALS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.APPROVE, Action.EXPORT},
         Module.USERS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.MANAGE_ACCESS, Action.EXPORT},
         Module.ASSETS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.EXPORT},
         Module.CUSTODY: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
@@ -99,7 +111,11 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
     "IT Manager": {
         Module.DASHBOARD: {Action.VIEW, Action.EXPORT},
         Module.COMPANIES: {Action.VIEW},
-        Module.EMPLOYEES: {Action.VIEW, Action.ASSIGN, Action.EXPORT},
+        Module.EMPLOYEES: {Action.VIEW, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.HRM: {Action.VIEW, Action.CREATE, Action.EDIT, Action.APPROVE, Action.EXPORT},
+        Module.CRM: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN, Action.EXPORT},
+        Module.PROJECTS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
+        Module.APPROVALS: {Action.VIEW, Action.CREATE, Action.APPROVE, Action.EXPORT},
         Module.USERS: {Action.VIEW, Action.ASSIGN},
         Module.ASSETS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.DELETE, Action.ASSIGN, Action.EXPORT},
         Module.CUSTODY: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN, Action.APPROVE, Action.EXPORT},
@@ -118,6 +134,10 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
         Module.DASHBOARD: {Action.VIEW},
         Module.COMPANIES: {Action.VIEW},
         Module.EMPLOYEES: {Action.VIEW},
+        Module.HRM: {Action.VIEW, Action.CREATE},
+        Module.CRM: {Action.VIEW, Action.CREATE, Action.EDIT},
+        Module.PROJECTS: {Action.VIEW, Action.CREATE, Action.EDIT},
+        Module.APPROVALS: {Action.VIEW, Action.CREATE},
         Module.USERS: {Action.VIEW},
         Module.ASSETS: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN},
         Module.CUSTODY: {Action.VIEW, Action.CREATE, Action.EDIT, Action.ASSIGN},
@@ -136,6 +156,10 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
         Module.DASHBOARD: {Action.VIEW},
         Module.COMPANIES: set(),
         Module.EMPLOYEES: {Action.VIEW},
+        Module.HRM: {Action.VIEW, Action.CREATE},
+        Module.CRM: {Action.VIEW},
+        Module.PROJECTS: {Action.VIEW},
+        Module.APPROVALS: {Action.VIEW, Action.CREATE},
         Module.USERS: set(),
         Module.ASSETS: {Action.VIEW},
         Module.CUSTODY: {Action.VIEW},
@@ -154,6 +178,10 @@ ROLE_PERMISSION_MATRIX: Dict[str, Dict[str, Set[str]]] = {
         Module.DASHBOARD: {Action.VIEW, Action.EXPORT},
         Module.COMPANIES: {Action.VIEW, Action.EXPORT},
         Module.EMPLOYEES: {Action.VIEW, Action.EXPORT},
+        Module.HRM: {Action.VIEW, Action.EXPORT},
+        Module.CRM: {Action.VIEW, Action.EXPORT},
+        Module.PROJECTS: {Action.VIEW, Action.EXPORT},
+        Module.APPROVALS: {Action.VIEW, Action.EXPORT},
         Module.USERS: {Action.VIEW, Action.EXPORT},
         Module.ASSETS: {Action.VIEW, Action.EXPORT},
         Module.CUSTODY: {Action.VIEW, Action.EXPORT},

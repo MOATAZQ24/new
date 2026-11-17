@@ -10,7 +10,12 @@ class EmployeeBase(BaseModel):
     job_title: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
-    employment_status: str = "Active"  # Active, On Leave, Terminated
+    employment_status: str = "Active"  # Active, On Leave, Suspended, Terminated
+    manager_id: Optional[uuid.UUID] = None
+    hire_date: Optional[date] = None
+    employment_type: Optional[str] = "Full-Time"
+    work_location: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class EmployeeCreate(EmployeeBase):
@@ -28,6 +33,12 @@ class EmployeeUpdate(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     employment_status: Optional[str] = None
+    manager_id: Optional[uuid.UUID] = None
+    hire_date: Optional[date] = None
+    employment_type: Optional[str] = None
+    work_location: Optional[str] = None
+    avatar_url: Optional[str] = None
+    change_reason: Optional[str] = None
 
 
 class EmployeeResponse(EmployeeBase):

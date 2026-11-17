@@ -64,6 +64,12 @@ def _migrate_columns():
             ("telegram_user_links", "allowed_modules", "TEXT", "JSONB"),
             ("telegram_user_links", "notification_preferences", "TEXT", "JSONB"),
             ("telegram_user_links", "data_scope", "VARCHAR(50) DEFAULT 'Self'", "VARCHAR(50) DEFAULT 'Self'"),
+            ("employees", "manager_id", "CHAR(32)", "UUID"),
+            ("employees", "hire_date", "DATE", "DATE"),
+            ("employees", "employment_type", "VARCHAR(50) DEFAULT 'Full-Time'", "VARCHAR(50) DEFAULT 'Full-Time'"),
+            ("employees", "work_location", "VARCHAR(255)", "VARCHAR(255)"),
+            ("employees", "avatar_url", "VARCHAR(512)", "VARCHAR(512)"),
+            ("tasks", "project_id", "CHAR(32)", "UUID"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

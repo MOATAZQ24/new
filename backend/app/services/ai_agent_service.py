@@ -474,11 +474,11 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
 
     # 0. Explicit Employee Search / Lookup
     m_emp_search = re.match(
-        r"^(?:ابحث\s+عن|بحث\s+عن|اعرض\s+بيانات|بيانات|معلومات|من\s+هو|من\s+هي|تحقق\s+من|find|search|lookup|get|show)\s+(?:عن\s+|for\s+)?(?:الموظفة?\s+|الزميلة?\s+|المهندسة?\s+|الفني\s+|الأستاذة?\s+|employee\s+|staff\s+|engineer\s+)?(.+)$",
+        r"^(?:ابحث\s+عن|بحث\s+عن|اعرض\s+بيانات|اعرض\s+ملف|ملف\s+الموظف|بيانات|معلومات|من\s+هو|من\s+هي|تحقق\s+من|find|search|lookup|get|show)\s+(?:عن\s+|for\s+|ملف\s+)?(?:الموظفة?\s+|الزميلة?\s+|المهندسة?\s+|الفني\s+|الأستاذة?\s+|employee\s+|staff\s+|engineer\s+|profile\s+of\s+)?(.+)$",
         text,
         flags=re.I,
     )
-    if m_emp_search and re.search(r"(الموظف|موظف|المهندس|مهندس|الفني|الزميل|employee|staff|engineer|من\s+هو|بيانات|تحقق\s+من)", low) and not re.search(r"(مهم|تذك|إشعار|اشعار|أصل|جهاز|اشتراك|فرع|task|ticket|notif|asset|subscription|branch)", low):
+    if m_emp_search and re.search(r"(الموظف|موظف|المهندس|مهندس|الفني|الزميل|ملف|employee|staff|engineer|profile|من\s+هو|بيانات|تحقق\s+من)", low) and not re.search(r"(مهم|تذك|إشعار|اشعار|أصل|جهاز|اشتراك|فرع|حضور|task|ticket|notif|asset|subscription|branch|attendance)", low):
         cleaned_emp = tools.clean_employee_query(m_emp_search.group(1))
         return {"tool": "resolve_employee", "args": {"name": cleaned_emp}}
 
@@ -632,12 +632,33 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
             },
         }
 
-    # 6. Operational Queries: Overdue Tasks, Filtered Tasks, Tickets, Assets, Summary
+    # 6. Operational Queries: Overdue Tasks, Filtered Tasks, Tickets, Assets, Custody, Subscriptions, Attendance, CRM, Projects, Approvals, Summary
     if re.search(r"(متأخرة?|تأخير|overdue)", low):
+        m_ovd_emp = re.search(r"(?:عند|لدى|لـ|للموظف\s+|الخاصة\s+بـ?)\s*([^\s؟?.,،]+(?:\s+[^\s؟?.,،]+)?)$", text, flags=re.I)
+        emp_ovd = tools.clean_employee_query(m_ovd_emp.group(1)) if m_ovd_emp and not re.search(r"(فريقي|الفريق|الشركة|القسم|team|all)", m_ovd_emp.group(1), re.I) else None
         mode = "team" if re.search(r"(فريقي|الفريق|الشركة|القسم|team|all)", low) else ("my" if re.search(r"(مهامي|my tasks)", low) else "team")
-        return {"tool": "query_operations", "args": {"query_type": "overdue_tasks", "filter_mode": mode, "limit": 25}}
+        return {"tool": "query_operations", "args": {"query_type": "overdue_tasks", "filter_mode": mode, "assignee_name": emp_ovd, "limit": 25}}
 
-    if re.search(r"(ملخص|إحصائيات|تقرير سريع|الوضع الحالي|summary|overview|kpi|status report)", low):
+    if re.search(r"(حضور|انصراف|غياب|تقرير\s+الحضور|attendance)", low):
+        return {"tool": "query_operations", "args": {"query_type": "attendance", "limit": 25}}
+
+    if re.search(r"(اشتراك|اشتراكات|ينتهي\s+خلال|تجديد|subscription)", low):
+        return {"tool": "query_operations", "args": {"query_type": "subscriptions", "limit": 25}}
+
+    if re.search(r"(عهدة|عهد|مين\s+عنده\s+عهدة|custody)", low):
+        m_br = re.search(r"(?:فرع)\s+([^\s؟?.,،]+)", text)
+        return {"tool": "query_operations", "args": {"query_type": "custody", "search": m_br.group(1) if m_br else None, "limit": 25}}
+
+    if re.search(r"(عملاء|فرص\s+بيعية|مبيعات|crm|pipeline|customers)", low):
+        return {"tool": "query_operations", "args": {"query_type": "crm"}}
+
+    if re.search(r"(مشاريع|المشاريع|projects)", low):
+        return {"tool": "query_operations", "args": {"query_type": "projects"}}
+
+    if re.search(r"(اعتمادات|موافقات|طلبات\s+الشراء|approvals)", low):
+        return {"tool": "query_operations", "args": {"query_type": "approvals"}}
+
+    if re.search(r"(ملخص|إحصائيات\s+العامة|تقرير سريع|الوضع الحالي|ملخص\s+أداء|summary|overview|kpi|status report)", low) and not re.search(r"(تذاكر|التذاكر|tickets)", low):
         return {"tool": "query_operations", "args": {"query_type": "operational_summary"}}
 
     if re.search(r"(مهام|المهام|tasks|my tasks|مهامي)", low):
@@ -661,8 +682,9 @@ def _offline_plan_intent(message: str, context: Optional[Dict[str, Any]] = None)
     if re.search(r"(تذاكر|التذاكر|بلاغات|tickets)", low):
         return {"tool": "query_operations", "args": {"query_type": "tickets", "limit": 25}}
 
-    if re.search(r"(أصول|الأصول|أجهزة|لابتوب|assets)", low):
-        return {"tool": "query_operations", "args": {"query_type": "assets", "limit": 25}}
+    if re.search(r"(أصول|الأصول|أجهزة|الأجهزة|لابتوب|تحت\s+الصيانة|assets)", low):
+        st = "Under Maintenance" if re.search(r"(تحت\s+الصيانة|صيانة|maintenance)", low) else None
+        return {"tool": "query_operations", "args": {"query_type": "assets", "status": st, "limit": 25}}
 
     return {"tool": None, "args": {}}
 
@@ -772,12 +794,39 @@ def _format_grounded_response(tool_name: str, res: Dict[str, Any]) -> str:
         items = d.get("items") or []
         total_cnt = d.get("total_count", len(items))
         if not items:
-            return "لا توجد أصول مطابقة حالياً."
-        lines = [f"💻 الأصول التقنية — عرض {len(items)} من أصل {total_cnt}:"]
+            return "لا توجد أصول أو عهد مطابقة حالياً."
+        lines = [f"💻 الأصول والعهد — عرض {len(items)} من أصل {total_cnt}:"]
         for it in items[:10]:
             who = f" → {it['assigned_to']}" if it.get("assigned_to") else ""
-            lines.append(f"• {it['asset_code']}: {it['asset_name']} ({it['asset_type']} • {it['status']}){who}")
+            lines.append(f"• {it['asset_code']}: {it['asset_name']} ({it.get('asset_type') or 'عهدة'} • {it['status']}){who}")
         return "\n".join(lines)
+
+    if rtype == "subscriptions_summary":
+        items = d.get("items") or []
+        lines = [
+            f"💳 الاشتراكات الخارجية: إجمالي ({d.get('total_subscriptions', 0)}) — ينتهي خلال 30 يوماً ({d.get('expiring_30d_count', 0)}):"
+        ]
+        for s in items[:8]:
+            lines.append(f"• {s['service_name']} ({s.get('provider') or '—'}) — التجديد: {s.get('renewal_date') or '—'} — {s.get('price', 0)} ر.س")
+        return "\n".join(lines)
+
+    if rtype == "attendance_summary":
+        return (
+            f"🕒 ملخص سجل الحضور والانصراف الفعلي:\n"
+            f"• إجمالي السجلات: {d.get('total_records', 0)} | حضور: {d.get('present_count', 0)} | تأخير: {d.get('late_count', 0)} | غياب مؤكد: {d.get('absent_count', 0)}"
+        )
+
+    if rtype == "crm_summary":
+        return (
+            f"🤝 ملخص إدارة علاقات العملاء (CRM):\n"
+            f"• العملاء المسجلون: {d.get('total_customers', 0)} | الفرص البيعية: {d.get('total_opportunities', 0)} | قيمة الفرص المفتوحة: {d.get('open_pipeline_value_sar', 0):,.2f} ر.س"
+        )
+
+    if rtype == "projects_summary":
+        return f"📁 ملخص المشاريع: إجمالي المشاريع ({d.get('total_projects', 0)}) — المشاريع النشطة ({d.get('active_projects', 0)})"
+
+    if rtype == "approvals_summary":
+        return f"✅ مركز الاعتمادات الموحد: يوجد ({d.get('pending_approvals', 0)}) طلب بانتظار الاعتماد."
 
     return "تمت معالجة الطلب."
 

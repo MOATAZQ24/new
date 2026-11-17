@@ -7,15 +7,16 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user, get_user_company_id, resolve_company_scope
 from app.core.response import success_response
-from app.models.company import Company
+from app.models.company import Company, Branch, Department
 from app.models.user import Employee, User
-from app.models.asset import TechnicalAsset
+from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
 from app.models.subscription import ThirdPartySubscription
 from app.models.maintenance import MaintenanceRecord
 from app.models.task import Task
 from app.models.ticket import HelpDeskTicket
 from app.models.audit import AuditLog
+from app.models.enterprise import Project, CRMCustomer, CRMOpportunity, WorkflowApproval, AttendanceRecord
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard & Analytics"])
 
@@ -83,10 +84,27 @@ def get_dashboard_data(
         HelpDeskTicket.status.notin_(["Resolved", "Closed", "Cancelled"]),
     ).count()
 
-    # Pending maintenance
+    # Pending maintenance & enterprise metrics
     pending_maint = db.query(MaintenanceRecord).filter(
         MaintenanceRecord.company_id == target_cid,
         MaintenanceRecord.status.in_(["Open", "Pending Approval", "In Progress"]),
+    ).count()
+    total_branches = db.query(Branch).filter(Branch.company_id == target_cid).count()
+    total_departments = db.query(Department).filter(Department.company_id == target_cid).count()
+    active_projects = db.query(Project).filter(Project.company_id == target_cid, Project.status == "Active").count()
+    total_customers = db.query(CRMCustomer).filter(CRMCustomer.company_id == target_cid).count()
+    open_opportunities = db.query(CRMOpportunity).filter(
+        CRMOpportunity.company_id == target_cid,
+        CRMOpportunity.stage.notin_(["Won", "Lost"]),
+    ).count()
+    pending_approvals = db.query(WorkflowApproval).filter(
+        WorkflowApproval.company_id == target_cid,
+        WorkflowApproval.current_state == "Pending",
+    ).count()
+    present_today = db.query(AttendanceRecord).filter(
+        AttendanceRecord.company_id == target_cid,
+        AttendanceRecord.attendance_date == today,
+        AttendanceRecord.status.in_(["Present", "Late", "Remote"]),
     ).count()
 
     # Distributions for charts
@@ -133,7 +151,14 @@ def get_dashboard_data(
 
     data = {
         "total_companies": total_companies,
+        "total_branches": total_branches,
+        "total_departments": total_departments,
         "total_employees": total_employees,
+        "present_today": present_today,
+        "active_projects": active_projects,
+        "total_customers": total_customers,
+        "open_opportunities": open_opportunities,
+        "pending_approvals": pending_approvals,
         "total_assets": total_assets,
         "assigned_assets": assigned_assets,
         "available_assets": available_assets,

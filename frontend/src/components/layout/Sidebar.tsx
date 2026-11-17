@@ -16,7 +16,11 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
   { name: "الشركات والفروع", href: "/companies", icon: "Companies" },
-  { name: "الموظفون", href: "/employees", icon: "Users" },
+  { name: "الموظفون (360°)", href: "/employees", icon: "Users" },
+  { name: "الموارد البشرية والحضور", href: "/hrm", icon: "Clock" },
+  { name: "العملاء والفرص (CRM)", href: "/crm", icon: "Globe" },
+  { name: "المشاريع والجدولة", href: "/projects", icon: "CheckSquare" },
+  { name: "الاعتمادات والمشتريات", href: "/approvals", icon: "ShieldCheck" },
   { name: "المستخدمون والوصول", href: "/users", icon: "User" },
   { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
   { name: "الأصول الرقمية والخزنة", href: "/digital-assets", icon: "Lock" },

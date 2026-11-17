@@ -383,7 +383,12 @@ export default function EmployeesPage() {
                         <bdi dir="ltr">{emp.employee_number}</bdi>
                       </td>
                       <td className="p-3.5 font-bold text-slate-900">
-                        {emp.full_name}
+                        <Link
+                          href={`/employees/${emp.id}`}
+                          className="hover:text-[#187A5A] hover:underline"
+                        >
+                          {emp.full_name}
+                        </Link>
                       </td>
                       <td className="p-3.5 text-slate-700">{emp.job_title || "-"}</td>
                       <td className="p-3.5 text-slate-700">{emp.department_name || "-"}</td>
@@ -395,12 +400,18 @@ export default function EmployeesPage() {
                       </td>
                       <td className="p-3.5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
+                          <Link
+                            href={`/employees/${emp.id}`}
+                            className="motion-control px-2.5 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] transition-colors"
+                          >
+                            ملف 360°
+                          </Link>
                           <button
                             type="button"
                             onClick={() => openEmployeeDetails(emp)}
                             className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] transition-colors cursor-pointer"
                           >
-                            الملف والمهام والعهد
+                            العهد والمهام
                           </button>
                           {canManage && (
                             <>

@@ -45,11 +45,21 @@ class Employee(UUIDMixin, TimestampMixin, Base):
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     employment_status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
+    manager_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    hire_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    employment_type: Mapped[str] = mapped_column(String(50), default="Full-Time", nullable=False)
+    work_location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
 
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
     branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])
     department: Mapped[Optional["Department"]] = relationship("Department", foreign_keys=[department_id])
+    manager: Mapped[Optional["Employee"]] = relationship("Employee", remote_side="[Employee.id]", foreign_keys=[manager_id])
     user: Mapped[Optional["User"]] = relationship("User", back_populates="employee", uselist=False)
 
     __table_args__ = (

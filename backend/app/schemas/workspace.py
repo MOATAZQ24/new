@@ -2,7 +2,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 WIDGETS = ["kpis", "critical_tickets", "subscriptions", "maintenance", "recent_tasks", "asset_status", "ticket_priorities", "activity", "quick_actions"]
-NAVIGATION = ["/", "/companies", "/employees", "/assets", "/custody", "/infrastructure", "/subscriptions", "/maintenance", "/tasks", "/tickets", "/notifications", "/reports", "/audit", "/settings"]
+NAVIGATION = ["/", "/companies", "/employees", "/hrm", "/crm", "/projects", "/approvals", "/users", "/assets", "/digital-assets", "/custody", "/infrastructure", "/subscriptions", "/maintenance", "/tasks", "/tickets", "/notifications", "/reports", "/audit", "/settings"]
 
 
 class StrictModel(BaseModel):

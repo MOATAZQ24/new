@@ -1627,7 +1627,9 @@ def tool_query_operations(
             return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض الأصول التقنية."}
         _emit(progress_cb, "query_assets", "جارٍ البحث في سجل الأصول التقنية...", "running")
         query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
-        if search:
+        if raw_status and "maintenance" in raw_status.lower() or (search and ("صيانة" in search or "maintenance" in search.lower())):
+            query = query.filter(TechnicalAsset.status == "Under Maintenance")
+        elif search:
             s = f"%{search}%"
             query = query.filter(
                 TechnicalAsset.asset_name.ilike(s)
@@ -1658,6 +1660,148 @@ def tool_query_operations(
                 "total_count": total_count,
                 "truncated": total_count > len(rows),
                 "items": rows,
+            },
+        }
+
+    if qtype == "custody":
+        if not has_module_permission(current_user, Module.CUSTODY, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض سجل العهد."}
+        _emit(progress_cb, "query_custody", "جارٍ البحث في سجل عهد الموظفين...", "running")
+        from app.models.asset import AssetCustody
+        from app.models.company import Branch
+        q_cust = (
+            db.query(AssetCustody)
+            .options(joinedload(AssetCustody.employee), joinedload(AssetCustody.asset))
+            .filter(AssetCustody.company_id == target_cid, AssetCustody.status == "Active")
+        )
+        if search:
+            branch_matches = db.query(Branch.id).filter(Branch.company_id == target_cid, Branch.branch_name.ilike(f"%{search}%")).all()
+            b_ids = [b[0] for b in branch_matches]
+            if b_ids:
+                q_cust = q_cust.join(Employee, AssetCustody.employee_id == Employee.id).filter(Employee.branch_id.in_(b_ids))
+        records = q_cust.limit(limit).all()
+        rows = [
+            {
+                "asset_code": r.asset.asset_code if r.asset else "—",
+                "asset_name": r.asset.asset_name if r.asset else "—",
+                "status": r.status,
+                "assigned_to": r.employee.full_name if r.employee else "—",
+                "branch_name": r.employee.branch.branch_name if (r.employee and r.employee.branch) else None,
+            }
+            for r in records
+        ]
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "asset_list",
+                "count": len(rows),
+                "total_count": len(rows),
+                "truncated": False,
+                "items": rows,
+            },
+        }
+
+    if qtype == "subscriptions":
+        if not has_module_permission(current_user, Module.SUBSCRIPTIONS, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض الاشتراكات."}
+        from app.models.subscription import ThirdPartySubscription
+        subs = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == target_cid).all()
+        expiring_30d = [
+            s for s in subs
+            if s.renewal_date and 0 <= (s.renewal_date - today).days <= 30
+        ]
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "subscriptions_summary",
+                "total_subscriptions": len(subs),
+                "expiring_30d_count": len(expiring_30d),
+                "items": [
+                    {
+                        "service_name": s.service_name,
+                        "provider": s.provider,
+                        "renewal_date": s.renewal_date.isoformat() if s.renewal_date else None,
+                        "price": float(s.price or 0),
+                        "status": s.status,
+                    }
+                    for s in (expiring_30d or subs[:10])
+                ],
+            },
+        }
+
+    if qtype == "attendance":
+        if not has_module_permission(current_user, Module.HRM, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض تقارير الحضور والانصراف."}
+        from app.models.enterprise import AttendanceRecord
+        att_q = db.query(AttendanceRecord).filter(AttendanceRecord.company_id == target_cid)
+        if not staff and current_user.employee_id:
+            att_q = att_q.filter(AttendanceRecord.employee_id == current_user.employee_id)
+        records = att_q.order_by(AttendanceRecord.attendance_date.desc()).limit(limit).all()
+        present_c = sum(1 for r in records if r.status in ("Present", "Late", "Remote"))
+        late_c = sum(1 for r in records if r.status == "Late" or r.late_minutes > 0)
+        absent_c = sum(1 for r in records if r.status == "Absent")
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "attendance_summary",
+                "total_records": len(records),
+                "present_count": present_c,
+                "late_count": late_c,
+                "absent_count": absent_c,
+            },
+        }
+
+    if qtype == "crm":
+        if not has_module_permission(current_user, Module.CRM, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض بيانات العملاء والفرص البيعية."}
+        from app.models.enterprise import CRMCustomer, CRMOpportunity
+        cust_c = db.query(CRMCustomer).filter(CRMCustomer.company_id == target_cid).count()
+        opps = db.query(CRMOpportunity).filter(CRMOpportunity.company_id == target_cid).all()
+        open_val = round(sum(float(o.expected_value_sar or 0) for o in opps if o.stage not in ("Won", "Lost")), 2)
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "crm_summary",
+                "total_customers": cust_c,
+                "total_opportunities": len(opps),
+                "open_pipeline_value_sar": open_val,
+            },
+        }
+
+    if qtype == "projects":
+        if not has_module_permission(current_user, Module.PROJECTS, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض المشاريع."}
+        from app.models.enterprise import Project
+        projs = db.query(Project).filter(Project.company_id == target_cid).all()
+        active_p = sum(1 for p in projs if p.status == "Active")
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "projects_summary",
+                "total_projects": len(projs),
+                "active_projects": active_p,
+            },
+        }
+
+    if qtype == "approvals":
+        if not has_module_permission(current_user, Module.APPROVALS, Action.VIEW, target_cid, db):
+            return {"ok": False, "status": "denied", "error": "ليس لديك صلاحية عرض الاعتمادات."}
+        from app.models.enterprise import WorkflowApproval
+        pending_a = db.query(WorkflowApproval).filter(
+            WorkflowApproval.company_id == target_cid,
+            WorkflowApproval.current_state == "Pending",
+        ).count()
+        return {
+            "ok": True,
+            "status": "executed",
+            "data": {
+                "type": "approvals_summary",
+                "pending_approvals": pending_a,
             },
         }
 

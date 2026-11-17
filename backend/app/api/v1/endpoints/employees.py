@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -20,6 +21,7 @@ from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.telegram import TelegramUserLink
 from app.schemas.employee import EmployeeCreate, EmployeeUpdate, UserCreate, UserUpdate
 from app.services.audit_service import log_audit
+from app.services import enterprise_service
 
 router = APIRouter(prefix="/employees", tags=["Employees & Users"])
 
@@ -47,70 +49,20 @@ def list_employees(
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """List employees with server-side company isolation."""
+    """List employees with server-side company isolation and canonical Arabic/typo-tolerant search."""
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
-    query = db.query(Employee).filter(Employee.company_id == target_cid)
-
-    if branch_id:
-        query = query.filter(Employee.branch_id == branch_id)
-    if department_id:
-        query = query.filter(Employee.department_id == department_id)
-    if status_filter:
-        query = query.filter(Employee.employment_status == status_filter)
-    if search:
-        s = f"%{search}%"
-        query = query.filter(
-            (Employee.full_name.ilike(s))
-            | (Employee.employee_number.ilike(s))
-            | (Employee.email.ilike(s))
-            | (Employee.job_title.ilike(s))
-        )
-
-    total = query.count()
-    employees = (
-        query.order_by(Employee.created_at.desc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-        .all()
+    matched = enterprise_service.search_canonical_directory(
+        db=db,
+        company_id=target_cid,
+        search=search,
+        branch_id=branch_id,
+        department_id=department_id,
+        status_filter=status_filter,
+        limit=500,
     )
-
-    telegram_links = {
-        l.employee_id: l
-        for l in db.query(TelegramUserLink).filter(TelegramUserLink.company_id == target_cid).all()
-    }
-
-    data = []
-    for emp in employees:
-        b_name = emp.branch.branch_name if emp.branch else None
-        d_name = emp.department.department_name if emp.department else None
-        c_name = emp.company.company_name_ar if emp.company else None
-        has_account = emp.user is not None
-        tlink = telegram_links.get(emp.id)
-        is_t_linked = bool(tlink and tlink.is_verified)
-        t_user = tlink.telegram_username if (tlink and tlink.is_verified) else None
-        t_notifs = bool(tlink.notifications_enabled) if (tlink and tlink.is_verified) else False
-
-        data.append({
-            "id": str(emp.id),
-            "company_id": str(emp.company_id),
-            "branch_id": str(emp.branch_id) if emp.branch_id else None,
-            "department_id": str(emp.department_id) if emp.department_id else None,
-            "employee_number": emp.employee_number,
-            "full_name": emp.full_name,
-            "job_title": emp.job_title,
-            "email": emp.email,
-            "phone": emp.phone,
-            "employment_status": emp.employment_status,
-            "branch_name": b_name,
-            "department_name": d_name,
-            "company_name": c_name,
-            "has_user_account": has_account,
-            "is_telegram_linked": is_t_linked,
-            "telegram_username": t_user,
-            "telegram_notifications_enabled": t_notifs,
-            "created_at": emp.created_at,
-        })
-
+    total = len(matched)
+    start = (page - 1) * per_page
+    data = matched[start : start + per_page]
     pagination = paginate(total=total, page=page, per_page=per_page)
     return success_response(data=data, pagination=pagination)
 
@@ -138,14 +90,27 @@ def create_employee(
         company_id=target_cid,
         branch_id=payload.branch_id,
         department_id=payload.department_id,
+        manager_id=payload.manager_id,
         employee_number=payload.employee_number.strip(),
         full_name=payload.full_name.strip(),
         job_title=payload.job_title,
         email=payload.email,
         phone=payload.phone,
         employment_status=payload.employment_status,
+        hire_date=payload.hire_date or date.today(),
+        employment_type=payload.employment_type or "Full-Time",
+        work_location=payload.work_location,
+        avatar_url=payload.avatar_url,
     )
     db.add(emp)
+    db.flush()
+    enterprise_service.record_employee_assignment_history(
+        db=db,
+        employee=emp,
+        change_type="Onboarding",
+        changed_by_id=current_user.id,
+        notes="تسجيل الموظف في الدليل الموحد للمنشأة",
+    )
     db.commit()
     db.refresh(emp)
 
@@ -156,10 +121,27 @@ def create_employee(
         resource_id=str(emp.id),
         user_id=current_user.id,
         company_id=target_cid,
-        new_values=payload.model_dump(),
+        new_values=payload.model_dump(mode="json"),
     )
 
     return success_response(data={"id": str(emp.id)}, message="تم إضافة الموظف بنجاح")
+
+
+@router.get("/{employee_id}/profile360")
+def get_employee_360_endpoint(
+    employee_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Return the complete 360° Employee Profile workspace."""
+    data = enterprise_service.get_employee_360_profile(
+        db=db,
+        current_user=current_user,
+        company_id=active_cid,
+        employee_id=employee_id,
+    )
+    return success_response(data=data)
 
 
 @router.get("/{employee_id}")
@@ -247,6 +229,16 @@ def update_employee(
         payload.department_id or emp.department_id,
     )
 
+    org_changed = any(
+        [
+            payload.branch_id is not None and payload.branch_id != emp.branch_id,
+            payload.department_id is not None and payload.department_id != emp.department_id,
+            payload.job_title is not None and payload.job_title != emp.job_title,
+            payload.employment_status is not None and payload.employment_status != emp.employment_status,
+            payload.manager_id is not None and payload.manager_id != getattr(emp, "manager_id", None),
+        ]
+    )
+
     if payload.full_name is not None:
         emp.full_name = payload.full_name
     if payload.job_title is not None:
@@ -255,6 +247,16 @@ def update_employee(
         emp.email = payload.email
     if payload.phone is not None:
         emp.phone = payload.phone
+    if payload.manager_id is not None:
+        emp.manager_id = payload.manager_id
+    if payload.hire_date is not None:
+        emp.hire_date = payload.hire_date
+    if payload.employment_type is not None:
+        emp.employment_type = payload.employment_type
+    if payload.work_location is not None:
+        emp.work_location = payload.work_location
+    if payload.avatar_url is not None:
+        emp.avatar_url = payload.avatar_url
     if payload.employment_status is not None:
         emp.employment_status = payload.employment_status
         # If employee is terminated, resigned, or inactive, cascade deactivate user account, sessions, and Telegram link
@@ -272,6 +274,20 @@ def update_employee(
     if payload.department_id is not None:
         emp.department_id = payload.department_id
 
+    if org_changed:
+        change_kind = (
+            "Deactivation"
+            if emp.employment_status in ("Terminated", "Resigned", "Inactive", "Suspended")
+            else "Transfer"
+        )
+        enterprise_service.record_employee_assignment_history(
+            db=db,
+            employee=emp,
+            change_type=change_kind,
+            changed_by_id=current_user.id,
+            notes=payload.change_reason or "تحديث بيانات التسكين الوظيفي",
+        )
+
     db.commit()
 
     log_audit(
@@ -281,7 +297,7 @@ def update_employee(
         resource_id=str(emp.id),
         user_id=current_user.id,
         company_id=emp.company_id,
-        new_values=payload.model_dump(exclude_unset=True),
+        new_values=payload.model_dump(exclude_unset=True, mode="json"),
     )
 
     return success_response(message="تم تحديث بيانات الموظف بنجاح")

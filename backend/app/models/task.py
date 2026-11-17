@@ -83,6 +83,11 @@ class Task(UUIDMixin, TimestampMixin, Base):
         ForeignKey("helpdesk_tickets.id", ondelete="SET NULL"),
         nullable=True,
     )
+    project_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     attachments: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)

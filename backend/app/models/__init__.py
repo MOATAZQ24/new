@@ -16,6 +16,22 @@ from app.models.customization import UserWorkspacePreference, CompanyBranding
 from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermission
 from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog, TelegramBotMenuConfig, TelegramMessageTemplate
 from app.models.ai_agent import AIAgentExecution
+from app.models.enterprise import (
+    EmployeeAssignmentHistory,
+    WorkSchedule,
+    AttendanceRecord,
+    LeaveRequest,
+    EmployeeObjective,
+    PerformanceEvaluation,
+    EmployeeDocument,
+    Project,
+    ProjectMilestone,
+    CRMCustomer,
+    CRMOpportunity,
+    CRMActivity,
+    PurchaseRequest,
+    WorkflowApproval,
+)
 
 __all__ = [
     "Base",
@@ -55,6 +71,20 @@ __all__ = [
     "TelegramBotMenuConfig",
     "TelegramMessageTemplate",
     "AIAgentExecution",
+    "EmployeeAssignmentHistory",
+    "WorkSchedule",
+    "AttendanceRecord",
+    "LeaveRequest",
+    "EmployeeObjective",
+    "PerformanceEvaluation",
+    "EmployeeDocument",
+    "Project",
+    "ProjectMilestone",
+    "CRMCustomer",
+    "CRMOpportunity",
+    "CRMActivity",
+    "PurchaseRequest",
+    "WorkflowApproval",
 ]
 
 from app.models.workspace import WorkspacePreference, CompanyWorkspace
