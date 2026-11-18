@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
 from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
@@ -135,7 +135,14 @@ def list_tasks(
         order_clauses = (Task.created_at.desc(), Task.due_date.is_(None), Task.due_date.asc(), Task.id)
 
     items = (
-        query.order_by(*order_clauses)
+        query.options(
+            joinedload(Task.assigned_to),
+            joinedload(Task.assigned_by),
+            joinedload(Task.reviewer),
+            joinedload(Task.related_asset),
+            selectinload(Task.comments),
+        )
+        .order_by(*order_clauses)
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()

@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
 from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
-from app.models.company import Branch
+from app.models.company import Company, Branch
 from app.models.ticket import HelpDeskTicket, TicketComment
 from app.models.task import Task
 from app.models.user import User, Employee, CompanyMembership
@@ -21,10 +21,29 @@ router = APIRouter(prefix="/tickets", tags=["IT Help Desk"])
 
 
 def generate_ticket_number(company_id: uuid.UUID, db: Session) -> str:
-    """Generate sequential ticket number per company, e.g. TCK-2026-0001."""
+    """Generate race-safe sequential ticket number per company, e.g. TCK-2026-0001."""
     year = datetime.utcnow().year
-    count = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == company_id).count()
-    return f"TCK-{year}-{(count + 1):04d}"
+    prefix = f"TCK-{year}-"
+    # Lock company row on PostgreSQL to serialize concurrent ticket number generation per tenant
+    db.query(Company).filter(Company.id == company_id).with_for_update().first()
+    existing_numbers = [
+        r[0]
+        for r in db.query(HelpDeskTicket.ticket_number)
+        .filter(HelpDeskTicket.ticket_number.like(f"{prefix}%"))
+        .all()
+        if r[0]
+    ]
+    max_seq = 0
+    for tnum in existing_numbers:
+        suffix = tnum[len(prefix):]
+        if suffix.isdigit():
+            max_seq = max(max_seq, int(suffix))
+    next_seq = max(max_seq + 1, len(existing_numbers) + 1)
+    candidate = f"{prefix}{next_seq:04d}"
+    while db.query(HelpDeskTicket.id).filter(HelpDeskTicket.ticket_number == candidate).first() is not None:
+        next_seq += 1
+        candidate = f"{prefix}{next_seq:04d}"
+    return candidate
 
 
 @router.get("")
@@ -74,7 +93,13 @@ def list_tickets(
 
     total = query.count()
     items = (
-        query.order_by(HelpDeskTicket.created_at.desc())
+        query.options(
+            joinedload(HelpDeskTicket.requester),
+            joinedload(HelpDeskTicket.assigned_technician),
+            joinedload(HelpDeskTicket.related_asset),
+            selectinload(HelpDeskTicket.comments),
+        )
+        .order_by(HelpDeskTicket.created_at.desc())
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()
