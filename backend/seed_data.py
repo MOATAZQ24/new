@@ -26,8 +26,10 @@ from app.models.notification import Notification
 from app.models.audit import AuditLog
 
 
-def seed():
-    print("Initializing database tables...")
+def seed(include_demo: bool | None = None):
+    if include_demo is None:
+        include_demo = os.environ.get("SEED_DEMO_DATA", "").strip().lower() in ("1", "true", "yes") or ("--demo" in sys.argv)
+    print(f"Initializing database tables (include_demo={include_demo})...")
     init_db()
     db = SessionLocal()
 
@@ -35,8 +37,7 @@ def seed():
         # Check if already seeded
         admin_check = db.query(User).filter(User.username == "admin").first()
         if admin_check:
-            print("Database already contains admin user. Re-seeding clean data...")
-            # We can skip or proceed
+            print("Database already contains admin user. Skipping seed to preserve existing records.")
             return
 
         print("1. Creating System Roles...")
@@ -72,8 +73,17 @@ def seed():
         ur_admin = UserRole(user_id=superadmin.id, role_id=roles_dict["Super Admin"].id)
         db.add(ur_admin)
 
-        # ── 3 Companies ──────────────────────────────────────────────────
-        print("3. Creating 3 Companies...")
+        # ── 3 Canonical Companies & 5 Canonical Branches ─────────────────
+        print("3. Creating Canonical Companies & 5 Branches...")
+        from app.services.enterprise_service import ensure_canonical_internal_companies, ensure_canonical_five_branches
+
+        canonical_branches = [
+            ("الرياض – السلي (مخرج 17)", "الرياض - حي السلي (مخرج 17)"),
+            ("الرياض – الفيصلية (مخرج 18)", "الرياض - حي الفيصلية (مخرج 18)"),
+            ("الرياض – العليا", "الرياض - حي العليا"),
+            ("الدمام", "الدمام - المنطقة الشرقية"),
+            ("جدة", "جدة - منطقة مكة المكرمة"),
+        ]
 
         companies_data = [
             {
@@ -82,51 +92,41 @@ def seed():
                 "code": "IGT",
                 "email": "info@investorgate.sa",
                 "phone": "+966 11 200 1111",
-                "branches": [
-                    ("الفرع الرئيسي - الرياض (العليا)", "شارع العليا العام، برج المملكة، الرياض"),
-                    ("فرع جدة - طريق الملك", "طريق الملك عبدالعزيز، برج الشاطئ، جدة"),
-                ],
+                "branches": canonical_branches,
                 "departments": [
                     "تقنية المعلومات والأنظمة",
                     "الأمن السيبراني والبنية التحتية",
-                    "تطوير البرمجيات والذكاء الاصطناعي",
+                    "العمليات والدعم الفني",
                     "الموارد البشرية والشؤون الإدارية",
                     "المالية والمحاسبة",
                 ],
             },
             {
-                "ar": "شركة الأمل لخدمات تقنية المعلومات",
-                "en": "Al-Amal IT Services Ltd.",
-                "code": "AIT",
-                "email": "contact@alamal-it.sa",
-                "phone": "+966 12 600 2222",
-                "branches": [
-                    ("المقر الإقليمي - الخبر", "طريق الملك فيصل، مجمع الظهران، الخبر"),
-                    ("فرع الدمام", "طريق الأمير محمد بن فهد، الدمام"),
-                ],
+                "ar": "شركة بلينك بيل للتقنية المالية",
+                "en": "BlinkBill FinTech",
+                "code": "BLB",
+                "email": "ops@blinkbill.sa",
+                "phone": "+966 11 200 2222",
+                "branches": canonical_branches,
                 "departments": [
                     "الدعم الفني ومكتب المساعدة",
-                    "إدارة الشبكات والاتصالات",
-                    "إدارة المشاريع الرقمية",
-                    "إدارة المبيعات والخدمات",
+                    "إدارة الأنظمة والمنصات",
+                    "العمليات المالية والفوترة",
+                    "خدمة العملاء",
                 ],
             },
             {
-                "ar": "مجموعة النور القابضة",
-                "en": "Al-Noor Holding Group",
-                "code": "NHG",
-                "email": "corporate@alnoor-group.sa",
-                "phone": "+966 11 400 3333",
-                "branches": [
-                    ("البرج الإداري - الرياض (الملقا)", "حي الملقا، طريق أنس بن مالك، الرياض"),
-                    ("فرع مكة المكرمة", "منطقة العزيزية، مكة المكرمة"),
-                    ("فرع المدينة المنورة", "طريق الملك عبدالله، المدينة المنورة"),
-                ],
+                "ar": "منصة إنفستيا للاستثمار",
+                "en": "Invesstia Investment Platform",
+                "code": "INV",
+                "email": "ops@invesstia.sa",
+                "phone": "+966 11 200 3333",
+                "branches": canonical_branches,
                 "departments": [
-                    "إدارة العمليات المشتركة",
-                    "الخدمات اللوجستية والعهد",
-                    "تقنية المعلومات والتحول الرقمي",
-                    "المراجعة الداخلية والامتثال",
+                    "إدارة المنصة والتقنية",
+                    "العمليات الاستثمارية",
+                    "الأمن والامتثال",
+                    "خدمة المستثمرين",
                 ],
             },
         ]
@@ -134,48 +134,69 @@ def seed():
         today = date.today()
 
         for c_idx, c_info in enumerate(companies_data):
-            company = Company(
-                company_name_ar=c_info["ar"],
-                company_name_en=c_info["en"],
-                company_code=c_info["code"],
-                contact_email=c_info["email"],
-                contact_phone=c_info["phone"],
-                status="Active",
-            )
-            db.add(company)
-            db.commit()
-            db.refresh(company)
-
-            # Link Super Admin to each company
-            db.add(CompanyMembership(user_id=superadmin.id, company_id=company.id, is_default=(c_idx == 0)))
-
-            # Branches
-            branches = []
-            for b_name, b_loc in c_info["branches"]:
-                b = Branch(
-                    company_id=company.id,
-                    branch_name=b_name,
-                    location=b_loc,
+            company = db.query(Company).filter(Company.company_code == c_info["code"]).first()
+            if not company:
+                company = Company(
+                    company_name_ar=c_info["ar"],
+                    company_name_en=c_info["en"],
+                    company_code=c_info["code"],
+                    contact_email=c_info["email"],
+                    contact_phone=c_info["phone"],
+                    company_type="Internal",
                     status="Active",
                 )
-                db.add(b)
+                db.add(company)
                 db.commit()
-                db.refresh(b)
-                branches.append(b)
+                db.refresh(company)
+            else:
+                company.contact_email = company.contact_email or c_info["email"]
+                company.contact_phone = company.contact_phone or c_info["phone"]
+                company.company_type = "Internal"
+                company.status = "Active"
+                db.commit()
+
+            # Link Super Admin to each company
+            existing_mem = db.query(CompanyMembership).filter(
+                CompanyMembership.user_id == superadmin.id,
+                CompanyMembership.company_id == company.id,
+            ).first()
+            if not existing_mem:
+                db.add(CompanyMembership(user_id=superadmin.id, company_id=company.id, role_id=roles_dict["Super Admin"].id, is_default=(c_idx == 0)))
+
+            # Canonical 5 Branches
+            branches = ensure_canonical_five_branches(db, company.id)
+            db.commit()
 
             # Departments
             depts = []
             for d_name in c_info["departments"]:
-                d = Department(
-                    company_id=company.id,
-                    branch_id=branches[0].id,
-                    department_name=d_name,
-                    status="Active",
-                )
-                db.add(d)
-                db.commit()
-                db.refresh(d)
+                d = db.query(Department).filter(
+                    Department.company_id == company.id,
+                    Department.department_name == d_name,
+                ).first()
+                if not d:
+                    d = Department(
+                        company_id=company.id,
+                        branch_id=branches[0].id,
+                        department_name=d_name,
+                        status="Active",
+                    )
+                    db.add(d)
+                    db.commit()
+                    db.refresh(d)
                 depts.append(d)
+
+            if not include_demo:
+                db.add(AuditLog(
+                    user_id=superadmin.id,
+                    company_id=company.id,
+                    action="INITIALIZE_COMPANY",
+                    resource_type="Company",
+                    resource_id=str(company.id),
+                    new_values={"company_name": company.company_name_ar, "code": company.company_code, "mode": "clean_release"},
+                ))
+                db.commit()
+                continue
 
             # 10 Employees per company
             employee_names = [
@@ -540,7 +561,9 @@ def seed():
             ))
             db.commit()
 
-        print("Seed completed successfully! 3 Companies populated with complete working data.")
+        ensure_canonical_internal_companies(db)
+        db.commit()
+        print("Seed completed successfully! Canonical companies and 5 branches initialized.")
         print("Default Super Admin Login: username='admin' | password='Admin@12345'")
 
     except Exception as e:
@@ -552,9 +575,11 @@ def seed():
 
 
 if __name__ == "__main__":
-    seed()
-    try:
-        from seed_digital_assets import seed_digital_assets
-        seed_digital_assets()
-    except Exception as e:
-        print(f"Digital assets seed notice: {e}")
+    include_demo_flag = os.environ.get("SEED_DEMO_DATA", "").strip().lower() in ("1", "true", "yes") or ("--demo" in sys.argv)
+    seed(include_demo=include_demo_flag)
+    if include_demo_flag:
+        try:
+            from seed_digital_assets import seed_digital_assets
+            seed_digital_assets()
+        except Exception as e:
+            print(f"Digital assets seed notice: {e}")

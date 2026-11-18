@@ -17,7 +17,7 @@ from app.services.integration_service import (
 )
 from app.services.audit_service import log_audit
 
-router = APIRouter(prefix="/integrations", tags=["Integration Layer (n8n, Telegram, Gemini)"])
+router = APIRouter(prefix="/integrations", tags=["Integration Layer (n8n, Telegram)"])
 
 
 def resolve_integration_company(
@@ -87,7 +87,7 @@ def list_integrations(
 ):
     """List all integrations and their current status for the target company."""
     target_cid = resolve_integration_company(current_user, active_cid, company_id, db)
-    configs = get_or_create_default_configs(db, target_cid)
+    configs = [c for c in get_or_create_default_configs(db, target_cid) if c.service_name != "gemini"]
     data = [
         {
             "id": str(c.id),

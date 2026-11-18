@@ -457,23 +457,9 @@ class EnterpriseV3AcceptanceTests(unittest.TestCase):
         self.assertEqual(r_jed_ana["kpis"]["total_assets"], 1)
         self.assertEqual(len(r_jed_ana["recent_transfers"]), 1)
 
-        # 9. Verify AI Agent Enterprise & Branch Queries
-        for prompt in [
-            "اعرض ملف الموظف أحمد محمد القحطاني",
-            "أظهر تقرير الحضور لشهر أكتوبر",
-            "اعرض العملاء والفرص البيعية",
-            "اعرض المشاريع",
-            "اعرض الاعتمادات",
-            "كم جهاز في فرع العليا؟",
-            "اعرض الأجهزة التقنية في جدة.",
-            "قارن أصول الدمام ومخرج 17.",
-            "مين مسؤول عن الأجهزة في فرع الفيصلية؟",
-            "اعرض الموظفين اللي يشتغلوا في أكثر من فرع.",
-            "كم جهاز تحت الصيانة في كل فرع؟",
-        ]:
-            r_ai = self.client.post("/api/v1/ai/agent/chat", json={"message": prompt})
-            self.assertEqual(r_ai.status_code, 200, prompt)
-            self.assertEqual(r_ai.json()["data"]["status"], "executed", f"{prompt} -> {r_ai.json()}")
+        # 9. Verify AI Agent Routes Removed (404 Not Found)
+        r_ai = self.client.post("/api/v1/ai/agent/chat", json={"message": "اعرض ملف الموظف أحمد محمد القحطاني"})
+        self.assertEqual(r_ai.status_code, 404)
 
 
 if __name__ == "__main__":

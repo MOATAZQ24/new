@@ -1,4 +1,4 @@
-"""Integration Service for n8n, Telegram, and Google Gemini with graceful degradation."""
+"""Integration Service for n8n and Telegram with graceful degradation."""
 
 import uuid
 import json
@@ -26,11 +26,6 @@ def get_or_create_default_configs(db: Session, company_id: Optional[uuid.UUID]) 
             "service_name": "telegram",
             "display_name": "إشعارات تليجرام الفورية (Telegram Bot)",
             "config_data": {"bot_token": "", "chat_id": "", "notify_on_urgent": True},
-        },
-        {
-            "service_name": "gemini",
-            "display_name": "الذكاء الاصطناعي Google Gemini (تحليل التذاكر والأصول)",
-            "config_data": {"api_key": "", "model": "gemini-3-flash-preview", "auto_classify_tickets": True},
         },
     ]
 
@@ -79,8 +74,6 @@ def dispatch_event(
                     _dispatch_n8n(db, cfg, event_type, payload)
                 elif cfg.service_name == "telegram":
                     _dispatch_telegram(db, cfg, event_type, payload)
-                elif cfg.service_name == "gemini":
-                    _dispatch_gemini(db, cfg, event_type, payload)
             except Exception as e:
                 logger.error(f"Error dispatching to {cfg.service_name}: {str(e)}")
     except Exception as e:
@@ -166,23 +159,6 @@ def _dispatch_telegram(db: Session, cfg: IntegrationConfig, event_type: str, pay
         db.commit()
 
 
-def _dispatch_gemini(db: Session, cfg: IntegrationConfig, event_type: str, payload: dict):
-    api_key = (cfg.config_data or {}).get("api_key", "").strip()
-    if not api_key:
-        return
-
-    log_entry = IntegrationLog(
-        company_id=cfg.company_id,
-        service_name="gemini",
-        event_type=event_type,
-        payload=payload,
-        status="Success",
-        response_data={"message": "Gemini ready for automated processing"},
-    )
-    db.add(log_entry)
-    db.commit()
-
-
 def test_integration(db: Session, company_id: Optional[uuid.UUID], service_name: str) -> Dict[str, Any]:
     """Test integration connectivity safely."""
     cfg = db.query(IntegrationConfig).filter(
@@ -263,28 +239,5 @@ def test_integration(db: Session, company_id: Optional[uuid.UUID], service_name:
             cfg.config_data = cdata
         db.commit()
         return conn_res
-
-    elif service_name == "gemini":
-        api_key = (cfg.config_data or {}).get("api_key", "").strip()
-        if not api_key:
-            cfg.status = "Not Configured"
-            cfg.last_error = "مفتاح API الخاص بـ Gemini غير محدد"
-            db.commit()
-            return {"success": False, "message": "يرجى إدخال مفتاح API لـ Google Gemini"}
-
-        try:
-            # Test model connection
-            url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-            req = urllib.request.Request(url, method="GET")
-            with urllib.request.urlopen(req, timeout=6) as resp:
-                cfg.status = "Connected"
-                cfg.last_error = None
-                db.commit()
-                return {"success": True, "message": "تم التحقق من صحة مفتاح Google Gemini بنجاح!"}
-        except Exception as e:
-            cfg.status = "Error"
-            cfg.last_error = str(e)
-            db.commit()
-            return {"success": False, "message": f"فشل التحقق من مفتاح Gemini: {str(e)}"}
 
     return {"success": False, "message": "خدمة غير معروفة"}

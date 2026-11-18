@@ -314,8 +314,8 @@ export default function SettingsPage() {
             <div className="space-y-3">
               {[
                 { key: "telegram", title: "Telegram", sub: "إرسال التنبيهات والمهام", badgeCls: "bg-sky-500 text-white" },
-                { key: "n8n", title: "الأتمتة (n8n / Webhook)", sub: "مزامنة سير العمل والتقويم", badgeCls: "bg-amber-500 text-white" },
-                { key: "gemini", title: "Gemini AI", sub: "المساعد الذكي للعمليات", badgeCls: "bg-emerald-600 text-white" },
+                { key: "n8n", title: "Google Calendar / الأتمتة", sub: "مزامنة المواعيد النهائية", badgeCls: "bg-blue-600 text-white" },
+                { key: "email", title: "البريد الإلكتروني", sub: "إشعارات وتقارير النظام", badgeCls: "bg-amber-500 text-white" },
               ].map((item) => {
                 const enabled = isServiceEnabled(item.key);
                 return (

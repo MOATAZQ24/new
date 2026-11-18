@@ -1,4 +1,4 @@
-"""Integration Layer models for n8n, Telegram, Google Gemini, and custom webhooks."""
+"""Integration Layer models for n8n, Telegram, and custom webhooks."""
 
 import uuid
 from datetime import datetime
@@ -27,7 +27,7 @@ class IntegrationConfig(UUIDMixin, TimestampMixin, Base):
         ForeignKey("companies.id", ondelete="CASCADE"),
         nullable=True,
     )
-    service_name: Mapped[str] = mapped_column(String(50), nullable=False)  # n8n, telegram, gemini, webhook
+    service_name: Mapped[str] = mapped_column(String(50), nullable=False)  # n8n, telegram, webhook
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     

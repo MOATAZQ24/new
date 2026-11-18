@@ -72,11 +72,9 @@ type PopoverType = "company" | "user" | "notifications" | "search" | null;
 interface TopNavProps {
   mobileMenuOpen?: boolean;
   onOpenMobileMenu?: () => void;
-  aiPanelOpen?: boolean;
-  onToggleAiPanel?: () => void;
 }
 
-export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen = false, onToggleAiPanel }: TopNavProps) {
+export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps) {
   const router = useRouter();
   const { user, activeCompany, activeCompanyId, setActiveCompanyId, logout } = useAuth();
   const { theme, setTheme, resolvedTheme, companyBranding } = useCustomization();
@@ -513,26 +511,8 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
         </div>
       </div>
 
-      {/* Left Side (AI Agent, Theme Toggle, Live Notifications & User Profile) */}
+      {/* Left Side (Theme Toggle, Live Notifications & User Profile) */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {onToggleAiPanel && (
-          <button
-            type="button"
-            onClick={onToggleAiPanel}
-            aria-expanded={aiPanelOpen}
-            aria-label="المساعد الذكي AI Agent"
-            title="المساعد الذكي للإجراءات الفورية (Alt+A)"
-            className={`motion-control inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-              aiPanelOpen
-                ? "bg-[#123D32] text-white border-[#123D32]"
-                : "bg-emerald-50/70 dark:bg-slate-800 text-[#123D32] dark:text-emerald-300 border-[#187A5A]/25 hover:bg-[#123D32] hover:text-white"
-            }`}
-          >
-            <Icons.Sparkles size={15} className={aiPanelOpen ? "text-[#C5A46D]" : "text-[#187A5A]"} />
-            <span className="hidden sm:inline">المساعد الذكي</span>
-          </button>
-        )}
-
         {/* Quick Theme Switcher */}
         <button
           type="button"

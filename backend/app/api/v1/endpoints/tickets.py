@@ -16,7 +16,6 @@ from app.schemas.ticket import TicketCreate, TicketUpdate, TicketCommentCreate
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
 from app.services.task_assignment import validate_assignee
-from app.services import gemini_service
 
 router = APIRouter(prefix="/tickets", tags=["IT Help Desk"])
 
@@ -394,29 +393,4 @@ def convert_ticket_to_task(
         message=f"تم تحويل التذكرة إلى مهمة بنجاح برقم {task.title}",
     )
 
-
-@router.post("/{ticket_id}/ai-assist")
-def ai_assist_ticket(
-    ticket_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Generate intelligent recommendations, summary, and diagnostic steps for a ticket."""
-    ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.id == ticket_id).first()
-    if not ticket:
-        raise HTTPException(status_code=404, detail="التذكرة غير موجودة")
-
-    if not current_user.is_superadmin and ticket.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
-    if not current_user.is_superadmin and ticket.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه التذكرة")
-
-    analysis = gemini_service.analyze_ticket_ai(
-        title=ticket.issue_title,
-        description=ticket.issue_description,
-        current_category=ticket.category,
-        current_priority=ticket.priority,
-    )
-    return success_response(data=analysis)
 

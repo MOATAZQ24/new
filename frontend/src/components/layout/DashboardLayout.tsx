@@ -1,25 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { MustChangePasswordModal } from "@/components/auth/MustChangePasswordModal";
-import { AiAgentSidePanel } from "@/components/ai/AiAgentSidePanel";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        setAiPanelOpen((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
@@ -49,12 +36,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <TopNav
         mobileMenuOpen={mobileNavOpen}
         onOpenMobileMenu={() => setMobileNavOpen(true)}
-        aiPanelOpen={aiPanelOpen}
-        onToggleAiPanel={() => setAiPanelOpen((v) => !v)}
       />
-
-      {/* AI Action Agent Side Panel */}
-      <AiAgentSidePanel isOpen={aiPanelOpen} onClose={() => setAiPanelOpen(false)} />
 
       {/* Main Content Area */}
       <main

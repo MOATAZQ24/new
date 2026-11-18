@@ -105,6 +105,7 @@ def list_tasks(
     due_from: Optional[date] = None,
     due_to: Optional[date] = None,
     search: Optional[str] = Query(None, max_length=160),
+    sort_by: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
@@ -123,8 +124,18 @@ def list_tasks(
         query = query.filter(~wf.stage_condition("overdue"))
 
     total = query.count()
+    sort_key = sort_by.strip().lower() if isinstance(sort_by, str) and sort_by.strip() else "created_desc"
+    if sort_key == "due_asc":
+        order_clauses = (Task.due_date.is_(None), Task.due_date.asc(), Task.created_at.desc(), Task.id)
+    elif sort_key == "due_desc":
+        order_clauses = (Task.due_date.is_(None), Task.due_date.desc(), Task.created_at.desc(), Task.id)
+    elif sort_key == "updated_desc":
+        order_clauses = (Task.updated_at.desc(), Task.created_at.desc(), Task.id)
+    else:
+        order_clauses = (Task.created_at.desc(), Task.due_date.is_(None), Task.due_date.asc(), Task.id)
+
     items = (
-        query.order_by(Task.due_date.is_(None), Task.due_date.asc(), Task.created_at.desc(), Task.id)
+        query.order_by(*order_clauses)
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()

@@ -9,7 +9,13 @@ depends_on = None
 
 def upgrade():
     connection = op.get_bind()
-    if any(i['name'] == 'uq_telegram_verified_identity' for i in inspect(connection).get_indexes('telegram_user_links')):
+    insp = inspect(connection)
+    if "telegram_user_links" not in insp.get_table_names():
+        from app.core.database import Base
+        import app.models  # noqa: F401
+        Base.metadata.create_all(bind=connection)
+        insp = inspect(connection)
+    if any(i['name'] == 'uq_telegram_verified_identity' for i in insp.get_indexes('telegram_user_links')):
         return
     duplicates = connection.execute(text('SELECT telegram_user_id FROM telegram_user_links WHERE is_verified = true AND telegram_user_id IS NOT NULL GROUP BY telegram_user_id HAVING COUNT(*) > 1')).first()
     if duplicates:

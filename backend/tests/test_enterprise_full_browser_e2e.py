@@ -100,7 +100,7 @@ def main():
         "login_and_brand": {},
         "add_employee_e2e": {},
         "enterprise_modules": {},
-        "ai_agent_browser": {},
+        "ai_removal_verification": {},
         "responsive_matrix": {},
         "errors": {},
     }
@@ -217,9 +217,9 @@ def main():
         dialog.locator("#add-emp-phone").fill("+966501234567")
 
         # Select second canonical branch (الرياض – العليا or الدمام) in addition to default primary
-        sec_branch_btn = dialog.get_by_role("button", name="الدمام").first
-        if sec_branch_btn.is_visible():
-            sec_branch_btn.click()
+        sec_branch_btn = dialog.get_by_role("button", name=re.compile("الدمام")).first
+        sec_branch_btn.wait_for(state="visible", timeout=10000)
+        sec_branch_btn.click()
 
         dialog.get_by_text("إنشاء حساب دخول للنظام لهذا الموظف تلقائياً").click()
         dialog.locator("#add-emp-username").fill(f"fahad.{tag.lower()}")
@@ -339,40 +339,12 @@ def main():
         page.screenshot(path=str(SCREENSHOT_DIR / "07b_settings_screenshot.png"))
         results["enterprise_modules"]["settings_screenshot_and_theme"] = "PASS"
 
-        # ── 4. Live AI Action Agent Side Panel Evaluation ─────────────────────
+        # ── 4. Verify AI Removal in Browser & API ─────────────────────────────
         page.goto(f"{BASE_URL}/", wait_until="domcontentloaded", timeout=30000)
-        page.wait_for_timeout(800)
-        page.locator("button[aria-label='المساعد الذكي AI Agent']").click()
-        panel = page.locator("aside[aria-label='الوكيل الذكي للإجراءات التشغيلية']")
-        expect(panel).to_be_visible(timeout=5000)
-        textarea = panel.locator("textarea")
-        send_btn = panel.locator("button[aria-label='إرسال الأمر للمساعد الذكي']")
-
-        # 4a. Recognize newly added E2E employee!
-        textarea.fill(f"ابحث عن الموظف {emp_name}")
-        send_btn.click()
-        panel.get_by_text(emp_num).last.wait_for(state="visible", timeout=20000)
-        results["ai_agent_browser"]["new_employee_recognition"] = "PASS"
-
-        # 4b. Branch asset count query
-        textarea.fill("كم جهاز في فرع العليا؟")
-        send_btn.click()
-        page.wait_for_timeout(1200)
-        results["ai_agent_browser"]["branch_asset_query"] = "PASS"
-
-        # 4c. BlinkBill company employees lookup
-        textarea.fill("اعرض موظفين شركة BlinkBill.")
-        send_btn.click()
-        page.wait_for_timeout(1200)
-        results["ai_agent_browser"]["blinkbill_company_query"] = "PASS"
-
-        # 4d. Safe cancellation guardrail
-        textarea.fill("ألغِ العملية السابقة قبل تأكيدها.")
-        send_btn.click()
-        page.wait_for_timeout(1600)
-        page.screenshot(path=str(SCREENSHOT_DIR / "08_ai_agent_live_panel.png"))
-        page.locator("button[aria-label='إغلاق لوحة المساعد الذكي']").click()
-        results["ai_agent_browser"]["negative_cancellation_guardrail"] = "PASS"
+        page.wait_for_timeout(500)
+        assert page.locator("button[aria-label='المساعد الذكي AI Agent']").count() == 0
+        assert page.locator("aside[aria-label='الوكيل الذكي للإجراءات التشغيلية']").count() == 0
+        results["ai_removal_verification"]["no_ai_ui_elements"] = "PASS"
 
         # ── 5. Section 11: 5-Viewport Sweep & A11y Checks Across ALL Routes ───
         viewports = [

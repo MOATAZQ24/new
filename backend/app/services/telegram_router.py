@@ -168,7 +168,12 @@ def my_tasks_view(context, db, parts):
     base = db.query(Task).filter(Task.company_id == context.company_id, Task.assigned_to_id == context.employee.id)
     counts = {key: base.filter(stage_condition(stage)).count() for key, (_, stage) in TASK_VIEWS.items()}
     query = base.filter(stage_condition(TASK_VIEWS[view][1]))
-    records = query.order_by(Task.due_date.is_(None), Task.due_date.asc(), Task.created_at.desc()) \
+    order_cols = (
+        (Task.completed_at.is_(None), Task.completed_at.desc(), Task.created_at.desc())
+        if view == 'completed'
+        else (Task.created_at.desc(), Task.due_date.is_(None), Task.due_date.asc())
+    )
+    records = query.order_by(*order_cols) \
         .offset(page * TASK_PAGE_SIZE).limit(TASK_PAGE_SIZE + 1).all()
     more, records = len(records) > TASK_PAGE_SIZE, records[:TASK_PAGE_SIZE]
     lines = [f"<b>📋 مهامي — {TASK_VIEWS[view][0]} ({counts[view]})</b> — صفحة {page + 1}"]

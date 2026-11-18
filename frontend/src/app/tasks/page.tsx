@@ -109,6 +109,10 @@ export default function TasksPage() {
   const [filterAssigneeId, setFilterAssigneeId] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<"all" | "my">("all");
+  const [sortBy, setSortBy] = useState<"created_desc" | "due_asc" | "updated_desc">("created_desc");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
 
   // Options for form
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeOption | null>(null);
@@ -173,7 +177,12 @@ export default function TasksPage() {
         setLoadError(null);
       }
       const baseParams = buildBaseParams();
-      const listParams: Record<string, string> = { ...baseParams, per_page: "100" };
+      const listParams: Record<string, string> = {
+        ...baseParams,
+        page: String(page),
+        per_page: "50",
+        sort_by: sortBy,
+      };
       if (statusFilter) listParams.status = statusFilter;
       if (overdueOnly) listParams.overdue = "true";
 
@@ -182,6 +191,13 @@ export default function TasksPage() {
         api.get<TaskSummary>("/tasks/summary", { params: baseParams }),
       ]);
       setTasks(listRes.data || []);
+      if (listRes.pagination) {
+        setTotalPages(Math.max(1, listRes.pagination.total_pages || 1));
+        setTotalFiltered(listRes.pagination.total ?? (listRes.data || []).length);
+      } else {
+        setTotalPages(1);
+        setTotalFiltered((listRes.data || []).length);
+      }
       if (summaryRes.data) {
         setSummary(summaryRes.data);
         versionRef.current = summaryRes.data.version || "";
@@ -194,7 +210,7 @@ export default function TasksPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [buildBaseParams, statusFilter, overdueOnly]);
+  }, [buildBaseParams, statusFilter, overdueOnly, page, sortBy]);
 
   const loadDependencies = useCallback(async () => {
     try {
@@ -337,6 +353,7 @@ export default function TasksPage() {
       }
       setTimeout(() => setToastMessage(null), 6000);
 
+      setPage(1);
       loadTasks();
     } catch (err: unknown) {
       console.error("Failed to create task", err);
@@ -496,6 +513,8 @@ export default function TasksPage() {
     setPriorityFilter("");
     setFilterAssigneeId("");
     setOverdueOnly(false);
+    setSortBy("created_desc");
+    setPage(1);
   };
 
   return (
@@ -654,7 +673,7 @@ export default function TasksPage() {
               <select
                 aria-label="تصفية حسب الأولوية"
                 value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
+                onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
                 className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
               >
                 <option value="">جميع الأولويات</option>
@@ -664,11 +683,22 @@ export default function TasksPage() {
                 <option value="Low">منخفض (Low)</option>
               </select>
 
+              <select
+                aria-label="ترتيب المهام"
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value as "created_desc" | "due_asc" | "updated_desc"); setPage(1); }}
+                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              >
+                <option value="created_desc">الترتيب: الأحدث أولاً</option>
+                <option value="due_asc">الترتيب: الأقرب موعداً</option>
+                <option value="updated_desc">الترتيب: آخر تحديث</option>
+              </select>
+
               <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer select-none px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100">
                 <input
                   type="checkbox"
                   checked={overdueOnly}
-                  onChange={(e) => setOverdueOnly(e.target.checked)}
+                  onChange={(e) => { setOverdueOnly(e.target.checked); setPage(1); }}
                   className="rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <span>المتأخرة فقط</span>
@@ -690,7 +720,7 @@ export default function TasksPage() {
                 <button
                   key={chip.key || "all"}
                   type="button"
-                  onClick={() => setStatusFilter(chip.key)}
+                  onClick={() => { setStatusFilter(chip.key); setPage(1); }}
                   className={`motion-control inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
                     statusFilter === chip.key
                       ? "bg-[#123D32] text-white border-[#123D32]"
@@ -901,6 +931,32 @@ export default function TasksPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+              <span>
+                صفحة <strong className="text-slate-900">{page}</strong> من <strong className="text-slate-900">{totalPages}</strong> (إجمالي النتائج المطابقة: <strong className="text-slate-900">{totalFiltered}</strong>)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                >
+                  السابق
+                </button>
+                <button
+                  type="button"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                >
+                  التالي
+                </button>
+              </div>
             </div>
           )}
         </div>

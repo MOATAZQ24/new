@@ -1228,25 +1228,37 @@ def _execute_bot_action_legacy(
     target_id_str = parts[2] if len(parts) > 2 else None
     rejection_reason_arg = parts[3] if len(parts) > 3 else None
 
-    # Handle 'cmd:my_tasks'
+    # Handle 'cmd:my_tasks' (supports active default and 'cmd:my_tasks:completed')
     if action_str == "cmd:my_tasks" or (prefix == "cmd" and action_name == "my_tasks"):
         if not context.can_access_module("tasks"):
             return {"success": False, "status": "Forbidden", "message": "ليس لديك صلاحية لتنفيذ هذا الإجراء."}
 
-        tasks = (
-            db.query(Task)
-            .filter(
-                Task.company_id == company_id,
-                Task.assigned_to_id == emp_id,
-                Task.status.in_([
-                    "To Do", "In Progress", "On Hold",
-                    "Assigned", "Accepted", "Pending Acceptance", "Blocked",
-                    "Waiting for Response", "Submitted for Review", "Rework Required"
-                ]),
+        from app.services import task_workflow as wf
+        is_completed_view = ":completed" in action_str
+        view_mode = "completed" if is_completed_view else "active"
+
+        if is_completed_view:
+            tasks = (
+                db.query(Task)
+                .filter(
+                    Task.company_id == company_id,
+                    Task.assigned_to_id == emp_id,
+                    wf.stage_condition("completed"),
+                )
+                .order_by(Task.completed_at.desc().nullslast(), Task.created_at.desc())
+                .all()
             )
-            .order_by(Task.due_date.asc().nullslast())
-            .all()
-        )
+        else:
+            tasks = (
+                db.query(Task)
+                .filter(
+                    Task.company_id == company_id,
+                    Task.assigned_to_id == emp_id,
+                    wf.stage_condition("active"),
+                )
+                .order_by(Task.due_date.asc().nullslast(), Task.created_at.desc())
+                .all()
+            )
 
         db.add(TelegramActionLog(
             company_id=company_id,
@@ -1254,7 +1266,7 @@ def _execute_bot_action_legacy(
             telegram_chat_id=str(telegram_chat_id) if telegram_chat_id else link.telegram_chat_id,
             action="my_tasks",
             status="Success",
-            details={"tasks_count": len(tasks)},
+            details={"tasks_count": len(tasks), "view": view_mode},
             ip_address=ip_address,
         ))
         db.commit()
@@ -1263,7 +1275,8 @@ def _execute_bot_action_legacy(
             return {
                 "success": True,
                 "status": "Success",
-                "message": "لا توجد لديك مهام حالياً.",
+                "view": view_mode,
+                "message": "لا توجد لديك مهام مكتملة حالياً." if is_completed_view else "لا توجد لديك مهام حالياً.",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{"text": "🏠 القائمة الرئيسية", "callback_data": "cmd:main_menu"}, {"text": "🛡️ صلاحياتي", "callback_data": "cmd:my_permissions"}]
@@ -1286,10 +1299,11 @@ def _execute_bot_action_legacy(
         start_idx = (page - 1) * page_size
         page_tasks = tasks[start_idx : start_idx + page_size]
 
-        task_lines = [f"📋 <b>مهامك النشطة يا {emp_name} ({total_tasks} مهام | صفحة {page}/{total_pages}):</b>\n"]
+        header_label = "مهامك المكتملة" if is_completed_view else "مهامك النشطة"
+        task_lines = [f"📋 <b>{header_label} يا {emp_name} ({total_tasks} مهام | صفحة {page}/{total_pages}):</b>\n"]
         inline_kb = []
         for i, t in enumerate(page_tasks, start_idx + 1):
-            p_badge = "🔴" if t.priority == "Urgent" else ("🟠" if t.priority == "High" else "🟡")
+            p_badge = "🟢" if is_completed_view else ("🔴" if t.priority == "Urgent" else ("🟠" if t.priority == "High" else "🟡"))
             due = t.due_date.strftime("%Y-%m-%d") if t.due_date else "غير محدد"
             ack_status = "✓ تم الاستلام" if getattr(t, "acknowledged_at", None) else "⏳ بانتظار الاستلام"
             task_lines.append(f"{i}. {p_badge} <b>{t.title}</b>\n   الحالة: {t.status} ({ack_status}) | الاستحقاق: {due}")
@@ -1298,12 +1312,18 @@ def _execute_bot_action_legacy(
             ])
 
         nav_row = []
+        base_cmd = "cmd:my_tasks:completed" if is_completed_view else "cmd:my_tasks"
         if page > 1:
-            nav_row.append({"text": "⬅️ السابق", "callback_data": f"cmd:my_tasks:page:{page - 1}"})
+            nav_row.append({"text": "⬅️ السابق", "callback_data": f"{base_cmd}:page:{page - 1}"})
         if page < total_pages:
-            nav_row.append({"text": "التالي ➡️", "callback_data": f"cmd:my_tasks:page:{page + 1}"})
+            nav_row.append({"text": "التالي ➡️", "callback_data": f"{base_cmd}:page:{page + 1}"})
         if nav_row:
             inline_kb.append(nav_row)
+
+        toggle_row = [
+            {"text": "🟢 المهام المكتملة" if not is_completed_view else "📋 المهام النشطة", "callback_data": "cmd:my_tasks:completed" if not is_completed_view else "cmd:my_tasks"}
+        ]
+        inline_kb.append(toggle_row)
 
         inline_kb.append([
             {"text": "🏠 القائمة الرئيسية", "callback_data": "cmd:main_menu"},
@@ -1313,9 +1333,10 @@ def _execute_bot_action_legacy(
         return {
             "success": True,
             "status": "Success",
+            "view": view_mode,
             "message": "\n".join(task_lines),
             "reply_markup": {"inline_keyboard": inline_kb},
-            "tasks": [{"id": str(t.id), "title": t.title, "status": t.status} for t in tasks],
+            "tasks": [{"id": str(t.id), "title": t.title, "status": t.status, "stage": wf.stage_of(t.status)} for t in tasks],
         }
 
     # Handle 'cmd:my_tickets'

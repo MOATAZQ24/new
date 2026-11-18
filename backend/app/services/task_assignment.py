@@ -68,4 +68,23 @@ def search_assignees(db, company_id, search='', selected_id=None, limit=15):
             normalized = func.lower(func.translate(Employee.full_name, 'أإآٱةى' + DIACRITICS, 'ااااهي'))
         for token in tokens:
             query = query.filter(normalized.contains(token, autoescape=True))
-    return query.order_by(Employee.full_name, Employee.id).limit(limit).all()
+    from app.models.telegram import TelegramUserLink
+    verified_tg_exists = (
+        db.query(TelegramUserLink.id)
+        .filter(
+            TelegramUserLink.employee_id == Employee.id,
+            TelegramUserLink.company_id == company_id,
+            TelegramUserLink.is_verified == True,
+        )
+        .exists()
+    )
+    return (
+        query.order_by(
+            Employee.full_name,
+            ~verified_tg_exists,
+            Employee.employee_number,
+            Employee.id,
+        )
+        .limit(limit)
+        .all()
+    )

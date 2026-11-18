@@ -15,7 +15,6 @@ from app.models.integration import IntegrationConfig, IntegrationLog
 from app.models.customization import UserWorkspacePreference, CompanyBranding
 from app.models.digital_asset import DigitalAsset, AssetSecret, AssetAccessPermission
 from app.models.telegram import TelegramUserLink, NotificationOutbox, TelegramActionLog, TelegramBotMenuConfig, TelegramMessageTemplate
-from app.models.ai_agent import AIAgentExecution
 from app.models.enterprise import (
     CANONICAL_BRANCH_SPEC,
     CANONICAL_BRANCH_NAMES,
@@ -76,7 +75,6 @@ __all__ = [
     "TelegramActionLog",
     "TelegramBotMenuConfig",
     "TelegramMessageTemplate",
-    "AIAgentExecution",
     "EmployeeAssignmentHistory",
     "WorkSchedule",
     "AttendanceRecord",

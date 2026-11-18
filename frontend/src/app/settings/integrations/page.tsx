@@ -751,7 +751,7 @@ export default function IntegrationsCenterPage() {
               <h1 className="text-xl font-bold text-slate-900">مركز التكاملات والربط السحابي</h1>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              إدارة تكاملات المنظومة (Telegram Bot، Gemini AI، n8n) مع عزل صارم ومستقل لكل منشأة
+              إدارة تكاملات المنظومة (Telegram Bot، n8n) مع عزل صارم ومستقل لكل منشأة
             </p>
           </div>
 
@@ -860,11 +860,6 @@ export default function IntegrationsCenterPage() {
                         <span className="p-2.5 bg-slate-100 text-slate-700 rounded-xl">
                           {item.service_name === "n8n" && <Icons.Refresh size={20} className="text-orange-500" />}
                           {item.service_name === "telegram" && <Icons.Send size={20} className="text-blue-500" />}
-                          {item.service_name === "gemini" && (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500">
-                              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                            </svg>
-                          )}
                         </span>
                         <div>
                           <h3 className="text-sm font-bold text-slate-900">{item.display_name}</h3>
@@ -883,7 +878,6 @@ export default function IntegrationsCenterPage() {
                     <p className="text-xs text-slate-500 mb-4 line-clamp-2">
                       {item.service_name === "n8n" && "أتمتة المهام وتوجيه الأحداث التشغيلية وسير العمل عبر Webhooks"}
                       {item.service_name === "telegram" && "إرسال الإشعارات التفاعلية للمهام الفنية وقبولها عبر البوت الفوري"}
-                      {item.service_name === "gemini" && "الذكاء الاصطناعي لتصنيف التذاكر وتوليد ملخصات البنية التحتية"}
                     </p>
 
                     <div className="space-y-1.5 border-t border-slate-100 pt-3 text-[11px]">
@@ -945,7 +939,6 @@ export default function IntegrationsCenterPage() {
                     <option value="">جميع الخدمات</option>
                     <option value="telegram">Telegram</option>
                     <option value="n8n">n8n Webhook</option>
-                    <option value="gemini">Gemini AI</option>
                   </select>
                   <button
                     onClick={fetchLogs}
@@ -2013,32 +2006,6 @@ export default function IntegrationsCenterPage() {
             title={`تهيئة إعدادات ${activeModal.toUpperCase()}`}
           >
             <div className="space-y-4">
-              {activeModal === "gemini" && (
-                <>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Gemini API Key:</label>
-                    <input
-                      type="password"
-                      value={String(currentConfig.api_key || "")}
-                      onChange={(e) => setCurrentConfig({ ...currentConfig, api_key: e.target.value })}
-                      placeholder="AIzaSy..."
-                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">النموذج (Model):</label>
-                    <select
-                      value={String(currentConfig.model || "gemini-2.0-flash")}
-                      onChange={(e) => setCurrentConfig({ ...currentConfig, model: e.target.value })}
-                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-                    >
-                      <option value="gemini-2.0-flash">Gemini 2.0 Flash (مستحسن وسريع)</option>
-                      <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
               {activeModal === "n8n" && (
                 <>
                   <div>
