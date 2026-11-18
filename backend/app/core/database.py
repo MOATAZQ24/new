@@ -29,10 +29,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def _migrate_columns():
     """Ensure newly added columns exist in existing SQLite/Postgres tables without breaking data."""
-    from sqlalchemy import text
+    from sqlalchemy import inspect, text
     with engine.connect() as conn:
-        # Check SQLite or Postgres
         is_sqlite = engine.url.drivername.startswith("sqlite")
+        existing_tables = set(inspect(conn).get_table_names())
+        if not existing_tables:
+            return
         
         # columns to add: (table, column, col_type_sqlite, col_type_pg)
         columns = [
@@ -80,12 +82,10 @@ def _migrate_columns():
         ]
 
         for table, col, sqlite_type, pg_type in columns:
+            if table not in existing_tables:
+                continue
             try:
                 if is_sqlite:
-                    # check table exists
-                    tbl_check = conn.execute(text(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")).fetchone()
-                    if not tbl_check:
-                        continue
                     cols = [row[1] for row in conn.execute(text(f"PRAGMA table_info({table})")).fetchall()]
                     if col not in cols:
                         conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {sqlite_type}"))

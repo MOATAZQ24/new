@@ -27,12 +27,12 @@ A production-ready, self-hosted, multi-company IT Operations, Asset Management, 
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | Next.js 16 (App Router), React, TypeScript, Tailwind CSS v4, Lucide-style SVG Icons |
-| **Backend** | Python 3.12+, FastAPI, SQLAlchemy 2.0 (Relational ORM), Pydantic v2 |
-| **Database** | PostgreSQL 16 (Relational schema with UUID primary keys & indexes) |
-| **Security** | Argon2id Password Hashing, HttpOnly Cookies, Server-Side RBAC, WireGuard VPN |
-| **Web Server** | Nginx Reverse Proxy (SSL/TLS Termination, Rate Limiting, Security Headers) |
-| **Deployment**| Docker Engine, Docker Compose, Ubuntu Server 22.04 / 24.04 LTS |
+| **Frontend** | Next.js 16.4 (App Router, Standalone Build), React 19, TypeScript 5, Tailwind CSS v4 |
+| **Backend** | Python 3.12, FastAPI 0.115, SQLAlchemy 2.0, Alembic 1.14, Pydantic v2 |
+| **Database** | PostgreSQL 16.6 (Production/Staging via least-privilege `itops_app` role) & SQLite 3 (Local Dev/Test) |
+| **Security** | Argon2id Password Hashing, HttpOnly Cookies, Server-Side 6-Role RBAC, HashiCorp Vault KV v2 |
+| **Web Server** | Nginx 1.27 Reverse Proxy (TLS 1.2/1.3, HTTP/2, Rate Limiting, Gzip, Security Headers) |
+| **Deployment**| Docker Engine & Docker Compose v2, Ubuntu Server 22.04 / 24.04 LTS |
 
 ---
 
@@ -117,11 +117,12 @@ node node_modules/next/dist/bin/next dev -p 3000
 
 ---
 
-### Option 3: Docker Compose (Production-Ready)
+### Option 3: Docker Compose (Hardened Staging / Production)
 
-#### 1. Prepare Environment Variables
+#### 1. Prepare Environment Variables & TLS Certificates
 ```bash
 cp .env.example .env
+# Edit .env and set strong non-default values for DB_PASSWORD, APP_DB_PASSWORD, SECRET_KEY, and ADMIN_INITIAL_PASSWORD
 ```
 
 #### 2. Build and Launch Containers
@@ -129,14 +130,15 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-#### 3. Seed Initial Database Records (First Time Only)
+#### 3. Run PostgreSQL Migrations & Secure First-Admin Bootstrap
 ```bash
-docker compose exec backend python seed_data.py
+docker compose exec backend alembic upgrade head
+docker compose exec -e ALLOW_PRODUCTION_BOOTSTRAP=true backend python seed_data.py
 ```
 
-#### 4. Access the Stack
-- **Frontend App:** [http://localhost:3000](http://localhost:3000) (or `https://localhost` via Nginx)
-- **Backend API:** [http://localhost:8000/docs](http://localhost:8000/docs)
+#### 4. Access the Stack (via Nginx Reverse Proxy)
+- **Web Interface (HTTPS):** `https://localhost` (or configured `NGINX_HTTPS_PORT`)
+- **Health & Readiness Checks:** `https://localhost/api/health` and `https://localhost/api/ready`
 
 ---
 

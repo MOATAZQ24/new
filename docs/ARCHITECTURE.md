@@ -3,12 +3,20 @@
 ## 1. System Overview
 **Investor Gate IT Operations Management System** is a secure, self-hosted, multi-company platform designed for enterprise IT governance across distributed branches and subsidiary organizations.
 
-### Primary Objectives:
+### Primary Objectives
 - Zero recurring software licensing or cloud hosting costs (100% Free and Open Source Software stack).
-- Native Arabic Right-to-Left (RTL) interface with full English localization support.
-- Hard multi-tenant company isolation enforced server-side.
-- Complete operational modules: Technical Assets, Asset Custody & Handover Receipts, IT Infrastructure, Third-Party Subscriptions, Maintenance & Change Approvals, Task Management, IT Help Desk, Notifications, Audit Logging, and Reports.
-- **CRITICAL SCOPE DIRECTIVE:** The legacy "Digital Assets" module has been completely excised from the database, API, navigation, and user interfaces. Domains and email services are managed strictly as recurring cost items within Third-Party Subscriptions.
+- Native Arabic Right-to-Left (RTL) interface (`IBM Plex Sans Arabic`) with full English (`Inter`) support.
+- Hard multi-tenant company isolation and 6-role RBAC enforced server-side.
+- Strict 9-module enterprise scope:
+  1. **Dashboard (`لوحة المتابعة` — `/`):** Real-time asset, ticket, task, employee, and branch KPIs with SVG status distribution charts.
+  2. **Companies & Branches (`الشركات والفروع` — `/companies`):** Group hierarchy (`IGT` parent, `BLB` and `INV` subsidiaries) and the 5 canonical physical branches (`الرياض – السلي (مخرج 17)`, `الرياض – الفيصلية (مخرج 18)`, `الرياض – العليا`, `الدمام`, `جدة`).
+  3. **Employees (`الموظفون` — `/employees`, `/employees/[id]`):** Unified employee directory with Arabic fuzzy search (`rapidfuzz`), multi-branch assignments, and 360° employee profile.
+  4. **Assets & Custody (`الأصول والعهد` — `/assets`, `/custody`):** Hardware inventory, QR generation, and atomic custody assignment/transfer/return receipts.
+  5. **Subscriptions (`الاشتراكات` — `/subscriptions`):** SaaS/cloud license tracking, renewal forecasting, and `employee_subscriptions` M:N seat allocation.
+  6. **Help Desk (`الدعم الفني` — `/tickets`):** Support tickets with race-safe sequential numbering (`TCK-YYYY-####`), SLA tracking, and internal technician notes isolation.
+  7. **Tasks & Deadlines (`المهام` — `/tasks`):** Multi-stage collaborative task workflow with real-time 3-second version polling and interactive Telegram Bot callbacks.
+  8. **Reports (`التقارير` — `/reports`):** Executive KPIs, company breakdown, UTF-8 BOM CSV/Excel exports, and printable HTML/PDF reports.
+  9. **Settings (`الإعدادات` — `/settings`, `/settings/*`, `/users`, `/audit`, `/notifications`, `/digital-assets`, `/infrastructure`, `/maintenance`):** System administration, user/role management, appearance/branding, Telegram/n8n integrations, zero-plaintext secrets vault, and SHA-256-verified database backup & restore.
 
 ---
 
@@ -17,69 +25,38 @@
 ```
 +---------------------------------------------------------------------------------+
 |                                USER INTERFACE                                   |
-|   Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + Lucide-style SVGs   |
+|   Next.js 16 (App Router, Standalone) + React 19 + TypeScript + Tailwind CSS v4 |
 |   Arabic RTL Primary Layout (IBM Plex Sans Arabic) + English (Inter)            |
 +----------------------------------------+----------------------------------------+
                                          | REST APIs (HttpOnly Cookies + X-Company-ID)
 +----------------------------------------v----------------------------------------+
 |                              REVERSE PROXY & SECURITY                           |
-|   Nginx 1.25+ (TLSv1.2/1.3, Rate Limiting, HSTS, Gzip, CSRF & CSP Headers)     |
+|   Nginx 1.27 (TLSv1.2/1.3, HTTP/2, Rate Limiting, HSTS, Gzip, Static Caching)   |
 |   WireGuard VPN (Encrypted Site-to-Site & Remote Access Tunneling)              |
 +----------------------------------------+----------------------------------------+
                                          |
 +----------------------------------------v----------------------------------------+
 |                                BACKEND SERVICES                                 |
-|   Python 3.12+ FastAPI + Pydantic v2 + SQLAlchemy 2.0 (Relational ORM)          |
-|   Argon2id Password Hashing + Server-Side RBAC + Dynamic Audit Logger           |
+|   Python 3.12 FastAPI + Pydantic v2 + SQLAlchemy 2.0 + Alembic 1.14             |
+|   Argon2id Password Hashing + Server-Side RBAC + Immutable Audit Logger         |
 +----------------------------------------+----------------------------------------+
                                          |
 +----------------------------------------v----------------------------------------+
 |                                PERSISTENCE LAYER                                |
-|   PostgreSQL 16 Relational Engine (UUID PKs, Foreign Keys, Indexes)            |
-|   Local SQLite fallback support for offline developer workstation testing       |
+|   PostgreSQL 16.6 (Production/Staging via least-privilege role `itops_app`)     |
+|   SQLite 3 (Local single-node / offline workstation development & testing)      |
 +---------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 3. Multi-Company Data Isolation
+## 3. Canonical Five-Branch Architecture
 
-Data isolation is enforced strictly on the backend:
-1. Every business record includes a mandatory `company_id` foreign key referencing the `companies` table.
-2. The user's active company is transmitted via the `X-Company-ID` HTTP header and validated against the `company_memberships` table for each request.
-3. Super Admins possess global oversight across all tenant companies, while Company Admins, IT Managers, Technicians, and Employees are confined strictly to their authorized company boundaries.
-4. Database queries automatically scope results using `.filter(Model.company_id == target_cid)`. Cross-company leaks via ID manipulation, search parameters, or CSV exports are physically prevented.
+Physical branch locations are normalized into `physical_branch_locations` (`5` authoritative physical sites):
+1. `BR-SULAI-17` — `الرياض – السلي (مخرج 17)`
+2. `BR-FAISAL-18` — `الرياض – الفيصلية (مخرج 18)`
+3. `BR-OLAYA` — `الرياض – العليا`
+4. `BR-DAMMAM` — `الدمام`
+5. `BR-JEDDAH` — `جدة`
 
----
-
-## 4. Database Schema & Entities
-
-The platform manages 20 relational database tables:
-1. **Core Organization:**
-   - `companies`: Tenant company branding, Arabic/English names, codes.
-   - `branches`: Physical branch offices and locations.
-   - `departments`: Functional business units per branch/company.
-2. **Identity & Access Management:**
-   - `employees`: Employee personnel records and contact details.
-   - `users`: Authentication identities (Argon2id hashes, account status).
-   - `roles`: Role definitions (Super Admin, Company Admin, IT Manager, IT Technician, Employee, Auditor).
-   - `user_roles`: Many-to-many user role assignments.
-   - `company_memberships`: Company-user association mapping.
-   - `user_sessions`: Active session tokens and expirations.
-3. **IT Asset Operations:**
-   - `technical_assets`: Physical hardware inventory (Laptops, Desktops, Monitors, Printers).
-   - `asset_custody`: Atomic employee custody assignments, returns, and condition receipts.
-4. **Network & Infrastructure:**
-   - `it_infrastructure`: Routers, Switches, Firewalls, Access Points, Servers, NAS (Vault credential references only).
-5. **Recurring Expenses:**
-   - `third_party_subscriptions`: Web hosting, cloud platforms, SaaS, domains, email hosting, billing cycles, cost tracking.
-6. **Maintenance & Risk Management:**
-   - `maintenance_records`: Hardware repair, component replacement, and configuration changes (risk assessments, rollback plans, approval workflows).
-7. **Workflows & Support:**
-   - `tasks`: Actionable technical tasks, assignments, priorities, due dates.
-   - `task_comments`: Progress notes and updates.
-   - `help_desk_tickets`: Support requests, sequential numbering (`TCK-YYYY-####`), status workflows.
-   - `ticket_comments`: Public user replies vs. technician internal notes.
-8. **Observability:**
-   - `notifications`: System notifications queue and read receipts.
-   - `audit_logs`: Immutable security audit log tracking all mutations and IP addresses.
+Each internal company (`IGT`, `BLB`, `INV`) maintains exactly 5 active operational `branches` rows linked via `physical_branch_id` to the 5 master `physical_branch_locations`, preventing duplicate or unaligned branch definitions across tenants.

@@ -17,6 +17,7 @@ import shutil
 import sqlite3
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import text
@@ -60,7 +61,11 @@ def _json_default(val):
         return val.isoformat()
     if isinstance(val, uuid.UUID):
         return str(val)
-    return val
+    if isinstance(val, Decimal):
+        return float(val)
+    if isinstance(val, (bytes, bytearray)):
+        return val.decode("utf-8", errors="replace")
+    return str(val)
 
 
 def _coerce_column_value(col, val):
@@ -357,17 +362,47 @@ def restore_backup_snapshot(
             raise HTTPException(status_code=400, detail="فشل التحقق من البصمة الرقمية للنسخة الاحتياطية")
 
         try:
-            for table in reversed(Base.metadata.sorted_tables):
+            deferred_fk_cols = {
+                "companies": ("parent_company_id",),
+                "branches": ("manager_id", "physical_branch_id"),
+                "departments": ("branch_id", "manager_id"),
+                "users": ("employee_id",),
+                "employees": ("manager_id", "branch_id", "department_id"),
+            }
+            all_tables = list(Base.metadata.sorted_tables)
+            # Clear cyclic nullable FKs before deleting in reverse topological order
+            for tbl_name, fk_cols in deferred_fk_cols.items():
+                tbl_obj = Base.metadata.tables.get(tbl_name)
+                if tbl_obj is not None and tbl_name in tables_data:
+                    null_map = {c: None for c in fk_cols if c in tbl_obj.c}
+                    if null_map:
+                        db.execute(tbl_obj.update().values(**null_map))
+            for table in reversed(all_tables):
                 if table.name in tables_data:
                     db.execute(table.delete())
-            for table in Base.metadata.sorted_tables:
+            deferred_updates = []
+            for table in all_tables:
                 rows = tables_data.get(table.name) or []
                 if rows:
-                    coerced_rows = [
-                        {col.name: _coerce_column_value(col, row.get(col.name)) for col in table.columns if col.name in row}
-                        for row in rows
-                    ]
+                    defer_cols = set(deferred_fk_cols.get(table.name, ()))
+                    coerced_rows = []
+                    for row in rows:
+                        item = {}
+                        deferred_vals = {}
+                        for col in table.columns:
+                            if col.name in row:
+                                val = _coerce_column_value(col, row.get(col.name))
+                                if col.name in defer_cols and val is not None:
+                                    item[col.name] = None
+                                    deferred_vals[col.name] = val
+                                else:
+                                    item[col.name] = val
+                        coerced_rows.append(item)
+                        if deferred_vals and "id" in item:
+                            deferred_updates.append((table, item["id"], deferred_vals))
                     db.execute(table.insert(), coerced_rows)
+            for table, row_id, vals in deferred_updates:
+                db.execute(table.update().where(table.c.id == row_id).values(**vals))
             db.commit()
         except Exception as e:
             db.rollback()
