@@ -27,15 +27,47 @@ from app.models.audit import AuditLog
 
 
 def seed(include_demo: bool | None = None):
+    env_mode = os.environ.get("ENVIRONMENT", os.environ.get("ENV", "development")).strip().lower()
+    allow_prod_seed = os.environ.get("ALLOW_PRODUCTION_BOOTSTRAP", "").strip().lower() in ("1", "true", "yes")
+    if env_mode == "production" and not allow_prod_seed:
+        raise RuntimeError(
+            "Refusing to run seed_data.py when ENV/ENVIRONMENT=production without ALLOW_PRODUCTION_BOOTSTRAP=true."
+        )
+
     if include_demo is None:
         include_demo = os.environ.get("SEED_DEMO_DATA", "").strip().lower() in ("1", "true", "yes") or ("--demo" in sys.argv)
-    print(f"Initializing database tables (include_demo={include_demo})...")
+    if env_mode == "production" and include_demo:
+        raise RuntimeError("Demo seeding is strictly forbidden when ENV/ENVIRONMENT=production.")
+
+    enforce_no_default = (
+        env_mode in ("production", "staging")
+        or os.environ.get("ENFORCE_NO_DEFAULT_CREDENTIALS", "").strip().lower() in ("1", "true", "yes")
+    )
+    admin_username = os.environ.get("ADMIN_INITIAL_USERNAME", "admin").strip() or "admin"
+    admin_email = os.environ.get("ADMIN_INITIAL_EMAIL", "admin@investorgate.sa").strip() or "admin@investorgate.sa"
+    admin_password = os.environ.get("ADMIN_INITIAL_PASSWORD", "").strip()
+
+    if enforce_no_default:
+        if not admin_password or admin_password in ("Admin@12345", "admin", "password", "123456", "changeme") or len(admin_password) < 12:
+            raise RuntimeError(
+                "Refusing first-admin initialization with default or weak credentials. "
+                "Provide a strong ADMIN_INITIAL_PASSWORD (>=12 characters, non-default)."
+            )
+    elif not admin_password:
+        admin_password = "Admin@12345"
+
+    force_pw_change = (
+        os.environ.get("FORCE_ADMIN_PASSWORD_CHANGE", "").strip().lower() in ("1", "true", "yes")
+        or env_mode == "production"
+    )
+
+    print(f"Initializing database tables (include_demo={include_demo}, env={env_mode})...")
     init_db()
     db = SessionLocal()
 
     try:
         # Check if already seeded
-        admin_check = db.query(User).filter(User.username == "admin").first()
+        admin_check = db.query(User).filter(User.username == admin_username).first()
         if admin_check:
             print("Database already contains admin user. Skipping seed to preserve existing records.")
             return
@@ -51,6 +83,10 @@ def seed(include_demo: bool | None = None):
         ]
         roles_dict = {}
         for name, name_ar, desc in role_definitions:
+            existing_r = db.query(Role).filter(Role.name == name).first()
+            if existing_r:
+                roles_dict[name] = existing_r
+                continue
             r = Role(name=name, name_ar=name_ar, description=desc, is_system_role=True)
             db.add(r)
             db.commit()
@@ -59,11 +95,12 @@ def seed(include_demo: bool | None = None):
 
         print("2. Creating Super Admin User...")
         superadmin = User(
-            username="admin",
-            password_hash=hash_password("Admin@12345"),
-            email="admin@investorgate.sa",
+            username=admin_username,
+            password_hash=hash_password(admin_password),
+            email=admin_email,
             account_status="Active",
             is_superadmin=True,
+            must_change_password=force_pw_change,
         )
         db.add(superadmin)
         db.commit()
@@ -564,7 +601,7 @@ def seed(include_demo: bool | None = None):
         ensure_canonical_internal_companies(db)
         db.commit()
         print("Seed completed successfully! Canonical companies and 5 branches initialized.")
-        print("Default Super Admin Login: username='admin' | password='Admin@12345'")
+        print(f"Super Admin initialized: username='{admin_username}' | must_change_password={force_pw_change}")
 
     except Exception as e:
         db.rollback()
