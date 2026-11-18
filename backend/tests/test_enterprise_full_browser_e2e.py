@@ -25,10 +25,6 @@ ALL_ROUTES = [
     "/",
     "/companies",
     "/employees",
-    "/hrm",
-    "/crm",
-    "/projects",
-    "/approvals",
     "/users",
     "/assets",
     "/digital-assets",
@@ -176,7 +172,7 @@ def main():
         page.wait_for_selector("h1", timeout=15000)
         page.wait_for_timeout(800)
 
-        add_btn = page.get_by_role("button", name="إضافة موظف")
+        add_btn = page.get_by_role("button", name=re.compile("إضافة موظف")).first
         expect(add_btn).to_be_visible()
         add_btn.click()
 
@@ -239,11 +235,11 @@ def main():
         # 2e. Reload persistence & directory search
         page.reload(wait_until="domcontentloaded")
         page.wait_for_timeout(800)
-        search_box = page.get_by_placeholder("بحث بالاسم، الرقم الوظيفي، البريد...")
+        search_box = page.get_by_label("بحث في الموظفين والمستخدمين")
         search_box.fill(emp_num)
         page.wait_for_timeout(500)
-        expect(page.get_by_text(emp_name)).to_be_visible(timeout=10000)
-        expect(page.get_by_text("الدمام").first).to_be_visible()
+        expect(page.locator("tbody").get_by_text(emp_name).first).to_be_visible(timeout=10000)
+        expect(page.locator("tbody").get_by_text("الدمام").first).to_be_visible()
         page.screenshot(path=str(SCREENSHOT_DIR / "03_employees_created_persisted.png"))
         results["add_employee_e2e"]["reload_persistence"] = "PASS"
 
@@ -255,24 +251,37 @@ def main():
         edit_dialog.get_by_role("button", name="حفظ التعديلات").click()
         edit_dialog.wait_for(state="hidden", timeout=10000)
         page.wait_for_timeout(500)
-        expect(page.get_by_text(emp_name + " المعدل")).to_be_visible(timeout=10000)
+        expect(page.locator("tbody").get_by_text(emp_name + " المعدل").first).to_be_visible(timeout=10000)
         results["add_employee_e2e"]["edit_employee"] = "PASS"
 
-        page.get_by_role("link", name="ملف 360°").first.click()
+        page.locator("tbody").get_by_role("link", name="ملف 360°").first.click()
         page.wait_for_url("**/employees/**", timeout=15000)
         page.wait_for_timeout(800)
         expect(page.locator("h1")).to_contain_text(emp_name)
         expect(page.get_by_role("tab", name="نظرة عامة (Overview)")).to_be_visible()
-        # Verify sidebar includes newly added enterprise routes even with existing workspace prefs
-        expect(page.locator("aside[aria-label='القائمة الرئيسية للنظام']").get_by_role("link", name="الموارد البشرية والحضور")).to_be_visible()
-        expect(page.locator("aside[aria-label='القائمة الرئيسية للنظام']").get_by_role("link", name="العملاء والفرص (CRM)")).to_be_visible()
+        # Verify strictly the 9 canonical screenshot sidebar links (and zero removed expansion modules)
+        sidebar = page.locator("aside[aria-label='القائمة الرئيسية للنظام']")
+        for link_label in [
+            "لوحة المتابعة",
+            "الشركات والفروع",
+            "الموظفون",
+            "الأصول والعهد",
+            "الاشتراكات",
+            "Help Desk",
+            "المهام",
+            "التقارير",
+            "الإعدادات",
+        ]:
+            expect(sidebar.get_by_role("link", name=link_label, exact=True)).to_be_visible()
+        expect(sidebar.get_by_role("link", name="الموارد البشرية والحضور")).to_have_count(0)
+        expect(sidebar.get_by_role("link", name="العملاء والفرص (CRM)")).to_have_count(0)
         # Click History tab to verify Onboarding & Transfer timeline
         page.get_by_role("tab", name="الوثائق والسجل الوظيفي (History)").click()
         page.wait_for_timeout(300)
         page.screenshot(path=str(SCREENSHOT_DIR / "04_employee_360_profile.png"))
         results["add_employee_e2e"]["employee_360_profile"] = "PASS"
 
-        # ── 3. Companies (5 Canonical Branches Summary) & Subscriptions M:N & Reports ──
+        # ── 3. Companies (5 Canonical Branches Summary), Subscriptions M:N, Reports & Settings ──
         page.goto(f"{BASE_URL}/companies", wait_until="domcontentloaded", timeout=30000)
         page.wait_for_timeout(900)
         for br_name in CANONICAL_BRANCHES:
@@ -282,7 +291,7 @@ def main():
 
         page.goto(f"{BASE_URL}/subscriptions", wait_until="domcontentloaded", timeout=30000)
         page.wait_for_timeout(900)
-        page.get_by_role("button", name="إضافة اشتراك جديد").click()
+        page.get_by_role("button", name=re.compile("إضافة اشتراك")).first.click()
         sub_dialog = page.get_by_role("dialog")
         sub_title = f"E2E-M365-{tag}"
         sub_dialog.get_by_placeholder("Microsoft 365 Business").fill(sub_title)
@@ -291,11 +300,13 @@ def main():
         sub_dialog.get_by_role("button", name="حفظ الاشتراك").click()
         sub_dialog.wait_for(state="hidden", timeout=10000)
         page.wait_for_timeout(700)
-        expect(page.get_by_text(sub_title)).to_be_visible(timeout=10000)
+        expect(page.locator("tbody").get_by_text(sub_title).first).to_be_visible(timeout=10000)
 
-        # Open Seat Manager modal for new subscription
-        sub_row = page.locator("tr").filter(has_text=sub_title)
-        sub_row.get_by_role("button", name="إدارة المستخدمين").click()
+        # Select row in table -> use Inspector "إدارة المستخدمين" button for M:N Seats modal
+        sub_row = page.locator("tr").filter(has_text=sub_title).first
+        sub_row.click()
+        page.wait_for_timeout(200)
+        page.get_by_role("button", name="إدارة المستخدمين").click()
         seat_dialog = page.get_by_role("dialog")
         expect(seat_dialog).to_be_visible()
         assign_btn = seat_dialog.get_by_role("button", name="تخصيص")
@@ -306,14 +317,27 @@ def main():
         seat_dialog.get_by_role("button", name="سحب المقعد").first.click()
         page.wait_for_timeout(500)
         page.keyboard.press("Escape")
+        seat_dialog.wait_for(state="hidden", timeout=5000)
+        page.wait_for_timeout(400)
         page.screenshot(path=str(SCREENSHOT_DIR / "06_subscriptions_analytics.png"))
         results["enterprise_modules"]["subscriptions_mn_seats"] = "PASS"
 
         page.goto(f"{BASE_URL}/reports", wait_until="domcontentloaded", timeout=30000)
         page.wait_for_timeout(900)
-        expect(page.get_by_text("ملخص الأداء والموارد حسب الشركة")).to_be_visible(timeout=10000)
+        expect(page.get_by_text("ملخص حسب الشركة")).to_be_visible(timeout=10000)
         page.screenshot(path=str(SCREENSHOT_DIR / "07_reports_executive.png"))
         results["enterprise_modules"]["reports_overview_charts"] = "PASS"
+
+        page.goto(f"{BASE_URL}/settings", wait_until="domcontentloaded", timeout=30000)
+        page.wait_for_timeout(900)
+        expect(page.get_by_text("مظهر النظام")).to_be_visible(timeout=10000)
+        page.locator("main").get_by_role("button", name="داكن").click()
+        page.wait_for_timeout(200)
+        assert page.evaluate("() => document.documentElement.getAttribute('data-theme')") == "dark"
+        page.locator("main").get_by_role("button", name="فاتح").click()
+        page.wait_for_timeout(200)
+        page.screenshot(path=str(SCREENSHOT_DIR / "07b_settings_screenshot.png"))
+        results["enterprise_modules"]["settings_screenshot_and_theme"] = "PASS"
 
         # ── 4. Live AI Action Agent Side Panel Evaluation ─────────────────────
         page.goto(f"{BASE_URL}/", wait_until="domcontentloaded", timeout=30000)
@@ -354,7 +378,7 @@ def main():
         viewports = [
             ("desktop_1440", {"width": 1440, "height": 900}, ALL_ROUTES),
             ("laptop_1280", {"width": 1280, "height": 800}, ["/", "/companies", "/employees", "/assets", "/subscriptions", "/reports"]),
-            ("tablet_768", {"width": 768, "height": 1024}, ["/", "/companies", "/employees", "/hrm", "/subscriptions", "/reports", "/tasks", "/tickets"]),
+            ("tablet_768", {"width": 768, "height": 1024}, ["/", "/companies", "/employees", "/assets", "/subscriptions", "/reports", "/tasks", "/tickets", "/settings"]),
             ("mobile_390", {"width": 390, "height": 844}, ["/", "/companies", "/employees", "/assets", "/subscriptions", "/reports", "/tasks", "/settings"]),
             ("narrow_320", {"width": 320, "height": 568}, ["/", "/companies", "/employees", "/subscriptions", "/reports", "/tasks"]),
         ]

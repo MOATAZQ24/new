@@ -1060,7 +1060,7 @@ def _call_gemini_function_agent(
         "1. Always strip role/title prefixes (like 'الموظف', 'الأستاذ', 'المهندس', 'employee') when passing employee names.\n"
         "2. When an employee name is referenced or searched, call resolve_employee(name) first (or pass clean assignee_name).\n"
         "3. When user requests multiple tasks or multiple assignees, ALWAYS call create_tasks_batch with complete, meaningful titles — NEVER extract broken fragments like 'ة'.\n"
-        "4. Write actions (create_task, create_tasks_batch, send_employee_notification, convert_ticket_to_task) enforce server confirmation automatically — invoke the tool normally and let the backend security layer emit the confirmation card.\n"
+        "4. Write actions (create_task, create_tasks_batch, send_employee_notification, convert_ticket_to_task) enforce server confirmation automatically — invoke the tool normally and let the backend security layer emit the confirmation card. NEVER substitute query_operations when the user asks to send a notification or create a task without naming a recipient; invoke send_employee_notification or create_task so clarification is requested.\n"
         "5. If any tool returns status='ambiguous', 'not_found', 'needs_clarification', 'needs_confirmation', or 'denied', STOP calling more tools.\n"
         "6. NEVER invent references, IDs, or statuses. Respond concisely in the user's language (Arabic or English)."
     )
@@ -1798,9 +1798,16 @@ def process_agent_request(
                     s_args.pop("assignee_name", None)
 
         # 4. Try Live Gemini Function Calling (if enabled + key present), else Offline Tool Planner
+        s_plan_args = standalone_plan.get("args") or {}
+        needs_missing_assignee_clarif = (
+            standalone_plan.get("tool") in {"send_employee_notification", "create_task"}
+            and not s_plan_args.get("assignee_name")
+            and not s_plan_args.get("assignee_id")
+            and not s_plan_args.get("employee_id")
+        )
         gemini_enabled, api_key, model_name = resolve_company_gemini_config(db, target_cid)
         llm_result = None
-        if gemini_enabled and api_key:
+        if gemini_enabled and api_key and not needs_missing_assignee_clarif:
             llm_result = _call_gemini_function_agent(
                 db, current_user, target_cid, api_key, model_name, payload, ip_address=ip_address, progress_cb=track_progress
             )

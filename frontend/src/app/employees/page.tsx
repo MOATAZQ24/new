@@ -7,13 +7,10 @@ import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { StatsCard } from "@/components/ui/StatsCard";
-import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
-import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
-import { api } from "@/lib/api";
+import { api, exportReportDownload } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -53,6 +50,7 @@ interface EmployeeRow {
   email?: string | null;
   phone?: string | null;
   employment_status: string;
+  company_name?: string | null;
   branch_id?: string | null;
   branch_ids?: string[];
   branch_names?: string[];
@@ -61,7 +59,18 @@ interface EmployeeRow {
   manager_id?: string | null;
   telegram_username?: string | null;
   is_telegram_linked?: boolean;
+  assets_count?: number;
+  subscriptions_count?: number;
   assigned_assets?: EmployeeAssignedAsset[];
+}
+
+interface EmployeeSummaryStats {
+  total: number;
+  active: number;
+  suspended: number;
+  left: number;
+  with_assets: number;
+  with_subscriptions: number;
 }
 
 interface EmployeeUserAccount {
@@ -81,10 +90,21 @@ function getErrMsg(err: unknown, fallback: string): string {
 }
 
 export default function EmployeesPage() {
-  const { activeCompanyId, user } = useAuth();
+  const { activeCompanyId, activeCompany, setActiveCompanyId, user } = useAuth();
+  const companies = user?.companies || [];
   const toast = useToast();
   const [tab, setTab] = useState<"employees" | "users">("employees");
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
+  const [summary, setSummary] = useState<EmployeeSummaryStats>({
+    total: 0,
+    active: 0,
+    suspended: 0,
+    left: 0,
+    with_assets: 0,
+    with_subscriptions: 0,
+  });
+  const [inspectedEmp, setInspectedEmp] = useState<EmployeeRow | null>(null);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [users, setUsers] = useState<EmployeeUserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -165,12 +185,48 @@ export default function EmployeesPage() {
       if (selectedFilterBranchIds.length > 0) {
         url += `&branch_ids=${encodeURIComponent(selectedFilterBranchIds.join(","))}`;
       }
-      const res = await api.get<EmployeeRow[]>(url);
-      setEmployees(res.data || []);
+      const [res, sumRes] = await Promise.all([
+        api.get<EmployeeRow[]>(url),
+        api.get<EmployeeSummaryStats>("/employees/summary").catch(() => null),
+      ]);
+      const list = res.data || [];
+      setEmployees(list);
+      setInspectedEmp((prev) => {
+        if (prev) {
+          const match = list.find((item) => item.id === prev.id);
+          if (match) return match;
+        }
+        return list[0] || null;
+      });
+      if (sumRes?.data) {
+        setSummary(sumRes.data);
+      } else {
+        setSummary({
+          total: list.length,
+          active: list.filter((e) => e.employment_status === "Active").length,
+          suspended: list.filter((e) => e.employment_status === "Suspended" || e.employment_status === "On Leave").length,
+          left: list.filter((e) => e.employment_status === "Terminated" || e.employment_status === "Left").length,
+          with_assets: list.filter((e) => (e.assets_count ?? e.assigned_assets?.length ?? 0) > 0).length,
+          with_subscriptions: list.filter((e) => (e.subscriptions_count ?? 0) > 0).length,
+        });
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الموظفين");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportEmployees = async () => {
+    if (exportingCsv) return;
+    setExportingCsv(true);
+    try {
+      await exportReportDownload("employees", "csv", activeCompanyId, "employees_report.csv");
+      toast.success("تم تصدير سجل الموظفين بنجاح");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "تعذر تصدير سجل الموظفين");
+    } finally {
+      setExportingCsv(false);
     }
   };
 
@@ -458,11 +514,11 @@ export default function EmployeesPage() {
     <DashboardLayout>
       {/* Header */}
       <PageHeader
-        title="موظفو IT وإدارة المستخدمين (IT Staff & Service Desk)"
-        description="سجل الموظفين والتقنيين والعهد المسلمة والمهام التشغيلية وصلاحيات النظام (RBAC)"
+        title="الموظفون"
+        description="إدارة بيانات الموظفين وربطهم بالشركات والفروع والأصول والاشتراكات."
         icon={<Icons.Users size={20} />}
         actions={
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center bg-slate-200/70 p-1 rounded-xl">
               <button
                 type="button"
@@ -473,7 +529,7 @@ export default function EmployeesPage() {
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                سجل الموظفين والتقنيين
+                سجل الموظفين
               </button>
               <button
                 type="button"
@@ -488,35 +544,15 @@ export default function EmployeesPage() {
               </button>
             </div>
 
-            <Link
-              href="/users"
-              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-xs transition-colors border border-slate-200"
-              title="الانتقال إلى وحدة إدارة المستخدمين والصلاحيات المتقدمة والشركات المتعددة"
-            >
-              <Icons.Users size={15} />
-              <span>بوابة المستخدمين</span>
-            </Link>
-
-            {canManage && (
-              tab === "employees" ? (
-                <button
-                  type="button"
-                  onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
-                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-                >
-                  <Icons.Plus size={16} />
-                  <span>إضافة موظف</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowAddUserModal(true)}
-                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-                >
-                  <Icons.Plus size={16} />
-                  <span>إنشاء حساب مستخدم</span>
-                </button>
-              )
+            {canManage && tab === "users" && (
+              <button
+                type="button"
+                onClick={() => setShowAddUserModal(true)}
+                className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <Icons.Plus size={16} />
+                <span>إنشاء حساب مستخدم</span>
+              </button>
             )}
           </div>
         }
@@ -540,82 +576,153 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Canonical 5-Branch Filter Bar */}
+      {/* 6 Top Pastel KPIs matching Image 4 */}
       {tab === "employees" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatsCard
-              title="إجمالي الموظفين"
-              value={employees.length}
-              subtitle="سجلات الدليل الموحد الحالية"
-              icon={<Icons.Users size={20} />}
-              accentColor="border-[#123D32]"
-            />
-            <StatsCard
-              title="على رأس العمل (نشط)"
-              value={employees.filter((e) => e.employment_status === "Active").length}
-              subtitle="متاح للتكليف والعهد"
-              icon={<Icons.CheckCircle size={20} />}
-              accentColor="border-[#187A5A]"
-            />
-            <StatsCard
-              title="متعددو الفروع المعتمدة"
-              value={employees.filter((e) => (e.branch_names?.length || 0) > 1).length}
-              subtitle="مرتبطون بأكثر من فرع معتمد"
-              icon={<Icons.Companies size={20} />}
-              accentColor="border-[#C5A46D]"
-            />
-            <StatsCard
-              title="حالات إجازة أو إيقاف"
-              value={employees.filter((e) => e.employment_status !== "Active").length}
-              subtitle="في إجازة أو موقوف أو منتهي"
-              icon={<Icons.Clock size={20} />}
-              accentColor="border-amber-500"
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-slate-900">{summary.total}</div>
+              <div className="text-[11px] font-bold text-slate-700 mt-0.5">إجمالي الموظفين</div>
+            </div>
+            <Icons.Users size={22} className="text-emerald-600 shrink-0" />
           </div>
-          <BranchIntelligenceFilterBar
-            selectedBranchIds={selectedFilterBranchIds}
-            onChangeBranchIds={setSelectedFilterBranchIds}
-            label="تصفية دليل الموظفين حسب الفرع المعتمد (يدعم الموظفين العاملين في أكثر من فرع)"
-          />
+
+          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-emerald-700">{summary.active}</div>
+              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">موظف نشط</div>
+            </div>
+            <Icons.CheckCircle size={22} className="text-emerald-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-amber-800">{summary.suspended}</div>
+              <div className="text-[11px] font-bold text-amber-900 mt-0.5">موقوف</div>
+            </div>
+            <Icons.Clock size={22} className="text-amber-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-rose-700">{summary.left}</div>
+              <div className="text-[11px] font-bold text-rose-800 mt-0.5">مغادر</div>
+            </div>
+            <Icons.User size={22} className="text-rose-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-sky-900">{summary.with_assets}</div>
+              <div className="text-[11px] font-bold text-sky-900 mt-0.5">لهم أصول</div>
+            </div>
+            <Icons.Assets size={22} className="text-sky-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#F5F3FF] border border-violet-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-violet-900">{summary.with_subscriptions}</div>
+              <div className="text-[11px] font-bold text-violet-900 mt-0.5">لهم اشتراكات</div>
+            </div>
+            <Icons.Subscriptions size={22} className="text-violet-600 shrink-0" />
+          </div>
         </div>
       )}
 
-      {/* Search & Filter Toolbar */}
-      <DataToolbar
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="بحث بالاسم، الرقم الوظيفي، البريد..."
-        searchLabel="بحث في الموظفين والمستخدمين"
-        activeFilterCount={[search.trim(), statusFilter].filter(Boolean).length}
-        onResetFilters={() => {
-          setSearch("");
-          setStatusFilter("");
-        }}
-        onRefresh={() => (tab === "employees" ? void fetchEmployees() : void fetchUsers())}
-        refreshing={loading}
-        filters={
-          tab === "employees" ? (
+      {/* Unified Inline Search & Filter Toolbar matching Image 4 */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs mb-4 flex flex-wrap items-center gap-2.5">
+        <div className="relative flex-1 min-w-[200px]">
+          <Icons.Search size={15} className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="بحث في الموظفين والمستخدمين"
+            placeholder="بحث في الموظفين ..."
+            className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:border-[#187A5A] focus:bg-white"
+          />
+        </div>
+
+        {tab === "employees" && (
+          <>
+            <select
+              aria-label="الشركة"
+              value={activeCompanyId || ""}
+              onChange={(e) => {
+                if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
+              }}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name_ar}
+                </option>
+              ))}
+            </select>
+
             <select
               aria-label="تصفية حسب حالة التوظيف"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs sm:text-sm py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
             >
-              <option value="">جميع الحالات</option>
-              <option value="Active">على رأس العمل (Active)</option>
+              <option value="">الحالة: الكل</option>
+              <option value="Active">نشط (Active)</option>
               <option value="On Leave">في إجازة (On Leave)</option>
               <option value="Suspended">موقوف (Suspended)</option>
-              <option value="Terminated">منتهي الخدمة (Terminated)</option>
+              <option value="Terminated">مغادر (Terminated)</option>
             </select>
-          ) : null
-        }
-      />
+
+            <select
+              aria-label="تصفية حسب الفرع"
+              value={selectedFilterBranchIds[0] || ""}
+              onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">الفرع: الكل</option>
+              {companyBranches.map((br) => (
+                <option key={br.id} value={br.id}>
+                  {br.branch_name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => void handleExportEmployees()}
+              disabled={exportingCsv}
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer"
+            >
+              <Icons.Download size={14} />
+              <span>{exportingCsv ? "جاري التصدير..." : "تصدير"}</span>
+            </button>
+
+            <Link
+              href="/reports"
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700"
+            >
+              <Icons.FileText size={14} />
+              <span>استيراد Excel</span>
+            </Link>
+
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
+                className="motion-control inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              >
+                <Icons.Plus size={15} />
+                <span>إضافة موظف</span>
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Content Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {loading ? (
-          <TableSkeleton variant="table" rows={5} cols={tab === "employees" ? 6 : 5} />
+          <TableSkeleton variant="table" rows={5} cols={tab === "employees" ? 10 : 6} />
         ) : tab === "employees" ? (
           employees.length === 0 ? (
             <EmptyState
@@ -623,10 +730,10 @@ export default function EmployeesPage() {
               title="لا يوجد موظفون مطابقون"
               description="يمكنك تعديل معايير البحث أو إضافة موظف جديد للربط مع النظام و Telegram"
               action={
-                (search || statusFilter) ? (
+                (search || statusFilter || selectedFilterBranchIds.length > 0) ? (
                   <button
                     type="button"
-                    onClick={() => { setSearch(""); setStatusFilter(""); }}
+                    onClick={() => { setSearch(""); setStatusFilter(""); setSelectedFilterBranchIds([]); }}
                     className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
                   >
                     عرض جميع الموظفين
@@ -639,92 +746,126 @@ export default function EmployeesPage() {
               <table className="w-full text-right text-xs">
                 <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
                   <tr>
-                    <th className="p-3.5">الرقم الوظيفي</th>
-                    <th className="p-3.5">اسم الموظف</th>
-                    <th className="p-3.5">المسمى الوظيفي</th>
-                    <th className="p-3.5">القسم</th>
-                    <th className="p-3.5">البريد الإلكتروني</th>
-                    <th className="p-3.5">الحالة</th>
-                    <th className="p-3.5 text-center">الإجراءات</th>
+                    <th className="p-3">#</th>
+                    <th className="p-3">الموظف</th>
+                    <th className="p-3">الرقم الوظيفي</th>
+                    <th className="p-3">الشركة</th>
+                    <th className="p-3">الفرع</th>
+                    <th className="p-3">المسمى الوظيفي</th>
+                    <th className="p-3 text-center">الأصول</th>
+                    <th className="p-3">الحالة</th>
+                    <th className="p-3 text-center">الاشتراكات</th>
+                    <th className="p-3 text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {employees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-[#187A5A]">
-                        <bdi dir="ltr">{emp.employee_number}</bdi>
-                      </td>
-                      <td className="p-3.5 font-bold text-slate-900">
-                        <Link
-                          href={`/employees/${emp.id}`}
-                          className="hover:text-[#187A5A] hover:underline"
-                        >
-                          {emp.full_name}
-                        </Link>
-                      </td>
-                      <td className="p-3.5 text-slate-700">{emp.job_title || "-"}</td>
-                      <td className="p-3.5 text-slate-700">
-                        <div>{emp.department_name || "-"}</div>
-                        {Array.isArray(emp.branch_names) && emp.branch_names.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {emp.branch_names.map((bn: string) => (
-                              <span
-                                key={bn}
-                                className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-[#123D32] text-[10px] font-semibold"
-                              >
-                                {bn}
-                              </span>
-                            ))}
+                  {employees.map((emp, idx) => {
+                    const isSelectedRow = inspectedEmp?.id === emp.id;
+                    const assetsCnt = emp.assets_count ?? emp.assigned_assets?.length ?? 0;
+                    const subsCnt = emp.subscriptions_count ?? 0;
+                    return (
+                      <tr
+                        key={emp.id}
+                        onClick={() => setInspectedEmp(emp)}
+                        className={`hover:bg-emerald-50/40 transition-colors cursor-pointer ${
+                          isSelectedRow ? "bg-emerald-50/50" : ""
+                        }`}
+                      >
+                        <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <span className="w-7 h-7 rounded-full bg-[#123D32]/10 text-[#123D32] flex items-center justify-center text-[11px] font-bold shrink-0">
+                              {(emp.full_name || "م")[0]}
+                            </span>
+                            <Link
+                              href={`/employees/${emp.id}`}
+                              onClick={(ev) => ev.stopPropagation()}
+                              className="hover:text-[#187A5A] hover:underline truncate"
+                            >
+                              {emp.full_name}
+                            </Link>
                           </div>
-                        )}
-                      </td>
-                      <td className="p-3.5 font-mono text-slate-600">
-                        <bdi dir="ltr">{emp.email || "-"}</bdi>
-                      </td>
-                      <td className="p-3.5">
-                        <StatusBadge status={emp.employment_status} />
-                      </td>
-                      <td className="p-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Link
-                            href={`/employees/${emp.id}`}
-                            className="motion-control px-2.5 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] transition-colors"
-                          >
-                            ملف 360°
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() => openEmployeeDetails(emp)}
-                            className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] transition-colors cursor-pointer"
-                          >
-                            العهد والمهام
-                          </button>
-                          {canManage && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => openEditEmployee(emp)}
-                                aria-label={`تعديل الموظف ${emp.full_name}`}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
-                                title="تعديل الموظف"
-                              >
-                                <Icons.Edit size={14} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEmployee(emp.id, emp.full_name)}
-                                aria-label={`حذف الموظف ${emp.full_name}`}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                                title="حذف الموظف"
-                              >
-                                <Icons.Trash size={14} />
-                              </button>
-                            </>
+                        </td>
+                        <td className="p-3 font-mono font-bold text-[#187A5A]">
+                          <bdi dir="ltr">{emp.employee_number}</bdi>
+                        </td>
+                        <td className="p-3 text-slate-700 font-semibold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200/70 text-amber-900 text-[11px]">
+                            <Icons.Building size={12} className="text-amber-700" />
+                            <span>{emp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}</span>
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-700">
+                          {Array.isArray(emp.branch_names) && emp.branch_names.length > 0 ? (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <Icons.MapPin size={12} className="text-[#187A5A] shrink-0" />
+                              <span className="text-[11px] font-medium">{emp.branch_names.join("، ")}</span>
+                            </div>
+                          ) : (
+                            emp.department_name || "—"
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-3 text-slate-700">{emp.job_title || "—"}</td>
+                        <td className="p-3 text-center">
+                          <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700">
+                            <Icons.Laptop size={13} />
+                            <span>{assetsCnt}</span>
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <StatusBadge status={emp.employment_status} />
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className="inline-flex items-center gap-1 font-mono font-bold text-sky-700">
+                            <Icons.Subscriptions size={13} />
+                            <span>{subsCnt}</span>
+                          </span>
+                        </td>
+                        <td className="p-3 text-center" onClick={(ev) => ev.stopPropagation()}>
+                          <div className="flex items-center justify-center gap-1">
+                            <Link
+                              href={`/employees/${emp.id}`}
+                              className="motion-control px-2 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] transition-colors"
+                              title="ملف الموظف 360°"
+                            >
+                              ملف 360°
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => openEmployeeDetails(emp)}
+                              aria-label={`عرض تفاصيل وعهد ${emp.full_name}`}
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-[#187A5A] hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="العهد والمهام و Telegram"
+                            >
+                              <Icons.Eye size={14} />
+                            </button>
+                            {canManage && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => openEditEmployee(emp)}
+                                  aria-label={`تعديل الموظف ${emp.full_name}`}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  title="تعديل الموظف"
+                                >
+                                  <Icons.Edit size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteEmployee(emp.id, emp.full_name)}
+                                  aria-label={`حذف الموظف ${emp.full_name}`}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="حذف الموظف"
+                                >
+                                  <Icons.Trash size={14} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -788,6 +929,164 @@ export default function EmployeesPage() {
           </div>
         )}
       </div>
+
+      {/* Bottom 3 Cards matching Image 4 (Employee Inspector, Linking Rules, ERD Linkage Diagram) */}
+      {tab === "employees" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
+          {/* Card 1: بيانات الموظف (Live Inspector) */}
+          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Icons.User size={16} className="text-[#187A5A]" />
+                <span>بيانات الموظف</span>
+              </h2>
+              {inspectedEmp && (
+                <Link
+                  href={`/employees/${inspectedEmp.id}`}
+                  className="text-[11px] font-bold text-[#187A5A] hover:underline"
+                >
+                  فتح ملف 360° ←
+                </Link>
+              )}
+            </div>
+
+            {inspectedEmp ? (
+              <div className="space-y-2.5 text-xs">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-500 font-semibold">الشركة *</span>
+                  <span className="font-bold text-slate-900">
+                    {inspectedEmp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-500 font-semibold">الاسم والرقم</span>
+                  <span className="font-bold text-slate-900">
+                    {inspectedEmp.full_name} ({inspectedEmp.employee_number})
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-500 font-semibold">الفرع *</span>
+                  <span className="font-bold text-[#123D32]">
+                    {inspectedEmp.branch_names?.length
+                      ? inspectedEmp.branch_names.join("، ")
+                      : "غير محدد"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-500 font-semibold">القسم والمسمى</span>
+                  <span className="font-semibold text-slate-800">
+                    {inspectedEmp.department_name || "—"} • {inspectedEmp.job_title || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => openEmployeeDetails(inspectedEmp)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                  >
+                    العهد والمهام و Telegram
+                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={() => openEditEmployee(inspectedEmp)}
+                      className="px-3 py-1.5 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] cursor-pointer"
+                    >
+                      تعديل الربط
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 py-6 text-center">
+                اختر موظفاً من الجدول لعرض بيانات الربط الخاصة به
+              </p>
+            )}
+          </section>
+
+          {/* Card 2: قواعد ربط الموظف */}
+          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+              <Icons.ShieldCheck size={16} className="text-[#187A5A]" />
+              <h2 className="text-sm font-bold text-slate-900">قواعد ربط الموظف</h2>
+            </div>
+
+            <ul className="space-y-2.5 text-xs text-slate-700 bg-slate-50/70 rounded-xl p-3.5 border border-slate-100">
+              <li className="flex items-start gap-2">
+                <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-slate-900">إلزامي:</strong> ربط الموظف بشركة واحدة معتمدة.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-slate-900">اختياري:</strong> ربط الموظف بفرع واحد أو أكثر والقسم التابع.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-slate-900">الربط التلقائي:</strong> تتبع الأصول والعهد والاشتراكات حسب الشركة والفرع.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  إمكانية تعديل الفرع أو القسم مع الاحتفاظ بسجل التاريخ التنظيمي.
+                </span>
+              </li>
+            </ul>
+          </section>
+
+          {/* Card 3: نمذجة الربط */}
+          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+              <Icons.Info size={16} className="text-[#187A5A]" />
+              <h2 className="text-sm font-bold text-slate-900">نمذجة الربط</h2>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-4 py-2">
+              <div className="px-6 py-2 rounded-xl bg-[#123D32] text-white text-xs font-bold shadow-xs">
+                الموظف
+              </div>
+
+              <div className="w-full h-px bg-emerald-200 relative">
+                <span className="w-px h-4 bg-emerald-300 absolute left-1/2 -top-4" />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <Link
+                  href="/companies"
+                  className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-center hover:border-[#C5A46D] transition-colors"
+                >
+                  <Icons.Building size={16} className="mx-auto text-amber-700 mb-1" />
+                  <div className="text-[11px] font-bold text-slate-900">شركة</div>
+                  <div className="text-[10px] text-slate-500">(أساسية)</div>
+                </Link>
+
+                <Link
+                  href="/subscriptions"
+                  className="p-2.5 rounded-xl bg-sky-50/80 border border-sky-200/70 text-center hover:border-sky-400 transition-colors"
+                >
+                  <Icons.Subscriptions size={16} className="mx-auto text-sky-700 mb-1" />
+                  <div className="text-[11px] font-bold text-slate-900">اشتراكات</div>
+                  <div className="text-[10px] text-slate-500">(برامج وخدمات)</div>
+                </Link>
+
+                <Link
+                  href="/assets"
+                  className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/70 text-center hover:border-emerald-400 transition-colors"
+                >
+                  <Icons.Laptop size={16} className="mx-auto text-emerald-700 mb-1" />
+                  <div className="text-[11px] font-bold text-slate-900">أصول</div>
+                  <div className="text-[10px] text-slate-500">(أجهزة وعهد)</div>
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Add Employee Modal */}
       <Modal

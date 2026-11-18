@@ -176,3 +176,52 @@ export const api = {
   delete: <T = unknown>(url: string, headers?: Record<string, string>) =>
     apiRequest<T>(url, { method: "DELETE", headers }),
 };
+
+/**
+ * Download or open printable report from /api/v1/reports/export using active company & session cookies.
+ */
+export async function exportReportDownload(
+  reportType: string,
+  format: "excel" | "csv" | "html" | "pdf",
+  companyId?: string | null,
+  filename?: string
+): Promise<void> {
+  const companyParam = companyId ? `&company_id=${encodeURIComponent(companyId)}` : "";
+  const url = `${API_BASE}/reports/export?report_type=${encodeURIComponent(reportType)}&format_type=${encodeURIComponent(format)}${companyParam}`;
+  const headers: Record<string, string> = {};
+  if (typeof window !== "undefined") {
+    const cid = companyId || localStorage.getItem("active_company_id");
+    if (cid) headers["X-Company-ID"] = cid;
+  }
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+  if (!res.ok) {
+    let msg = `تعذر تصدير التقرير (${res.status})`;
+    try {
+      const errJson = await res.json();
+      msg = parseApiErrorMessage(errJson, res.status);
+    } catch {
+      // keep fallback message
+    }
+    throw new Error(msg);
+  }
+
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  if (format === "html" || format === "pdf") {
+    window.open(objectUrl, "_blank");
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.setAttribute("download", filename || `${reportType}_report.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+}

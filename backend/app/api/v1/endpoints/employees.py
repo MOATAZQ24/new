@@ -74,6 +74,44 @@ def list_employees(
     return success_response(data=data, pagination=pagination)
 
 
+@router.get("/summary")
+def get_employees_summary(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Return authoritative directory summary KPIs for the Employees page."""
+    from app.models.subscription import EmployeeSubscription
+
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    emps = db.query(Employee).filter(Employee.company_id == target_cid).all()
+    asset_emp_ids = {
+        r[0]
+        for r in db.query(AssetCustody.employee_id)
+        .filter(AssetCustody.company_id == target_cid, AssetCustody.status == "Active")
+        .distinct()
+        .all()
+    }
+    sub_emp_ids = {
+        r[0]
+        for r in db.query(EmployeeSubscription.employee_id)
+        .filter(EmployeeSubscription.company_id == target_cid, EmployeeSubscription.status == "Active")
+        .distinct()
+        .all()
+    }
+    return success_response(
+        data={
+            "total": len(emps),
+            "active": sum(1 for e in emps if e.employment_status == "Active"),
+            "suspended": sum(1 for e in emps if e.employment_status in ("Suspended", "On Leave")),
+            "left": sum(1 for e in emps if e.employment_status in ("Terminated", "Resigned", "Inactive")),
+            "with_assets": sum(1 for e in emps if e.id in asset_emp_ids),
+            "with_subscriptions": sum(1 for e in emps if e.id in sub_emp_ids),
+        }
+    )
+
+
 @router.post("")
 def create_employee(
     payload: EmployeeCreate,

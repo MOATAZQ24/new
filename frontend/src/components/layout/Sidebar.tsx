@@ -15,25 +15,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
+  { name: "لوحة المتابعة", href: "/", icon: "Dashboard" },
   { name: "الشركات والفروع", href: "/companies", icon: "Companies" },
-  { name: "الموظفون (360°)", href: "/employees", icon: "Users" },
-  { name: "الموارد البشرية والحضور", href: "/hrm", icon: "Clock" },
-  { name: "العملاء والفرص (CRM)", href: "/crm", icon: "Globe" },
-  { name: "المشاريع والجدولة", href: "/projects", icon: "CheckSquare" },
-  { name: "الاعتمادات والمشتريات", href: "/approvals", icon: "ShieldCheck" },
-  { name: "المستخدمون والوصول", href: "/users", icon: "User" },
-  { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
-  { name: "الأصول الرقمية والخزنة", href: "/digital-assets", icon: "Lock" },
-  { name: "عهدة الأصول", href: "/custody", icon: "Custody" },
-  { name: "البنية التحتية", href: "/infrastructure", icon: "Infrastructure" },
-  { name: "الاشتراكات الخارجية", href: "/subscriptions", icon: "Subscriptions" },
-  { name: "الصيانة والتغييرات", href: "/maintenance", icon: "Maintenance" },
-  { name: "إدارة المهام", href: "/tasks", icon: "Tasks" },
-  { name: "مكتب المساعدة", href: "/tickets", icon: "HelpDesk" },
-  { name: "الإشعارات", href: "/notifications", icon: "Notifications" },
-  { name: "التقارير والتصدير", href: "/reports", icon: "Reports" },
-  { name: "سجل المراجعة", href: "/audit", icon: "Audit" },
+  { name: "الموظفون", href: "/employees", icon: "Users" },
+  { name: "الأصول والعهد", href: "/assets", icon: "Assets" },
+  { name: "الاشتراكات", href: "/subscriptions", icon: "Subscriptions" },
+  { name: "Help Desk", href: "/tickets", icon: "HelpDesk" },
+  { name: "المهام", href: "/tasks", icon: "Tasks" },
+  { name: "التقارير", href: "/reports", icon: "Reports" },
   { name: "الإعدادات", href: "/settings", icon: "Settings" },
 ];
 
@@ -47,25 +36,16 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const { activeCompany } = useAuth();
   const { draft, setDraft, save } = useWorkspace();
 
-  const configured = draft.navigation.length
-    ? [
-        ...draft.navigation.flatMap((pref) => {
-          const item = navItems.find((nav) => nav.href === pref.href);
-          return item && (!pref.hidden || pref.href === "/settings")
-            ? [
-                {
-                  ...item,
-                  icon: pref.icon === "default" ? item.icon : pref.icon,
-                  pinned: pref.pinned,
-                },
-              ]
-            : [];
-        }),
-        ...navItems
-          .filter((nav) => !draft.navigation.some((pref) => pref.href === nav.href))
-          .map((item) => ({ ...item, pinned: false })),
-      ]
-    : navItems.map((item) => ({ ...item, pinned: false }));
+  // Strictly enforce the 9 canonical screenshot navigation items; never allow old saved preferences
+  // to hide core screenshot items or inject removed routes.
+  const configured = navItems.map((item) => {
+    const pref = draft.navigation.find((p) => p.href === item.href);
+    return {
+      ...item,
+      icon: pref && pref.icon && pref.icon !== "default" ? pref.icon : item.icon,
+      pinned: Boolean(pref?.pinned),
+    };
+  });
   const orderedItems = [
     ...configured.filter((i) => i.pinned),
     ...configured.filter((i) => !i.pinned),
@@ -114,10 +94,10 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           </div>
           <div className="workspace-brand-text flex flex-col min-w-0 flex-1 overflow-hidden">
             <span className="block font-bold text-sm tracking-tight text-white leading-tight truncate">
-              Investor Gate
+              بوابة المستثمر
             </span>
             <span className="block text-[11px] text-[#C5A46D] font-medium truncate">
-              إدارة عمليات تقنية المعلومات
+              Investor Gate OS
             </span>
           </div>
         </Link>
@@ -199,7 +179,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
       {/* System Footer info */}
       <div className="workspace-footer-text p-3 border-t border-white/10 text-[10px] text-white/65 text-center">
-        الإصدار 1.0.0 Enterprise • نظام ذاتي الاستضافة
+        Investor Gate OS • نظام ذاتي الاستضافة
       </div>
     </aside>
   );

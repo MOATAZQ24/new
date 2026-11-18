@@ -125,7 +125,7 @@ def main():
             "مهمة فحص الخادم الرئيسي، ومهمة مراجعة جدار الحماية، ومهمة التحقق من النسخ الاحتياطي، ومهمة تحديث شهادات SSL"
         )
         submit_btn.click()
-        panel.get_by_text("بخصوص المهمة «فحص الخادم الرئيسي»").last.wait_for(state="visible", timeout=35000)
+        panel.get_by_text(re.compile("أكثر من موظف نشط|تأكيد التنفيذ")).last.wait_for(state="visible", timeout=35000)
         select_motaz_candidate_if_prompted()
         panel.get_by_role("button", name="تأكيد التنفيذ").wait_for(state="visible", timeout=30000)
         multi_txt = panel.inner_text()
@@ -141,7 +141,7 @@ def main():
         # 9B. Dialectal Saudi/Gulf Multi-Task + Relative Deadline ("اسند لمعتز اربع مهمات يصلح السرفر ويشيك الشبكه وخليه يخلصهن خلال خمس ايام")
         textarea.fill("اسند لمعتز اربع مهمات يصلح السرفر ويشيك الشبكه وخليه يخلصهن خلال خمس ايام")
         submit_btn.click()
-        panel.get_by_text("بخصوص المهمة «إصلاح وصيانة السيرفر»").last.wait_for(state="visible", timeout=35000)
+        panel.get_by_text(re.compile("أكثر من موظف نشط|تأكيد التنفيذ")).last.wait_for(state="visible", timeout=35000)
         select_motaz_candidate_if_prompted()
         panel.get_by_role("button", name="تأكيد التنفيذ").wait_for(state="visible", timeout=30000)
         dialect_txt = panel.inner_text()
@@ -223,18 +223,18 @@ def main():
         panel.locator("button[aria-label='إغلاق لوحة المساعد الذكي']").click()
         page.wait_for_timeout(200)
 
-        # 15. Verify Enterprise 3.0 Workspaces (Employee 360°, HRM, CRM, Projects, Approvals) in live browser
+        # 15. Verify Core Screenshot-Aligned Workspaces (Employee 360°, Companies, Subscriptions, Reports, Settings) in live browser
         page.set_viewport_size({"width": 1440, "height": 900})
         for route_path, expected_heading in [
-            ("/employees/ce9e5d67-8c28-4363-bcd1-d424352b9450", "ملف الموظف الشامل 360°"),
-            ("/hrm", "إدارة الموارد البشرية والحضور والانصراف"),
-            ("/crm", "إدارة علاقات العملاء والفرص البيعية"),
-            ("/projects", "إدارة المشاريع والجدولة الزمنية"),
-            ("/approvals", "مركز الاعتمادات الموحد وطلبات الشراء"),
+            ("/employees/ce9e5d67-8c28-4363-bcd1-d424352b9450", "ملف الموظف 360°"),
+            ("/companies", "الشركات والفروع"),
+            ("/subscriptions", "الاشتراكات والتراخيص"),
+            ("/reports", "التقارير"),
+            ("/settings", "الإعدادات"),
         ]:
             page.goto(f"{BASE_URL}{route_path}", wait_until="domcontentloaded", timeout=30000)
             page.get_by_text(expected_heading).first.wait_for(state="visible", timeout=20000)
-        results["step_15_enterprise_v3_pages_verified"] = "PASS (Employee 360°, HRM, CRM, Projects, Approvals)"
+        results["step_15_screenshot_workspaces_verified"] = "PASS (Employee 360°, Companies, Subscriptions, Reports, Settings)"
 
         # 16. Verify Canonical 5 Operational Branches & Asset Analytics Dashboard (/assets)
         canonical_branches = [
@@ -245,17 +245,18 @@ def main():
             "جدة",
         ]
         page.goto(f"{BASE_URL}/assets", wait_until="domcontentloaded", timeout=30000)
-        page.get_by_text("تحليلات ومقارنة الأصول حسب الفروع الخمسة المعتمدة", exact=False).first.wait_for(state="visible", timeout=20000)
+        page.get_by_label("تصفية حسب الفرع المعتمد").wait_for(state="visible", timeout=20000)
+        page.locator("option", has_text=canonical_branches[0]).first.wait_for(state="attached", timeout=15000)
         for bname in canonical_branches:
-            page.get_by_text(bname, exact=False).first.wait_for(state="visible", timeout=15000)
+            assert page.locator("option", has_text=bname).count() >= 1, f"Missing canonical branch option: {bname}"
         page.get_by_text("مقارنة الأصول بين الفروع المعتمدة", exact=False).first.wait_for(state="visible", timeout=15000)
         results["step_16_canonical_branches_and_asset_dashboard"] = "PASS (5 canonical branches + branch asset charts)"
 
         # 17. Verify Unified Employee Directory & Repaired إضافة موظف Multi-Branch Modal (/employees)
         page.goto(f"{BASE_URL}/employees", wait_until="domcontentloaded", timeout=30000)
-        page.get_by_text("تصفية دليل الموظفين حسب الفرع المعتمد", exact=False).first.wait_for(state="visible", timeout=20000)
-        page.get_by_role("button", name="إضافة موظف").first.click()
-        page.get_by_text("الفروع المعتمدة (يمكن اختيار فرع واحد أو عدة فروع)", exact=False).first.wait_for(state="visible", timeout=10000)
+        page.get_by_text("قواعد ربط الموظف", exact=False).first.wait_for(state="visible", timeout=20000)
+        page.get_by_role("button", name=re.compile("إضافة موظف")).first.click()
+        page.get_by_text("الفروع المعتمدة (الأول المختار هو الفرع الرئيسي)", exact=False).first.wait_for(state="visible", timeout=10000)
         results["step_17_employees_multi_branch_modal"] = "PASS (Multi-branch إضافة موظف modal verified)"
 
         assert not page_errors, f"Uncaught page errors: {page_errors}"

@@ -3,14 +3,13 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Modal from "@/components/ui/Modal";
-import { StatsCard } from "@/components/ui/StatsCard";
 import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { 
   DownloadIcon, PrinterIcon, LaptopIcon, 
   ShieldCheckIcon, ServerIcon, CreditCardIcon, WrenchIcon, 
-  CheckSquareIcon, LifeBuoyIcon, ShieldAlertIcon, PlusIcon
+  CheckSquareIcon, LifeBuoyIcon, ShieldAlertIcon, PlusIcon, Icons
 } from "@/components/ui/Icons";
-import { api } from "@/lib/api";
+import { api, exportReportDownload } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
@@ -139,22 +138,15 @@ export default function ReportsPage() {
 
   const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
 
-  const handleExport = (reportType: string, format: "excel" | "html") => {
+  const handleExport = async (reportType: string, format: "excel" | "html") => {
     setDownloading(`${reportType}-${format}`);
-    const companyParam = currentCompany ? `&company_id=${currentCompany.id}` : "";
-    const url = `/api/v1/reports/export?report_type=${reportType}&format_type=${format}${companyParam}`;
-
-    if (format === "html") {
-      window.open(url, "_blank");
+    try {
+      await exportReportDownload(reportType, format, currentCompany?.id || activeCompanyId, `${reportType}_report.csv`);
+      toast.success(format === "html" ? "تم فتح معاينة التقرير للطباعة" : "تم تصدير التقرير بنجاح");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تصدير التقرير");
+    } finally {
       setDownloading(null);
-    } else {
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${reportType}_report.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => setDownloading(null), 1000);
     }
   };
 
@@ -229,78 +221,119 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">مركز التقارير والتصدير والاستيراد</h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              تصدير كشوفات وتقارير تشغيلية بصيغة Excel (CSV مع ترميز UTF-8 BOM) أو نماذج HTML للطباعة كـ PDF واستيراد كتل البيانات
-            </p>
+      <div className="space-y-5">
+        {/* Header matching Images 11 & 12 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+              <Icons.Reports size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                التقارير
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                تقارير تشغيلية شاملة للأصول، الدعم الفني، المهام، والموظفين
+              </p>
+            </div>
           </div>
 
-          {canManage && (
-            <button
-              onClick={() => {
-                setShowImportModal(true);
-                setImportResult(null);
-                setImportFileContent("");
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            >
-              <PlusIcon className="w-4 h-4" />
-              <span>استيراد بيانات (Excel / CSV)</span>
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-xs">
+              <Icons.Calendar size={14} className="text-slate-500" />
+              <span>
+                {new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }).format(new Date())}
+              </span>
+            </div>
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowImportModal(true);
+                  setImportResult(null);
+                  setImportFileContent("");
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span>استيراد بيانات (Excel / CSV)</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Live Executive KPIs & Analytics */}
+        {/* Row 1: 4 Pastel KPIs matching Images 11 & 12 */}
         {overview && (
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatsCard
-                title="إجمالي الأصول المسجلة"
-                value={overview.kpis.total_assets}
-                subtitle="أصول تقنية وعامة في المنشأة"
-                icon={<LaptopIcon className="w-5 h-5" />}
-                accentColor="border-[#123D32]"
-              />
-              <StatsCard
-                title="تذاكر الدعم الفني"
-                value={overview.kpis.total_tickets}
-                subtitle={`تذاكر مفتوحة: ${overview.kpis.open_tickets}`}
-                icon={<LifeBuoyIcon className="w-5 h-5" />}
-                accentColor="border-[#187A5A]"
-              />
-              <StatsCard
-                title="المهام المتأخرة"
-                value={overview.kpis.overdue_tasks}
-                subtitle="تتطلب متابعة الإنجاز"
-                icon={<CheckSquareIcon className="w-5 h-5" />}
-                accentColor="border-rose-500"
-              />
-              <StatsCard
-                title="الاشتراكات النشطة"
-                value={overview.kpis.active_subscriptions}
-                subtitle="تراخيص وخدمات سحابية"
-                icon={<CreditCardIcon className="w-5 h-5" />}
-                accentColor="border-[#C5A46D]"
-              />
+              <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white/80 text-emerald-600 flex items-center justify-center shrink-0">
+                  <LaptopIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono text-slate-900">
+                    {overview.kpis.total_assets}
+                  </div>
+                  <div className="text-xs font-bold text-emerald-800 mt-1">إجمالي الأصول</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white/80 text-sky-600 flex items-center justify-center shrink-0">
+                  <LifeBuoyIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono text-slate-900">
+                    {overview.kpis.total_tickets}
+                  </div>
+                  <div className="text-xs font-bold text-sky-900 mt-1">تذكرة (Help Desk)</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white/80 text-amber-600 flex items-center justify-center shrink-0">
+                  <Icons.Clock size={22} />
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono text-amber-800">
+                    {overview.kpis.overdue_tasks}
+                  </div>
+                  <div className="text-xs font-bold text-amber-900 mt-1">مهام متأخرة</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white/80 text-rose-600 flex items-center justify-center shrink-0">
+                  <Icons.HelpDesk size={22} />
+                </div>
+                <div>
+                  <div className="text-2xl font-black font-mono text-rose-700">
+                    {overview.kpis.open_tickets}
+                  </div>
+                  <div className="text-xs font-bold text-rose-800 mt-1">تذاكر مفتوحة</div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Row 2: 3 Middle Cards (Asset Distribution Donut, Resource Comparison Bar, Ready Reports) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               <EnterpriseDonutChart
                 title="توزيع الأصول حسب الحالة"
-                subtitle="مؤشر حي لحالات الأصول المعتمدة"
                 totalLabel="أصل"
                 items={Object.entries(overview.asset_status_distribution || {}).map(([label, value]) => ({
-                  label,
+                  label: label.replace(/\s*\([^)]*\)/g, ""),
                   value,
                 }))}
               />
+
               <EnterpriseBarChart
-                title="ملخص الأصول حسب الشركة المصرح بها"
-                subtitle="مقارنة إجمالي الأصول عبر الشركات الداخلية"
+                title="مقارنة الموارد حسب الشركة"
+                subtitle="توزيع الأصول والموظفين عبر الشركات المعتمدة"
                 unit="أصل"
                 items={(overview.company_breakdown || []).map((c) => ({
                   label: c.company_name_ar,
@@ -308,44 +341,152 @@ export default function ReportsPage() {
                   badge: `${c.employees_count} موظف`,
                 }))}
               />
+
+              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <Icons.FileText size={17} className="text-[#123D32]" />
+                  <h2 className="text-sm font-bold text-slate-900">تقارير جاهزة</h2>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { key: "assets", label: "تقرير الأصول والعهد" },
+                    { key: "helpdesk", label: "تقرير التذاكر (Help Desk)" },
+                    { key: "tasks", label: "تقرير المهام" },
+                    { key: "employees", label: "تقرير الموظفين" },
+                    { key: "companies", label: "تقرير الشركات والفروع" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => void handleExport(item.key, "excel")}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-100 flex items-center justify-between text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-slate-400">←</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
 
-            {overview.company_breakdown.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                <h2 className="text-sm font-bold text-slate-900">ملخص الأداء والموارد حسب الشركة</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-right">
-                    <thead className="border-b border-slate-200 text-slate-500">
-                      <tr>
-                        <th className="py-2 px-2">الكود</th>
-                        <th className="py-2 px-2">الشركة</th>
-                        <th className="py-2 px-2">الموظفون</th>
-                        <th className="py-2 px-2">الأصول</th>
-                        <th className="py-2 px-2">التذاكر</th>
-                        <th className="py-2 px-2">المهام</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {overview.company_breakdown.map((c) => (
-                        <tr key={c.company_id}>
-                          <td className="py-2 px-2 font-mono font-bold text-[#123D32]">{c.company_code}</td>
-                          <td className="py-2 px-2 font-bold text-slate-900">{c.company_name_ar}</td>
-                          <td className="py-2 px-2 font-mono">{c.employees_count}</td>
-                          <td className="py-2 px-2 font-mono">{c.assets_count}</td>
-                          <td className="py-2 px-2 font-mono">{c.tickets_count}</td>
-                          <td className="py-2 px-2 font-mono">{c.tasks_count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* Row 3: 3 Bottom Cards (Quick Actions 2x2, Summary by Company Table, Latest Reports) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <Icons.Sparkles size={17} className="text-[#C5A46D]" />
+                  <h2 className="text-sm font-bold text-slate-900">إجراءات سريعة</h2>
                 </div>
-              </div>
-            )}
+                <div className="grid grid-cols-2 gap-3 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("reports-catalog");
+                      el?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="rounded-xl bg-[#ECFDF5] hover:bg-emerald-100 border border-emerald-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900 cursor-pointer"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    <span>إنشاء تقرير مخصص</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleExport("assets", "excel")}
+                    className="rounded-xl bg-[#EFF6FF] hover:bg-sky-100 border border-sky-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-sky-900 cursor-pointer"
+                  >
+                    <DownloadIcon className="w-4 h-4" />
+                    <span>تصدير تقرير</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleExport("assets", "html")}
+                    className="rounded-xl bg-[#FEFCE8] hover:bg-amber-100 border border-amber-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-amber-900 cursor-pointer"
+                  >
+                    <PrinterIcon className="w-4 h-4" />
+                    <span>طباعة التقرير</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowImportModal(true);
+                      setImportResult(null);
+                      setImportFileContent("");
+                    }}
+                    className="rounded-xl bg-[#F5F3FF] hover:bg-violet-100 border border-violet-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-violet-900 cursor-pointer"
+                  >
+                    <Icons.FileText size={15} />
+                    <span>استيراد Excel</span>
+                  </button>
+                </div>
+              </section>
+
+              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <Icons.Building size={17} className="text-[#123D32]" />
+                  <h2 className="text-sm font-bold text-slate-900">ملخص حسب الشركة</h2>
+                </div>
+                {overview.company_breakdown.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-6 text-center">لا توجد بيانات شركات متاحة</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-right">
+                      <thead className="border-b border-slate-200 text-slate-500">
+                        <tr>
+                          <th className="py-2 px-1.5">الشركة</th>
+                          <th className="py-2 px-1.5 text-center">الأصول</th>
+                          <th className="py-2 px-1.5 text-center">التذاكر</th>
+                          <th className="py-2 px-1.5 text-center">المهام</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {overview.company_breakdown.map((c) => (
+                          <tr key={c.company_id}>
+                            <td className="py-2.5 px-1.5 font-bold text-slate-900">{c.company_name_ar}</td>
+                            <td className="py-2.5 px-1.5 text-center font-mono font-bold text-slate-900">{c.assets_count}</td>
+                            <td className="py-2.5 px-1.5 text-center font-mono text-sky-700">{c.tickets_count}</td>
+                            <td className="py-2.5 px-1.5 text-center font-mono text-amber-800">{c.tasks_count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <Icons.Clock size={17} className="text-[#123D32]" />
+                  <h2 className="text-sm font-bold text-slate-900">أحدث التقارير</h2>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { key: "assets", title: "تقرير الأصول والعهد", fmt: "html" as const, tag: "PDF", cls: "bg-rose-600 text-white" },
+                    { key: "helpdesk", title: "تقرير التذاكر والطلبات", fmt: "html" as const, tag: "PDF", cls: "bg-rose-600 text-white" },
+                    { key: "tasks", title: "تقرير المهام والإنجاز", fmt: "excel" as const, tag: "XLSX", cls: "bg-emerald-600 text-white" },
+                    { key: "employees", title: "تقرير الموظفين والفروع", fmt: "excel" as const, tag: "XLSX", cls: "bg-emerald-600 text-white" },
+                  ].map((doc) => (
+                    <button
+                      key={doc.key}
+                      type="button"
+                      onClick={() => void handleExport(doc.key, doc.fmt)}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-between gap-2 text-xs cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2 font-bold text-slate-800 truncate">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${doc.cls}`}>
+                          {doc.tag}
+                        </span>
+                        <span className="truncate">{doc.title}</span>
+                      </span>
+                      <DownloadIcon className="w-4 h-4 text-sky-700 shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
           </div>
         )}
 
-        {/* Report Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Full Exportable Reports Catalog */}
+        <div id="reports-catalog" className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {reportsList.map((rep) => {
             const Icon = rep.icon;
             const isExcelLoading = downloading === `${rep.type}-excel`;

@@ -8,15 +8,12 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Icons } from "@/components/ui/Icons";
-import { Modal } from "@/components/ui/Modal";
-import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
+import { EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
 type ProfileTab =
   | "overview"
-  | "performance"
-  | "attendance"
   | "tasks"
   | "assets"
   | "tickets"
@@ -213,18 +210,6 @@ export default function Employee360ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
 
-  // Quick Modals
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
-  const [leaveType, setLeaveType] = useState("Annual");
-  const [leaveStart, setLeaveStart] = useState("");
-  const [leaveEnd, setLeaveEnd] = useState("");
-  const [leaveReason, setLeaveReason] = useState("");
-
-  const [showObjectiveModal, setShowObjectiveModal] = useState(false);
-  const [objTitle, setObjTitle] = useState("");
-  const [objTarget, setObjTarget] = useState("100");
-  const [objCurrent, setObjCurrent] = useState("50");
-
   const loadProfile = useCallback(async () => {
     if (!employeeId) return;
     setLoading(true);
@@ -245,68 +230,12 @@ export default function Employee360ProfilePage() {
     return () => window.clearTimeout(timer);
   }, [loadProfile]);
 
-  const handleAttendanceAction = async (eventType: "check_in" | "check_out" | "remote") => {
-    if (!employeeId) return;
-    try {
-      await api.post("/hrm/attendance", {
-        employee_id: employeeId,
-        event_type: eventType,
-      });
-      toast.success("تم تسجيل حركة الحضور والانصراف بنجاح");
-      await loadProfile();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل تسجيل الحضور");
-    }
-  };
-
-  const handleSubmitLeave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!employeeId) return;
-    try {
-      await api.post("/hrm/leaves", {
-        employee_id: employeeId,
-        leave_type: leaveType,
-        start_date: leaveStart,
-        end_date: leaveEnd,
-        reason: leaveReason,
-      });
-      toast.success("تم تقديم طلب الإجازة وإرساله للاعتماد");
-      setShowLeaveModal(false);
-      setLeaveReason("");
-      await loadProfile();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل تقديم طلب الإجازة");
-    }
-  };
-
-  const handleCreateObjective = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!employeeId) return;
-    try {
-      await api.post("/hrm/objectives", {
-        employee_id: employeeId,
-        title: objTitle,
-        target_value: Number(objTarget) || 100,
-        current_value: Number(objCurrent) || 0,
-      });
-      toast.success("تمت إضافة الهدف الوظيفي بنجاح");
-      setShowObjectiveModal(false);
-      setObjTitle("");
-      await loadProfile();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل حفظ الهدف الوظيفي");
-    }
-  };
-
   const ov = profile?.overview;
   const perf = profile?.performance;
-  const att = profile?.attendance;
 
   const tabs: { id: ProfileTab; label: string }[] = [
     { id: "overview", label: "نظرة عامة (Overview)" },
-    { id: "performance", label: "الأداء والأهداف (Performance)" },
-    { id: "attendance", label: "الحضور والإجازات (Attendance)" },
-    { id: "tasks", label: "المهام والمشاريع (Tasks & Projects)" },
+    { id: "tasks", label: "المهام (Tasks)" },
     { id: "assets", label: "الأصول والعهد (Assets & Custody)" },
     { id: "tickets", label: "التذاكر والنشاط التقني (Tickets)" },
     { id: "documents", label: "الوثائق والسجل الوظيفي (History)" },
@@ -316,11 +245,11 @@ export default function Employee360ProfilePage() {
     <DashboardLayout>
       <div className="space-y-5">
         <PageHeader
-          title={ov ? `ملف الموظف الشامل 360° — ${ov.full_name}` : "ملف الموظف الشامل 360°"}
+          title={ov ? `ملف الموظف 360° — ${ov.full_name}` : "ملف الموظف 360°"}
           description={
             ov
               ? `${ov.job_title || "موظف"} • الرقم الوظيفي: #${ov.employee_number} • ${ov.department_name || "بدون قسم"} • ${ov.branch_names?.length ? ov.branch_names.join(" • ") : (ov.branch_name || "المركز الرئيسي")}`
-              : "جاري تحميل الهوية الموحدة للموظف..."
+              : "جاري تحميل بيانات الموظف..."
           }
           icon={<Icons.User size={20} />}
           badge={ov ? <StatusBadge status={ov.employment_status} /> : undefined}
@@ -332,37 +261,12 @@ export default function Employee360ProfilePage() {
               >
                 العودة لدليل الموظفين
               </Link>
-              {profile?.permissions.can_record_attendance && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => void handleAttendanceAction("check_in")}
-                    className="px-3 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-semibold cursor-pointer"
-                  >
-                    تسجيل حضور (Check-In)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleAttendanceAction("check_out")}
-                    className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold cursor-pointer"
-                  >
-                    تسجيل انصراف (Check-Out)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowLeaveModal(true)}
-                    className="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold cursor-pointer"
-                  >
-                    + طلب إجازة
-                  </button>
-                </>
-              )}
             </div>
           }
         />
 
         {/* Top KPI Summary Strip */}
-        {profile && perf && att && (
+        {profile && perf && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard
               title="نسبة إنجاز المهام المعتمدة"
@@ -379,16 +283,19 @@ export default function Employee360ProfilePage() {
               accentColor="border-blue-600"
             />
             <StatsCard
-              title="سجل الحضور الفعلي (30 يوم)"
-              value={`${att.summary_30d.present_days} يوم`}
-              subtitle={`ساعات العمل: ${att.summary_30d.total_worked_hours} ساعة • تأخير: ${att.summary_30d.late_days}`}
-              icon={<Icons.Users size={20} />}
+              title="تذاكر الدعم الفني"
+              value={
+                profile.tickets_and_activities.requested_tickets.length +
+                profile.tickets_and_activities.assigned_tech_tickets.length
+              }
+              subtitle={`طلبات: ${profile.tickets_and_activities.requested_tickets.length} • مسندة: ${profile.tickets_and_activities.assigned_tech_tickets.length}`}
+              icon={<Icons.HelpDesk size={20} />}
               accentColor="border-[#C5A46D]"
             />
             <StatsCard
               title="العهد والأصول المسلمة"
               value={profile.assets_and_custody.active_custody.length}
-              subtitle={`مشاريع مشارك بها: ${perf.operational_metrics.projects_contributed}`}
+              subtitle={`الأرشيف السابق: ${profile.assets_and_custody.custody_history.length}`}
               icon={<Icons.Custody size={20} />}
               accentColor="border-[#123D32]"
             />
@@ -499,153 +406,7 @@ export default function Employee360ProfilePage() {
               </div>
             )}
 
-            {/* TAB B: PERFORMANCE & OBJECTIVES */}
-            {activeTab === "performance" && perf && (
-              <div className="space-y-5">
-                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 flex items-center justify-between gap-3">
-                  <span>{perf.methodology_note}</span>
-                  {profile.permissions.can_edit_employee && (
-                    <button
-                      type="button"
-                      onClick={() => setShowObjectiveModal(true)}
-                      className="px-3 py-1.5 rounded-xl bg-[#123D32] text-white font-bold shrink-0 cursor-pointer"
-                    >
-                      + إضافة هدف وظيفي (OKR)
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <EnterpriseBarChart
-                    title="مؤشرات الإنجاز والأداء التشغيلي"
-                    subtitle="نسب مئوية موثقة وفق المقام الفعلي للمهام المسندة"
-                    unit="%"
-                    items={[
-                      { label: "معدل إتمام المهام", value: perf.operational_metrics.completion_rate_percent, color: "#187A5A" },
-                      { label: "الالتزام بالمواعيد النهائية", value: perf.operational_metrics.deadline_adherence_percent, color: "#123D32" },
-                    ]}
-                  />
-
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                    <h3 className="text-sm font-bold text-slate-900">الأهداف الوظيفية المعتمدة (Objectives / OKRs)</h3>
-                    {perf.objectives.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">لم يتم تسجيل أهداف ربع سنوية بعد</p>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {perf.objectives.map((obj) => (
-                          <div key={obj.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-bold text-slate-900">{obj.title}</span>
-                              <span className="font-mono font-bold text-[#187A5A]">{obj.progress_percent}%</span>
-                            </div>
-                            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#187A5A]" style={{ width: `${Math.min(100, obj.progress_percent)}%` }} />
-                            </div>
-                            <div className="text-[11px] text-slate-500 flex justify-between">
-                              <span>الفترة: {obj.period_label} • الوزن: {obj.weight}%</span>
-                              <span>الحالة: {obj.status}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {profile.permissions.can_view_confidential_hr && (
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                    <h3 className="text-sm font-bold text-slate-900">التقييمات الوظيفية الرسمية (سري — للموارد البشرية والإدارة)</h3>
-                    {perf.formal_evaluations.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-4 text-center">لا توجد تقييمات رسمية مسجلة لهذه الفترة</p>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {perf.formal_evaluations.map((ev) => (
-                          <div key={ev.id} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-xs space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-slate-900">فترة التقييم: {ev.period_label}</span>
-                              <span className="px-2 py-0.5 rounded-full bg-[#123D32] text-white font-mono font-bold">
-                                {ev.overall_score} / 5.0 ({ev.rating_band})
-                              </span>
-                            </div>
-                            <div className="text-slate-600">
-                              الجودة: {ev.quality_score} • الاعتمادية: {ev.reliability_score} • التعاون: {ev.collaboration_score}
-                            </div>
-                            {ev.strengths && <div className="text-slate-700">نقاط القوة: {ev.strengths}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB C: ATTENDANCE & LEAVE */}
-            {activeTab === "attendance" && att && (
-              <div className="space-y-5">
-                <div className="p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700">
-                  {att.policy_note}
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                    <h3 className="text-sm font-bold text-slate-900">سجل الحضور والانصراف الفعلي</h3>
-                    {att.records.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">
-                        لا توجد حركات حضور مسجلة بعد — استخدم أزرار تسجيل الحضور أعلاه لتوثيق الحركات الفعلية
-                      </p>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs text-right">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-slate-500">
-                              <th className="py-2 px-2">التاريخ</th>
-                              <th className="py-2 px-2">دخول</th>
-                              <th className="py-2 px-2">خروج</th>
-                              <th className="py-2 px-2">الحالة</th>
-                              <th className="py-2 px-2">التأخير (د)</th>
-                              <th className="py-2 px-2">العمل (د)</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {att.records.map((r) => (
-                              <tr key={r.id}>
-                                <td className="py-2 px-2 font-mono">{r.attendance_date}</td>
-                                <td className="py-2 px-2 font-mono">{r.check_in_at || "—"}</td>
-                                <td className="py-2 px-2 font-mono">{r.check_out_at || "—"}</td>
-                                <td className="py-2 px-2"><StatusBadge status={r.status} /></td>
-                                <td className="py-2 px-2 font-mono">{r.late_minutes}</td>
-                                <td className="py-2 px-2 font-mono">{r.worked_minutes}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                    <h3 className="text-sm font-bold text-slate-900">طلبات الإجازات والاستئذان</h3>
-                    {att.leave_requests.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">لا توجد طلبات إجازة مسجلة</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {att.leave_requests.map((lr) => (
-                          <div key={lr.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between">
-                            <div>
-                              <div className="font-bold text-slate-900">{lr.leave_type} ({lr.days_count} أيام)</div>
-                              <div className="font-mono text-slate-500">{lr.start_date} → {lr.end_date}</div>
-                            </div>
-                            <StatusBadge status={lr.status} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB D: TASKS & PROJECTS */}
+            {/* TAB D: TASKS */}
             {activeTab === "tasks" && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
@@ -781,101 +542,6 @@ export default function Employee360ProfilePage() {
           </>
         )}
 
-        {/* Leave Request Modal */}
-        <Modal isOpen={showLeaveModal} onClose={() => setShowLeaveModal(false)} title="تقديم طلب إجازة معتمد">
-          <form onSubmit={handleSubmitLeave} className="space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">نوع الإجازة</label>
-              <select
-                value={leaveType}
-                onChange={(e) => setLeaveType(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-2.5"
-              >
-                <option value="Annual">إجازة سنوية (Annual)</option>
-                <option value="Sick">إجازة مرضية (Sick)</option>
-                <option value="Emergency">إجازة اضطرارية (Emergency)</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">من تاريخ</label>
-                <input
-                  type="date"
-                  required
-                  value={leaveStart}
-                  onChange={(e) => setLeaveStart(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">إلى تاريخ</label>
-                <input
-                  type="date"
-                  required
-                  value={leaveEnd}
-                  onChange={(e) => setLeaveEnd(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">السبب / الملاحظات</label>
-              <textarea
-                value={leaveReason}
-                onChange={(e) => setLeaveReason(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-2.5"
-                rows={2}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="submit" className="px-4 py-2 rounded-xl bg-[#123D32] text-white font-bold cursor-pointer">
-                إرسال للاعتماد
-              </button>
-            </div>
-          </form>
-        </Modal>
-
-        {/* Objective Modal */}
-        <Modal isOpen={showObjectiveModal} onClose={() => setShowObjectiveModal(false)} title="إضافة هدف وظيفي (OKR)">
-          <form onSubmit={handleCreateObjective} className="space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">عنوان الهدف</label>
-              <input
-                type="text"
-                required
-                value={objTitle}
-                onChange={(e) => setObjTitle(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-2.5"
-                placeholder="مثال: رفع نسبة الالتزام بـ SLA التذاكر إلى 95%"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">القيمة المستهدفة</label>
-                <input
-                  type="number"
-                  value={objTarget}
-                  onChange={(e) => setObjTarget(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">الإنجاز الحالي</label>
-                <input
-                  type="number"
-                  value={objCurrent}
-                  onChange={(e) => setObjCurrent(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="submit" className="px-4 py-2 rounded-xl bg-[#123D32] text-white font-bold cursor-pointer">
-                حفظ الهدف
-              </button>
-            </div>
-          </form>
-        </Modal>
       </div>
     </DashboardLayout>
   );

@@ -160,7 +160,7 @@ def generate_html_printable_report(title: str, headers: list, rows: list, compan
 
 @router.get("/export")
 def export_report(
-    report_type: str = Query(..., pattern="^(assets|custody|infrastructure|subscriptions|maintenance|tasks|helpdesk|audit)$"),
+    report_type: str = Query(..., pattern="^(assets|custody|infrastructure|subscriptions|maintenance|tasks|helpdesk|audit|employees|companies)$"),
     format_type: str = Query("excel", pattern="^(excel|csv|html|pdf)$"),
     company_id: Optional[uuid.UUID] = None,
     current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "Auditor"])),
@@ -307,6 +307,38 @@ def export_report(
                 t.resolved_at.strftime("%Y-%m-%d %H:%M") if t.resolved_at else "",
             ]
             for t in tix
+        ]
+
+    elif report_type == "employees":
+        title = "تقرير الموظفين والربط التنظيمي (Employees Report)"
+        headers = ["الرقم الوظيفي", "الاسم الكامل", "المسمى الوظيفي", "الفرع", "القسم", "البريد الإلكتروني", "الحالة"]
+        emps = db.query(Employee).filter(Employee.company_id == target_cid).all()
+        rows = [
+            [
+                e.employee_number,
+                e.full_name,
+                e.job_title or "",
+                e.branch.branch_name if e.branch else "",
+                e.department.department_name if e.department else "",
+                e.email or "",
+                e.employment_status,
+            ]
+            for e in emps
+        ]
+
+    elif report_type == "companies":
+        title = "تقرير الشركات والفروع (Companies & Branches Report)"
+        from app.models.company import Branch
+        headers = ["كود الشركة", "اسم الشركة", "الفرع", "الموقع", "الحالة"]
+        br_rows = (
+            db.query(Branch, Company)
+            .join(Company, Branch.company_id == Company.id)
+            .filter(Company.id == target_cid)
+            .all()
+        )
+        rows = [
+            [comp.company_code, comp.company_name_ar, br.branch_name, br.location or "", br.status]
+            for br, comp in br_rows
         ]
 
     else:  # audit

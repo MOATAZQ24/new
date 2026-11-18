@@ -117,7 +117,7 @@ def main():
         results["interactions"]["sidebar_toggle"] = "PASS"
 
         # 2b. Live Global Command Search
-        search_input = page.get_by_placeholder("بحث في الأصول، التذاكر، الموظفين...")
+        search_input = page.get_by_label("بحث في الأصول، التذاكر، الموظفين")
         search_input.click()
         search_input.fill("المهام")
         page.wait_for_timeout(500)

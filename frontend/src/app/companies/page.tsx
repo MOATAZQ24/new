@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
@@ -9,7 +9,6 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
@@ -72,6 +71,8 @@ export default function CompaniesPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyRow | null>(null);
+  const userSelectedCompanyRef = useRef(false);
+  const [detailTab, setDetailTab] = useState<"branches" | "info" | "departments" | "subsidiaries">("branches");
 
   // Branch & Dept state for details
   const [branches, setBranches] = useState<CompanyBranchRow[]>([]);
@@ -114,6 +115,19 @@ export default function CompaniesPage() {
   const isSuperAdmin = user?.is_superadmin;
   const canManage = isSuperAdmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
 
+  const refreshBranchesAndDepts = async (cid: string) => {
+    try {
+      const [bRes, dRes] = await Promise.all([
+        api.get<CompanyBranchRow[]>(`/companies/${cid}/branches`),
+        api.get<CompanyDeptRow[]>(`/companies/${cid}/departments`),
+      ]);
+      setBranches(bRes.data || []);
+      setDepartments(dRes.data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchCompanies = async () => {
     setLoading(true);
     try {
@@ -124,14 +138,32 @@ export default function CompaniesPage() {
       const q = params.toString();
       if (q) url += `?${q}`;
 
-      const [res, brSumRes] = await Promise.all([
-        api.get<CompanyRow[]>(url),
-        activeCompanyId
-          ? api.get<BranchSummaryItem[]>(`/companies/branches-summary?company_id=${activeCompanyId}`)
-          : Promise.resolve({ data: [] as BranchSummaryItem[] }),
-      ]);
-      setCompanies(res.data || []);
-      setBranchSummaries(brSumRes.data || []);
+      const res = await api.get<CompanyRow[]>(url);
+      const list = res.data || [];
+      setCompanies(list);
+
+      if (list.length > 0) {
+        const chosen =
+          (userSelectedCompanyRef.current &&
+            selectedCompany &&
+            list.find((item) => item.id === selectedCompany.id)) ||
+          list.find((item) => item.id === activeCompanyId) ||
+          list.find((item) => item.company_type === "Group") ||
+          list[0];
+        setSelectedCompany(chosen);
+        const [, brSumRes] = await Promise.all([
+          refreshBranchesAndDepts(chosen.id),
+          api
+            .get<BranchSummaryItem[]>(`/companies/branches-summary?company_id=${chosen.id}`)
+            .catch(() => ({ data: [] as BranchSummaryItem[] })),
+        ]);
+        setBranchSummaries(brSumRes.data || []);
+      } else {
+        setSelectedCompany(null);
+        setBranches([]);
+        setDepartments([]);
+        setBranchSummaries([]);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الشركات");
     } finally {
@@ -218,19 +250,6 @@ export default function CompaniesPage() {
       fetchCompanies();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "فشل حذف الشركة");
-    }
-  };
-
-  const refreshBranchesAndDepts = async (cid: string) => {
-    try {
-      const [bRes, dRes] = await Promise.all([
-        api.get<CompanyBranchRow[]>(`/companies/${cid}/branches`),
-        api.get<CompanyDeptRow[]>(`/companies/${cid}/departments`),
-      ]);
-      setBranches(bRes.data || []);
-      setDepartments(dRes.data || []);
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -353,197 +372,618 @@ export default function CompaniesPage() {
     }
   };
 
-  const companyFilterCount = [search.trim(), statusFilter].filter(Boolean).length;
+  const selectCompanyNode = async (c: CompanyRow) => {
+    userSelectedCompanyRef.current = true;
+    setSelectedCompany(c);
+    await refreshBranchesAndDepts(c.id);
+    try {
+      const sumRes = await api.get<BranchSummaryItem[]>(`/companies/branches-summary?company_id=${c.id}`);
+      setBranchSummaries(sumRes.data || []);
+    } catch {
+      // keep existing summary on fallback
+    }
+  };
+
+  const groupCompany =
+    companies.find((c) => c.company_type === "Group") ||
+    companies.find((c) => c.company_code === "IGT") ||
+    companies[0] ||
+    null;
+  const subsidiariesList = companies.filter(
+    (c) =>
+      c.id !== groupCompany?.id &&
+      (c.company_type === "Subsidiary" ||
+        (groupCompany && c.parent_company_id === groupCompany.id))
+  );
+  const standaloneList = companies.filter(
+    (c) => c.id !== groupCompany?.id && !subsidiariesList.some((s) => s.id === c.id)
+  );
+  const totalBranchesKpi =
+    companies.reduce((acc, c) => acc + (c.branches_count || 0), 0) || branchSummaries.length;
+  const totalEmployeesKpi =
+    companies.reduce((acc, c) => acc + (c.employees_count || 0), 0) ||
+    branchSummaries.reduce((acc, b) => acc + (b.employees_count || 0), 0);
+  const totalAssetsKpi = branchSummaries.reduce((acc, b) => acc + (b.assets_count || 0), 0);
+  const selectedSubsCount = selectedCompany
+    ? selectedCompany.id === groupCompany?.id
+      ? subsidiariesList.length
+      : companies.filter((c) => c.parent_company_id === selectedCompany.id).length
+    : 0;
 
   return (
     <DashboardLayout>
-      {/* Header */}
-      <PageHeader
-        title="إدارة الشركات والفروع"
-        description="هيكل المنظمة المتعدد للشركات وفروعها وأقسامها الإدارية"
-        icon={<Icons.Companies size={20} />}
-        actions={
-          isSuperAdmin ? (
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            >
-              <Icons.Plus size={16} />
-              <span>إضافة شركة جديدة</span>
-            </button>
-          ) : undefined
-        }
-      />
-
-      {/* Canonical 5-Branch Operational Summary Strip */}
-      {branchSummaries.length > 0 && (
-        <section aria-label="ملخص الفروع المعتمدة الخمسة" className="mb-5 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Icons.Companies size={15} className="text-[#187A5A]" />
-              <span>ملخص الفروع المعتمدة للشركة النشطة ({branchSummaries.length})</span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {branchSummaries.map((bs) => (
-              <div
-                key={bs.branch_id}
-                className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs space-y-2"
+      <div className="space-y-5">
+        {/* Header matching Image 7 */}
+        <PageHeader
+          title="الشركات والفروع"
+          description="إدارة هيكل الشركات، التابعة، الفروع، والبيانات التنظيمية"
+          icon={<Icons.Companies size={20} />}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Icons.Search
+                  size={14}
+                  className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="بحث عن شركة أو فرع"
+                  placeholder="بحث عن شركة، فرع..."
+                  className="ps-8 pe-3 py-2 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-[#187A5A] w-48 sm:w-56"
+                />
+              </div>
+              <select
+                aria-label="تصفية حسب حالة الشركة"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-white border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
               >
-                <div className="font-bold text-xs text-[#123D32] truncate" title={bs.branch_name}>
-                  {bs.branch_name}
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600">
-                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
-                    <span className="font-mono font-bold text-slate-900">{bs.employees_count}</span> موظف
-                  </div>
-                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
-                    <span className="font-mono font-bold text-slate-900">{bs.assets_count}</span> أصل
-                  </div>
-                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
-                    <span className="font-mono font-bold text-slate-900">{bs.open_tasks_count}</span> مهمة
-                  </div>
-                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
-                    <span className="font-mono font-bold text-slate-900">{bs.open_tickets_count}</span> تذكرة
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Filters and Search Bar */}
-      <DataToolbar
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="بحث بالاسم أو الكود..."
-        searchLabel="بحث في الشركات"
-        onSearchSubmit={fetchCompanies}
-        activeFilterCount={companyFilterCount}
-        onResetFilters={() => { setSearch(""); setStatusFilter(""); }}
-        onRefresh={() => void fetchCompanies()}
-        refreshing={loading}
-        filters={
-          <select
-            aria-label="تصفية حسب حالة الشركة"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
-          >
-            <option value="">جميع الحالات</option>
-            <option value="Active">نشطة (Active)</option>
-            <option value="Inactive">غير نشطة (Inactive)</option>
-            <option value="Suspended">موقوفة (Suspended)</option>
-          </select>
-        }
-      />
-
-      {/* Companies Grid */}
-      {loading ? (
-        <TableSkeleton variant="cards" rows={3} />
-      ) : companies.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200">
-          <EmptyState
-            icon={<Icons.Companies size={26} />}
-            title="لا توجد شركات مطابقة لمعايير البحث"
-            description="يمكنك تعديل البحث أو إضافة شركة جديدة ضمن هيكل المنظمة"
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {companies.map((c) => (
-            <div
-              key={c.id}
-              className="motion-card bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between">
-                  <div className="min-w-12 h-12 px-2.5 rounded-xl bg-[#123D32] text-[#C5A46D] font-black text-sm flex items-center justify-center shadow-xs shrink-0 whitespace-nowrap">
-                    <bdi dir="ltr">{c.company_code}</bdi>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={c.status} />
-                    {isSuperAdmin && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCompany(c.id, c.company_name_ar)}
-                        aria-label={`حذف شركة ${c.company_name_ar}`}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="حذف الشركة"
-                      >
-                        <Icons.Trash size={15} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h2 className="text-base font-bold text-slate-900 leading-tight">
-                      {c.company_name_ar}
-                    </h2>
-                    {c.company_type && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-[#123D32] font-bold border border-emerald-200">
-                        {c.company_type === "Group" ? "الشركة الرئيسية (المجموعة)" : c.company_type === "Subsidiary" ? "علامة / شركة تابعة" : "تشغيلية"}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium mt-0.5">
-                    {c.company_name_en}
-                  </p>
-                </div>
-
-                <div className="mt-4 space-y-1.5 text-xs text-slate-700">
-                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">كود الشركة:</span>
-                    <span className="font-mono font-bold text-[#187A5A]">
-                      <bdi dir="ltr">{c.company_code}</bdi>
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">البريد الإلكتروني:</span>
-                    <span className="font-mono"><bdi dir="ltr">{c.contact_email || "-"}</bdi></span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">الهاتف:</span>
-                    <span className="font-mono"><bdi dir="ltr">{c.contact_phone || "-"}</bdi></span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-600">عدد الفروع / الموظفين:</span>
-                    <span className="font-bold text-slate-900">
-                      {c.branches_count} فروع • {c.employees_count} موظف
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between">
-                {canManage ? (
-                  <button
-                    type="button"
-                    onClick={() => openEditCompany(c)}
-                    className="flex items-center gap-1 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <Icons.Edit size={14} />
-                    <span>تعديل</span>
-                  </button>
-                ) : <span />}
-
+                <option value="">كل الحالات</option>
+                <option value="Active">نشطة</option>
+                <option value="Inactive">غير نشطة</option>
+                <option value="Suspended">موقوفة</option>
+              </select>
+              {isSuperAdmin && (
                 <button
                   type="button"
-                  onClick={() => openCompanyDetails(c)}
-                  className="motion-control flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  onClick={() => setShowAddModal(true)}
+                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                 >
-                  <Icons.Eye size={14} />
-                  <span>عرض الفروع والأقسام</span>
+                  <Icons.Plus size={16} />
+                  <span>إضافة شركة جديدة</span>
                 </button>
+              )}
+            </div>
+          }
+        />
+
+        {/* Row 1: 5 Pastel KPIs matching Image 7 (أصل مرتبط، موظف، علامات تجارية تابعة، شركات، فروع نشطة) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-slate-900">{totalAssetsKpi}</div>
+              <div className="text-[11px] font-bold text-slate-700 mt-0.5">أصل مرتبط</div>
+            </div>
+            <Icons.Assets size={22} className="text-emerald-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-emerald-700">{totalEmployeesKpi}</div>
+              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">موظف</div>
+            </div>
+            <Icons.Users size={22} className="text-emerald-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-sky-900">{subsidiariesList.length}</div>
+              <div className="text-[11px] font-bold text-sky-900 mt-0.5">علامات تجارية تابعة</div>
+            </div>
+            <Icons.Subscriptions size={22} className="text-sky-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-amber-800">{companies.length}</div>
+              <div className="text-[11px] font-bold text-amber-900 mt-0.5">شركات</div>
+            </div>
+            <Icons.Building size={22} className="text-amber-600 shrink-0" />
+          </div>
+
+          <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-rose-700">{totalBranchesKpi}</div>
+              <div className="text-[11px] font-bold text-rose-800 mt-0.5">فروع نشطة</div>
+            </div>
+            <Icons.MapPin size={22} className="text-rose-600 shrink-0" />
+          </div>
+        </div>
+
+        {/* Middle Split Layout: Right Company Tree + Left Selected Company Panel */}
+        {loading ? (
+          <TableSkeleton variant="cards" rows={3} />
+        ) : companies.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200">
+            <EmptyState
+              icon={<Icons.Companies size={26} />}
+              title="لا توجد شركات مطابقة لمعايير البحث"
+              description="يمكنك تعديل البحث أو إضافة شركة جديدة ضمن هيكل المنظمة"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            {/* Right Card: هيكل الشركات */}
+            <aside className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Icons.Companies size={16} className="text-[#123D32]" />
+                  <span>هيكل الشركات</span>
+                </h2>
+                <span className="text-[11px] font-mono text-slate-500">{companies.length}</span>
+              </div>
+
+              <div className="space-y-1.5">
+                {groupCompany && (
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={() => void selectCompanyNode(groupCompany)}
+                      className={`w-full text-right px-3 py-2.5 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-colors cursor-pointer ${
+                        selectedCompany?.id === groupCompany.id
+                          ? "bg-[#123D32] text-white"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <Icons.Building size={15} />
+                        <span className="truncate">{groupCompany.company_name_ar} (المجموعة)</span>
+                      </span>
+                      <span className="text-[10px] font-mono opacity-80">{groupCompany.company_code}</span>
+                    </button>
+
+                    {subsidiariesList.length > 0 && (
+                      <div className="ps-4 border-s-2 border-emerald-200 space-y-1 ms-3">
+                        {subsidiariesList.map((sub) => (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => void selectCompanyNode(sub)}
+                            className={`w-full text-right px-3 py-2 rounded-xl flex items-center justify-between gap-2 text-xs font-semibold transition-colors cursor-pointer ${
+                              selectedCompany?.id === sub.id
+                                ? "bg-[#187A5A] text-white"
+                                : "hover:bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            <span className="flex items-center gap-2 truncate">
+                              <Icons.Subscriptions size={13} />
+                              <span className="truncate">{sub.company_name_ar}</span>
+                            </span>
+                            <span className="text-[10px] font-mono opacity-80">{sub.company_code}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {standaloneList.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => void selectCompanyNode(c)}
+                    className={`w-full text-right px-3 py-2.5 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-colors cursor-pointer ${
+                      selectedCompany?.id === c.id
+                        ? "bg-[#123D32] text-white"
+                        : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      <Icons.Building size={15} />
+                      <span className="truncate">{c.company_name_ar}</span>
+                    </span>
+                    <span className="text-[10px] font-mono opacity-80">{c.company_code}</span>
+                  </button>
+                ))}
+              </div>
+
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(true)}
+                  className="w-full py-2 px-3 rounded-xl border border-[#123D32]/30 text-[#123D32] hover:bg-[#123D32] hover:text-white text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 mt-2"
+                >
+                  <Icons.Plus size={14} />
+                  <span>إضافة شركة / علامة تابعة</span>
+                </button>
+              )}
+            </aside>
+
+            {/* Left Panel: Selected Company Details, Tabs, Branches Table */}
+            <section className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
+              {selectedCompany ? (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Icons.Building size={19} className="text-[#123D32]" />
+                      <h2 className="text-base font-bold text-slate-900">
+                        {selectedCompany.company_name_ar}
+                      </h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#187A5A] text-white">
+                        {selectedCompany.company_type === "Group"
+                          ? "الشركة الرئيسية (المجموعة)"
+                          : selectedCompany.company_type === "Subsidiary"
+                          ? "علامة / شركة تابعة"
+                          : "شركة تشغيلية"}
+                      </span>
+                      <StatusBadge status={selectedCompany.status} />
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => openEditCompany(selectedCompany)}
+                          className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-[#187A5A] text-xs font-semibold text-slate-700 cursor-pointer flex items-center gap-1"
+                        >
+                          <Icons.Edit size={13} />
+                          <span>تعديل</span>
+                        </button>
+                      )}
+                      {isSuperAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCompany(selectedCompany.id, selectedCompany.company_name_ar)}
+                          aria-label={`حذف شركة ${selectedCompany.company_name_ar}`}
+                          className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                          title="حذف الشركة"
+                        >
+                          <Icons.Trash size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Detail Tabs + Action CTA matching Image 7 */}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setDetailTab("branches")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                          detailTab === "branches"
+                            ? "bg-[#123D32] text-white"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Icons.MapPin size={13} />
+                        <span>الفروع ({branches.length})</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDetailTab("info")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                          detailTab === "info"
+                            ? "bg-[#123D32] text-white"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Icons.Info size={13} />
+                        <span>معلومات الشركة</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDetailTab("departments")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                          detailTab === "departments"
+                            ? "bg-[#123D32] text-white"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Icons.Users size={13} />
+                        <span>الأقسام ({departments.length})</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDetailTab("subsidiaries")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                          detailTab === "subsidiaries"
+                            ? "bg-[#123D32] text-white"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Icons.Subscriptions size={13} />
+                        <span>الشركات التابعة ({selectedSubsCount})</span>
+                      </button>
+                    </div>
+
+                    {canManage && (
+                      detailTab === "departments" ? (
+                        <button
+                          type="button"
+                          onClick={openAddDept}
+                          className="px-3 py-1.5 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold cursor-pointer flex items-center gap-1"
+                        >
+                          <Icons.Plus size={14} />
+                          <span>إضافة قسم</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={openAddBranch}
+                          className="px-3 py-1.5 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold cursor-pointer flex items-center gap-1"
+                        >
+                          <Icons.Plus size={14} />
+                          <span>إضافة فرع</span>
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  {/* Active Detail Tab Body */}
+                  {detailTab === "branches" && (
+                    branches.length === 0 ? (
+                      <div className="py-10 text-center text-xs text-slate-500">
+                        لا توجد فروع مسجلة لهذه الشركة حالياً
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-right text-xs">
+                          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                            <tr>
+                              <th className="p-3">#</th>
+                              <th className="p-3">اسم الفرع</th>
+                              <th className="p-3">الكود</th>
+                              <th className="p-3">المدينة / العنوان</th>
+                              <th className="p-3 text-center">الموظفون</th>
+                              <th className="p-3 text-center">الأصول</th>
+                              <th className="p-3">الحالة</th>
+                              <th className="p-3 text-center">الإجراءات</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {branches.map((br, idx) => {
+                              const sumMatch = branchSummaries.find((s) => s.branch_id === br.id);
+                              return (
+                                <tr key={br.id} className="hover:bg-slate-50/70">
+                                  <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                                  <td className="p-3 font-bold text-slate-900">
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <Icons.MapPin size={13} className="text-[#187A5A]" />
+                                      <span>{br.branch_name}</span>
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-mono text-slate-600">
+                                    BR-{idx + 1}
+                                  </td>
+                                  <td className="p-3 text-slate-700">{br.location || "الرياض"}</td>
+                                  <td className="p-3 text-center font-mono font-bold text-amber-800">
+                                    {sumMatch?.employees_count ?? 0}
+                                  </td>
+                                  <td className="p-3 text-center font-mono font-bold text-emerald-700">
+                                    {sumMatch?.assets_count ?? 0}
+                                  </td>
+                                  <td className="p-3">
+                                    <StatusBadge status={br.status} />
+                                  </td>
+                                  <td className="p-3 text-center">
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => openCompanyDetails(selectedCompany)}
+                                        className="p-1.5 rounded-lg text-slate-500 hover:text-[#187A5A] hover:bg-emerald-50 cursor-pointer"
+                                        title="عرض تفاصيل الفرع والقسم"
+                                      >
+                                        <Icons.Eye size={14} />
+                                      </button>
+                                      {canManage && (
+                                        <>
+                                          <button
+                                            type="button"
+                                            onClick={() => openEditBranch(br)}
+                                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                                            title="تعديل الفرع"
+                                          >
+                                            <Icons.Edit size={14} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleDeleteBranch(br.id, br.branch_name)}
+                                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                                            title="حذف الفرع"
+                                          >
+                                            <Icons.Trash size={14} />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )
+                  )}
+
+                  {detailTab === "info" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="text-slate-500 font-semibold">الاسم العربي</div>
+                        <div className="font-bold text-slate-900 mt-1">{selectedCompany.company_name_ar}</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="text-slate-500 font-semibold">الاسم الإنجليزي</div>
+                        <div className="font-bold text-slate-900 mt-1" dir="ltr">{selectedCompany.company_name_en}</div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="text-slate-500 font-semibold">الكود والنوع</div>
+                        <div className="font-mono font-bold text-[#187A5A] mt-1">
+                          {selectedCompany.company_code} • {selectedCompany.company_type || "Internal"}
+                        </div>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="text-slate-500 font-semibold">بيانات الاتصال</div>
+                        <div className="font-mono text-slate-800 mt-1" dir="ltr">
+                          {selectedCompany.contact_email || "—"} • {selectedCompany.contact_phone || "—"}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {detailTab === "departments" && (
+                    departments.length === 0 ? (
+                      <div className="py-10 text-center text-xs text-slate-500">
+                        لا توجد أقسام مسجلة لهذه الشركة حالياً
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {departments.map((d) => (
+                          <div
+                            key={d.id}
+                            className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between text-xs"
+                          >
+                            <div>
+                              <div className="font-bold text-slate-900">{d.department_name}</div>
+                              <div className="text-[11px] text-slate-500 mt-0.5">
+                                {d.branch_name || "على مستوى الشركة"}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <StatusBadge status={d.status} />
+                              {canManage && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditDept(d)}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white cursor-pointer"
+                                    title="تعديل القسم"
+                                  >
+                                    <Icons.Edit size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDept(d.id, d.department_name)}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                                    title="حذف القسم"
+                                  >
+                                    <Icons.Trash size={13} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+
+                  {detailTab === "subsidiaries" && (
+                    subsidiariesList.length === 0 ? (
+                      <div className="py-10 text-center text-xs text-slate-500">
+                        لا توجد علامات تجارية تابعة مرتبطة حالياً
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {subsidiariesList.map((sub) => (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => void selectCompanyNode(sub)}
+                            className="text-right p-3.5 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200 transition-colors cursor-pointer flex items-center justify-between"
+                          >
+                            <div>
+                              <div className="font-bold text-xs text-slate-900">{sub.company_name_ar}</div>
+                              <div className="text-[11px] font-mono text-slate-500">{sub.company_code}</div>
+                            </div>
+                            <span className="text-xs font-bold text-[#187A5A]">
+                              {sub.branches_count || 0} فروع ←
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </>
+              ) : null}
+            </section>
+          </div>
+        )}
+
+        {/* Bottom Split Row: Canonical Branch Summary (5 Cards) + Group Org Diagram (Image 7) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          <section
+            aria-label="ملخص الفروع المعتمدة الخمسة"
+            className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3"
+          >
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Icons.Reports size={16} className="text-[#187A5A]" />
+              <span>ملخص الفروع ({branchSummaries.length})</span>
+            </h2>
+
+            {branchSummaries.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">
+                اختر شركة لعرض ملخص الفروع الخاص بها
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                {branchSummaries.map((bs) => (
+                  <div
+                    key={bs.branch_id}
+                    className="rounded-xl bg-[#ECFDF5]/60 border border-emerald-200/60 p-3 space-y-2"
+                  >
+                    <div
+                      className="font-bold text-xs text-[#123D32] flex items-center gap-1 truncate"
+                      title={bs.branch_name}
+                    >
+                      <Icons.MapPin size={13} className="shrink-0 text-[#187A5A]" />
+                      <span className="truncate">{bs.branch_name}</span>
+                    </div>
+                    <div className="space-y-1 text-[11px] text-slate-700">
+                      <div className="flex items-center justify-between">
+                        <span>موظف</span>
+                        <span className="font-mono font-bold text-amber-800">{bs.employees_count}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>أصل</span>
+                        <span className="font-mono font-bold text-emerald-700">{bs.assets_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-col justify-between space-y-3">
+            <h2 className="text-sm font-bold text-slate-900">الهيكل التنظيمي للمجموعة</h2>
+            <div className="flex flex-col items-center gap-3 py-1">
+              <div className="px-4 py-2 rounded-xl bg-[#123D32] text-white text-xs font-bold text-center">
+                {groupCompany ? `${groupCompany.company_name_ar} (المجموعة)` : "بوابة المستثمر (المجموعة)"}
+              </div>
+              <div className="w-4/5 h-px bg-emerald-200" />
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+                {(subsidiariesList.length > 0 ? subsidiariesList : companies.slice(0, 3)).map((child) => (
+                  <button
+                    key={child.id}
+                    type="button"
+                    onClick={() => void selectCompanyNode(child)}
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-[11px] font-bold text-slate-800 cursor-pointer"
+                  >
+                    {child.company_name_ar}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
+          </section>
         </div>
-      )}
+      </div>
 
       {/* Add Company Modal */}
       <Modal

@@ -16,6 +16,8 @@ from app.models.maintenance import MaintenanceRecord
 from app.models.task import Task
 from app.models.ticket import HelpDeskTicket
 from app.models.audit import AuditLog
+from app.models.notification import Notification
+from app.models.integration import IntegrationConfig
 from app.models.enterprise import Project, CRMCustomer, CRMOpportunity, WorkflowApproval, AttendanceRecord
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard & Analytics"])
@@ -227,11 +229,55 @@ def get_dashboard_data(
             "created_at": log.created_at,
         })
 
+    active_employees = emp_q.filter(Employee.employment_status == "Active").distinct().count()
+    inactive_employees = max(0, total_employees - active_employees)
+    total_tickets = tix_base.count()
+    closed_tickets = tix_base.filter(HelpDeskTicket.status.in_(["Resolved", "Closed"])).count()
+    waiting_tickets = tix_base.filter(HelpDeskTicket.status.in_(["Waiting", "Pending"])).count()
+    in_progress_tickets = max(0, total_tickets - closed_tickets - waiting_tickets)
+
+    recent_tickets = [
+        {
+            "id": str(tx.id),
+            "ticket_number": tx.ticket_number,
+            "issue_title": tx.issue_title,
+            "priority": tx.priority,
+            "status": tx.status,
+            "created_at": tx.created_at,
+        }
+        for tx in tix_base.order_by(HelpDeskTicket.created_at.desc()).limit(4).all()
+    ]
+    recent_notifications = [
+        {
+            "id": str(n.id),
+            "title": n.title,
+            "message": n.message,
+            "is_read": bool(n.read_at),
+            "created_at": n.created_at,
+        }
+        for n in db.query(Notification)
+        .filter(Notification.recipient_user_id == current_user.id)
+        .order_by(Notification.created_at.desc())
+        .limit(4)
+        .all()
+    ]
+    tg_cfg = (
+        db.query(IntegrationConfig)
+        .filter(
+            IntegrationConfig.company_id == target_cid,
+            IntegrationConfig.service_name == "telegram",
+            IntegrationConfig.is_enabled == True,  # noqa: E712
+        )
+        .first()
+    )
+
     data = {
         "total_companies": total_companies,
         "total_branches": total_branches,
         "total_departments": total_departments,
         "total_employees": total_employees,
+        "active_employees": active_employees,
+        "inactive_employees": inactive_employees,
         "present_today": present_today,
         "active_projects": active_projects,
         "total_customers": total_customers,
@@ -247,12 +293,19 @@ def get_dashboard_data(
         "monthly_subscription_cost": round(monthly_cost, 2),
         "open_tasks": open_tasks,
         "overdue_tasks": overdue_tasks,
+        "total_tickets": total_tickets,
         "open_tickets": open_tickets,
+        "closed_tickets": closed_tickets,
+        "waiting_tickets": waiting_tickets,
+        "in_progress_tickets": in_progress_tickets,
         "critical_tickets": critical_tickets,
         "pending_maintenance": pending_maint,
+        "telegram_connected": bool(tg_cfg),
         "asset_status_distribution": asset_statuses,
         "task_status_distribution": task_statuses,
         "ticket_priority_distribution": ticket_priorities,
+        "recent_tickets": recent_tickets,
+        "recent_notifications": recent_notifications,
         "recent_activities": activities,
     }
 

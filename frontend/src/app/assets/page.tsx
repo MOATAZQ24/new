@@ -13,7 +13,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { Pagination } from "@/components/ui/Pagination";
 import { StatsCard } from "@/components/ui/StatsCard";
-import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
 import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
@@ -448,16 +447,6 @@ export default function AssetsPage() {
         }
       />
 
-      {/* Canonical 5-Branch Filter Bar */}
-      <BranchIntelligenceFilterBar
-        selectedBranchIds={selectedBranchIds}
-        onChangeBranchIds={(ids) => {
-          setSelectedBranchIds(ids);
-          setPage(1);
-        }}
-        label="تحليلات ومقارنة الأصول حسب الفروع الخمسة المعتمدة (منع تكرار الأصول عند تعدد فروع الموظف)"
-      />
-
       {/* Branch-Aware Asset KPI Cards & Charts */}
       {analytics && (
         <div className="space-y-5 my-4">
@@ -520,11 +509,25 @@ export default function AssetsPage() {
         searchPlaceholder="بحث بالكود، الاسم، السيريال..."
         searchLabel="بحث في الأصول التقنية"
         activeFilterCount={assetFilterCount}
-        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setPage(1); }}
+        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setSelectedBranchIds([]); setPage(1); }}
         onRefresh={() => void fetchAssets()}
         refreshing={loading}
         filters={
           <>
+            <select
+              aria-label="تصفية حسب الفرع المعتمد"
+              value={selectedBranchIds[0] || ""}
+              onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+            >
+              <option value="">جميع الفروع</option>
+              {companyBranches.map((br) => (
+                <option key={br.id} value={br.id}>
+                  {br.branch_name}
+                </option>
+              ))}
+            </select>
+
             <select
               aria-label="تصفية حسب الفئة"
               value={categoryFilter}

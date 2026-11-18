@@ -28,15 +28,13 @@ interface UnreadNotificationItem {
 }
 
 const QUICK_ROUTES: { title: string; subtitle: string; href: string; keywords: string }[] = [
-  { title: "لوحة التحكم الرئيسية", subtitle: "Command Center", href: "/", keywords: "رئيسية لوحة dashboard" },
-  { title: "الشركات والفروع المعتمدة", subtitle: "Companies & Branches", href: "/companies", keywords: "شركات فروع اقسام branches companies" },
-  { title: "الموارد البشرية والحضور", subtitle: "HRM & Attendance", href: "/hrm", keywords: "موارد بشرية حضور انصراف اجازات hrm attendance" },
-  { title: "العملاء والفرص البيعية", subtitle: "Enterprise CRM", href: "/crm", keywords: "عملاء فرص مبيعات crm pipeline" },
-  { title: "المشاريع والجدولة الزمنية", subtitle: "Projects & Milestones", href: "/projects", keywords: "مشاريع مراحل جانت projects" },
-  { title: "الاعتمادات والمشتريات", subtitle: "Workflows & Procurement", href: "/approvals", keywords: "اعتمادات مشتريات موافقات approvals purchase" },
-  { title: "إدارة المهام التشغيلية", subtitle: "المهام وتيليجرام", href: "/tasks", keywords: "مهام tasks telegram تكليف" },
-  { title: "مكتب المساعدة والتذاكر", subtitle: "Help Desk", href: "/tickets", keywords: "تذاكر دعم بلاغ helpdesk tickets" },
-  { title: "الموظفون وملف 360°", subtitle: "Employees & 360°", href: "/employees", keywords: "موظف موظفين 360 telegram linking" },
+  { title: "لوحة المتابعة", subtitle: "Dashboard", href: "/", keywords: "رئيسية لوحة متابعة dashboard" },
+  { title: "الشركات والفروع", subtitle: "Companies & Branches", href: "/companies", keywords: "شركات فروع اقسام branches companies" },
+  { title: "الموظفون", subtitle: "Employees", href: "/employees", keywords: "موظف موظفين 360 telegram linking" },
+  { title: "الأصول والعهد", subtitle: "Assets & Custody", href: "/assets", keywords: "أصل أصول عهدة عهد assets custody" },
+  { title: "الاشتراكات والتراخيص", subtitle: "Subscriptions", href: "/subscriptions", keywords: "اشتراكات تراخيص subscriptions" },
+  { title: "Help Desk", subtitle: "الدعم الفني والتذاكر", href: "/tickets", keywords: "تذاكر دعم بلاغ helpdesk tickets" },
+  { title: "إدارة المهام", subtitle: "Tasks", href: "/tasks", keywords: "مهام tasks telegram تكليف" },
   { title: "سجل الأصول التقنية", subtitle: "IT Assets", href: "/assets", keywords: "أصول لابتوب أجهزة assets" },
   { title: "الأصول الرقمية والخزنة", subtitle: "Digital Vault", href: "/digital-assets", keywords: "خزنة كلمات سر رقمية vault" },
   { title: "عهدة الأصول", subtitle: "Asset Custody", href: "/custody", keywords: "عهدة تسليم custody" },
@@ -93,6 +91,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadItems, setUnreadItems] = useState<UnreadNotificationItem[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [telegramConnected, setTelegramConnected] = useState<boolean>(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -131,6 +130,24 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user || !activeCompanyId) return;
+    let active = true;
+    api
+      .get<{ telegram_connected?: boolean }>("/dashboard")
+      .then((res) => {
+        if (active && res.data && typeof res.data.telegram_connected === "boolean") {
+          setTelegramConnected(res.data.telegram_connected);
+        }
+      })
+      .catch(() => {
+        if (active) setTelegramConnected(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user, activeCompanyId]);
 
   // Fetch unread notifications summary for the bell badge
   const fetchUnreadNotifications = useCallback(async () => {
@@ -387,7 +404,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
               aria-activedescendant={activeSearchIndex >= 0 ? `global-search-option-${activeSearchIndex}` : undefined}
               aria-busy={searching}
               aria-label="بحث في الأصول، التذاكر، الموظفين"
-              placeholder="بحث في الأصول، التذاكر، الموظفين..."
+              placeholder="بحث ..."
               onFocus={() => setOpenPopover("search")}
               onChange={(e) => {
                 const value = e.target.value;
@@ -532,6 +549,34 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu, aiPanelOpen =
             <Icons.Moon size={18} />
           )}
         </button>
+
+        {/* Telegram Live Status Pill (Images 1, 3-7, 10-12) */}
+        <Link
+          href="/settings/integrations"
+          title={telegramConnected ? "ربط Telegram نشط ومتصل" : "إعداد ربط Telegram"}
+          className="hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-[#187A5A]/40 transition-colors text-xs shrink-0"
+        >
+          <span className="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center shrink-0">
+            <Icons.Send size={11} />
+          </span>
+          <span className="font-semibold text-slate-700 dark:text-slate-200" dir="ltr">
+            Telegram
+          </span>
+          <span
+            className={`inline-flex items-center gap-1 text-[11px] font-bold ${
+              telegramConnected
+                ? "text-emerald-700 dark:text-emerald-300"
+                : "text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                telegramConnected ? "bg-emerald-500" : "bg-slate-400"
+              }`}
+            />
+            {telegramConnected ? "متصل" : "غير متصل"}
+          </span>
+        </Link>
 
         {/* Live Notification Bell Popover */}
         <div className="relative">

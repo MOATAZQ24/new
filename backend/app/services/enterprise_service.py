@@ -46,7 +46,7 @@ from app.models.enterprise import (
     WorkSchedule,
 )
 from app.models.maintenance import MaintenanceRecord
-from app.models.subscription import ThirdPartySubscription
+from app.models.subscription import ThirdPartySubscription, EmployeeSubscription
 from app.models.task import Task
 from app.models.telegram import TelegramUserLink
 from app.models.ticket import HelpDeskTicket
@@ -355,6 +355,8 @@ def serialize_canonical_employee(
     emp: Employee,
     telegram_map: Optional[Dict[uuid.UUID, TelegramUserLink]] = None,
     assignments_map: Optional[Dict[uuid.UUID, List[EmployeeBranchAssignment]]] = None,
+    assets_count_map: Optional[Dict[uuid.UUID, int]] = None,
+    subs_count_map: Optional[Dict[uuid.UUID, int]] = None,
 ) -> Dict[str, Any]:
     """Serialize canonical employee identity with distinguishing details and multi-branch assignments."""
     tlink = (
@@ -455,6 +457,8 @@ def serialize_canonical_employee(
         "telegram_linked": is_t_linked,
         "telegram_username": t_user,
         "telegram_notifications_enabled": t_notifs,
+        "assets_count": assets_count_map.get(emp.id, 0) if assets_count_map is not None else 0,
+        "subscriptions_count": subs_count_map.get(emp.id, 0) if subs_count_map is not None else 0,
         "distinguishing_label": f"{emp.full_name} ({' • '.join(details)})",
         "created_at": emp.created_at,
     }
@@ -525,7 +529,20 @@ def search_canonical_directory(
     for ar in assign_rows:
         assign_map.setdefault(ar.employee_id, []).append(ar)
 
-    serialized = [serialize_canonical_employee(db, e, tlinks, assign_map) for e in all_rows]
+    assets_counts = dict(
+        db.query(AssetCustody.employee_id, func.count(AssetCustody.id))
+        .filter(AssetCustody.company_id == company_id, AssetCustody.status == "Active")
+        .group_by(AssetCustody.employee_id)
+        .all()
+    )
+    subs_counts = dict(
+        db.query(EmployeeSubscription.employee_id, func.count(EmployeeSubscription.id))
+        .filter(EmployeeSubscription.company_id == company_id, EmployeeSubscription.status == "Active")
+        .group_by(EmployeeSubscription.employee_id)
+        .all()
+    )
+
+    serialized = [serialize_canonical_employee(db, e, tlinks, assign_map, assets_counts, subs_counts) for e in all_rows]
     if multi_branch_only:
         serialized = [item for item in serialized if item.get("is_multi_branch")]
 
