@@ -13,3 +13,5 @@ __pycache__
 *.db
 /backups/
 /backend/backups/
+/nginx/ssl/*.key
+/nginx/ssl/*.crt

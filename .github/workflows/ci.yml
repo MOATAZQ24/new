@@ -1,0 +1,79 @@
+name: Investor Gate OS — Enterprise CI & Security Gate
+
+on:
+  push:
+    branches: ["master", "main", "release/**", "cleanup/**"]
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  backend-qa-and-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies & security scanners
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest ruff bandit pip-audit
+      - name: Run Ruff static analysis
+        working-directory: backend
+        run: ruff check app/ --select E9,F63,F7,F82
+      - name: Run Bandit security scan
+        working-directory: backend
+        run: bandit -r app/ -ll -ii
+      - name: Verify clean Alembic migration upgrade/downgrade
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite:///./ci_clean.db
+        run: |
+          python -m alembic upgrade head
+          python -m alembic downgrade -1
+          python -m alembic upgrade head
+          python seed_data.py
+      - name: Run Backend Test Suites
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite:///./ci_test.db
+          PYTHONPATH: tests:.
+        run: |
+          python seed_data.py --demo
+          python tests/run_all_tests.py
+          python -m unittest tests/test_enterprise_v3.py tests/test_p1_security_regressions.py tests/test_security_regressions.py tests/test_all_modules.py tests/test_system_maintenance.py tests/test_workspace.py tests/test_vault_customization.py tests/test_user_management.py -v
+          python -m unittest tests/test_enterprise_deep_audit.py -v
+
+  frontend-typecheck-lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: TypeScript check
+        working-directory: frontend
+        run: npx tsc --noEmit
+      - name: ESLint check
+        working-directory: frontend
+        run: npm run lint
+      - name: Next.js production build
+        working-directory: frontend
+        run: npm run build
+
+  docker-compose-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker-compose.yml
+        env:
+          DB_PASSWORD: ci_postgres_password_strong_2026
+          APP_DB_PASSWORD: ci_app_db_password_strong_2026
+          SECRET_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+        run: docker compose config --quiet
