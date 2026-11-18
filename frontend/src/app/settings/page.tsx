@@ -25,6 +25,7 @@ import {
   Icons,
 } from "@/components/ui/Icons";
 import { Switch } from "@/components/ui/switch";
+import { THEME_PRESETS, THEME_PRESET_MAP, ThemePresetId } from "@/lib/themes";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
@@ -44,14 +45,6 @@ interface BackupSnapshotItem {
   created_at: string;
 }
 
-const ACCENT_SWATCHES = [
-  { color: "#187A5A", label: "الأخضر المؤسسي" },
-  { color: "#123D32", label: "الزمردي الداكن" },
-  { color: "#0F766E", label: "التركواز التنفيذي" },
-  { color: "#C5A46D", label: "الذهبي المؤسسي" },
-  { color: "#1E3A5F", label: "الكحلي المؤسسي" },
-];
-
 const ROLE_AR_LABELS: Record<string, string> = {
   "Super Admin": "مدير النظام العام",
   "Company Admin": "مدير الشركة",
@@ -63,9 +56,9 @@ const ROLE_AR_LABELS: Record<string, string> = {
 
 export default function SettingsPage() {
   const { user, activeCompany, activeCompanyId } = useAuth();
-  const { draft, setDraft, save, info } = useWorkspace();
+  const { draft, setDraft, save, presetId, selectPreset } = useWorkspace();
   const theme = draft.appearance.theme;
-  const colors = draft.appearance;
+  const activePreset = THEME_PRESET_MAP[presetId];
   const toast = useToast();
 
   const [integrations, setIntegrations] = useState<IntegrationItem[]>([]);
@@ -169,7 +162,16 @@ export default function SettingsPage() {
       setIntegrations((prev) => {
         const exists = prev.some((it) => it.service_name === service);
         if (!exists) {
-          return [...prev, { service_name: service, is_enabled: nextEnabled, status: nextEnabled ? "Active" : "Inactive" }];
+          return [
+            ...prev,
+            {
+              id: service,
+              service_name: service,
+              display_name: service,
+              is_enabled: nextEnabled,
+              status: nextEnabled ? "Active" : "Inactive",
+            },
+          ];
         }
         return prev.map((it) => (it.service_name === service ? { ...it, is_enabled: nextEnabled } : it));
       });
@@ -186,27 +188,13 @@ export default function SettingsPage() {
     };
     setDraft(nextConfig);
     void save(nextConfig).catch(() => {});
-    toast.success("تم تحديث مظهر النظام");
+    toast.success("تم تحديث وضع الإضاءة");
   };
 
-  const handleSelectSwatch = (hex: string) => {
-    const nextConfig = {
-      ...draft,
-      appearance: { ...draft.appearance, secondary: hex },
-    };
-    setDraft(nextConfig);
-    void (async () => {
-      try {
-        if (info?.enforced?.includes("secondary") && info?.can_manage_company) {
-          await api.put("/workspace/company-defaults", {
-            appearance: { ...info.company_defaults, secondary: hex },
-            enforced: info.enforced,
-          });
-        }
-        await save(nextConfig);
-      } catch {}
-    })();
-    toast.success("تم تحديث اللون الرئيسي للواجهة");
+  const handleSelectPreset = (nextPresetId: ThemePresetId) => {
+    void selectPreset(nextPresetId).catch(() => {});
+    const chosen = THEME_PRESET_MAP[nextPresetId];
+    toast.success(`تم تفعيل هوية ${chosen.nameAr}`);
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -537,30 +525,67 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">اللون الرئيسي</span>
-                <span className="text-[11px] text-slate-500 font-mono" dir="ltr">
-                  {colors.secondary}
+            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-slate-700">معرض الهويات البصرية</span>
+                <span className="text-[11px] font-semibold text-[#187A5A] truncate">
+                  {activePreset.nameAr}
                 </span>
               </div>
-              <div className="flex items-center gap-2.5">
-                {ACCENT_SWATCHES.map((swatch) => {
-                  const active = colors.secondary.toLowerCase() === swatch.color.toLowerCase();
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {THEME_PRESETS.map((preset) => {
+                  const active = preset.id === presetId;
                   return (
                     <button
-                      key={swatch.color}
+                      key={preset.id}
                       type="button"
-                      aria-label={swatch.label}
+                      data-theme-preset={preset.id}
+                      aria-label={preset.nameAr}
                       aria-pressed={active}
-                      title={`${swatch.label} (${swatch.color})`}
-                      onClick={() => handleSelectSwatch(swatch.color)}
-                      style={{ backgroundColor: swatch.color }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-transform cursor-pointer ${
-                        active ? "ring-2 ring-offset-2 ring-[#123D32] scale-105" : "opacity-85 hover:opacity-100"
+                      title={`${preset.nameAr} — ${preset.nameEn}`}
+                      onClick={() => handleSelectPreset(preset.id)}
+                      className={`relative rounded-xl border p-2 text-right transition-all cursor-pointer flex flex-col gap-1.5 ${
+                        active
+                          ? "border-[var(--primary)] bg-[var(--selected)] ring-1 ring-[var(--ring)]"
+                          : "border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--hover)]"
                       }`}
                     >
-                      {active && <Check className="w-3.5 h-3.5" />}
+                      {active && (
+                        <span
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center shadow-2xs"
+                          style={{
+                            backgroundColor: "var(--primary)",
+                            color: "var(--primary-foreground)",
+                          }}
+                        >
+                          <Check className="w-2.5 h-2.5" />
+                        </span>
+                      )}
+                      {/* Mini Dual Light + Dark Palette Preview */}
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1" aria-hidden="true">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/10"
+                            style={{ backgroundColor: preset.light.primary }}
+                            title={preset.lightName}
+                          />
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/10"
+                            style={{ backgroundColor: preset.dark.background }}
+                            title={preset.darkName}
+                          />
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/10"
+                            style={{ backgroundColor: preset.dark.accent }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-mono text-slate-500 truncate" dir="ltr">
+                          {preset.nameEn.split(" ")[0]}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-bold text-slate-900 truncate leading-tight">
+                        {preset.nameAr}
+                      </div>
                     </button>
                   );
                 })}

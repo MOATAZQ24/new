@@ -145,10 +145,10 @@ export default function DashboardPage() {
     const outOfService =
       (dist["تالف (Damaged)"] || 0) + (dist["متقاعد (Retired)"] || 0);
     return [
-      { label: "قيد الاستخدام", value: data.assigned_assets || 0, color: "#187A5A" },
-      { label: "تحت الصيانة", value: data.maintenance_assets || 0, color: "#C5A46D" },
-      { label: "احتياطي", value: data.available_assets || 0, color: "#123D32" },
-      { label: "خارج الخدمة", value: outOfService, color: "#E11D48" },
+      { label: "قيد الاستخدام", value: data.assigned_assets || 0, color: "var(--chart-1)" },
+      { label: "تحت الصيانة", value: data.maintenance_assets || 0, color: "var(--chart-3)" },
+      { label: "احتياطي", value: data.available_assets || 0, color: "var(--chart-2)" },
+      { label: "خارج الخدمة", value: outOfService, color: "var(--destructive)" },
     ];
   }, [data]);
 
@@ -158,12 +158,12 @@ export default function DashboardPage() {
       {
         label: "نشط",
         value: data.active_employees ?? data.total_employees ?? 0,
-        color: "#187A5A",
+        color: "var(--chart-1)",
       },
       {
         label: "متوقف مؤقتاً",
         value: data.inactive_employees ?? 0,
-        color: "#C5A46D",
+        color: "var(--chart-3)",
       },
     ];
   }, [data]);
@@ -171,9 +171,9 @@ export default function DashboardPage() {
   const ticketStatusItems = useMemo(() => {
     if (!data) return [];
     return [
-      { label: "مغلقة", value: data.closed_tickets ?? 0, color: "#187A5A" },
-      { label: "قيد التنفيذ", value: data.in_progress_tickets ?? data.open_tickets ?? 0, color: "#123D32" },
-      { label: "بانتظار الرد", value: data.waiting_tickets ?? 0, color: "#C5A46D" },
+      { label: "مغلقة", value: data.closed_tickets ?? 0, color: "var(--chart-1)" },
+      { label: "قيد التنفيذ", value: data.in_progress_tickets ?? data.open_tickets ?? 0, color: "var(--chart-2)" },
+      { label: "بانتظار الرد", value: data.waiting_tickets ?? 0, color: "var(--chart-3)" },
     ];
   }, [data]);
 

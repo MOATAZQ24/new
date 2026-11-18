@@ -298,7 +298,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
   return (
     <header
       ref={headerRef}
-      className="workspace-topnav h-16 bg-[var(--surface)] border-b border-[var(--border-color)] fixed top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-xs select-none transition-all duration-200 gap-2"
+      className="workspace-topnav h-16 bg-[var(--header-background)] border-b border-[var(--border)] fixed top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-xs select-none transition-all duration-200 gap-2"
     >
       {/* Right Side (Mobile Menu, Company Switcher & Command Search) */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">

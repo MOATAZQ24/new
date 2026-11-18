@@ -71,7 +71,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       data-collapsed={draft.collapsed}
       data-mobile-open={mobileOpen}
       aria-label="القائمة الرئيسية للنظام"
-      className="workspace-sidebar w-64 bg-[#123D32] text-white flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-[#187A5A]/30 select-none shadow-xl"
+      className="workspace-sidebar w-64 bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-white/10 select-none shadow-xl"
     >
       {/* Brand & Collapse Header */}
       <div className="workspace-sidebar-header p-4 border-b border-white/10 flex items-center justify-between gap-2">
@@ -81,7 +81,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           className="flex items-center gap-3 min-w-0"
           title="Investor Gate - الرئيسية"
         >
-          <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md shrink-0 overflow-hidden">
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent)] flex items-center justify-center text-[var(--accent-foreground)] font-black text-xl shadow-md shrink-0 overflow-hidden">
             {activeCompany?.company_logo?.startsWith("/workspace/") ? (
               <img
                 src={mediaUrl(activeCompany.company_logo)}
@@ -96,7 +96,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             <span className="block font-bold text-sm tracking-tight text-white leading-tight truncate">
               بوابة المستثمر
             </span>
-            <span className="block text-[11px] text-[#C5A46D] font-medium truncate">
+            <span className="block text-[11px] text-[var(--accent)] font-medium truncate">
               Investor Gate OS
             </span>
           </div>
@@ -136,7 +136,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             {activeCompany ? activeCompany.name_ar : "بوابة المستثمر"}
           </div>
         </div>
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#187A5A] text-white font-mono shrink-0">
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--sidebar-active)] text-white font-mono shrink-0">
           <bdi>{activeCompany?.code || "IGT"}</bdi>
         </span>
       </div>
@@ -157,13 +157,13 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               onClick={() => onCloseMobile?.()}
               className={`motion-nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                 isActive
-                  ? "bg-[#187A5A] text-white font-bold shadow-sm"
+                  ? "bg-[var(--sidebar-active)] text-white font-bold shadow-sm"
                   : "text-white/85 hover:bg-white/10 hover:text-white"
               }`}
             >
               <span
                 className={`shrink-0 ${
-                  isActive ? "text-[#C5A46D]" : "text-white/75"
+                  isActive ? "text-[var(--accent)]" : "text-white/75"
                 }`}
               >
                 {IconComp && <IconComp size={18} />}

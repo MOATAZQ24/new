@@ -21,17 +21,17 @@ export function BrandMark({
 }: BrandMarkProps) {
   const bg =
     variant === "gold-badge"
-      ? "#C5A46D"
+      ? "var(--accent, #C5A46D)"
       : variant === "dark-bg"
-        ? "#123D32"
-        : "#FFFFFF";
+        ? "var(--sidebar-background, #123D32)"
+        : "var(--card, #FFFFFF)";
   const strokePrimary =
     variant === "gold-badge"
-      ? "#123D32"
+      ? "var(--sidebar-background, #123D32)"
       : variant === "dark-bg"
         ? "#FFFFFF"
-        : "#123D32";
-  const accentGold = variant === "gold-badge" ? "#0B2921" : "#C5A46D";
+        : "var(--sidebar-background, #123D32)";
+  const accentGold = variant === "gold-badge" ? "var(--accent-foreground, #0B2921)" : "var(--accent, #C5A46D)";
 
   return (
     <svg

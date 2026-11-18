@@ -13,13 +13,11 @@ export interface ChartSeriesItem {
 }
 
 const DEFAULT_PALETTE = [
-  "#123D32",
-  "#187A5A",
-  "#C5A46D",
-  "#0F766E",
-  "#2E8B6E",
-  "#64748B",
-  "#94A3B8",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
 /**
@@ -73,7 +71,7 @@ export function EnterpriseDonutChart({
                   cy="55"
                   r={radius}
                   fill="transparent"
-                  stroke="#E2E8F0"
+                  stroke="var(--border)"
                   strokeWidth="12"
                 />
                 {items.reduce<{
