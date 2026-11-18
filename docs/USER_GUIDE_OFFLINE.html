@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Investor Gate OS v1.0.0 — الدليل التشغيلي والإداري (Offline User Guide)</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: #F6FAF8; color: #0F241D; margin: 0; padding: 24px; line-height: 1.7; }
+    .container { max-width: 960px; margin: 0 auto; background: #FFFFFF; border: 1px solid #D5E8DE; border-radius: 16px; padding: 32px; box-shadow: 0 4px 18px rgba(11,59,46,.06); }
+    h1 { color: #0B3B2E; margin-top: 0; border-bottom: 2px solid #D5E8DE; padding-bottom: 12px; }
+    h2 { color: #087F5B; margin-top: 28px; }
+    .badge { display: inline-block; background: #EAF3EF; color: #0B3B2E; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .card { background: #F6FAF8; border: 1px solid #D5E8DE; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    code { background: #EAF3EF; padding: 2px 6px; border-radius: 4px; direction: ltr; display: inline-block; }
+    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #D5E8DE; font-size: 13px; color: #435C53; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">Investor Gate OS v1.0.0 — Offline Documentation</span>
+    <h1>الدليل التشغيلي والإداري — Investor Gate OS</h1>
+    <p>نظام ذاتي الاستضافة لإدارة عمليات تقنية المعلومات والأصول والمهام متعددة الشركات.</p>
+
+    <h2>1. التثبيت النظيف والتهيئة الأولية (Clean Install &amp; First-Run Setup)</h2>
+    <div class="card">
+      <ol>
+        <li>تأكد من تشغيل Docker Desktop أو بيئة الخادم وتوليد مفاتيح <code>SECRET_KEY</code> و <code>DB_PASSWORD</code> عشوائياً.</li>
+        <li>شغّل التهيئة الهيكلية النظيفة عبر <code>python seed_data.py --clean-init</code> لإنشاء الأدوار الستة والشركات المعتمدة والفروع الخمسة (مخرج 17، مخرج 18، العليا، الدمام، جدة) دون أي بيانات تجريبية أو كلمات مرور افتراضية.</li>
+        <li>افتح المتصفح على <code>/setup</code> لقبول الترخيص وإنشاء حساب مدير النظام الأول (كلمة مرور قوية لا تقل عن 12 خانة).</li>
+        <li>بعد الإنشاء، يُغلق مسار التهيئة تلقائياً ويُوجّه المستخدم إلى <code>/login</code>.</li>
+      </ol>
+    </div>
+
+    <h2>2. الوحدات التسع المعتمدة (Approved Modules)</h2>
+    <div class="card">
+      <ul>
+        <li><strong>لوحة المتابعة (Dashboard):</strong> مؤشرات الأداء الفورية والإجراءات السريعة والرسوم البيانية.</li>
+        <li><strong>الشركات والفروع (Companies &amp; Branches):</strong> شجرة الشركات والفروع الخمسة المعتمدة والأقسام.</li>
+        <li><strong>الموظفون (Employees):</strong> ملف الموظف الشامل 360° والربط مع Telegram والأصول والاشتراكات.</li>
+        <li><strong>الأصول والعهد (Assets &amp; Custody):</strong> تسجيل الأجهزة، تسليم واسترجاع العهد، ورموز QR.</li>
+        <li><strong>الاشتراكات (Subscriptions):</strong> إدارة التراخيص، توزيع المقاعد (Seats)، وتنبيهات التجديد.</li>
+        <li><strong>مكتب المساعدة (Help Desk):</strong> تذاكر الدعم الفني، SLA، وتحويل التذكرة لمهمة.</li>
+        <li><strong>المهام والمواعيد (Tasks &amp; Deadlines):</strong> إسناد المهام، قبول التنفيذ، المراجعة والاعتماد.</li>
+        <li><strong>التقارير (Reports):</strong> تقارير الأصول والعهد والتذاكر والمهام بصيغ Excel/CSV و PDF.</li>
+        <li><strong>الإعدادات (Settings):</strong> معرض الهويات البصرية (6 سمات × فاتح/داكن/تلقائي)، التكاملات، والنسخ الاحتياطي DR.</li>
+      </ul>
+    </div>
+
+    <h2>3. الترقية الآمنة والنسخ الاحتياطي (Safe Upgrade &amp; Disaster Recovery)</h2>
+    <div class="card">
+      <p>لا تقوم عمليات الترقية أو الإصلاح بحذف قاعدة البيانات أبداً. يتم التحقق من وجود بيانات سابقة، وإنشاء نسخة احتياطية متحققة بـ SHA-256 قبل تشغيل أي ترقية متوافقة (Alembic Migrations).</p>
+    </div>
+
+    <footer>
+      <p><strong>Investor Gate OS</strong> • الإصدار <code>1.0.0</code> • © 2026</p>
+      <p>التطوير والهندسة الأمنية: <strong>Moataz Qasem / معتز قاسم</strong> — Cybersecurity &amp; Networks Specialist</p>
+    </footer>
+  </div>
+</body>
+</html>

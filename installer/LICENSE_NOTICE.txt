@@ -1,0 +1,29 @@
+INVESTOR GATE OS — SOFTWARE LICENSE & ATTRIBUTION NOTICE
+========================================================================
+
+Product: Investor Gate OS (v1.0.0)
+Copyright Year: 2026
+Developer & Security Architect: Moataz Qasem / معتز قاسم
+Role: Cybersecurity & Networks Specialist
+
+1. ACCEPTANCE
+By installing or using Investor Gate OS, you agree to operate the software
+in accordance with your organization's authorized IT governance policies and
+the third-party open-source licenses bundled with this distribution.
+
+2. ATTRIBUTION & OWNERSHIP SEPARATION
+Technical authorship and cybersecurity engineering are attributed to
+Moataz Qasem (Cybersecurity & Networks Specialist). Legal publisher
+identity and commercial licensing ownership remain subject to formal
+legal confirmation by the owning entity.
+
+3. THIRD-PARTY OPEN-SOURCE COMPONENTS
+This distribution bundles open-source libraries (including Next.js, React,
+FastAPI, SQLAlchemy, PostgreSQL, Radix UI, and Lucide) governed by their
+respective licenses (MIT, ISC, BSD, Apache-2.0, PostgreSQL License).
+See docs/THIRD_PARTY_NOTICES.md for the complete inventory.
+
+4. SECURITY & DATA PRESERVATION
+- Fresh installations initialize with zero demo records and zero default
+  credentials; first-run administrator setup is required at /setup.
+- Upgrades and repairs preserve existing databases and business records.
