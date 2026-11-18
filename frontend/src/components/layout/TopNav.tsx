@@ -322,7 +322,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
             aria-expanded={openPopover === "company"}
             aria-haspopup="menu"
             onClick={() => setOpenPopover(openPopover === "company" ? null : "company")}
-            className="motion-control flex max-w-full items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#187A5A] text-xs font-semibold text-slate-800 dark:text-slate-100 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100/70 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="motion-control h-9 flex max-w-full items-center gap-2 px-2.5 sm:px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#187A5A] text-xs font-semibold text-slate-800 dark:text-slate-100 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100/70 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           >
             {effectiveLogo ? (
               <img
@@ -382,7 +382,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
 
         {/* Live Global Search */}
         <div className="relative hidden lg:block flex-1 max-w-sm">
-          <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus-within:border-[#187A5A] focus-within:bg-white dark:focus-within:bg-slate-900 px-3 py-1.5 rounded-xl transition-all">
+          <div className="h-9 flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus-within:border-[#187A5A] focus-within:bg-white dark:focus-within:bg-slate-900 px-3 rounded-xl transition-all">
             <Icons.Search
               size={15}
               className="text-slate-500 pointer-events-none shrink-0"
@@ -534,9 +534,9 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         <Link
           href="/settings/integrations"
           title={telegramConnected ? "ربط Telegram نشط ومتصل" : "إعداد ربط Telegram"}
-          className="hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-[#187A5A]/40 transition-colors text-xs shrink-0"
+          className="hidden md:inline-flex h-9 items-center gap-2 px-3 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-[#187A5A]/40 transition-colors text-xs shrink-0"
         >
-          <span className="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center shrink-0">
+          <span className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-900/50 text-[#187A5A] dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-700/60 flex items-center justify-center shrink-0">
             <Icons.Send size={11} />
           </span>
           <span className="font-semibold text-slate-700 dark:text-slate-200" dir="ltr">

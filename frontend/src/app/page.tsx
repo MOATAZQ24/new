@@ -145,10 +145,10 @@ export default function DashboardPage() {
     const outOfService =
       (dist["تالف (Damaged)"] || 0) + (dist["متقاعد (Retired)"] || 0);
     return [
-      { label: "قيد الاستخدام", value: data.assigned_assets || 0, color: "#16A34A" },
-      { label: "تحت الصيانة", value: data.maintenance_assets || 0, color: "#EAB308" },
-      { label: "احتياطي", value: data.available_assets || 0, color: "#0EA5E9" },
-      { label: "خارج الخدمة", value: outOfService, color: "#EF4444" },
+      { label: "قيد الاستخدام", value: data.assigned_assets || 0, color: "#187A5A" },
+      { label: "تحت الصيانة", value: data.maintenance_assets || 0, color: "#C5A46D" },
+      { label: "احتياطي", value: data.available_assets || 0, color: "#123D32" },
+      { label: "خارج الخدمة", value: outOfService, color: "#E11D48" },
     ];
   }, [data]);
 
@@ -158,12 +158,12 @@ export default function DashboardPage() {
       {
         label: "نشط",
         value: data.active_employees ?? data.total_employees ?? 0,
-        color: "#16A34A",
+        color: "#187A5A",
       },
       {
         label: "متوقف مؤقتاً",
         value: data.inactive_employees ?? 0,
-        color: "#EAB308",
+        color: "#C5A46D",
       },
     ];
   }, [data]);
@@ -171,9 +171,9 @@ export default function DashboardPage() {
   const ticketStatusItems = useMemo(() => {
     if (!data) return [];
     return [
-      { label: "مغلقة", value: data.closed_tickets ?? 0, color: "#16A34A" },
-      { label: "قيد التنفيذ", value: data.in_progress_tickets ?? data.open_tickets ?? 0, color: "#0EA5E9" },
-      { label: "بانتظار الرد", value: data.waiting_tickets ?? 0, color: "#EAB308" },
+      { label: "مغلقة", value: data.closed_tickets ?? 0, color: "#187A5A" },
+      { label: "قيد التنفيذ", value: data.in_progress_tickets ?? data.open_tickets ?? 0, color: "#123D32" },
+      { label: "بانتظار الرد", value: data.waiting_tickets ?? 0, color: "#C5A46D" },
     ];
   }, [data]);
 
@@ -300,21 +300,21 @@ export default function DashboardPage() {
           </div>
         ) : data ? (
           <>
-            {/* Row 1: 4 Pastel KPI Cards (Images 1, 3, 5) */}
+            {/* Row 1: 4 Harmonized Executive KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/assets"
-                className="rounded-2xl bg-[#ECFDF5] dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/50 p-4 flex items-center justify-between gap-3 hover:shadow-sm transition-shadow min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-white/80 dark:bg-emerald-900/50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-[#187A5A] flex items-center justify-center shrink-0">
                     <Icons.Assets size={22} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
                       {data.total_assets}
                     </div>
-                    <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
                       إجمالي الأصول والعهد
                     </div>
                   </div>
@@ -323,17 +323,17 @@ export default function DashboardPage() {
 
               <Link
                 href="/tickets"
-                className="rounded-2xl bg-[#EFF6FF] dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/50 p-4 flex items-center justify-between gap-3 hover:shadow-sm transition-shadow min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-white/80 dark:bg-sky-900/50 text-sky-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#123D32]/10 dark:bg-slate-700 text-[#123D32] dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Icons.HelpDesk size={22} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
                       {data.total_tickets ?? data.open_tickets}
                     </div>
-                    <div className="text-xs font-bold text-sky-900 dark:text-sky-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
                       تذكرة (Help Desk)
                     </div>
                   </div>
@@ -342,17 +342,17 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="rounded-2xl bg-[#FEFCE8] dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50 p-4 flex items-center justify-between gap-3 hover:shadow-sm transition-shadow min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-white/80 dark:bg-amber-900/50 text-amber-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#C5A46D]/15 dark:bg-amber-900/30 text-[#8A6D3B] dark:text-amber-300 flex items-center justify-center shrink-0">
                     <Icons.Refresh size={22} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
                       {data.open_tasks}
                     </div>
-                    <div className="text-xs font-bold text-amber-900 dark:text-amber-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
                       قيد التنفيذ
                     </div>
                   </div>
@@ -361,17 +361,17 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="rounded-2xl bg-[#FEF2F2] dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-800/50 p-4 flex items-center justify-between gap-3 hover:shadow-sm transition-shadow min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-rose-300 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-white/80 dark:bg-rose-900/50 text-rose-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-900/40 text-rose-600 flex items-center justify-center shrink-0">
                     <Icons.AlertTriangle size={22} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-2xl font-black font-mono text-rose-700 dark:text-rose-300 leading-none">
                       {data.overdue_tasks}
                     </div>
-                    <div className="text-xs font-bold text-rose-700 dark:text-rose-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
                       متأخرة
                     </div>
                   </div>
@@ -643,33 +643,33 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-3 flex-1">
                   <Link
                     href="/assets"
-                    className="rounded-xl bg-[#EFF6FF] hover:bg-sky-100/80 border border-sky-200/70 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
                   >
-                    <Icons.Assets size={17} className="text-sky-600 shrink-0" />
+                    <Icons.Assets size={17} className="text-[#187A5A] shrink-0" />
                     <span>إضافة أصل/عهد</span>
                   </Link>
 
                   <Link
                     href="/tickets"
-                    className="rounded-xl bg-[#F5F3FF] hover:bg-violet-100/80 border border-violet-200/70 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
                   >
-                    <Icons.HelpDesk size={17} className="text-violet-600 shrink-0" />
+                    <Icons.HelpDesk size={17} className="text-[#123D32] shrink-0" />
                     <span>فتح تذكرة (Help Desk)</span>
                   </Link>
 
                   <Link
                     href="/employees"
-                    className="rounded-xl bg-[#ECFDF5] hover:bg-emerald-100/80 border border-emerald-200/70 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
                   >
-                    <Icons.Users size={17} className="text-emerald-600 shrink-0" />
+                    <Icons.Users size={17} className="text-[#187A5A] shrink-0" />
                     <span>إضافة موظف</span>
                   </Link>
 
                   <Link
                     href="/tasks"
-                    className="rounded-xl bg-[#FEFCE8] hover:bg-amber-100/80 border border-amber-200/70 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
                   >
-                    <Icons.Tasks size={17} className="text-amber-600 shrink-0" />
+                    <Icons.Tasks size={17} className="text-[#8A6D3B] shrink-0" />
                     <span>إسناد مهمة</span>
                   </Link>
                 </div>

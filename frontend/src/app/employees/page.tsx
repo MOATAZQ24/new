@@ -576,55 +576,67 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* 6 Top Pastel KPIs matching Image 4 */}
+      {/* 6 Top Harmonized KPIs */}
       {tab === "employees" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-slate-900">{summary.total}</div>
-              <div className="text-[11px] font-bold text-slate-700 mt-0.5">إجمالي الموظفين</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الموظفين</div>
             </div>
-            <Icons.Users size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+              <Icons.Users size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-emerald-700">{summary.active}</div>
-              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">موظف نشط</div>
+              <div className="text-xl font-black font-mono text-[#187A5A]">{summary.active}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظف نشط</div>
             </div>
-            <Icons.CheckCircle size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.CheckCircle size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-amber-800">{summary.suspended}</div>
-              <div className="text-[11px] font-bold text-amber-900 mt-0.5">موقوف</div>
+              <div className="text-xl font-black font-mono text-amber-700">{summary.suspended}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موقوف</div>
             </div>
-            <Icons.Clock size={22} className="text-amber-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Icons.Clock size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-rose-700">{summary.left}</div>
-              <div className="text-[11px] font-bold text-rose-800 mt-0.5">مغادر</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">مغادر</div>
             </div>
-            <Icons.User size={22} className="text-rose-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <Icons.User size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-sky-900">{summary.with_assets}</div>
-              <div className="text-[11px] font-bold text-sky-900 mt-0.5">لهم أصول</div>
+              <div className="text-xl font-black font-mono text-[#123D32]">{summary.with_assets}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم أصول</div>
             </div>
-            <Icons.Assets size={22} className="text-sky-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.Assets size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#F5F3FF] border border-violet-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-violet-900">{summary.with_subscriptions}</div>
-              <div className="text-[11px] font-bold text-violet-900 mt-0.5">لهم اشتراكات</div>
+              <div className="text-xl font-black font-mono text-slate-900">{summary.with_subscriptions}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم اشتراكات</div>
             </div>
-            <Icons.Subscriptions size={22} className="text-violet-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+              <Icons.Subscriptions size={20} />
+            </div>
           </div>
         </div>
       )}
@@ -790,8 +802,8 @@ export default function EmployeesPage() {
                           <bdi dir="ltr">{emp.employee_number}</bdi>
                         </td>
                         <td className="p-3 text-slate-700 font-semibold">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200/70 text-amber-900 text-[11px]">
-                            <Icons.Building size={12} className="text-amber-700" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 text-[#123D32] text-[11px]">
+                            <Icons.Building size={12} className="text-[#187A5A]" />
                             <span>{emp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}</span>
                           </span>
                         </td>
@@ -1058,27 +1070,27 @@ export default function EmployeesPage() {
               <div className="grid grid-cols-3 gap-2 w-full">
                 <Link
                   href="/companies"
-                  className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-center hover:border-[#C5A46D] transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#187A5A] transition-colors"
                 >
-                  <Icons.Building size={16} className="mx-auto text-amber-700 mb-1" />
+                  <Icons.Building size={16} className="mx-auto text-[#123D32] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">شركة</div>
                   <div className="text-[10px] text-slate-500">(أساسية)</div>
                 </Link>
 
                 <Link
                   href="/subscriptions"
-                  className="p-2.5 rounded-xl bg-sky-50/80 border border-sky-200/70 text-center hover:border-sky-400 transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#187A5A] transition-colors"
                 >
-                  <Icons.Subscriptions size={16} className="mx-auto text-sky-700 mb-1" />
+                  <Icons.Subscriptions size={16} className="mx-auto text-[#8A6D3B] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">اشتراكات</div>
                   <div className="text-[10px] text-slate-500">(برامج وخدمات)</div>
                 </Link>
 
                 <Link
                   href="/assets"
-                  className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/70 text-center hover:border-emerald-400 transition-colors"
+                  className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-center hover:border-[#187A5A] transition-colors"
                 >
-                  <Icons.Laptop size={16} className="mx-auto text-emerald-700 mb-1" />
+                  <Icons.Laptop size={16} className="mx-auto text-[#187A5A] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">أصول</div>
                   <div className="text-[10px] text-slate-500">(أجهزة وعهد)</div>
                 </Link>

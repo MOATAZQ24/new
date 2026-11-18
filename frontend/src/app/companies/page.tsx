@@ -459,46 +459,56 @@ export default function CompaniesPage() {
           }
         />
 
-        {/* Row 1: 5 Pastel KPIs matching Image 7 (أصل مرتبط، موظف، علامات تجارية تابعة، شركات، فروع نشطة) */}
+        {/* Row 1: 5 Harmonized KPIs (أصل مرتبط، موظف، علامات تجارية تابعة، شركات، فروع نشطة) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-slate-900">{totalAssetsKpi}</div>
-              <div className="text-[11px] font-bold text-slate-700 mt-0.5">أصل مرتبط</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">أصل مرتبط</div>
             </div>
-            <Icons.Assets size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.Assets size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-emerald-700">{totalEmployeesKpi}</div>
-              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">موظف</div>
+              <div className="text-xl font-black font-mono text-[#187A5A]">{totalEmployeesKpi}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظف</div>
             </div>
-            <Icons.Users size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.Users size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-sky-900">{subsidiariesList.length}</div>
-              <div className="text-[11px] font-bold text-sky-900 mt-0.5">علامات تجارية تابعة</div>
+              <div className="text-xl font-black font-mono text-slate-900">{subsidiariesList.length}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">علامات تجارية تابعة</div>
             </div>
-            <Icons.Subscriptions size={22} className="text-sky-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+              <Icons.Subscriptions size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-amber-800">{companies.length}</div>
-              <div className="text-[11px] font-bold text-amber-900 mt-0.5">شركات</div>
+              <div className="text-xl font-black font-mono text-[#123D32]">{companies.length}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">شركات</div>
             </div>
-            <Icons.Building size={22} className="text-amber-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+              <Icons.Building size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-rose-700">{totalBranchesKpi}</div>
-              <div className="text-[11px] font-bold text-rose-800 mt-0.5">فروع نشطة</div>
+              <div className="text-xl font-black font-mono text-[#187A5A]">{totalBranchesKpi}</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">فروع نشطة</div>
             </div>
-            <Icons.MapPin size={22} className="text-rose-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.MapPin size={20} />
+            </div>
           </div>
         </div>
 

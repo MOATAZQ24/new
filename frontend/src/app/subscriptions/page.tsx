@@ -291,66 +291,78 @@ export default function SubscriptionsPage() {
           </div>
         </div>
 
-        {/* Row 1: 6 Pastel KPIs matching Image 10 */}
+        {/* Row 1: 6 Harmonized KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-slate-900">
                 {summary?.total_subscriptions_count ?? subscriptions.length}
               </div>
-              <div className="text-[11px] font-bold text-slate-700 mt-0.5">إجمالي الاشتراكات</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الاشتراكات</div>
             </div>
-            <Icons.Subscriptions size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+              <Icons.Subscriptions size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-emerald-700">
+              <div className="text-xl font-black font-mono text-[#187A5A]">
                 {summary?.active_subscriptions_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">اشتراك نشط</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">اشتراك نشط</div>
             </div>
-            <Icons.CheckCircle size={22} className="text-emerald-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.CheckCircle size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
-            <div>
-              <div className="text-xl font-black font-mono text-sky-900">
-                {summary?.total_allocated_seats ?? 0}
-              </div>
-              <div className="text-[11px] font-bold text-sky-900 mt-0.5">مستخدم مرتبط</div>
-            </div>
-            <Icons.Users size={22} className="text-sky-600 shrink-0" />
-          </div>
-
-          <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-slate-900">
+                {summary?.total_allocated_seats ?? 0}
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">مستخدم مرتبط</div>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+              <Icons.Users size={20} />
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div className="text-xl font-black font-mono text-rose-700">
                 {summary?.expired_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-slate-700 mt-0.5">منتهية</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">منتهية</div>
             </div>
-            <Icons.AlertCircle size={22} className="text-sky-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <Icons.AlertCircle size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-amber-800">
+              <div className="text-xl font-black font-mono text-amber-700">
                 {summary?.expiring_soon_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-amber-900 mt-0.5">تقترب من الانتهاء</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">تقترب من الانتهاء</div>
             </div>
-            <Icons.Calendar size={22} className="text-amber-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Icons.Calendar size={20} />
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-lg font-black font-mono text-rose-700">
+              <div className="text-lg font-black font-mono text-[#123D32]">
                 {(summary?.total_monthly_cost ?? 0).toLocaleString("en-US")} ر.س
               </div>
-              <div className="text-[11px] font-bold text-rose-800 mt-0.5">التكلفة الشهرية</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">التكلفة الشهرية</div>
             </div>
-            <Icons.AlertTriangle size={22} className="text-rose-600 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+              <Icons.Subscriptions size={20} />
+            </div>
           </div>
         </div>
 

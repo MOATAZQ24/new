@@ -271,51 +271,51 @@ export default function ReportsPage() {
         {overview && (
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-2xl bg-[#ECFDF5] border border-emerald-200/70 p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/80 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
                   <LaptopIcon className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-slate-900">
                     {overview.kpis.total_assets}
                   </div>
-                  <div className="text-xs font-bold text-emerald-800 mt-1">إجمالي الأصول</div>
+                  <div className="text-xs font-bold text-slate-600 mt-1">إجمالي الأصول</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-[#EFF6FF] border border-sky-200/70 p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/80 text-sky-600 flex items-center justify-center shrink-0">
+              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
                   <LifeBuoyIcon className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-slate-900">
                     {overview.kpis.total_tickets}
                   </div>
-                  <div className="text-xs font-bold text-sky-900 mt-1">تذكرة (Help Desk)</div>
+                  <div className="text-xs font-bold text-slate-600 mt-1">تذكرة (Help Desk)</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-[#FEFCE8] border border-amber-200/70 p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/80 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                   <Icons.Clock size={22} />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono text-amber-800">
+                  <div className="text-2xl font-black font-mono text-amber-700">
                     {overview.kpis.overdue_tasks}
                   </div>
-                  <div className="text-xs font-bold text-amber-900 mt-1">مهام متأخرة</div>
+                  <div className="text-xs font-bold text-slate-600 mt-1">مهام متأخرة</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-[#FEF2F2] border border-rose-200/70 p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/80 text-rose-600 flex items-center justify-center shrink-0">
+              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                   <Icons.HelpDesk size={22} />
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-rose-700">
                     {overview.kpis.open_tickets}
                   </div>
-                  <div className="text-xs font-bold text-rose-800 mt-1">تذاكر مفتوحة</div>
+                  <div className="text-xs font-bold text-slate-600 mt-1">تذاكر مفتوحة</div>
                 </div>
               </div>
             </div>
@@ -383,25 +383,25 @@ export default function ReportsPage() {
                       const el = document.getElementById("reports-catalog");
                       el?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="rounded-xl bg-[#ECFDF5] hover:bg-emerald-100 border border-emerald-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900 cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <PlusIcon className="w-4 h-4" />
+                    <PlusIcon className="w-4 h-4 text-[#187A5A]" />
                     <span>إنشاء تقرير مخصص</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "excel")}
-                    className="rounded-xl bg-[#EFF6FF] hover:bg-sky-100 border border-sky-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-sky-900 cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <DownloadIcon className="w-4 h-4" />
+                    <DownloadIcon className="w-4 h-4 text-[#123D32]" />
                     <span>تصدير تقرير</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "html")}
-                    className="rounded-xl bg-[#FEFCE8] hover:bg-amber-100 border border-amber-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-amber-900 cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <PrinterIcon className="w-4 h-4" />
+                    <PrinterIcon className="w-4 h-4 text-[#8A6D3B]" />
                     <span>طباعة التقرير</span>
                   </button>
                   <button
@@ -411,9 +411,9 @@ export default function ReportsPage() {
                       setImportResult(null);
                       setImportFileContent("");
                     }}
-                    className="rounded-xl bg-[#F5F3FF] hover:bg-violet-100 border border-violet-200/70 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-violet-900 cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <Icons.FileText size={15} />
+                    <Icons.FileText size={15} className="text-[#187A5A]" />
                     <span>استيراد Excel</span>
                   </button>
                 </div>

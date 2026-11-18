@@ -62,7 +62,7 @@ export function DataToolbar({
                   onSearchSubmit();
                 }
               }}
-              className="w-full bg-slate-50 border border-slate-200 focus:border-[#187A5A] focus:bg-white text-xs sm:text-sm py-2 pr-9 pl-8 rounded-xl outline-none text-slate-900 placeholder:text-slate-500 transition-colors"
+              className="w-full h-10 bg-slate-50 border border-slate-200 focus:border-[#187A5A] focus:bg-white text-xs sm:text-sm pr-9 pl-8 rounded-xl outline-none text-slate-900 placeholder:text-slate-500 transition-colors"
             />
             {searchValue && (
               <button
