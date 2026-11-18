@@ -27,9 +27,6 @@ from app.schemas.task import (
 from app.schemas.ticket import (
     TicketCreate, TicketUpdate, TicketResponse, TicketCommentCreate, TicketCommentResponse
 )
-from app.schemas.notification import NotificationResponse
-from app.schemas.audit import AuditLogResponse
-from app.schemas.dashboard import DashboardKPIsResponse
 
 __all__ = [
     "LoginRequest", "LoginResponse", "UserInfo", "ChangePasswordRequest",
@@ -45,7 +42,4 @@ __all__ = [
     "MaintenanceCreate", "MaintenanceUpdate", "MaintenanceResponse",
     "TaskCreate", "TaskUpdate", "TaskResponse", "TaskCommentCreate", "TaskCommentResponse",
     "TicketCreate", "TicketUpdate", "TicketResponse", "TicketCommentCreate", "TicketCommentResponse",
-    "NotificationResponse",
-    "AuditLogResponse",
-    "DashboardKPIsResponse"
 ]
