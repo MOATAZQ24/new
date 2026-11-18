@@ -511,8 +511,18 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         </div>
       </div>
 
-      {/* Left Side (Theme Toggle, Live Notifications & User Profile) */}
+      {/* Left Side (Theme Toggle, Help Link, Live Notifications & User Profile) */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        {/* Help & Learning Center Link */}
+        <Link
+          href="/help"
+          aria-label="مركز المساعدة والتعلّم"
+          title="مركز المساعدة والتعلّم (Learning Center)"
+          className="motion-control p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-[#187A5A] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <Icons.Info size={18} />
+        </Link>
+
         {/* Quick Theme Switcher */}
         <button
           type="button"
@@ -720,6 +730,24 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
                 className="motion-control block px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 شعار وهوية الشركة (Branding)
+              </Link>
+
+              <Link
+                href="/help"
+                role="menuitem"
+                onClick={() => setOpenPopover(null)}
+                className="motion-control block px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-t border-slate-100 dark:border-slate-700"
+              >
+                مركز المساعدة والتعلّم
+              </Link>
+
+              <Link
+                href="/about"
+                role="menuitem"
+                onClick={() => setOpenPopover(null)}
+                className="motion-control block px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                حول النظام والمطور والتراخيص
               </Link>
 
               <button

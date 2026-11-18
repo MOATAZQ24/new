@@ -405,7 +405,12 @@ export default function SettingsPage() {
 
             <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
               <span>المنشأة الحالية:</span>
-              <strong className="text-slate-800">{activeCompany?.name_ar || "بوابة المستثمر"}</strong>
+              <div className="flex items-center gap-2">
+                <strong className="text-slate-800">{activeCompany?.name_ar || "بوابة المستثمر"}</strong>
+                <Link href="/about" className="font-bold text-[#187A5A] hover:underline">
+                  حول النظام
+                </Link>
+              </div>
             </div>
           </section>
 

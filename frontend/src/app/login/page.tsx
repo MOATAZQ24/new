@@ -1,16 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { api } from "@/lib/api";
 
 function LoginForm() {
+  const router = useRouter();
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [setupBanner, setSetupBanner] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void api
+      .get<{ requires_setup: boolean }>("/auth/bootstrap-status")
+      .then((res) => {
+        if (!active) return;
+        if (res.data?.requires_setup) {
+          router.replace("/setup");
+          return;
+        }
+        if (typeof window !== "undefined" && window.location.search.includes("setup=complete")) {
+          setSetupBanner(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +65,11 @@ function LoginForm() {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          {setupBanner && (
+            <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold">
+              تم إنشاء حساب مدير النظام الأول بنجاح. يمكنك تسجيل الدخول الآن.
+            </div>
+          )}
           {error && (
             <div role="alert" aria-live="assertive" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
               {error}
