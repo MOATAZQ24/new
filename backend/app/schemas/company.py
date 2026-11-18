@@ -75,6 +75,8 @@ class CompanyBase(BaseModel):
     company_logo: Optional[str] = None
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    company_type: str = "Internal"
+    parent_company_id: Optional[uuid.UUID] = None
     status: str = "Active"
 
 
@@ -90,6 +92,8 @@ class CompanyUpdate(BaseModel):
     company_logo: Optional[str] = None
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    company_type: Optional[str] = None
+    parent_company_id: Optional[uuid.UUID] = None
     status: Optional[str] = None
 
 

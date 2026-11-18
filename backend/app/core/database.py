@@ -73,6 +73,10 @@ def _migrate_columns():
             ("branches", "physical_branch_id", "CHAR(32)", "UUID"),
             ("tasks", "project_id", "CHAR(32)", "UUID"),
             ("technical_assets", "asset_category", "VARCHAR(50) DEFAULT 'IT'", "VARCHAR(50) DEFAULT 'IT'"),
+            ("companies", "company_type", "VARCHAR(50) DEFAULT 'Internal'", "VARCHAR(50) DEFAULT 'Internal'"),
+            ("companies", "parent_company_id", "CHAR(32)", "UUID"),
+            ("third_party_subscriptions", "branch_id", "CHAR(32)", "UUID"),
+            ("third_party_subscriptions", "seat_limit", "INTEGER DEFAULT 1", "INTEGER DEFAULT 1"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

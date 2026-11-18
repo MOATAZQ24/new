@@ -5,7 +5,7 @@ from app.models.company import Company, Branch, Department
 from app.models.user import Employee, User, Role, UserRole, CompanyMembership, UserSession, PasswordResetToken
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
-from app.models.subscription import ThirdPartySubscription
+from app.models.subscription import ThirdPartySubscription, EmployeeSubscription
 from app.models.maintenance import MaintenanceRecord
 from app.models.task import Task, TaskComment
 from app.models.ticket import HelpDeskTicket, TicketComment
@@ -56,6 +56,7 @@ __all__ = [
     "AssetCustody",
     "ITInfrastructure",
     "ThirdPartySubscription",
+    "EmployeeSubscription",
     "MaintenanceRecord",
     "Task",
     "TaskComment",

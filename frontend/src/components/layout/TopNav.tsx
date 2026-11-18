@@ -29,9 +29,14 @@ interface UnreadNotificationItem {
 
 const QUICK_ROUTES: { title: string; subtitle: string; href: string; keywords: string }[] = [
   { title: "لوحة التحكم الرئيسية", subtitle: "Command Center", href: "/", keywords: "رئيسية لوحة dashboard" },
+  { title: "الشركات والفروع المعتمدة", subtitle: "Companies & Branches", href: "/companies", keywords: "شركات فروع اقسام branches companies" },
+  { title: "الموارد البشرية والحضور", subtitle: "HRM & Attendance", href: "/hrm", keywords: "موارد بشرية حضور انصراف اجازات hrm attendance" },
+  { title: "العملاء والفرص البيعية", subtitle: "Enterprise CRM", href: "/crm", keywords: "عملاء فرص مبيعات crm pipeline" },
+  { title: "المشاريع والجدولة الزمنية", subtitle: "Projects & Milestones", href: "/projects", keywords: "مشاريع مراحل جانت projects" },
+  { title: "الاعتمادات والمشتريات", subtitle: "Workflows & Procurement", href: "/approvals", keywords: "اعتمادات مشتريات موافقات approvals purchase" },
   { title: "إدارة المهام التشغيلية", subtitle: "المهام وتيليجرام", href: "/tasks", keywords: "مهام tasks telegram تكليف" },
   { title: "مكتب المساعدة والتذاكر", subtitle: "Help Desk", href: "/tickets", keywords: "تذاكر دعم بلاغ helpdesk tickets" },
-  { title: "الموظفون وربط تيليجرام", subtitle: "Employees & Telegram", href: "/employees", keywords: "موظف موظفين telegram linking" },
+  { title: "الموظفون وملف 360°", subtitle: "Employees & 360°", href: "/employees", keywords: "موظف موظفين 360 telegram linking" },
   { title: "سجل الأصول التقنية", subtitle: "IT Assets", href: "/assets", keywords: "أصول لابتوب أجهزة assets" },
   { title: "الأصول الرقمية والخزنة", subtitle: "Digital Vault", href: "/digital-assets", keywords: "خزنة كلمات سر رقمية vault" },
   { title: "عهدة الأصول", subtitle: "Asset Custody", href: "/custody", keywords: "عهدة تسليم custody" },

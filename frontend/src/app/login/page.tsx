@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 function LoginForm() {
   const { login } = useAuth();
@@ -29,8 +30,8 @@ function LoginForm() {
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
         {/* Brand Banner */}
         <div className="bg-[#123D32] p-8 text-center text-white relative overflow-hidden">
-          <div className="w-16 h-16 rounded-2xl bg-[#C5A46D] text-[#123D32] font-black text-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            IG
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-lg overflow-hidden">
+            <BrandMark size={64} variant="gold-badge" />
           </div>
           <h1 className="text-xl font-bold tracking-tight">Investor Gate</h1>
           <p className="text-xs text-[#C5A46D] mt-1 font-medium">

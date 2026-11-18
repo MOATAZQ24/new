@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/ui/Icons";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 
@@ -47,18 +48,23 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const { draft, setDraft, save } = useWorkspace();
 
   const configured = draft.navigation.length
-    ? draft.navigation.flatMap((pref) => {
-        const item = navItems.find((nav) => nav.href === pref.href);
-        return item && (!pref.hidden || pref.href === "/settings")
-          ? [
-              {
-                ...item,
-                icon: pref.icon === "default" ? item.icon : pref.icon,
-                pinned: pref.pinned,
-              },
-            ]
-          : [];
-      })
+    ? [
+        ...draft.navigation.flatMap((pref) => {
+          const item = navItems.find((nav) => nav.href === pref.href);
+          return item && (!pref.hidden || pref.href === "/settings")
+            ? [
+                {
+                  ...item,
+                  icon: pref.icon === "default" ? item.icon : pref.icon,
+                  pinned: pref.pinned,
+                },
+              ]
+            : [];
+        }),
+        ...navItems
+          .filter((nav) => !draft.navigation.some((pref) => pref.href === nav.href))
+          .map((item) => ({ ...item, pinned: false })),
+      ]
     : navItems.map((item) => ({ ...item, pinned: false }));
   const orderedItems = [
     ...configured.filter((i) => i.pinned),
@@ -95,7 +101,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           className="flex items-center gap-3 min-w-0"
           title="Investor Gate - الرئيسية"
         >
-          <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#C5A46D] flex items-center justify-center text-[#123D32] font-black text-xl shadow-md shrink-0 overflow-hidden">
             {activeCompany?.company_logo?.startsWith("/workspace/") ? (
               <img
                 src={mediaUrl(activeCompany.company_logo)}
@@ -103,7 +109,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                 className="w-10 h-10 object-contain rounded-lg"
               />
             ) : (
-              "IG"
+              <BrandMark size={40} variant="gold-badge" />
             )}
           </div>
           <div className="workspace-brand-text flex flex-col min-w-0 flex-1 overflow-hidden">

@@ -25,6 +25,83 @@ from app.services.audit_service import log_audit
 router = APIRouter(prefix="/reports", tags=["Reports & Exports"])
 
 
+@router.get("/overview")
+def get_reports_overview(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "Auditor"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Return authorized executive report metrics, asset distribution, and company breakdown."""
+    from app.api.v1.endpoints.workspace import authorize_company
+    from app.models.company import Company
+    from app.models.user import CompanyMembership
+
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    authorize_company(db, current_user, target_cid)
+    today = date.today()
+
+    assets_list = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid).all()
+    tickets_list = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid).all()
+    tasks_list = db.query(Task).filter(Task.company_id == target_cid).all()
+    subs_list = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == target_cid).all()
+
+    open_tickets = sum(1 for t in tickets_list if t.status not in ("Resolved", "Closed", "Cancelled"))
+    overdue_tasks = sum(
+        1 for t in tasks_list if t.due_date and t.due_date < today and t.status not in ("Completed", "Cancelled", "Rejected")
+    )
+
+    asset_status_distribution = {
+        "قيد الاستخدام (Assigned)": sum(1 for a in assets_list if a.status == "Assigned"),
+        "متاح (Available)": sum(1 for a in assets_list if a.status == "Available"),
+        "تحت الصيانة (Maintenance)": sum(1 for a in assets_list if a.status == "Under Maintenance"),
+        "خارج الخدمة (Retired/Damaged)": sum(1 for a in assets_list if a.status in ("Retired", "Damaged")),
+    }
+
+    if current_user.is_superadmin:
+        authorized_companies = db.query(Company).filter(Company.status == "Active").order_by(Company.company_name_ar.asc()).all()
+    else:
+        mem_cids = [
+            r[0]
+            for r in db.query(CompanyMembership.company_id)
+            .filter(CompanyMembership.user_id == current_user.id, CompanyMembership.status == "Active")
+            .all()
+        ]
+        authorized_companies = db.query(Company).filter(Company.id.in_(mem_cids or [target_cid])).all()
+
+    company_breakdown = []
+    for comp in authorized_companies:
+        c_assets = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == comp.id).count()
+        c_tickets = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == comp.id).count()
+        c_tasks = db.query(Task).filter(Task.company_id == comp.id).count()
+        c_emps = db.query(Employee).filter(Employee.company_id == comp.id).count()
+        company_breakdown.append(
+            {
+                "company_id": str(comp.id),
+                "company_code": comp.company_code,
+                "company_name_ar": comp.company_name_ar,
+                "assets_count": c_assets,
+                "tickets_count": c_tickets,
+                "tasks_count": c_tasks,
+                "employees_count": c_emps,
+            }
+        )
+
+    return success_response(
+        data={
+            "kpis": {
+                "total_assets": len(assets_list),
+                "total_tickets": len(tickets_list),
+                "open_tickets": open_tickets,
+                "overdue_tasks": overdue_tasks,
+                "active_subscriptions": sum(1 for s in subs_list if s.status in ("Active", "Expiring Soon")),
+            },
+            "asset_status_distribution": asset_status_distribution,
+            "company_breakdown": company_breakdown,
+        }
+    )
+
+
 def generate_excel_compatible_csv(headers: list, rows: list) -> str:
     """Generate UTF-8 with BOM CSV that Excel opens with full Arabic RTL character support."""
     output = io.StringIO()

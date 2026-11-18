@@ -19,6 +19,8 @@ interface CompanyRow {
   company_name_ar: string;
   company_name_en: string;
   company_code: string;
+  company_type?: string | null;
+  parent_company_id?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
   status: string;
@@ -26,6 +28,16 @@ interface CompanyRow {
   employees_count?: number;
   logo_url?: string | null;
   [key: string]: unknown;
+}
+
+interface BranchSummaryItem {
+  branch_id: string;
+  branch_name: string;
+  location?: string | null;
+  employees_count: number;
+  assets_count: number;
+  open_tasks_count: number;
+  open_tickets_count: number;
 }
 
 interface CompanyBranchRow {
@@ -47,8 +59,9 @@ interface CompanyDeptRow {
 
 export default function CompaniesPage() {
   const toast = useToast();
-  const { user } = useAuth();
+  const { user, activeCompanyId } = useAuth();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
+  const [branchSummaries, setBranchSummaries] = useState<BranchSummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -111,8 +124,14 @@ export default function CompaniesPage() {
       const q = params.toString();
       if (q) url += `?${q}`;
 
-      const res = await api.get<CompanyRow[]>(url);
+      const [res, brSumRes] = await Promise.all([
+        api.get<CompanyRow[]>(url),
+        activeCompanyId
+          ? api.get<BranchSummaryItem[]>(`/companies/branches-summary?company_id=${activeCompanyId}`)
+          : Promise.resolve({ data: [] as BranchSummaryItem[] }),
+      ]);
       setCompanies(res.data || []);
+      setBranchSummaries(brSumRes.data || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر تحميل قائمة الشركات");
     } finally {
@@ -125,7 +144,7 @@ export default function CompaniesPage() {
       void fetchCompanies();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [statusFilter, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeCompanyId, statusFilter, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -357,6 +376,44 @@ export default function CompaniesPage() {
         }
       />
 
+      {/* Canonical 5-Branch Operational Summary Strip */}
+      {branchSummaries.length > 0 && (
+        <section aria-label="ملخص الفروع المعتمدة الخمسة" className="mb-5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Icons.Companies size={15} className="text-[#187A5A]" />
+              <span>ملخص الفروع المعتمدة للشركة النشطة ({branchSummaries.length})</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {branchSummaries.map((bs) => (
+              <div
+                key={bs.branch_id}
+                className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs space-y-2"
+              >
+                <div className="font-bold text-xs text-[#123D32] truncate" title={bs.branch_name}>
+                  {bs.branch_name}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600">
+                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-slate-900">{bs.employees_count}</span> موظف
+                  </div>
+                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-slate-900">{bs.assets_count}</span> أصل
+                  </div>
+                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-slate-900">{bs.open_tasks_count}</span> مهمة
+                  </div>
+                  <div className="bg-slate-50 px-2 py-1 rounded-lg">
+                    <span className="font-mono font-bold text-slate-900">{bs.open_tickets_count}</span> تذكرة
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Filters and Search Bar */}
       <DataToolbar
         searchValue={search}
@@ -423,9 +480,16 @@ export default function CompaniesPage() {
                 </div>
 
                 <div className="mt-4">
-                  <h2 className="text-base font-bold text-slate-900 leading-tight">
-                    {c.company_name_ar}
-                  </h2>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h2 className="text-base font-bold text-slate-900 leading-tight">
+                      {c.company_name_ar}
+                    </h2>
+                    {c.company_type && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-[#123D32] font-bold border border-emerald-200">
+                        {c.company_type === "Group" ? "الشركة الرئيسية (المجموعة)" : c.company_type === "Subsidiary" ? "علامة / شركة تابعة" : "تشغيلية"}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-600 font-medium mt-0.5">
                     {c.company_name_en}
                   </p>

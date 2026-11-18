@@ -75,7 +75,70 @@ def can_view_employee_self_or_staff(user: User, employee: Employee, company_id: 
         return False
     if user.employee_id == employee.id:
         return True
+    if user.employee and user.employee.person_id and employee.person_id and user.employee.person_id == employee.person_id:
+        return True
     return has_module_permission(user, Module.EMPLOYEES, Action.VIEW, company_id, db)
+
+
+def ensure_canonical_internal_companies(db: Session) -> List[Company]:
+    """Ensure the canonical internal companies (بوابة المستثمر, BlinkBill, شركة المستثمر) exist cleanly.
+
+    Preserves all existing companies untouched and never conflates internal companies with CRM customers.
+    """
+    all_comps = db.query(Company).all()
+    by_code = {(c.company_code or "").upper(): c for c in all_comps}
+
+    def _find_by_name(*needles: str) -> Optional[Company]:
+        for c in all_comps:
+            hay = f"{c.company_name_ar or ''} {c.company_name_en or ''} {c.company_code or ''}".lower()
+            if any(n.lower() in hay for n in needles):
+                return c
+        return None
+
+    parent = by_code.get("IGT") or _find_by_name("بوابة المستثمر", "investor gate")
+    if parent:
+        parent.company_type = "Group"
+    else:
+        parent = Company(
+            company_name_ar="شركة بوابة المستثمر للتقنية",
+            company_name_en="Investor Gate Technology Co.",
+            company_code="IGT",
+            company_type="Group",
+            status="Active",
+        )
+        db.add(parent)
+        db.flush()
+        all_comps.append(parent)
+    ensure_canonical_five_branches(db, parent.id)
+
+    specs = [
+        ("BLB", "BlinkBill", "BlinkBill Technologies", "blinkbill"),
+        ("INV", "شركة المستثمر", "Al-Mustathmir Company", "شركة المستثمر"),
+    ]
+    ensured = [parent]
+    for code, name_ar, name_en, needle in specs:
+        comp = by_code.get(code) or _find_by_name(needle)
+        if not comp:
+            comp = Company(
+                company_name_ar=name_ar,
+                company_name_en=name_en,
+                company_code=code,
+                company_type="Subsidiary",
+                parent_company_id=parent.id,
+                status="Active",
+            )
+            db.add(comp)
+            db.flush()
+        else:
+            if not comp.parent_company_id and comp.id != parent.id:
+                comp.parent_company_id = parent.id
+            if not getattr(comp, "company_type", None):
+                comp.company_type = "Subsidiary"
+        ensure_canonical_five_branches(db, comp.id)
+        ensured.append(comp)
+
+    db.commit()
+    return ensured
 
 
 # ── 0. Canonical Five-Branch Normalization & Reconciliation ─────────────────
@@ -1375,4 +1438,50 @@ def get_branch_aware_asset_analytics(
             for tr in transfer_q
         ],
     }
+
+
+def get_branches_intelligence_summary(db: Session, company_id: uuid.UUID) -> List[Dict[str, Any]]:
+    """Return authoritative employee, asset, task, and ticket metrics for each of the 5 canonical branches."""
+    branches = ensure_canonical_five_branches(db, company_id)
+    employees = db.query(Employee).filter(Employee.company_id == company_id).all()
+    assigns = (
+        db.query(EmployeeBranchAssignment)
+        .filter(
+            EmployeeBranchAssignment.company_id == company_id,
+            EmployeeBranchAssignment.status == "Active",
+        )
+        .all()
+    )
+    emp_ids_by_branch: Dict[uuid.UUID, set] = {b.id: set() for b in branches}
+    for e in employees:
+        if e.branch_id in emp_ids_by_branch:
+            emp_ids_by_branch[e.branch_id].add(e.id)
+    for a in assigns:
+        if a.branch_id in emp_ids_by_branch:
+            emp_ids_by_branch[a.branch_id].add(a.employee_id)
+
+    assets = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == company_id).all()
+    tasks = db.query(Task).filter(Task.company_id == company_id).all()
+    tickets = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == company_id).all()
+
+    summary: List[Dict[str, Any]] = []
+    for br in branches:
+        br_assets = [a for a in assets if a.branch_id == br.id]
+        br_tasks = [t for t in tasks if t.branch_id == br.id]
+        br_tickets = [tx for tx in tickets if tx.branch_id == br.id]
+        summary.append(
+            {
+                "branch_id": str(br.id),
+                "branch_name": br.branch_name,
+                "location": br.location,
+                "status": br.status,
+                "employees_count": len(emp_ids_by_branch.get(br.id, set())),
+                "assets_count": len(br_assets),
+                "it_assets_count": sum(1 for a in br_assets if (getattr(a, "asset_category", "IT") or "IT") == "IT"),
+                "general_assets_count": sum(1 for a in br_assets if getattr(a, "asset_category", "IT") == "General"),
+                "open_tasks_count": sum(1 for t in br_tasks if t.status not in ("Completed", "Cancelled", "Rejected")),
+                "open_tickets_count": sum(1 for tx in br_tickets if tx.status not in ("Resolved", "Closed", "Cancelled")),
+            }
+        )
+    return summary
 

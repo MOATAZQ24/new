@@ -37,7 +37,10 @@ def list_companies(
     if not current_user.is_superadmin:
         user_cids = (
             db.query(CompanyMembership.company_id)
-            .filter(CompanyMembership.user_id == current_user.id)
+            .filter(
+                CompanyMembership.user_id == current_user.id,
+                CompanyMembership.status == "Active",
+            )
             .all()
         )
         allowed_ids = [cid[0] for cid in user_cids]
@@ -64,7 +67,7 @@ def list_companies(
 
     data = []
     for c in companies:
-        b_count = db.query(Branch).filter(Branch.company_id == c.id).count()
+        b_count = db.query(Branch).filter(Branch.company_id == c.id, Branch.status == "Active").count()
         e_count = db.query(Employee).filter(Employee.company_id == c.id).count()
         data.append({
             "id": str(c.id),
@@ -74,6 +77,8 @@ def list_companies(
             "company_logo": c.company_logo,
             "contact_email": c.contact_email,
             "contact_phone": c.contact_phone,
+            "company_type": getattr(c, "company_type", "Internal"),
+            "parent_company_id": str(c.parent_company_id) if getattr(c, "parent_company_id", None) else None,
             "status": c.status,
             "branches_count": b_count,
             "employees_count": e_count,
@@ -83,6 +88,36 @@ def list_companies(
 
     pagination = paginate(total=total, page=page, per_page=per_page)
     return success_response(data=data, pagination=pagination)
+
+
+@router.get("/branches-summary")
+def get_company_branches_summary(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return authoritative employee, asset, task, and ticket summary per canonical branch for a company."""
+    if company_id is not None:
+        authorize_company(db, current_user, company_id)
+        target_cid = company_id
+    else:
+        mem = (
+            db.query(CompanyMembership)
+            .filter(CompanyMembership.user_id == current_user.id, CompanyMembership.status == "Active")
+            .order_by(CompanyMembership.is_default.desc())
+            .first()
+        )
+        if mem:
+            target_cid = mem.company_id
+        else:
+            if not current_user.is_superadmin:
+                raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لبيانات أي شركة")
+            first_comp = db.query(Company).first()
+            if not first_comp:
+                return success_response(data=[])
+            target_cid = first_comp.id
+    summary = enterprise_service.get_branches_intelligence_summary(db, target_cid)
+    return success_response(data=summary)
 
 
 @router.post("")
@@ -103,6 +138,8 @@ def create_company(
         company_logo=payload.company_logo,
         contact_email=payload.contact_email,
         contact_phone=payload.contact_phone,
+        company_type=getattr(payload, "company_type", "Internal") or "Internal",
+        parent_company_id=getattr(payload, "parent_company_id", None),
         status=payload.status,
     )
     db.add(company)
@@ -169,6 +206,8 @@ def get_company(company_id: uuid.UUID, current_user: User = Depends(get_current_
         "company_logo": company.company_logo,
         "contact_email": company.contact_email,
         "contact_phone": company.contact_phone,
+        "company_type": getattr(company, "company_type", "Internal"),
+        "parent_company_id": str(company.parent_company_id) if getattr(company, "parent_company_id", None) else None,
         "status": company.status,
         "branches_count": b_count,
         "employees_count": e_count,

@@ -26,6 +26,12 @@ class Company(UUIDMixin, TimestampMixin, Base):
     company_logo: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     contact_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     contact_phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    company_type: Mapped[str] = mapped_column(String(50), default="Internal", nullable=False)  # Group, Internal, Subsidiary
+    parent_company_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
 
     # Relationships

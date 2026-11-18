@@ -9,6 +9,8 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { BranchIntelligenceFilterBar } from "@/components/ui/BranchIntelligenceFilterBar";
+import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
@@ -16,10 +18,14 @@ import { useToast } from "@/context/ToastContext";
 
 interface SubscriptionItem {
   id: string;
+  branch_id?: string | null;
+  branch_name?: string | null;
   service_name: string;
   provider?: string;
   subscription_type: string;
   package_type?: string;
+  seat_limit?: number;
+  allocated_seats?: number;
   account_email?: string;
   price: number;
   currency: string;
@@ -31,29 +37,69 @@ interface SubscriptionItem {
 }
 
 interface SubscriptionSummary {
+  total_subscriptions_count?: number;
   total_monthly_cost?: number;
   total_annual_cost?: number;
   expiring_soon_count?: number;
   active_subscriptions_count?: number;
+  expired_count?: number;
+  total_allocated_seats?: number;
+  by_type?: Record<string, number>;
+  upcoming_by_month?: Record<string, number>;
+}
+
+interface SubSeatEmployee {
+  id: string;
+  employee_id: string;
+  employee_number: string;
+  full_name: string;
+  job_title?: string | null;
+  email?: string | null;
+  allocated_at?: string | null;
+  notes?: string | null;
+}
+
+interface EmpPickOption {
+  id: string;
+  full_name: string;
+  employee_number: string;
+}
+
+interface BranchPickOption {
+  id: string;
+  branch_name: string;
 }
 
 export default function SubscriptionsPage() {
-  const { activeCompanyId } = useAuth();
+  const { activeCompanyId, user } = useAuth();
   const toast = useToast();
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
   const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [cycleFilter, setCycleFilter] = useState("");
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+  const [companyBranches, setCompanyBranches] = useState<BranchPickOption[]>([]);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Seat Allocation Modal state
+  const [activeSub, setActiveSub] = useState<SubscriptionItem | null>(null);
+  const [showSeatsModal, setShowSeatsModal] = useState(false);
+  const [seatEmployees, setSeatEmployees] = useState<SubSeatEmployee[]>([]);
+  const [allEmployees, setAllEmployees] = useState<EmpPickOption[]>([]);
+  const [pickEmployeeId, setPickEmployeeId] = useState("");
+  const [seatNotes, setSeatNotes] = useState("");
+  const [seatsLoading, setSeatsLoading] = useState(false);
 
   // New Subscription Form
   const [serviceName, setServiceName] = useState("");
   const [provider, setProvider] = useState("");
   const [subType, setSubType] = useState("SaaS");
   const [pkgType, setPkgType] = useState("Business");
+  const [subBranchId, setSubBranchId] = useState("");
+  const [seatLimit, setSeatLimit] = useState("10");
   const [accountEmail, setAccountEmail] = useState("");
   const [price, setPrice] = useState("100");
   const [currency, setCurrency] = useState("SAR");
@@ -63,16 +109,19 @@ export default function SubscriptionsPage() {
   const [autoRenewal, setAutoRenewal] = useState(true);
   const [notes, setNotes] = useState("");
 
+  const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      let url = `/subscriptions?search=${encodeURIComponent(debouncedSearch)}`;
+      const bq = selectedBranchIds.length > 0 ? `&branch_ids=${encodeURIComponent(selectedBranchIds.join(","))}` : "";
+      let url = `/subscriptions?search=${encodeURIComponent(debouncedSearch)}${bq}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       if (cycleFilter) url += `&billing_cycle=${cycleFilter}`;
 
       const [listRes, sumRes] = await Promise.all([
         api.get<SubscriptionItem[]>(url),
-        api.get<SubscriptionSummary>("/subscriptions/summary"),
+        api.get<SubscriptionSummary>(`/subscriptions/summary?${bq.replace(/^&/, "")}`),
       ]);
       setSubscriptions(listRes.data || []);
       setSummary(sumRes.data || null);
@@ -84,21 +133,83 @@ export default function SubscriptionsPage() {
   };
 
   useEffect(() => {
+    if (!activeCompanyId) return;
+    api
+      .get<BranchPickOption[]>(`/companies/${activeCompanyId}/branches`)
+      .then((res) => setCompanyBranches(res.data || []))
+      .catch(() => {});
+  }, [activeCompanyId]);
+
+  useEffect(() => {
     const t = window.setTimeout(() => {
       void fetchData();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [statusFilter, cycleFilter, activeCompanyId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [statusFilter, cycleFilter, selectedBranchIds, activeCompanyId, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openSeatsManager = async (sub: SubscriptionItem) => {
+    setActiveSub(sub);
+    setShowSeatsModal(true);
+    setSeatsLoading(true);
+    try {
+      const [seatRes, empRes] = await Promise.all([
+        api.get<{ employees: SubSeatEmployee[]; seat_limit: number; allocated_seats: number }>(
+          `/subscriptions/${sub.id}/employees`
+        ),
+        api.get<EmpPickOption[]>("/employees?status=Active&per_page=100"),
+      ]);
+      setSeatEmployees(seatRes.data?.employees || []);
+      setAllEmployees(empRes.data || []);
+      if ((empRes.data || []).length > 0) {
+        setPickEmployeeId(empRes.data[0].id);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذر تحميل مستخدمي الاشتراك");
+    } finally {
+      setSeatsLoading(false);
+    }
+  };
+
+  const handleAssignSeat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeSub || !pickEmployeeId) return;
+    try {
+      await api.post(`/subscriptions/${activeSub.id}/employees`, {
+        employee_id: pickEmployeeId,
+        notes: seatNotes.trim() || undefined,
+      });
+      toast.success("تم تخصيص مقعد الاشتراك للموظف بنجاح");
+      setSeatNotes("");
+      await openSeatsManager(activeSub);
+      await fetchData();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذر تخصيص المقعد");
+    }
+  };
+
+  const handleRevokeSeat = async (employeeId: string) => {
+    if (!activeSub) return;
+    try {
+      await api.delete(`/subscriptions/${activeSub.id}/employees/${employeeId}`);
+      toast.success("تم سحب مقعد الاشتراك");
+      await openSeatsManager(activeSub);
+      await fetchData();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذر سحب المقعد");
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await api.post("/subscriptions", {
         company_id: activeCompanyId,
+        branch_id: subBranchId || undefined,
         service_name: serviceName,
         provider,
         subscription_type: subType,
         package_type: pkgType,
+        seat_limit: Math.max(1, parseInt(seatLimit, 10) || 1),
         account_email: accountEmail,
         price: parseFloat(price) || 0,
         currency,
@@ -112,10 +223,13 @@ export default function SubscriptionsPage() {
       setShowAddModal(false);
       setServiceName("");
       setProvider("");
+      setSubBranchId("");
+      setSeatLimit("10");
       setPrice("100");
       setRenewalDate("");
       setExpiryDate("");
       setNotes("");
+      toast.success("تم إضافة الاشتراك بنجاح");
       fetchData();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "فشل إضافة الاشتراك");
@@ -163,17 +277,40 @@ export default function SubscriptionsPage() {
         <StatsCard
           title="تجديدات قادمة خلال 30 يوم"
           value={summary?.expiring_soon_count || 0}
-          subtitle="تحتاج متابعة الدفع والتجديد"
+          subtitle={`منتهية: ${summary?.expired_count || 0} • تحتاج متابعة`}
           icon={<Icons.AlertTriangle size={20} />}
           accentColor="border-amber-500"
           trend={(summary?.expiring_soon_count || 0) > 0 ? "تنبيه" : undefined}
         />
         <StatsCard
-          title="إجمالي الاشتراكات النشطة"
-          value={summary?.active_subscriptions_count || 0}
-          subtitle="خدمات مستمرة قيد الاستخدام"
+          title="الاشتراكات النشطة والمقاعد"
+          value={`${summary?.active_subscriptions_count || 0} / ${summary?.total_allocated_seats || 0}`}
+          subtitle="اشتراك نشط / مستخدم مخصص له مقعد"
           icon={<Icons.Check size={20} />}
           accentColor="border-emerald-600"
+        />
+      </div>
+
+      {/* Canonical 5-Branch Filter Bar */}
+      <BranchIntelligenceFilterBar
+        selectedBranchIds={selectedBranchIds}
+        onChangeBranchIds={setSelectedBranchIds}
+        label="تصفية الاشتراكات حسب الفرع المعتمد"
+      />
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <EnterpriseDonutChart
+          title="توزيع الاشتراكات حسب النوع"
+          subtitle="تصنيف التراخيص والخدمات السحابية الحالية"
+          totalLabel="اشتراك"
+          items={Object.entries(summary?.by_type || {}).map(([label, value]) => ({ label, value }))}
+        />
+        <EnterpriseBarChart
+          title="تجديدات الاشتراكات القادمة حسب الشهر"
+          subtitle="جدول الاستحقاقات القادمة خلال الأشهر المقبلة"
+          unit="اشتراك"
+          items={Object.entries(summary?.upcoming_by_month || {}).map(([label, value]) => ({ label, value }))}
         />
       </div>
 
@@ -234,11 +371,12 @@ export default function SubscriptionsPage() {
               <tr>
                 <th className="p-3.5">اسم الخدمة</th>
                 <th className="p-3.5">المزود (Provider)</th>
-                <th className="p-3.5">النوع والباقة</th>
+                <th className="p-3.5">الفرع والنوع</th>
+                <th className="p-3.5">المقاعد</th>
                 <th className="p-3.5">السعر والدورة</th>
                 <th className="p-3.5">تاريخ التجديد</th>
                 <th className="p-3.5">الحالة</th>
-                <th className="p-3.5">التجديد التلقائي</th>
+                <th className="p-3.5">المستخدمون</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -257,7 +395,11 @@ export default function SubscriptionsPage() {
                     </td>
                     <td className="p-3.5 text-slate-800 font-semibold">{s.provider || "-"}</td>
                     <td className="p-3.5 text-slate-700">
-                      <span className="font-semibold">{s.package_type}</span> • {s.subscription_type}
+                      <div className="font-semibold">{s.package_type} • {s.subscription_type}</div>
+                      <div className="text-[10px] text-slate-500">{s.branch_name || "جميع الفروع"}</div>
+                    </td>
+                    <td className="p-3.5 font-mono font-bold text-slate-800 whitespace-nowrap">
+                      <bdi dir="ltr">{s.allocated_seats ?? 0} / {s.seat_limit ?? 1}</bdi>
                     </td>
                     <td className="p-3.5 font-mono font-bold text-slate-900">
                       <bdi dir="ltr">{s.price.toLocaleString()} {s.currency}</bdi>{" "}
@@ -287,14 +429,13 @@ export default function SubscriptionsPage() {
                       <StatusBadge status={s.status} />
                     </td>
                     <td className="p-3.5 text-slate-700">
-                      {s.auto_renewal ? (
-                        <span className="text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
-                          <Icons.Check size={13} />
-                          مفعّل
-                        </span>
-                      ) : (
-                        <span className="text-slate-600 text-[11px]">يدوي</span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => void openSeatsManager(s)}
+                        className="px-2.5 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white text-[11px] font-bold cursor-pointer whitespace-nowrap"
+                      >
+                        إدارة المستخدمين
+                      </button>
                     </td>
                   </tr>
                 );
@@ -479,6 +620,36 @@ export default function SubscriptionsPage() {
             </label>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                الفرع المعتمد (اختياري)
+              </label>
+              <select
+                value={subBranchId}
+                onChange={(e) => setSubBranchId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              >
+                <option value="">على مستوى الشركة بالكامل</option>
+                {companyBranches.map((br) => (
+                  <option key={br.id} value={br.id}>{br.branch_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                عدد المقاعد / التراخيص المتاحة
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={seatLimit}
+                onChange={(e) => setSeatLimit(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+              />
+            </div>
+          </div>
+
           <div className="pt-2 flex justify-end gap-2">
             <button
               type="button"
@@ -495,6 +666,102 @@ export default function SubscriptionsPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Seat Allocation Modal (M:N employee_subscriptions) */}
+      <Modal
+        isOpen={showSeatsModal}
+        onClose={() => setShowSeatsModal(false)}
+        title={`إدارة مستخدمي الاشتراك: ${activeSub?.service_name || ""}`}
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <span className="text-slate-500 block text-[10px]">المزود</span>
+              <strong className="text-slate-900">{activeSub?.provider || "—"}</strong>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[10px]">الفرع</span>
+              <strong className="text-slate-900">{activeSub?.branch_name || "جميع الفروع"}</strong>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[10px]">المقاعد المستخدمة</span>
+              <strong className="font-mono text-[#123D32]">{seatEmployees.length} / {activeSub?.seat_limit ?? 1}</strong>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[10px]">الحالة</span>
+              {activeSub && <StatusBadge status={activeSub.status} />}
+            </div>
+          </div>
+
+          {canManage && (
+            <form onSubmit={handleAssignSeat} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+              <div className="sm:col-span-6">
+                <label htmlFor="seat-emp-pick" className="block font-bold text-slate-700 mb-1">إضافة موظف للاشتراك</label>
+                <select
+                  id="seat-emp-pick"
+                  value={pickEmployeeId}
+                  onChange={(e) => setPickEmployeeId(e.target.value)}
+                  disabled={seatsLoading || allEmployees.length === 0}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 disabled:bg-slate-50"
+                >
+                  {allEmployees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.full_name} (#{emp.employee_number})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-4">
+                <label htmlFor="seat-note-input" className="block font-bold text-slate-700 mb-1">ملاحظة</label>
+                <input
+                  id="seat-note-input"
+                  type="text"
+                  value={seatNotes}
+                  onChange={(e) => setSeatNotes(e.target.value)}
+                  placeholder="رخصة عمل..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <button
+                  type="submit"
+                  disabled={seatsLoading || !pickEmployeeId}
+                  className="w-full px-3 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white font-bold cursor-pointer"
+                >
+                  {seatsLoading ? "تحميل..." : "تخصيص"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {seatsLoading ? (
+            <p className="text-center text-slate-500 py-6">جاري تحميل قائمة المستفيدين...</p>
+          ) : seatEmployees.length === 0 ? (
+            <p className="text-center text-slate-500 py-6">لا يوجد موظفون مخصصون لهذا الاشتراك حتى الآن</p>
+          ) : (
+            <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+              {seatEmployees.map((row) => (
+                <div key={row.id} className="p-3 flex items-center justify-between gap-2 bg-white">
+                  <div>
+                    <div className="font-bold text-slate-900">{row.full_name} <span className="font-mono text-[10px] text-slate-500">#{row.employee_number}</span></div>
+                    <div className="text-[11px] text-slate-500">{row.job_title || "—"} {row.notes ? `• ${row.notes}` : ""}</div>
+                  </div>
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={() => void handleRevokeSeat(row.employee_id)}
+                      className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[11px] font-bold cursor-pointer"
+                    >
+                      سحب المقعد
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </Modal>
     </DashboardLayout>
   );

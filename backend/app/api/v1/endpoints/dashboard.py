@@ -75,8 +75,16 @@ def get_dashboard_data(
         infra_q = infra_q.filter(ITInfrastructure.branch_id.in_(selected_branches))
     infra_devices = infra_q.count()
 
-    # Subscriptions
-    subs = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == target_cid).all()
+    # Subscriptions (filter branch-bound subscriptions when selected_branches is active)
+    subs_q = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == target_cid)
+    if selected_branches:
+        subs_q = subs_q.filter(
+            or_(
+                ThirdPartySubscription.branch_id.in_(selected_branches),
+                ThirdPartySubscription.branch_id.is_(None),
+            )
+        )
+    subs = subs_q.all()
     active_subs = 0
     upcoming_renewals = 0
     monthly_cost = 0.0

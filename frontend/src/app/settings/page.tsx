@@ -74,7 +74,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Quick Links to Settings Sections */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <a
             href="/settings/appearance"
             className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
@@ -109,6 +109,42 @@ export default function SettingsPage() {
             <div>
               <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition">التكاملات والأتمتة</div>
               <div className="text-xs text-gray-400">n8n، Telegram، Google Gemini</div>
+            </div>
+          </a>
+          <a
+            href="/companies"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#123D32] flex items-center justify-center">
+              <BuildingIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-[#187A5A] transition">الشركات والفروع والأقسام</div>
+              <div className="text-xs text-gray-400">إدارة الفروع الخمسة وهيكل المجموعة</div>
+            </div>
+          </a>
+          <a
+            href="/users"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <ShieldCheckIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-[#187A5A] transition">المستخدمون والصلاحيات</div>
+              <div className="text-xs text-gray-400">أدوار RBAC وعضويات الشركات</div>
+            </div>
+          </a>
+          <a
+            href="/audit"
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-[#187A5A] hover:shadow-md transition group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+              <ServerIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-[#187A5A] transition">سجل المراجعة والرقابة</div>
+              <div className="text-xs text-gray-400">توثيق الحركات وتدقيق العمليات</div>
             </div>
           </a>
           {user?.is_superadmin && (

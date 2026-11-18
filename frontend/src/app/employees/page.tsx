@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { StatsCard } from "@/components/ui/StatsCard";
 import { DataToolbar } from "@/components/ui/DataToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
@@ -119,6 +120,8 @@ export default function EmployeesPage() {
   const [empUsername, setEmpUsername] = useState("");
   const [empAccountPassword, setEmpAccountPassword] = useState("");
   const [submittingEmp, setSubmittingEmp] = useState(false);
+  const [empFormError, setEmpFormError] = useState<string | null>(null);
+  const [tempPasswordBanner, setTempPasswordBanner] = useState<{ username: string; password: string } | null>(null);
 
   // Canonical Branches, Departments & Filter state
   const [selectedFilterBranchIds, setSelectedFilterBranchIds] = useState<string[]>([]);
@@ -137,6 +140,7 @@ export default function EmployeesPage() {
   const [editManagerId, setEditManagerId] = useState("");
   const [editChangeReason, setEditChangeReason] = useState("");
   const [submittingEditEmp, setSubmittingEditEmp] = useState(false);
+  const [editEmpError, setEditEmpError] = useState<string | null>(null);
 
   // New user form
   const [username, setUsername] = useState("");
@@ -210,20 +214,35 @@ export default function EmployeesPage() {
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submittingEmp) return;
+    setEmpFormError(null);
 
     const cleanNum = empNumber.trim();
     const cleanName = fullName.trim();
     const cleanEmail = email.trim();
     if (!cleanNum || !cleanName) {
-      toast.error("الرقم الوظيفي والاسم الكامل مطلوبان");
+      const msg = "الرقم الوظيفي والاسم الكامل مطلوبان";
+      setEmpFormError(msg);
+      toast.error(msg);
       return;
     }
     if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      toast.error("يرجى إدخال بريد إلكتروني صحيح");
+      const msg = "يرجى إدخال بريد إلكتروني صحيح";
+      setEmpFormError(msg);
+      toast.error(msg);
       return;
     }
     if (createUserAccount && (!empUsername.trim() || !cleanEmail)) {
-      toast.error("اسم المستخدم والبريد الإلكتروني مطلوبان لإنشاء حساب الدخول");
+      const msg = "اسم المستخدم والبريد الإلكتروني مطلوبان لإنشاء حساب الدخول";
+      setEmpFormError(msg);
+      toast.error(msg);
+      return;
+    }
+    const primaryBid = empBranchIds[0];
+    const pickedDept = companyDepartments.find((d) => d.id === empDeptId);
+    if (pickedDept?.branch_id && primaryBid && pickedDept.branch_id !== primaryBid) {
+      const msg = "القسم الإداري المختار مرتبط بفرع آخر غير الفرع الرئيسي المحدد";
+      setEmpFormError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -233,7 +252,7 @@ export default function EmployeesPage() {
         empExtraCompanyIds.length > 0 && activeCompanyId
           ? [activeCompanyId, ...empExtraCompanyIds.filter((c) => c !== activeCompanyId)]
           : undefined;
-      await api.post("/employees", {
+      const createRes = await api.post<{ temporary_password?: string }>("/employees", {
         company_id: activeCompanyId,
         employee_number: cleanNum,
         full_name: cleanName,
@@ -251,7 +270,11 @@ export default function EmployeesPage() {
         username: createUserAccount ? empUsername.trim() : undefined,
         password: createUserAccount && empAccountPassword ? empAccountPassword : undefined,
       });
+      if (createRes.data?.temporary_password) {
+        setTempPasswordBanner({ username: empUsername.trim(), password: createRes.data.temporary_password });
+      }
       setShowAddEmpModal(false);
+      setEmpFormError(null);
       setEmpNumber("");
       setFullName("");
       setJobTitle("");
@@ -266,7 +289,9 @@ export default function EmployeesPage() {
       toast.success("تم إضافة الموظف بنجاح وربطه بالفروع المعتمدة");
       fetchEmployees();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "فشل إضافة الموظف");
+      const msg = getErrMsg(err, "فشل إضافة الموظف");
+      setEmpFormError(msg);
+      toast.error(msg);
     } finally {
       setSubmittingEmp(false);
     }
@@ -289,23 +314,34 @@ export default function EmployeesPage() {
     setEditDeptId(emp.department_id || "");
     setEditManagerId(emp.manager_id || "");
     setEditChangeReason("");
+    setEditEmpError(null);
     setShowEditEmpModal(true);
   };
 
   const handleUpdateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submittingEditEmp) return;
+    setEditEmpError(null);
 
+    const cleanName = editFullName.trim();
     const cleanEmail = editEmail.trim();
+    if (!cleanName) {
+      const msg = "الاسم الكامل مطلوب";
+      setEditEmpError(msg);
+      toast.error(msg);
+      return;
+    }
     if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      toast.error("يرجى إدخال بريد إلكتروني صحيح");
+      const msg = "يرجى إدخال بريد إلكتروني صحيح";
+      setEditEmpError(msg);
+      toast.error(msg);
       return;
     }
 
     setSubmittingEditEmp(true);
     try {
       await api.put(`/employees/${editEmpId}`, {
-        full_name: editFullName.trim(),
+        full_name: cleanName,
         job_title: editJobTitle.trim() || undefined,
         email: cleanEmail || undefined,
         phone: editPhone.trim() || undefined,
@@ -317,10 +353,13 @@ export default function EmployeesPage() {
         change_reason: editChangeReason.trim() || undefined,
       });
       setShowEditEmpModal(false);
+      setEditEmpError(null);
       toast.success("تم تحديث بيانات الموظف وسجل التسكين بنجاح");
       fetchEmployees();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "فشل تحديث بيانات الموظف");
+      const msg = getErrMsg(err, "فشل تحديث بيانات الموظف");
+      setEditEmpError(msg);
+      toast.error(msg);
     } finally {
       setSubmittingEditEmp(false);
     }
@@ -462,7 +501,7 @@ export default function EmployeesPage() {
               tab === "employees" ? (
                 <button
                   type="button"
-                  onClick={() => setShowAddEmpModal(true)}
+                  onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
                   className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                 >
                   <Icons.Plus size={16} />
@@ -483,13 +522,63 @@ export default function EmployeesPage() {
         }
       />
 
+      {tempPasswordBanner && (
+        <div role="status" className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div>
+            <span className="font-bold text-emerald-900">تم إنشاء حساب الدخول المؤقت للمستخدم: </span>
+            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#123D32]">{tempPasswordBanner.username}</code>
+            <span className="mx-1.5 text-emerald-700">كلمة المرور المؤقتة:</span>
+            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-rose-700">{tempPasswordBanner.password}</code>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTempPasswordBanner(null)}
+            className="px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-800 font-semibold cursor-pointer"
+          >
+            إغلاق
+          </button>
+        </div>
+      )}
+
       {/* Canonical 5-Branch Filter Bar */}
       {tab === "employees" && (
-        <BranchIntelligenceFilterBar
-          selectedBranchIds={selectedFilterBranchIds}
-          onChangeBranchIds={setSelectedFilterBranchIds}
-          label="تصفية دليل الموظفين حسب الفرع المعتمد (يدعم الموظفين العاملين في أكثر من فرع)"
-        />
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              title="إجمالي الموظفين"
+              value={employees.length}
+              subtitle="سجلات الدليل الموحد الحالية"
+              icon={<Icons.Users size={20} />}
+              accentColor="border-[#123D32]"
+            />
+            <StatsCard
+              title="على رأس العمل (نشط)"
+              value={employees.filter((e) => e.employment_status === "Active").length}
+              subtitle="متاح للتكليف والعهد"
+              icon={<Icons.CheckCircle size={20} />}
+              accentColor="border-[#187A5A]"
+            />
+            <StatsCard
+              title="متعددو الفروع المعتمدة"
+              value={employees.filter((e) => (e.branch_names?.length || 0) > 1).length}
+              subtitle="مرتبطون بأكثر من فرع معتمد"
+              icon={<Icons.Companies size={20} />}
+              accentColor="border-[#C5A46D]"
+            />
+            <StatsCard
+              title="حالات إجازة أو إيقاف"
+              value={employees.filter((e) => e.employment_status !== "Active").length}
+              subtitle="في إجازة أو موقوف أو منتهي"
+              icon={<Icons.Clock size={20} />}
+              accentColor="border-amber-500"
+            />
+          </div>
+          <BranchIntelligenceFilterBar
+            selectedBranchIds={selectedFilterBranchIds}
+            onChangeBranchIds={setSelectedFilterBranchIds}
+            label="تصفية دليل الموظفين حسب الفرع المعتمد (يدعم الموظفين العاملين في أكثر من فرع)"
+          />
+        </div>
       )}
 
       {/* Search & Filter Toolbar */}
@@ -706,13 +795,19 @@ export default function EmployeesPage() {
         onClose={() => setShowAddEmpModal(false)}
         title="إضافة موظف أو فني جديد"
       >
-        <form onSubmit={handleCreateEmployee} className="space-y-4">
+        <form onSubmit={handleCreateEmployee} noValidate className="space-y-4">
+          {empFormError && (
+            <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800">
+              {empFormError}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-number" className="block text-xs font-bold text-slate-700 mb-1">
                 الرقم الوظيفي *
               </label>
               <input
+                id="add-emp-number"
                 type="text"
                 required
                 value={empNumber}
@@ -722,10 +817,11 @@ export default function EmployeesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-name" className="block text-xs font-bold text-slate-700 mb-1">
                 الاسم الكامل *
               </label>
               <input
+                id="add-emp-name"
                 type="text"
                 required
                 value={fullName}
@@ -737,10 +833,11 @@ export default function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label htmlFor="add-emp-title" className="block text-xs font-bold text-slate-700 mb-1">
               المسمى الوظيفي
             </label>
             <input
+              id="add-emp-title"
               type="text"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
@@ -751,10 +848,11 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-email" className="block text-xs font-bold text-slate-700 mb-1">
                 البريد الإلكتروني
               </label>
               <input
+                id="add-emp-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -763,10 +861,11 @@ export default function EmployeesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-phone" className="block text-xs font-bold text-slate-700 mb-1">
                 رقم الهاتف
               </label>
               <input
+                id="add-emp-phone"
                 type="text"
                 dir="ltr"
                 value={phone}
@@ -846,27 +945,31 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-dept" className="block text-xs font-bold text-slate-700 mb-1">
                 القسم الإداري
               </label>
               <select
+                id="add-emp-dept"
                 value={empDeptId}
                 onChange={(e) => setEmpDeptId(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
               >
                 <option value="">اختر القسم...</option>
-                {companyDepartments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.department_name}
-                  </option>
-                ))}
+                {companyDepartments
+                  .filter((d) => !d.branch_id || !empBranchIds[0] || d.branch_id === empBranchIds[0])
+                  .map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.department_name}
+                    </option>
+                  ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="add-emp-manager" className="block text-xs font-bold text-slate-700 mb-1">
                 المدير المباشر
               </label>
               <select
+                id="add-emp-manager"
                 value={empManagerId}
                 onChange={(e) => setEmpManagerId(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
@@ -926,8 +1029,9 @@ export default function EmployeesPage() {
             {createUserAccount && (
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">اسم المستخدم *</label>
+                  <label htmlFor="add-emp-username" className="block text-[11px] font-bold text-slate-700 mb-1">اسم المستخدم *</label>
                   <input
+                    id="add-emp-username"
                     type="text"
                     required={createUserAccount}
                     value={empUsername}
@@ -937,8 +1041,9 @@ export default function EmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">كلمة المرور (توليد مؤقت إن تركت فارغة)</label>
+                  <label htmlFor="add-emp-password" className="block text-[11px] font-bold text-slate-700 mb-1">كلمة المرور (توليد مؤقت إن تركت فارغة)</label>
                   <input
+                    id="add-emp-password"
                     type="password"
                     value={empAccountPassword}
                     onChange={(e) => setEmpAccountPassword(e.target.value)}
@@ -975,12 +1080,18 @@ export default function EmployeesPage() {
         onClose={() => setShowEditEmpModal(false)}
         title="تعديل بيانات الموظف والتسكين"
       >
-        <form onSubmit={handleUpdateEmployee} className="space-y-4">
+        <form onSubmit={handleUpdateEmployee} noValidate className="space-y-4">
+          {editEmpError && (
+            <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800">
+              {editEmpError}
+            </div>
+          )}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label htmlFor="edit-emp-name" className="block text-xs font-bold text-slate-700 mb-1">
               الاسم الكامل *
             </label>
             <input
+              id="edit-emp-name"
               type="text"
               required
               value={editFullName}

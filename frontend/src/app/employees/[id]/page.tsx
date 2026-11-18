@@ -399,7 +399,7 @@ export default function Employee360ProfilePage() {
         <div
           role="tablist"
           aria-label="أقسام ملف الموظف 360"
-          className="flex items-center gap-1.5 overflow-x-auto bg-white rounded-2xl border border-slate-200 p-1.5 shadow-xs"
+          className="flex flex-wrap items-center gap-1.5 bg-white rounded-2xl border border-slate-200 p-1.5 shadow-xs"
         >
           {tabs.map((t) => (
             <button

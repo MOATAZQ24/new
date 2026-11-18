@@ -23,6 +23,8 @@ class SubscriptionBase(BaseModel):
 
 class SubscriptionCreate(SubscriptionBase):
     company_id: uuid.UUID
+    branch_id: Optional[uuid.UUID] = None
+    seat_limit: int = 1
     assigned_owner_id: Optional[uuid.UUID] = None
     payment_responsible_id: Optional[uuid.UUID] = None
 
@@ -32,6 +34,8 @@ class SubscriptionUpdate(BaseModel):
     provider: Optional[str] = None
     subscription_type: Optional[str] = None
     package_type: Optional[str] = None
+    branch_id: Optional[uuid.UUID] = None
+    seat_limit: Optional[int] = None
     assigned_owner_id: Optional[uuid.UUID] = None
     payment_responsible_id: Optional[uuid.UUID] = None
     account_email: Optional[str] = None
@@ -43,6 +47,11 @@ class SubscriptionUpdate(BaseModel):
     currency: Optional[str] = None
     auto_renewal: Optional[bool] = None
     status: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class SubscriptionSeatAssign(BaseModel):
+    employee_id: uuid.UUID
     notes: Optional[str] = None
 
 

@@ -87,6 +87,11 @@ body { font-family: var(--workspace-font, 'IBM Plex Sans Arabic', 'Inter', sans-
   padding: calc(var(--workspace-spacing, 1rem) * 1.35);
   padding-top: 5rem;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+.workspace-main > * {
+  min-width: 0;
 }
 .workspace-sidebar {
   width: var(--sidebar-width, 256px);

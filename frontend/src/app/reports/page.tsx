@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Modal from "@/components/ui/Modal";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { 
   DownloadIcon, PrinterIcon, LaptopIcon, 
   ShieldCheckIcon, ServerIcon, CreditCardIcon, WrenchIcon, 
@@ -11,6 +13,26 @@ import {
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+
+interface ReportsOverviewData {
+  kpis: {
+    total_assets: number;
+    total_tickets: number;
+    open_tickets: number;
+    overdue_tasks: number;
+    active_subscriptions: number;
+  };
+  asset_status_distribution: Record<string, number>;
+  company_breakdown: {
+    company_id: string;
+    company_code: string;
+    company_name_ar: string;
+    assets_count: number;
+    tickets_count: number;
+    tasks_count: number;
+    employees_count: number;
+  }[];
+}
 
 interface ReportItem {
   type: string;
@@ -80,9 +102,23 @@ const reportsList: ReportItem[] = [
 ];
 
 export default function ReportsPage() {
-  const { currentCompany, user } = useAuth();
+  const { currentCompany, activeCompanyId, user } = useAuth();
   const toast = useToast();
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [overview, setOverview] = useState<ReportsOverviewData | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    api
+      .get<ReportsOverviewData>("/reports/overview")
+      .then((res) => {
+        if (mounted) setOverview(res.data || null);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [activeCompanyId]);
 
   // Import Modal State
   const [showImportModal, setShowImportModal] = useState(false);
@@ -217,6 +253,96 @@ export default function ReportsPage() {
             </button>
           )}
         </div>
+
+        {/* Live Executive KPIs & Analytics */}
+        {overview && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                title="إجمالي الأصول المسجلة"
+                value={overview.kpis.total_assets}
+                subtitle="أصول تقنية وعامة في المنشأة"
+                icon={<LaptopIcon className="w-5 h-5" />}
+                accentColor="border-[#123D32]"
+              />
+              <StatsCard
+                title="تذاكر الدعم الفني"
+                value={overview.kpis.total_tickets}
+                subtitle={`تذاكر مفتوحة: ${overview.kpis.open_tickets}`}
+                icon={<LifeBuoyIcon className="w-5 h-5" />}
+                accentColor="border-[#187A5A]"
+              />
+              <StatsCard
+                title="المهام المتأخرة"
+                value={overview.kpis.overdue_tasks}
+                subtitle="تتطلب متابعة الإنجاز"
+                icon={<CheckSquareIcon className="w-5 h-5" />}
+                accentColor="border-rose-500"
+              />
+              <StatsCard
+                title="الاشتراكات النشطة"
+                value={overview.kpis.active_subscriptions}
+                subtitle="تراخيص وخدمات سحابية"
+                icon={<CreditCardIcon className="w-5 h-5" />}
+                accentColor="border-[#C5A46D]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <EnterpriseDonutChart
+                title="توزيع الأصول حسب الحالة"
+                subtitle="مؤشر حي لحالات الأصول المعتمدة"
+                totalLabel="أصل"
+                items={Object.entries(overview.asset_status_distribution || {}).map(([label, value]) => ({
+                  label,
+                  value,
+                }))}
+              />
+              <EnterpriseBarChart
+                title="ملخص الأصول حسب الشركة المصرح بها"
+                subtitle="مقارنة إجمالي الأصول عبر الشركات الداخلية"
+                unit="أصل"
+                items={(overview.company_breakdown || []).map((c) => ({
+                  label: c.company_name_ar,
+                  value: c.assets_count,
+                  badge: `${c.employees_count} موظف`,
+                }))}
+              />
+            </div>
+
+            {overview.company_breakdown.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+                <h2 className="text-sm font-bold text-slate-900">ملخص الأداء والموارد حسب الشركة</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-right">
+                    <thead className="border-b border-slate-200 text-slate-500">
+                      <tr>
+                        <th className="py-2 px-2">الكود</th>
+                        <th className="py-2 px-2">الشركة</th>
+                        <th className="py-2 px-2">الموظفون</th>
+                        <th className="py-2 px-2">الأصول</th>
+                        <th className="py-2 px-2">التذاكر</th>
+                        <th className="py-2 px-2">المهام</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {overview.company_breakdown.map((c) => (
+                        <tr key={c.company_id}>
+                          <td className="py-2 px-2 font-mono font-bold text-[#123D32]">{c.company_code}</td>
+                          <td className="py-2 px-2 font-bold text-slate-900">{c.company_name_ar}</td>
+                          <td className="py-2 px-2 font-mono">{c.employees_count}</td>
+                          <td className="py-2 px-2 font-mono">{c.assets_count}</td>
+                          <td className="py-2 px-2 font-mono">{c.tickets_count}</td>
+                          <td className="py-2 px-2 font-mono">{c.tasks_count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Report Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

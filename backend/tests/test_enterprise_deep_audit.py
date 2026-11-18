@@ -71,6 +71,7 @@ from app.api.v1.endpoints import (
     enterprise,
     infrastructure,
     maintenance,
+    reports,
     subscriptions,
     tasks,
     tickets,
@@ -101,6 +102,7 @@ def _make_app(db_session):
         tickets,
         dashboard,
         digital_assets,
+        reports,
         ai_agent,
     ):
         app.include_router(mod.router, prefix="/api/v1")
@@ -160,12 +162,18 @@ class DisposableProductionCloneAuditTests(unittest.TestCase):
                     "purchase_requests",
                     "workflow_approvals",
                     "ai_agent_executions",
+                    "employee_subscriptions",
                 ):
                     self.assertIn(required_tbl, table_names, f"Missing table: {required_tbl}")
 
                 with eng.connect() as conn:
                     ver = conn.execute(text("SELECT version_num FROM alembic_version")).fetchall()
-                    self.assertEqual([r[0] for r in ver], ["20261117_enterprise_v3"])
+                    self.assertEqual([r[0] for r in ver], ["20261118_enterprise_qa_v3"])
+
+                    # Verify canonical internal companies exist cleanly with 5 branches each
+                    codes = {r[0] for r in conn.execute(text("SELECT UPPER(company_code) FROM companies")).fetchall()}
+                    for req_code in ("IGT", "BLB", "INV"):
+                        self.assertIn(req_code, codes, f"Missing canonical internal company {req_code}")
 
                     phys_count = conn.execute(
                         text("SELECT COUNT(*) FROM physical_branch_locations")
@@ -783,6 +791,93 @@ class EnterpriseCoreAndSecurityAuditTests(unittest.TestCase):
         self.assertEqual(dash_suli["total_assets"], 1)  # Only AST-PR-001 in Suli!
         self.assertEqual(sum(dash_suli["asset_status_distribution"].values()), dash_suli["total_assets"])
         self.assertEqual(dash_suli["open_tickets"], 1)
+
+    def test_subscriptions_mn_seats_cross_tenant_guard_branches_summary_and_reports_overview(self):
+        # 1. Create a branch-bound subscription with seat_limit=1
+        sub_res = self.client.post(
+            "/api/v1/subscriptions",
+            json={
+                "company_id": str(self.igt.id),
+                "branch_id": str(self.suli.id),
+                "service_name": "Microsoft 365 Business",
+                "provider": "Microsoft",
+                "subscription_type": "SaaS",
+                "seat_limit": 1,
+                "price": 1200,
+                "billing_cycle": "Annual",
+                "renewal_date": (date.today() + timedelta(days=12)).isoformat(),
+                "status": "Active",
+            },
+            headers=self.igt_h,
+        )
+        self.assertEqual(sub_res.status_code, 200, sub_res.text)
+        sub_id = _unwrap(sub_res)["id"]
+
+        # Security: PUT /subscriptions/{id} must reject assigning an employee from BlinkBill (foreign tenant)
+        bad_upd = self.client.put(
+            f"/api/v1/subscriptions/{sub_id}",
+            json={"assigned_owner_id": str(self.emp_blink.id)},
+            headers=self.igt_h,
+        )
+        self.assertEqual(bad_upd.status_code, 400)
+
+        # Allocate seat 1 -> succeeds; allocating seat 2 when seat_limit=1 -> rejected cleanly
+        seat1 = self.client.post(
+            f"/api/v1/subscriptions/{sub_id}/employees",
+            json={"employee_id": str(self.emp_ahmad_1.id), "notes": "رخصة رئيسية"},
+            headers=self.igt_h,
+        )
+        self.assertEqual(seat1.status_code, 200, seat1.text)
+        seat2 = self.client.post(
+            f"/api/v1/subscriptions/{sub_id}/employees",
+            json={"employee_id": str(self.emp_ahmad_2.id)},
+            headers=self.igt_h,
+        )
+        self.assertEqual(seat2.status_code, 400)
+
+        # Increase seat_limit to 2 and allocate second employee
+        self.assertEqual(
+            self.client.put(f"/api/v1/subscriptions/{sub_id}", json={"seat_limit": 2}, headers=self.igt_h).status_code,
+            200,
+        )
+        self.assertEqual(
+            self.client.post(
+                f"/api/v1/subscriptions/{sub_id}/employees",
+                json={"employee_id": str(self.emp_ahmad_2.id)},
+                headers=self.igt_h,
+            ).status_code,
+            200,
+        )
+        seats_list = _unwrap(self.client.get(f"/api/v1/subscriptions/{sub_id}/employees", headers=self.igt_h))
+        self.assertEqual(seats_list["allocated_seats"], 2)
+
+        # Revoke seat and confirm active count decreases
+        self.assertEqual(
+            self.client.delete(
+                f"/api/v1/subscriptions/{sub_id}/employees/{self.emp_ahmad_2.id}",
+                headers=self.igt_h,
+            ).status_code,
+            200,
+        )
+        seats_after = _unwrap(self.client.get(f"/api/v1/subscriptions/{sub_id}/employees", headers=self.igt_h))
+        self.assertEqual(seats_after["allocated_seats"], 1)
+
+        # Subscription summary includes M:N seats and chart series
+        sub_sum = _unwrap(self.client.get(f"/api/v1/subscriptions/summary?branch_ids={self.suli.id}", headers=self.igt_h))
+        self.assertEqual(sub_sum["total_allocated_seats"], 1)
+        self.assertIn("SaaS", sub_sum["by_type"])
+
+        # 2. Companies branches-summary returns all 5 canonical branches with reconciled counts
+        br_sum = _unwrap(self.client.get(f"/api/v1/companies/branches-summary?company_id={self.igt.id}", headers=self.igt_h))
+        self.assertEqual(len(br_sum), 5)
+        self.assertEqual({b["branch_name"] for b in br_sum}, set(CANONICAL_BRANCH_NAMES))
+
+        # 3. Reports overview returns authorized KPIs & company breakdown without leaking other tenant data to IGT admin
+        rep_igt = _unwrap(self.client.get("/api/v1/reports/overview", headers=self.igt_h))
+        self.assertEqual(len(rep_igt["company_breakdown"]), 1)
+        self.assertEqual(rep_igt["company_breakdown"][0]["company_id"], str(self.igt.id))
+        rep_sa = _unwrap(self.client.get("/api/v1/reports/overview", headers=self.super_h))
+        self.assertGreaterEqual(len(rep_sa["company_breakdown"]), 2)
 
 
 class AiAgent14ScenarioAndAdversarialTests(unittest.TestCase):
