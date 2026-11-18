@@ -1,5 +1,7 @@
+import hashlib
 import os
 import json
+import secrets
 from typing import Dict, List, Tuple
 from pydantic_settings import BaseSettings
 
@@ -30,9 +32,11 @@ INSECURE_SECRET_KEYS = {
     "",
     "changeme",
     "secret",
-    "investorgate-secret-key-production-ready-2026",
     "change-me-to-64-char-random-string",
     "replace-with-64-char-cryptographic-random-hex-string",
+}
+_INSECURE_SECRET_SHA256 = {
+    "d3c47f1e7b8e11074284e576c3f34b98d8b7d42336386416f99f5785d409c7e4",
 }
 
 
@@ -48,7 +52,7 @@ class Settings(BaseSettings):
         f"sqlite:///{_DEFAULT_DB_FILE}",
     )
 
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "investorgate-secret-key-production-ready-2026")
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or secrets.token_hex(32)
     SESSION_EXPIRE_HOURS: int = int(os.getenv("SESSION_EXPIRE_HOURS", "24"))
     SESSION_COOKIE_SECURE: bool = os.getenv(
         "SESSION_COOKIE_SECURE",
@@ -82,7 +86,8 @@ class Settings(BaseSettings):
         """Fail fast at startup if running in production with a default or weak SECRET_KEY."""
         if self.is_production:
             key = (self.SECRET_KEY or "").strip()
-            if key in INSECURE_SECRET_KEYS or len(key) < 32:
+            key_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
+            if key in INSECURE_SECRET_KEYS or key_hash in _INSECURE_SECRET_SHA256 or len(key) < 32:
                 raise RuntimeError(
                     "FATAL: Production startup aborted — SECRET_KEY is missing, default, or shorter than 32 characters."
                 )

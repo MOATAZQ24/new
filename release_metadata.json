@@ -1,0 +1,17 @@
+{
+  "product": "Investor Gate OS",
+  "version": "1.0.0",
+  "copyright_year": 2026,
+  "developer": {
+    "name_en": "Moataz Qasem",
+    "name_ar": "معتز قاسم",
+    "role": "Cybersecurity & Networks Specialist",
+    "linkedin_url": "",
+    "email": ""
+  },
+  "legal": {
+    "publisher_status": "PENDING_LEGAL_CONFIRMATION",
+    "exclusive_ownership_claimed": false,
+    "license_notice": "This software is distributed under the terms accepted during installation. Third-party open-source components remain governed by their respective licenses."
+  }
+}

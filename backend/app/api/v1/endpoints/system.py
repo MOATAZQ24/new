@@ -85,6 +85,46 @@ def _coerce_column_value(col, val):
     return val
 
 
+@router.get("/release-info")
+def get_release_info():
+    """Return product version, developer attribution, and copyright metadata."""
+    meta_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "release_metadata.json")
+    )
+    fallback = {
+        "product": "Investor Gate OS",
+        "version": settings.APP_VERSION,
+        "copyright_year": 2026,
+        "developer": {
+            "name_en": "Moataz Qasem",
+            "name_ar": "معتز قاسم",
+            "role": "Cybersecurity & Networks Specialist",
+            "linkedin_url": os.getenv("DEVELOPER_LINKEDIN_URL", ""),
+            "email": os.getenv("DEVELOPER_CONTACT_EMAIL", ""),
+        },
+        "legal": {
+            "publisher_status": "PENDING_LEGAL_CONFIRMATION",
+            "exclusive_ownership_claimed": False,
+            "license_notice": "Distributed under the software license accepted at installation.",
+        },
+    }
+    try:
+        if os.path.isfile(meta_path):
+            with open(meta_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                dev = data.get("developer") or {}
+                if os.getenv("DEVELOPER_LINKEDIN_URL"):
+                    dev["linkedin_url"] = os.getenv("DEVELOPER_LINKEDIN_URL")
+                if os.getenv("DEVELOPER_CONTACT_EMAIL"):
+                    dev["email"] = os.getenv("DEVELOPER_CONTACT_EMAIL")
+                data["developer"] = dev
+                return success_response(data=data)
+    except Exception:
+        pass
+    return success_response(data=fallback)
+
+
 @router.get("/health")
 def get_system_health(
     current_user: User = Depends(require_role(["Super Admin"])),

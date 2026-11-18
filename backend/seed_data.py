@@ -26,50 +26,53 @@ from app.models.notification import Notification
 from app.models.audit import AuditLog
 
 
-def seed(include_demo: bool | None = None):
+def seed(include_demo: bool | None = None, clean_init: bool | None = None):
     env_mode = os.environ.get("ENVIRONMENT", os.environ.get("ENV", "development")).strip().lower()
     allow_prod_seed = os.environ.get("ALLOW_PRODUCTION_BOOTSTRAP", "").strip().lower() in ("1", "true", "yes")
-    if env_mode == "production" and not allow_prod_seed:
+    if env_mode == "production" and not allow_prod_seed and not clean_init:
         raise RuntimeError(
-            "Refusing to run seed_data.py when ENV/ENVIRONMENT=production without ALLOW_PRODUCTION_BOOTSTRAP=true."
+            "Refusing to run seed_data.py when ENV/ENVIRONMENT=production without ALLOW_PRODUCTION_BOOTSTRAP=true or --clean-init."
         )
 
     if include_demo is None:
         include_demo = os.environ.get("SEED_DEMO_DATA", "").strip().lower() in ("1", "true", "yes") or ("--demo" in sys.argv)
+    if clean_init is None:
+        clean_init = os.environ.get("CLEAN_INIT", "").strip().lower() in ("1", "true", "yes") or ("--clean-init" in sys.argv)
     if env_mode == "production" and include_demo:
         raise RuntimeError("Demo seeding is strictly forbidden when ENV/ENVIRONMENT=production.")
 
     enforce_no_default = (
         env_mode in ("production", "staging")
         or os.environ.get("ENFORCE_NO_DEFAULT_CREDENTIALS", "").strip().lower() in ("1", "true", "yes")
+        or not include_demo
     )
     admin_username = os.environ.get("ADMIN_INITIAL_USERNAME", "admin").strip() or "admin"
     admin_email = os.environ.get("ADMIN_INITIAL_EMAIL", "admin@investorgate.sa").strip() or "admin@investorgate.sa"
     admin_password = os.environ.get("ADMIN_INITIAL_PASSWORD", "").strip()
 
-    if enforce_no_default:
+    create_bootstrap_admin = not clean_init and (bool(admin_password) or include_demo)
+    if create_bootstrap_admin and enforce_no_default:
         if not admin_password or admin_password in ("Admin@12345", "admin", "password", "123456", "changeme") or len(admin_password) < 12:
             raise RuntimeError(
                 "Refusing first-admin initialization with default or weak credentials. "
-                "Provide a strong ADMIN_INITIAL_PASSWORD (>=12 characters, non-default)."
+                "Provide a strong ADMIN_INITIAL_PASSWORD (>=12 characters, non-default) or use --clean-init for interactive /setup."
             )
-    elif not admin_password:
-        admin_password = "Admin@12345"
+    elif create_bootstrap_admin and not admin_password and include_demo:
+        admin_password = os.environ.get("DEV_DEMO_PASSWORD", "DemoOnly#2026!")
 
     force_pw_change = (
         os.environ.get("FORCE_ADMIN_PASSWORD_CHANGE", "").strip().lower() in ("1", "true", "yes")
         or env_mode == "production"
     )
 
-    print(f"Initializing database tables (include_demo={include_demo}, env={env_mode})...")
+    print(f"Initializing database tables (include_demo={include_demo}, clean_init={clean_init}, env={env_mode})...")
     init_db()
     db = SessionLocal()
 
     try:
-        # Check if already seeded
-        admin_check = db.query(User).filter(User.username == admin_username).first()
-        if admin_check:
-            print("Database already contains admin user. Skipping seed to preserve existing records.")
+        # Check if already seeded with users
+        if db.query(User).count() > 0:
+            print("Database already contains user accounts. Skipping seed to preserve existing records.")
             return
 
         print("1. Creating System Roles...")
@@ -93,22 +96,26 @@ def seed(include_demo: bool | None = None):
             db.refresh(r)
             roles_dict[name] = r
 
-        print("2. Creating Super Admin User...")
-        superadmin = User(
-            username=admin_username,
-            password_hash=hash_password(admin_password),
-            email=admin_email,
-            account_status="Active",
-            is_superadmin=True,
-            must_change_password=force_pw_change,
-        )
-        db.add(superadmin)
-        db.commit()
-        db.refresh(superadmin)
+        superadmin = None
+        if create_bootstrap_admin:
+            print("2. Creating Super Admin User...")
+            superadmin = User(
+                username=admin_username,
+                password_hash=hash_password(admin_password),
+                email=admin_email,
+                account_status="Active",
+                is_superadmin=True,
+                must_change_password=force_pw_change,
+            )
+            db.add(superadmin)
+            db.commit()
+            db.refresh(superadmin)
 
-        # Assign Super Admin role
-        ur_admin = UserRole(user_id=superadmin.id, role_id=roles_dict["Super Admin"].id)
-        db.add(ur_admin)
+            # Assign Super Admin role
+            ur_admin = UserRole(user_id=superadmin.id, role_id=roles_dict["Super Admin"].id)
+            db.add(ur_admin)
+        else:
+            print("2. Clean initialization mode: skipping default admin creation (use /setup or /api/v1/auth/bootstrap).")
 
         # ── 3 Canonical Companies & 5 Canonical Branches ─────────────────
         print("3. Creating Canonical Companies & 5 Branches...")
@@ -192,13 +199,14 @@ def seed(include_demo: bool | None = None):
                 company.status = "Active"
                 db.commit()
 
-            # Link Super Admin to each company
-            existing_mem = db.query(CompanyMembership).filter(
-                CompanyMembership.user_id == superadmin.id,
-                CompanyMembership.company_id == company.id,
-            ).first()
-            if not existing_mem:
-                db.add(CompanyMembership(user_id=superadmin.id, company_id=company.id, role_id=roles_dict["Super Admin"].id, is_default=(c_idx == 0)))
+            # Link Super Admin to each company if created
+            if superadmin:
+                existing_mem = db.query(CompanyMembership).filter(
+                    CompanyMembership.user_id == superadmin.id,
+                    CompanyMembership.company_id == company.id,
+                ).first()
+                if not existing_mem:
+                    db.add(CompanyMembership(user_id=superadmin.id, company_id=company.id, role_id=roles_dict["Super Admin"].id, is_default=(c_idx == 0)))
 
             # Canonical 5 Branches
             branches = ensure_canonical_five_branches(db, company.id)
@@ -224,15 +232,16 @@ def seed(include_demo: bool | None = None):
                 depts.append(d)
 
             if not include_demo:
-                db.add(AuditLog(
-                    user_id=superadmin.id,
-                    company_id=company.id,
-                    action="INITIALIZE_COMPANY",
-                    resource_type="Company",
-                    resource_id=str(company.id),
-                    new_values={"company_name": company.company_name_ar, "code": company.company_code, "mode": "clean_release"},
-                ))
-                db.commit()
+                if superadmin:
+                    db.add(AuditLog(
+                        user_id=superadmin.id,
+                        company_id=company.id,
+                        action="INITIALIZE_COMPANY",
+                        resource_type="Company",
+                        resource_id=str(company.id),
+                        new_values={"company_name": company.company_name_ar, "code": company.company_code, "mode": "clean_release"},
+                    ))
+                    db.commit()
                 continue
 
             # 10 Employees per company
@@ -601,7 +610,10 @@ def seed(include_demo: bool | None = None):
         ensure_canonical_internal_companies(db)
         db.commit()
         print("Seed completed successfully! Canonical companies and 5 branches initialized.")
-        print(f"Super Admin initialized: username='{admin_username}' | must_change_password={force_pw_change}")
+        if superadmin:
+            print(f"Super Admin initialized: username='{admin_username}' | must_change_password={force_pw_change}")
+        else:
+            print("Clean initialization complete: 0 users, 0 demo records. Complete first-run admin setup via /setup.")
 
     except Exception as e:
         db.rollback()
@@ -613,7 +625,8 @@ def seed(include_demo: bool | None = None):
 
 if __name__ == "__main__":
     include_demo_flag = os.environ.get("SEED_DEMO_DATA", "").strip().lower() in ("1", "true", "yes") or ("--demo" in sys.argv)
-    seed(include_demo=include_demo_flag)
+    clean_init_flag = os.environ.get("CLEAN_INIT", "").strip().lower() in ("1", "true", "yes") or ("--clean-init" in sys.argv)
+    seed(include_demo=include_demo_flag, clean_init=clean_init_flag)
     if include_demo_flag:
         try:
             from seed_digital_assets import seed_digital_assets
