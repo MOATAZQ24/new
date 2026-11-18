@@ -15,6 +15,19 @@
   --border-color: #E2E8F0;
   --text-main: #0F172A;
   --text-muted: #475569;
+  --space-base: 0.25rem;
+  --control-height: 2.5rem;
+  --card-padding: 1.25rem;
+  --radius-control: 0.625rem;
+  --radius-card: 0.75rem;
+  --status-success-bg: #ECFDF5;
+  --status-success-text: #065F46;
+  --status-warning-bg: #FFFBEB;
+  --status-warning-text: #92400E;
+  --status-error-bg: #FEF2F2;
+  --status-error-text: #991B1B;
+  --status-info-bg: #EFF6FF;
+  --status-info-text: #1E40AF;
   --motion-fast: 140ms;
   --motion-standard: 190ms;
   --motion-easing: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -129,8 +142,15 @@ html[data-theme="dark"] { color-scheme: dark; }
 html[data-theme="dark"] :is(.bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100) {
   background-color: rgb(30 41 59 / 75%);
 }
-html[data-theme="dark"] :is(.bg-slate-50\/70, .bg-slate-50\/50, .bg-gray-50\/70, .bg-gray-50\/80) {
-  background-color: rgb(30 41 59 / 55%);
+html[data-theme="dark"] :is(.bg-slate-50\/80, .bg-slate-50\/70, .bg-slate-50\/60, .bg-slate-50\/50, .bg-gray-50\/70, .bg-gray-50\/80) {
+  background-color: rgb(30 41 59 / 60%);
+}
+html[data-theme="dark"] :is(.bg-emerald-50, .bg-emerald-50\/90, .bg-emerald-50\/80, .bg-emerald-50\/70) {
+  background-color: rgb(6 78 59 / 50%);
+  border-color: rgb(16 185 129 / 40%);
+}
+html[data-theme="dark"] :is(.text-\[\#123D32\], .text-emerald-900, .text-emerald-800, .text-emerald-700) {
+  color: #6EE7B7;
 }
 html[data-theme="dark"] :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-gray-900, .text-gray-800, .text-gray-700) {
   color: var(--text-main);
