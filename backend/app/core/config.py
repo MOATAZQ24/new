@@ -1,28 +1,66 @@
 import os
 import json
-from typing import List
+from typing import Dict, List, Tuple
 from pydantic_settings import BaseSettings
 
 
 # Resolve root database path deterministically
 _DEFAULT_DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "it_ops.db")).replace("\\", "/")
 
+# Centralized data-driven operational constants & SLA policies
+DEFAULT_TICKET_SLA_HOURS: Dict[str, int] = {
+    "Urgent / Critical": 4,
+    "Urgent": 4,
+    "Critical": 4,
+    "High": 8,
+    "Medium": 24,
+    "Low": 72,
+}
+
+CANONICAL_ROLES: Tuple[str, ...] = (
+    "Super Admin",
+    "Company Admin",
+    "IT Manager",
+    "IT Technician",
+    "Employee",
+    "Auditor",
+)
+
+INSECURE_SECRET_KEYS = {
+    "",
+    "changeme",
+    "secret",
+    "investorgate-secret-key-production-ready-2026",
+    "change-me-to-64-char-random-string",
+    "replace-with-64-char-cryptographic-random-hex-string",
+}
+
+
 class Settings(BaseSettings):
     APP_NAME: str = "Investor Gate IT Operations Management System"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", os.getenv("ENV", "development"))
+    DEBUG: bool = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
 
     # Database: Supports PostgreSQL and SQLite
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        f"sqlite:///{_DEFAULT_DB_FILE}"
+        f"sqlite:///{_DEFAULT_DB_FILE}",
     )
 
     SECRET_KEY: str = os.getenv("SECRET_KEY", "investorgate-secret-key-production-ready-2026")
-    SESSION_EXPIRE_HOURS: int = 24
-    SESSION_COOKIE_SECURE: bool = False
-    CORS_ORIGINS: str = '["http://localhost:3000","http://127.0.0.1:3000","http://localhost:8000","http://127.0.0.1:8000"]'
+    SESSION_EXPIRE_HOURS: int = int(os.getenv("SESSION_EXPIRE_HOURS", "24"))
+    SESSION_COOKIE_SECURE: bool = os.getenv(
+        "SESSION_COOKIE_SECURE",
+        "true" if os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower() == "production" else "false",
+    ).lower() in ("true", "1", "yes")
+    SESSION_COOKIE_SAMESITE: str = os.getenv("SESSION_COOKIE_SAMESITE", "lax")
+    CORS_ORIGINS: str = os.getenv(
+        "CORS_ORIGINS",
+        '["http://localhost:3000","http://127.0.0.1:3000","http://localhost:8000","http://127.0.0.1:8000","https://localhost","http://localhost"]',
+    )
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "./data/uploads")
+    BACKUP_DIR: str = os.getenv("BACKUP_DIR", "")
     RATE_LIMIT_LOGIN_ATTEMPTS: int = 5
     RATE_LIMIT_LOCKOUT_MINUTES: int = 15
 
@@ -37,11 +75,30 @@ class Settings(BaseSettings):
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 15
 
     @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.strip().lower() == "production"
+
+    def validate_production_security(self) -> None:
+        """Fail fast at startup if running in production with a default or weak SECRET_KEY."""
+        if self.is_production:
+            key = (self.SECRET_KEY or "").strip()
+            if key in INSECURE_SECRET_KEYS or len(key) < 32:
+                raise RuntimeError(
+                    "FATAL: Production startup aborted — SECRET_KEY is missing, default, or shorter than 32 characters."
+                )
+
+    @property
     def cors_origins_list(self) -> List[str]:
+        raw = (self.CORS_ORIGINS or "").strip()
+        if not raw:
+            return []
         try:
-            origins = json.loads(self.CORS_ORIGINS)
+            if raw.startswith("["):
+                origins = json.loads(raw)
+            else:
+                origins = [o.strip() for o in raw.split(",") if o.strip()]
             if not isinstance(origins, list) or any(not isinstance(o, str) or o == "*" for o in origins):
-                raise ValueError("CORS_ORIGINS must be an explicit JSON list of origins")
+                raise ValueError("CORS_ORIGINS must be an explicit list of origins without '*'")
             return origins
         except Exception:
             return []
@@ -53,3 +110,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+settings.validate_production_security()

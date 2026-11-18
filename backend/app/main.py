@@ -1,16 +1,22 @@
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.database import SessionLocal, init_db
 from app.api.v1.router import api_router
+
+logging.basicConfig(
+    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables on startup
+    settings.validate_production_security()
     init_db()
     yield
 
@@ -25,7 +31,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS configuration supporting HttpOnly cookies and multi-client access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -34,7 +39,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API v1 router
 app.include_router(api_router, prefix="/api")
 
 
@@ -44,8 +48,20 @@ def health_check():
         "status": "healthy",
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "environment": "production" if not settings.DEBUG else "development",
+        "environment": settings.ENVIRONMENT,
     }
+
+
+@app.get("/api/ready")
+def readiness_check():
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ready", "database": "connected"}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database not ready: {exc}")
+    finally:
+        db.close()
 
 
 @app.get("/")
