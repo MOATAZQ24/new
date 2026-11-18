@@ -3,9 +3,21 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "./AuthContext";
+import {
+  DEFAULT_THEME_PRESET_ID,
+  resolveThemePresetId,
+  THEME_PRESET_MAP,
+  ThemePresetId,
+} from "@/lib/themes";
+import {
+  applyThemeToDocument,
+  persistThemeLocally,
+  readStoredPresetId,
+  readStoredThemeMode,
+} from "@/lib/applyTheme";
 
 export const defaultAppearance = {
-  theme: "system", primary: "#123D32", secondary: "#187A5A", background: "#F5F7F8",
+  theme: "system", primary: "#0B3B2E", secondary: "#087F5B", background: "#F6FAF8",
   accent: "#C5A46D", surface: "#FFFFFF", arabic_font: "IBM Plex Sans Arabic", english_font: "Inter",
   font_size: 16, font_weight: 400, density: "comfortable", radius: 12, sidebar_width: 256,
 };
@@ -31,18 +43,16 @@ export interface WorkspaceResponse {
 interface WorkspaceState {
   saved: Workspace; draft: Workspace; setDraft: React.Dispatch<React.SetStateAction<Workspace>>;
   info: WorkspaceResponse | null; loading: boolean; error: string;
+  presetId: ThemePresetId;
+  selectPreset: (presetId: ThemePresetId, persist?: boolean) => Promise<void>;
   save: (configuration?: Workspace) => Promise<void>; cancel: () => void; reload: () => Promise<void>;
 }
 const Context = createContext<WorkspaceState | null>(null);
 export const mediaUrl = (path: string) => `/api/v1${path}`;
-function foreground(hex: string) {
-  const rgb = hex.match(/[a-f\d]{2}/gi)?.map(c => parseInt(c, 16) / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4) || [1, 1, 1];
-  return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2] > .179 ? "#0F172A" : "#FFFFFF";
-}
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user, activeCompanyId } = useAuth();
-  const [saved, setSaved] = useState(defaultWorkspace);
-  const [draft, setDraft] = useState(defaultWorkspace);
+  const [saved, setSaved] = useState<Workspace>(defaultWorkspace);
+  const [draft, setDraft] = useState<Workspace>(defaultWorkspace);
   const [info, setInfo] = useState<WorkspaceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -56,28 +66,35 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timer = setTimeout(() => {
     if (user && activeCompanyId) { void reload(); }
-    else { setSaved(defaultWorkspace); setDraft(defaultWorkspace); setInfo(null); }
+    else {
+      const storedPreset = readStoredPresetId();
+      const storedMode = readStoredThemeMode();
+      const sig = THEME_PRESET_MAP[storedPreset].signature;
+      const next = {
+        ...defaultWorkspace,
+        appearance: { ...defaultAppearance, ...sig, theme: storedMode || defaultAppearance.theme },
+      };
+      setSaved(next); setDraft(next); setInfo(null);
+    }
     }, 0);
     return () => clearTimeout(timer);
   }, [user?.id, activeCompanyId, reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  const presetId = resolveThemePresetId(draft.appearance, DEFAULT_THEME_PRESET_ID);
   useEffect(() => {
     const root = document.documentElement;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const a = { ...draft.appearance };
     info?.enforced.forEach(field => { Object.assign(a, { [field]: info.company_defaults[field as keyof Appearance] }); });
+    const effectivePresetId = resolveThemePresetId(a, DEFAULT_THEME_PRESET_ID);
     const apply = () => {
       const dark = a.theme === "dark" || (a.theme === "system" && media.matches);
-      root.dataset.theme = dark ? "dark" : "light";
-      root.classList.toggle("dark", dark);
-      const background = dark ? "#101B19" : a.background;
-      const surface = dark ? "#182824" : a.surface;
+      applyThemeToDocument(effectivePresetId, dark);
+      persistThemeLocally(effectivePresetId, (a.theme === "light" || a.theme === "dark" ? a.theme : "system"));
       const values: Record<string, string> = {
-        "primary-dark": a.primary, "primary-green": a.secondary, "bg-main": background, surface,
-        "gold-accent": a.accent, "text-main": foreground(surface), "text-muted": dark ? "#BDCEC8" : "#475569",
-        "border-color": dark ? "#536660" : "#CBD5E1", "on-primary": foreground(a.primary),
-        "on-secondary": foreground(a.secondary), "on-background": foreground(background),
-        "workspace-radius": `${a.radius}px`, "workspace-font-size": `${a.font_size}px`,
-        "workspace-font-weight": `${a.font_weight}`, "workspace-font": `'${a.english_font}', '${a.arabic_font}', sans-serif`,
+        "workspace-radius": `${a.radius}px`,
+        "workspace-font-size": `${a.font_size}px`,
+        "workspace-font-weight": `${a.font_weight}`,
+        "workspace-font": `'${a.english_font}', '${a.arabic_font}', sans-serif`,
         "sidebar-width": draft.collapsed ? "76px" : `${a.sidebar_width}px`,
         "workspace-spacing": a.density === "compact" ? ".5rem" : a.density === "spacious" ? "1.5rem" : "1rem",
       };
@@ -95,6 +112,26 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const save = async (configuration = draft) => {
     applyResponse((await api.put<WorkspaceResponse>("/workspace", configuration)).data);
   };
-  return <Context.Provider value={{ saved, draft, setDraft, info, loading, error, save, cancel: () => setDraft(saved), reload }}>{children}</Context.Provider>;
+  const selectPreset = async (nextPresetId: ThemePresetId, persist = true) => {
+    const preset = THEME_PRESET_MAP[nextPresetId] || THEME_PRESET_MAP[DEFAULT_THEME_PRESET_ID];
+    const nextConfig: Workspace = {
+      ...draft,
+      appearance: {
+        ...draft.appearance,
+        ...preset.signature,
+      },
+    };
+    setDraft(nextConfig);
+    persistThemeLocally(preset.id, (nextConfig.appearance.theme === "light" || nextConfig.appearance.theme === "dark" ? nextConfig.appearance.theme : "system"));
+    if (!persist) return;
+    if (info?.enforced?.some((f) => ["primary", "secondary", "accent", "background", "surface"].includes(f)) && info?.can_manage_company) {
+      await api.put("/workspace/company-defaults", {
+        appearance: { ...info.company_defaults, ...preset.signature },
+        enforced: info.enforced,
+      });
+    }
+    await save(nextConfig);
+  };
+  return <Context.Provider value={{ saved, draft, setDraft, info, loading, error, presetId, selectPreset, save, cancel: () => setDraft(saved), reload }}>{children}</Context.Provider>;
 }
 export function useWorkspace() { const value = useContext(Context); if (!value) throw new Error("WorkspaceProvider required"); return value; }
