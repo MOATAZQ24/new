@@ -2,15 +2,14 @@
 
 import React from "react";
 import {
-  CreditCard,
+  Layers,
   Users,
   Calendar,
   Building2,
   ChevronLeft,
-  AlertTriangle,
+  Check,
   Edit2,
 } from "lucide-react";
-import { StatusBadge } from "@/components/ui/Badge";
 
 interface MobileSubscriptionCardProps {
   subscription: {
@@ -37,11 +36,12 @@ export function MobileSubscriptionCard({
   const allocated = subscription.allocated_seats ?? 0;
   const limit = subscription.seat_limit ?? 1;
   const seatPercentage = Math.min(100, Math.round((allocated / limit) * 100));
+  const isActive = (subscription.status || "").toLowerCase() === "active" || subscription.status === "نشط";
 
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs hover:border-[#187A5A] transition active:scale-[0.99] cursor-pointer space-y-3"
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -52,31 +52,47 @@ export function MobileSubscriptionCard({
       }}
     >
       {/* Header: Service Name + Provider + Status */}
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+            <Layers size={20} strokeWidth={2.2} />
+          </div>
+
+          <div className="min-w-0 text-right">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
               {subscription.service_name}
             </h3>
-            <span className="text-[11px] font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.2 rounded-lg">
-              {subscription.subscription_type}
-            </span>
-          </div>
-
-          {(subscription.provider || subscription.account_email) && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-              {subscription.provider || subscription.account_email}
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
+              {subscription.provider || subscription.account_email || subscription.subscription_type}
             </p>
-          )}
+          </div>
         </div>
 
-        <StatusBadge status={subscription.status} />
+        {/* Status Pill */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              isActive
+                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"
+            }`}
+          >
+            {isActive ? (
+              <Check size={12} strokeWidth={3} className="shrink-0" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+            )}
+            <span>{isActive ? "نشط" : "معلق"}</span>
+          </div>
+
+          <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+        </div>
       </div>
 
       {/* Seat Utilization Bar */}
-      <div className="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-2.5 space-y-1.5">
+      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 space-y-1.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px]">
+          <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-medium">
             <Users size={13} className="text-slate-400" />
             <span>المقاعد والمستخدمون:</span>
           </span>
@@ -104,46 +120,18 @@ export function MobileSubscriptionCard({
       </div>
 
       {/* Branch & Renewal Date */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium">
         <div className="flex items-center gap-1.5">
           <Building2 size={12} className="text-slate-400" />
           <span>{subscription.branch_name || "جميع الفروع"}</span>
         </div>
 
         {subscription.renewal_date && (
-          <div className="flex items-center gap-1 font-mono text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-1 font-mono text-slate-500 dark:text-slate-400">
             <Calendar size={12} className="text-slate-400" />
             <span dir="ltr">{subscription.renewal_date}</span>
           </div>
         )}
-      </div>
-
-      {/* Footer Actions */}
-      <div
-        className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {onEdit ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1 hover:bg-slate-100 transition active:scale-95 cursor-pointer"
-          >
-            <Edit2 size={12} />
-            <span>تعديل</span>
-          </button>
-        ) : (
-          <div />
-        )}
-
-        <button
-          type="button"
-          onClick={onClick}
-          className="text-xs font-bold text-[#187A5A] dark:text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
-        >
-          <span>التفاصيل والمستخدمون</span>
-          <ChevronLeft size={14} />
-        </button>
       </div>
     </div>
   );

@@ -1,0 +1,927 @@
+INFO:     Started server process [25816]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63252 - "GET /api/v1/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63249 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63249 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64264 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:63252 - "GET /api/v1/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64263 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64265 - "GET /api/v1/companies HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64265 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64265 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64263 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64265 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64265 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64263 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/v1/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:64264 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51169 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51171 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51171 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51171 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51169 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/tasks/assignees?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51169 - "GET /api/v1/tasks?page=1&per_page=50&sort_by=created_desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/v1/tasks?page=1&per_page=50&sort_by=created_desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51169 - "GET /api/v1/tasks/assignees?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51171 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63252 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /api/v1/tickets/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50162 - "GET /api/v1/tickets?page=1&per_page=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63249 - "GET /api/v1/tickets/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/v1/tickets?page=1&per_page=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50164 - "GET /api/v1/employees?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62762 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50164 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1194, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 149, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\routing.py", line 683, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2811, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1850, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1865, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1328, in handle
+    await effective_context.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 166, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 152, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 745, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 374, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+        _run_sync_endpoint, function=dependant.call, arguments=values
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2779, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1124, in run
+    result = context.run(func, *args)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+  File "C:\Users\Acodet\Desktop\new\backend\app\api\v1\endpoints\assets.py", line 92, in list_assets
+    enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\app\services\enterprise_service.py", line 280, in ensure_canonical_five_branches
+    db.query(model).filter(model.branch_id == extra_br.id).update({"branch_id": target_br.id})
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 3373, in update
+    self.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~^
+        upd,
+        ^^^^
+    ...<3 lines>...
+        ),
+        ^^
+    ),
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2555, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2445, in _execute_internal
+    compile_state_cls.orm_execute_statement(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\bulk_persistence.py", line 1693, in orm_execute_statement
+    return super().orm_execute_statement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        session,
+        ^^^^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 322, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1494, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 534, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1714, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<9 lines>...
+        param_dict=param_dict,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1868, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1996, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2351, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
+[SQL: UPDATE employees SET branch_id=?, updated_at=CURRENT_TIMESTAMP WHERE employees.branch_id = ?]
+[parameters: ('0d3a4026d62e4e9796eaa0bd29bab4c4', '78cf9f121bcd44a68aa76e16ccd5ac50')]
+(Background on this error at: https://sqlalche.me/e/21/e3q8)
+INFO:     127.0.0.1:63249 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1194, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 149, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\routing.py", line 683, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2811, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1850, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1865, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1328, in handle
+    await effective_context.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 166, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 152, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 745, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 374, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+        _run_sync_endpoint, function=dependant.call, arguments=values
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2779, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1124, in run
+    result = context.run(func, *args)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+  File "C:\Users\Acodet\Desktop\new\backend\app\api\v1\endpoints\assets.py", line 92, in list_assets
+    enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\app\services\enterprise_service.py", line 280, in ensure_canonical_five_branches
+    db.query(model).filter(model.branch_id == extra_br.id).update({"branch_id": target_br.id})
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 3373, in update
+    self.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~^
+        upd,
+        ^^^^
+    ...<3 lines>...
+        ),
+        ^^
+    ),
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2555, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2445, in _execute_internal
+    compile_state_cls.orm_execute_statement(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\bulk_persistence.py", line 1693, in orm_execute_statement
+    return super().orm_execute_statement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        session,
+        ^^^^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 322, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1494, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 534, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1714, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<9 lines>...
+        param_dict=param_dict,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1868, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1996, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2351, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
+[SQL: UPDATE employees SET branch_id=?, updated_at=CURRENT_TIMESTAMP WHERE employees.branch_id = ?]
+[parameters: ('0d3a4026d62e4e9796eaa0bd29bab4c4', '78cf9f121bcd44a68aa76e16ccd5ac50')]
+(Background on this error at: https://sqlalche.me/e/21/e3q8)
+INFO:     127.0.0.1:50163 - "GET /api/v1/employees?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62763 - "GET /api/v1/dashboard HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1194, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 149, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\routing.py", line 683, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2811, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1850, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1865, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 1328, in handle
+    await effective_context.app(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 166, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 152, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 745, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\routing.py", line 374, in run_endpoint_function
+    return await run_in_threadpool(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+        _run_sync_endpoint, function=dependant.call, arguments=values
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2779, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1124, in run
+    result = context.run(func, *args)
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\fastapi\telemetry\_api.py", line 244, in _run_sync_endpoint
+    return function(**arguments)
+  File "C:\Users\Acodet\Desktop\new\backend\app\api\v1\endpoints\dashboard.py", line 43, in get_dashboard_data
+    enterprise_service.ensure_canonical_five_branches(db, target_cid)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\app\services\enterprise_service.py", line 280, in ensure_canonical_five_branches
+    db.query(model).filter(model.branch_id == extra_br.id).update({"branch_id": target_br.id})
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 3373, in update
+    self.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~^
+        upd,
+        ^^^^
+    ...<3 lines>...
+        ),
+        ^^
+    ),
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2555, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2445, in _execute_internal
+    compile_state_cls.orm_execute_statement(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\bulk_persistence.py", line 1693, in orm_execute_statement
+    return super().orm_execute_statement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        session,
+        ^^^^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 322, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1494, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 534, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1714, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<9 lines>...
+        param_dict=param_dict,
+    )
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1868, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1996, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2351, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Acodet\Desktop\new\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
+[SQL: UPDATE employees SET branch_id=?, updated_at=CURRENT_TIMESTAMP WHERE employees.branch_id = ?]
+[parameters: ('0d3a4026d62e4e9796eaa0bd29bab4c4', '78cf9f121bcd44a68aa76e16ccd5ac50')]
+(Background on this error at: https://sqlalche.me/e/21/e3q8)
+INFO:     127.0.0.1:50162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57958 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63708 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57957 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57957 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57957 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /api/v1/assets/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57957 - "GET /api/v1/assets?search=&page=1&per_page=20&sort= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/assets/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/assets?search=&page=1&per_page=20&sort= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/integrations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/system/backups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/system/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/employees/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/departments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/employees/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/employees?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/employees?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/departments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65071 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/subscriptions/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:52162 - "GET /api/v1/subscriptions?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/subscriptions?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/subscriptions/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52163 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65070 - "GET /api/v1/reports/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65071 - "GET /api/v1/reports/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65068 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/reports/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/auth/bootstrap-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65069 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/tasks/assignees?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/tasks?page=1&per_page=50&sort_by=created_desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/tasks?page=1&per_page=50&sort_by=created_desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/tasks/assignees?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/tasks/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/tickets/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/tickets?page=1&per_page=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/tickets/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/tickets?page=1&per_page=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/assets?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/employees?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/employees?per_page=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/assets/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52160 - "GET /api/v1/assets?search=&page=1&per_page=20&sort= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/assets/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/assets?search=&page=1&per_page=20&sort= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/integrations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/system/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55919 - "GET /api/v1/system/backups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/employees/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/departments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/employees/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55919 - "GET /api/v1/employees?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/employees?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55919 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/departments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55919 - "GET /api/v1/approvals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/subscriptions/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/subscriptions?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/notifications?unread_only=true&per_page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55919 - "GET /api/v1/notifications?unread_only=true&per_page=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/subscriptions/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "GET /api/v1/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56769 - "GET /api/v1/subscriptions?search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/v1/companies/220b424b-b241-4bc7-8270-d72225c99281/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56768 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
