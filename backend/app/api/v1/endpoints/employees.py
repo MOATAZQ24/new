@@ -48,23 +48,29 @@ def list_employees(
     department_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     multi_branch_only: bool = False,
+    include_archived: bool = Query(False),
     search: Optional[str] = None,
     current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
 ):
-    """List employees with server-side company isolation and canonical Arabic/typo-tolerant search."""
+    """List employees with server-side company isolation, canonical Arabic/typo-tolerant search, and archive support."""
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
     enterprise_service.ensure_canonical_five_branches(db, target_cid)
     parsed_branches = enterprise_service.parse_branch_ids_filter(db, target_cid, branch_id, branch_ids)
+    status_str = status_filter if isinstance(status_filter, str) else None
+    inc_arch = bool(include_archived) if not hasattr(include_archived, "default") else False
+    search_str = search if isinstance(search, str) else None
+
     matched = enterprise_service.search_canonical_directory(
         db=db,
         company_id=target_cid,
-        search=search,
+        search=search_str,
         branch_ids=parsed_branches,
-        department_id=department_id,
-        status_filter=status_filter,
-        multi_branch_only=multi_branch_only,
+        department_id=department_id if isinstance(department_id, uuid.UUID) else None,
+        status_filter=status_str,
+        multi_branch_only=bool(multi_branch_only) if not hasattr(multi_branch_only, "default") else False,
+        include_archived=inc_arch,
         limit=500,
     )
     total = len(matched)
@@ -86,6 +92,9 @@ def get_employees_summary(
 
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
     emps = db.query(Employee).filter(Employee.company_id == target_cid).all()
+    active_emps = [e for e in emps if not getattr(e, "is_deleted", False) and e.employment_status != "Archived"]
+    archived_emps = [e for e in emps if getattr(e, "is_deleted", False) or e.employment_status == "Archived"]
+
     asset_emp_ids = {
         r[0]
         for r in db.query(AssetCustody.employee_id)
@@ -102,12 +111,13 @@ def get_employees_summary(
     }
     return success_response(
         data={
-            "total": len(emps),
-            "active": sum(1 for e in emps if e.employment_status == "Active"),
-            "suspended": sum(1 for e in emps if e.employment_status in ("Suspended", "On Leave")),
-            "left": sum(1 for e in emps if e.employment_status in ("Terminated", "Resigned", "Inactive")),
-            "with_assets": sum(1 for e in emps if e.id in asset_emp_ids),
-            "with_subscriptions": sum(1 for e in emps if e.id in sub_emp_ids),
+            "total": len(active_emps),
+            "active": sum(1 for e in active_emps if e.employment_status == "Active"),
+            "suspended": sum(1 for e in active_emps if e.employment_status in ("Suspended", "On Leave")),
+            "left": sum(1 for e in active_emps if e.employment_status in ("Terminated", "Resigned", "Inactive")),
+            "archived": len(archived_emps),
+            "with_assets": sum(1 for e in active_emps if e.id in asset_emp_ids),
+            "with_subscriptions": sum(1 for e in active_emps if e.id in sub_emp_ids),
         }
     )
 
@@ -643,6 +653,7 @@ def update_employee(
 @router.delete("/{employee_id}")
 def delete_employee(
     employee_id: uuid.UUID,
+    permanent: bool = Query(False, description="حذف نهائي إذا توفرت الصلاحية ولم تكن هناك قيود ارتباط"),
     current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.DELETE)),
     active_cid: uuid.UUID = Depends(get_user_company_id),
     db: Session = Depends(get_db),
@@ -656,7 +667,7 @@ def delete_employee(
 
     active_c = db.query(AssetCustody).filter(AssetCustody.employee_id == emp.id, AssetCustody.status == "Active").count()
     if active_c > 0:
-        raise HTTPException(status_code=400, detail="لا يمكن حذف الموظف لوجود عهد نشطة مسجلة باسمه. يرجى استرجاع العهد أولاً.")
+        raise HTTPException(status_code=400, detail="لا يمكن أرشفة أو حذف الموظف لوجود عهد نشطة مسجلة باسمه. يرجى استرجاع العهد أولاً.")
 
     from app.models.task import Task
     active_tasks = db.query(Task).filter(
@@ -666,21 +677,74 @@ def delete_employee(
     if active_tasks > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"لا يمكن حذف الموظف لوجود {active_tasks} مهمة نشطة مسندة إليه. يرجى إعادة إسناد المهام أولاً.",
+            detail=f"لا يمكن أرشفة أو حذف الموظف لوجود {active_tasks} مهمة نشطة مسندة إليه. يرجى إعادة إسناد المهام أولاً.",
         )
+
+    if permanent and current_user.is_superadmin:
+        try:
+            log_audit(
+                db=db,
+                action="PERMANENT_DELETE",
+                resource_type="Employee",
+                resource_id=str(emp.id),
+                user_id=current_user.id,
+                company_id=emp.company_id,
+            )
+            db.delete(emp)
+            db.commit()
+            return success_response(message="تم حذف الموظف نهائياً بنجاح")
+        except Exception:
+            db.rollback()
+            # If foreign key blocks hard delete, safely fall back to soft-delete archive
+
+    emp.is_deleted = True
+    emp.deleted_at = datetime.utcnow()
+    emp.employment_status = "Archived"
 
     log_audit(
         db=db,
-        action="DELETE",
+        action="ARCHIVE",
         resource_type="Employee",
         resource_id=str(emp.id),
         user_id=current_user.id,
         company_id=emp.company_id,
+        new_values={"status": "Archived", "is_deleted": True},
     )
 
-    db.delete(emp)
     db.commit()
-    return success_response(message="تم حذف الموظف بنجاح")
+    return success_response(message="تمت أرشفة الموظف بنجاح وحفظ كافة سجلاته التاريخية بأمان (يمكنك استعادته في أي وقت من الأرشيف)")
+
+
+@router.post("/{employee_id}/restore")
+def restore_employee(
+    employee_id: uuid.UUID,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.EDIT)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    if not current_user.is_superadmin and emp.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية استعادة هذا الموظف")
+
+    emp.is_deleted = False
+    emp.deleted_at = None
+    emp.employment_status = "Active"
+
+    log_audit(
+        db=db,
+        action="RESTORE",
+        resource_type="Employee",
+        resource_id=str(emp.id),
+        user_id=current_user.id,
+        company_id=emp.company_id,
+        new_values={"status": "Active", "is_deleted": False},
+    )
+
+    db.commit()
+    return success_response(message="تمت استعادة الموظف وتفعيل حالته بنجاح")
 
 
 # ── Users & Roles ─────────────────────────────────────────────────────

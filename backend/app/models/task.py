@@ -99,6 +99,7 @@ class Task(UUIDMixin, TimestampMixin, Base):
     assigned_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_by_id])
     reviewer: Mapped[Optional["User"]] = relationship("User", foreign_keys=[reviewer_id])
     related_asset: Mapped[Optional["TechnicalAsset"]] = relationship("TechnicalAsset", foreign_keys=[related_asset_id])
+    related_ticket: Mapped[Optional["HelpDeskTicket"]] = relationship("HelpDeskTicket", foreign_keys=[related_ticket_id])
     comments: Mapped[List["TaskComment"]] = relationship(
         "TaskComment", back_populates="task", cascade="all, delete-orphan"
     )

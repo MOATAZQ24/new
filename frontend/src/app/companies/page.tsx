@@ -485,7 +485,10 @@ export default function CompaniesPage() {
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#187A5A]">{totalEmployeesKpi}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظف</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظفو المجموعة (كافة الشركات)</div>
+              {selectedCompany && (
+                <div className="text-[10px] text-slate-400 font-medium">{selectedCompany.employees_count || 0} في الشركة المحددة</div>
+              )}
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
               <Icons.Users size={20} />

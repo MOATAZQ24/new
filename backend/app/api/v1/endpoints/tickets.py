@@ -75,15 +75,15 @@ def list_tickets(
         query = query.filter(HelpDeskTicket.branch_id == branch_id)
     if category:
         query = query.filter(HelpDeskTicket.category == category)
-    if priority:
+    if priority and isinstance(priority, str):
         query = query.filter(HelpDeskTicket.priority == priority)
-    if status_filter:
+    if status_filter and isinstance(status_filter, str):
         query = query.filter(HelpDeskTicket.status == status_filter)
-    if assigned_technician_id:
+    if assigned_technician_id and isinstance(assigned_technician_id, uuid.UUID):
         query = query.filter(HelpDeskTicket.assigned_technician_id == assigned_technician_id)
-    if requester_id:
+    if requester_id and isinstance(requester_id, uuid.UUID):
         query = query.filter(HelpDeskTicket.requester_id == requester_id)
-    if search:
+    if search and isinstance(search, str):
         s = f"%{search}%"
         query = query.filter(
             (HelpDeskTicket.ticket_number.ilike(s))
@@ -186,6 +186,44 @@ def create_ticket(
         data={"id": str(ticket.id), "ticket_number": ticket.ticket_number},
         message=f"تم إنشاء التذكرة رقم {ticket.ticket_number} بنجاح",
     )
+
+
+@router.get("/summary")
+def get_tickets_summary(
+    company_id: Optional[uuid.UUID] = None,
+    branch_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Authoritative KPI summary for helpdesk tickets strictly scoped to company/branch/role."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    query = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid)
+
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    if "Employee" in user_roles and len(user_roles) == 1 and not current_user.is_superadmin:
+        if current_user.employee_id:
+            query = query.filter(HelpDeskTicket.requester_id == current_user.employee_id)
+
+    if branch_id:
+        query = query.filter(HelpDeskTicket.branch_id == branch_id)
+
+    total = query.count()
+    open_count = query.filter(HelpDeskTicket.status.in_(["Open", "Assigned", "Pending"])).count()
+    in_progress_count = query.filter(HelpDeskTicket.status == "In Progress").count()
+    resolved_count = query.filter(HelpDeskTicket.status.in_(["Resolved", "Closed"])).count()
+    critical_count = query.filter(
+        HelpDeskTicket.priority.in_(["Urgent", "Critical", "Urgent / Critical"]),
+        HelpDeskTicket.status.notin_(["Resolved", "Closed", "Cancelled"]),
+    ).count()
+
+    return success_response(data={
+        "total": total,
+        "open": open_count,
+        "in_progress": in_progress_count,
+        "resolved": resolved_count,
+        "critical": critical_count,
+    })
 
 
 @router.get("/{ticket_id}")

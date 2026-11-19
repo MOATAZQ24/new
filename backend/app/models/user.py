@@ -55,6 +55,8 @@ class Employee(UUIDMixin, TimestampMixin, Base):
     work_location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     person_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="0")
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])

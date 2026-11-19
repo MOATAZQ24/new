@@ -62,6 +62,7 @@ interface EmployeeRow {
   assets_count?: number;
   subscriptions_count?: number;
   assigned_assets?: EmployeeAssignedAsset[];
+  is_deleted?: boolean;
 }
 
 interface EmployeeSummaryStats {
@@ -71,6 +72,7 @@ interface EmployeeSummaryStats {
   left: number;
   with_assets: number;
   with_subscriptions: number;
+  archived?: number;
 }
 
 interface EmployeeUserAccount {
@@ -110,6 +112,10 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
   const [statusFilter, setStatusFilter] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [empToArchive, setEmpToArchive] = useState<EmployeeRow | null>(null);
+  const [archivingEmp, setArchivingEmp] = useState(false);
 
   // Modals
   const [showAddEmpModal, setShowAddEmpModal] = useState(false);
@@ -181,7 +187,11 @@ export default function EmployeesPage() {
     setLoading(true);
     try {
       let url = `/employees?search=${encodeURIComponent(debouncedSearch)}`;
-      if (statusFilter) url += `&status=${statusFilter}`;
+      if (showArchived) {
+        url += `&include_archived=true`;
+      } else if (statusFilter) {
+        url += `&status=${statusFilter}`;
+      }
       if (selectedFilterBranchIds.length > 0) {
         url += `&branch_ids=${encodeURIComponent(selectedFilterBranchIds.join(","))}`;
       }
@@ -265,7 +275,7 @@ export default function EmployeesPage() {
       else void fetchUsers();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [tab, activeCompanyId, statusFilter, debouncedSearch, selectedFilterBranchIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tab, activeCompanyId, statusFilter, showArchived, debouncedSearch, selectedFilterBranchIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -421,13 +431,34 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleDeleteEmployee = async (empId: string, name: string) => {
-    if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟`)) return;
+  const handleOpenArchiveModal = (emp: EmployeeRow) => {
+    setEmpToArchive(emp);
+    setShowArchiveModal(true);
+  };
+
+  const handleConfirmArchive = async () => {
+    if (!empToArchive) return;
+    setArchivingEmp(true);
     try {
-      await api.delete(`/employees/${empId}`);
-      fetchEmployees();
+      await api.delete(`/employees/${empToArchive.id}`);
+      toast.success(`تمت أرشفة الموظف "${empToArchive.full_name}" بنجاح وحفظ كافة سجلاته التاريخية بأمان`);
+      setShowArchiveModal(false);
+      setEmpToArchive(null);
+      void fetchEmployees();
     } catch (err: unknown) {
-      toast.error(getErrMsg(err, "فشل حذف الموظف"));
+      toast.error(getErrMsg(err, "فشل أرشفة الموظف"));
+    } finally {
+      setArchivingEmp(false);
+    }
+  };
+
+  const handleRestoreEmployee = async (empId: string, name: string) => {
+    try {
+      await api.post(`/employees/${empId}/restore`);
+      toast.success(`تمت استعادة الموظف "${name}" بنجاح وتفعيل حالته إلى نشط`);
+      void fetchEmployees();
+    } catch (err: unknown) {
+      toast.error(getErrMsg(err, "فشل استعادة الموظف"));
     }
   };
 
@@ -683,6 +714,7 @@ export default function EmployeesPage() {
               <option value="On Leave">في إجازة (On Leave)</option>
               <option value="Suspended">موقوف (Suspended)</option>
               <option value="Terminated">مغادر (Terminated)</option>
+              <option value="Archived">مؤرشف (Archived)</option>
             </select>
 
             <select
@@ -698,6 +730,25 @@ export default function EmployeesPage() {
                 </option>
               ))}
             </select>
+
+            <button
+              type="button"
+              onClick={() => setShowArchived((prev) => !prev)}
+              className={`motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
+                showArchived
+                  ? "border-amber-400 bg-amber-50 text-amber-800"
+                  : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+              }`}
+              title="عرض الموظفين المؤرشفين واستعادتهم"
+            >
+              <Icons.Archive size={14} />
+              <span>{showArchived ? "سجل النشطين" : "عرض الأرشيف"}</span>
+              {typeof summary.archived === "number" && summary.archived > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">
+                  {summary.archived}
+                </span>
+              )}
+            </button>
 
             <button
               type="button"
@@ -825,7 +876,14 @@ export default function EmployeesPage() {
                           </span>
                         </td>
                         <td className="p-3">
-                          <StatusBadge status={emp.employment_status} />
+                          {emp.employment_status === "Archived" || emp.is_deleted ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                              <Icons.Archive size={11} />
+                              <span>مؤرشف</span>
+                            </span>
+                          ) : (
+                            <StatusBadge status={emp.employment_status} />
+                          )}
                         </td>
                         <td className="p-3 text-center">
                           <span className="inline-flex items-center gap-1 font-mono font-bold text-sky-700">
@@ -862,15 +920,27 @@ export default function EmployeesPage() {
                                 >
                                   <Icons.Edit size={14} />
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteEmployee(emp.id, emp.full_name)}
-                                  aria-label={`حذف الموظف ${emp.full_name}`}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                                  title="حذف الموظف"
-                                >
-                                  <Icons.Trash size={14} />
-                                </button>
+                                {emp.employment_status === "Archived" || emp.is_deleted ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRestoreEmployee(emp.id, emp.full_name)}
+                                    aria-label={`استعادة الموظف ${emp.full_name}`}
+                                    className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                    title="استعادة الموظف وتفعيل حالته"
+                                  >
+                                    <Icons.RotateCcw size={14} />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenArchiveModal(emp)}
+                                    aria-label={`أرشفة وحفظ الموظف ${emp.full_name}`}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
+                                    title="أرشفة / حذف الموظف"
+                                  >
+                                    <Icons.Trash size={14} />
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>
@@ -1941,6 +2011,76 @@ export default function EmployeesPage() {
           }}
         />
       )}
+
+      {/* Archive / Soft Delete Confirmation Modal */}
+      <Modal
+        isOpen={showArchiveModal}
+        onClose={() => {
+          if (!archivingEmp) {
+            setShowArchiveModal(false);
+            setEmpToArchive(null);
+          }
+        }}
+        title="أرشفة الموظف وحفظ السجلات"
+        maxWidth="max-w-md"
+      >
+        {empToArchive && (
+          <div className="space-y-4 text-xs text-slate-700">
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+              <Icons.AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18} />
+              <div className="space-y-1">
+                <div className="font-bold text-amber-900 text-sm">
+                  أرشفة الموظف: {empToArchive.full_name} ({empToArchive.employee_number})
+                </div>
+                <p className="text-amber-800 leading-relaxed">
+                  تتيح الأرشفة إخفاء الموظف من القوائم النشطة مع الحفاظ الكامل على كافة العمليات التاريخية والعهد وتذاكر الدعم والمهام، ويمكنك استعادة الموظف لاحقاً في أي وقت بنقرة واحدة.
+                </p>
+              </div>
+            </div>
+
+            {(empToArchive.assets_count ?? 0) > 0 && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 flex items-center gap-2 font-medium">
+                <Icons.AlertCircle size={16} className="text-rose-600 shrink-0" />
+                <span>تنبيه: مسجل باسم الموظف ({empToArchive.assets_count}) عهد نشطة. يفضل استرداد العهد أولاً عبر قسم العهد والأصول.</span>
+              </div>
+            )}
+
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-500">المسمى الوظيفي:</span>
+                <span className="font-semibold text-slate-900">{empToArchive.job_title || "غير محدد"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">الفرع / الإدارة:</span>
+                <span className="font-semibold text-slate-900">{empToArchive.branch_names?.join("، ") || "الفرع الرئيسي"}</span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={archivingEmp}
+                onClick={() => {
+                  setShowArchiveModal(false);
+                  setEmpToArchive(null);
+                }}
+                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                disabled={archivingEmp}
+                onClick={() => void handleConfirmArchive()}
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              >
+                <Icons.Archive size={14} />
+                <span>{archivingEmp ? "جاري الأرشفة..." : "تأكيد أرشفة الموظف"}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </DashboardLayout>
   );
 }

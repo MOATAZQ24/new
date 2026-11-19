@@ -460,6 +460,8 @@ def serialize_canonical_employee(
         "assets_count": assets_count_map.get(emp.id, 0) if assets_count_map is not None else 0,
         "subscriptions_count": subs_count_map.get(emp.id, 0) if subs_count_map is not None else 0,
         "distinguishing_label": f"{emp.full_name} ({' • '.join(details)})",
+        "is_deleted": bool(getattr(emp, "is_deleted", False)),
+        "deleted_at": emp.deleted_at.isoformat() if getattr(emp, "deleted_at", None) else None,
         "created_at": emp.created_at,
     }
 
@@ -473,6 +475,7 @@ def search_canonical_directory(
     department_id: Optional[uuid.UUID] = None,
     status_filter: Optional[str] = None,
     multi_branch_only: bool = False,
+    include_archived: bool = False,
     limit: int = 100,
 ) -> List[Dict[str, Any]]:
     """Unified employee directory search supporting multi-branch assignments, Arabic normalization, and RapidFuzz."""
@@ -493,6 +496,14 @@ def search_canonical_directory(
         )
         .filter(Employee.company_id == company_id)
     )
+
+    if isinstance(status_filter, str) and status_filter == "Archived":
+        query = query.filter(or_(Employee.is_deleted == True, Employee.employment_status == "Archived"))
+    elif include_archived:
+        query = query.filter(or_(Employee.is_deleted == True, Employee.employment_status == "Archived"))
+    else:
+        query = query.filter(Employee.is_deleted == False, Employee.employment_status != "Archived")
+
     if effective_branches:
         sub_emp_ids = (
             db.query(EmployeeBranchAssignment.employee_id)
@@ -511,7 +522,7 @@ def search_canonical_directory(
         )
     if department_id:
         query = query.filter(Employee.department_id == department_id)
-    if status_filter:
+    if status_filter and isinstance(status_filter, str) and status_filter != "Archived":
         query = query.filter(Employee.employment_status == status_filter)
 
     all_rows = query.order_by(Employee.created_at.desc()).all()

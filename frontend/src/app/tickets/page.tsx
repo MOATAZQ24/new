@@ -69,6 +69,19 @@ export default function TicketsPage() {
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [assets, setAssets] = useState<{ id: string; asset_name: string; asset_code: string }[]>([]);
 
+  // Pagination & Authoritative Summary
+  const [summary, setSummary] = useState<{
+    total: number;
+    open: number;
+    in_progress: number;
+    resolved: number;
+    critical: number;
+  } | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+
   // Modals
   const [createModal, setCreateModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
@@ -99,21 +112,44 @@ export default function TicketsPage() {
     try {
       setLoading(true);
       setLoadError(null);
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = {
+        page: String(page),
+        per_page: String(perPage),
+      };
       if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       if (statusFilter) params.status = statusFilter;
       if (priorityFilter) params.priority = priorityFilter;
       if (categoryFilter) params.category = categoryFilter;
 
-      const res = await api.get<TicketItem[]>("/tickets", { params });
+      const [res, summaryRes] = await Promise.all([
+        api.get<TicketItem[]>("/tickets", { params }),
+        api.get<{
+          total: number;
+          open: number;
+          in_progress: number;
+          resolved: number;
+          critical: number;
+        }>("/tickets/summary").catch(() => null),
+      ]);
+
       setTickets(res.data || []);
+      if (res.pagination) {
+        setTotalPages(Math.max(1, res.pagination.total_pages || 1));
+        setTotalFiltered(res.pagination.total ?? (res.data || []).length);
+      } else {
+        setTotalPages(1);
+        setTotalFiltered((res.data || []).length);
+      }
+      if (summaryRes && summaryRes.data) {
+        setSummary(summaryRes.data);
+      }
     } catch (err) {
       console.error("Failed to load tickets", err);
       setLoadError(err instanceof Error ? err.message : "تعذر تحميل تذاكر الدعم الفني");
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, statusFilter, priorityFilter, categoryFilter]);
+  }, [debouncedSearch, statusFilter, priorityFilter, categoryFilter, page, perPage]);
 
   const loadDependencies = useCallback(async () => {
     try {
@@ -127,6 +163,10 @@ export default function TicketsPage() {
       console.error("Failed to load dependencies", err);
     }
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter, priorityFilter, categoryFilter, currentCompany]);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -234,11 +274,11 @@ export default function TicketsPage() {
     }
   };
 
-  // KPIs
-  const totalTickets = tickets.length;
-  const openCount = tickets.filter(t => t.status === "Open" || t.status === "Assigned").length;
-  const inProgressCount = tickets.filter(t => t.status === "In Progress").length;
-  const resolvedCount = tickets.filter(t => t.status === "Resolved" || t.status === "Closed").length;
+  // KPIs - Authoritative summary from database
+  const totalTickets = summary ? summary.total : totalFiltered;
+  const openCount = summary ? summary.open : tickets.filter(t => t.status === "Open" || t.status === "Assigned").length;
+  const inProgressCount = summary ? summary.in_progress : tickets.filter(t => t.status === "In Progress").length;
+  const resolvedCount = summary ? summary.resolved : tickets.filter(t => t.status === "Resolved" || t.status === "Closed").length;
   const ticketFilterCount = [search.trim(), categoryFilter, statusFilter, priorityFilter].filter(Boolean).length;
   const resetTicketFilters = () => {
     setSearch("");
@@ -469,6 +509,51 @@ export default function TicketsPage() {
               </table>
             </div>
           )}
+
+          {/* Pagination Controls */}
+          <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="flex items-center gap-3">
+              <span>
+                عرض صفحة <strong className="text-slate-900">{page}</strong> من <strong className="text-slate-900">{totalPages}</strong> (إجمالي البلاغات: <strong className="text-slate-900">{totalFiltered}</strong> تذكرة)
+              </span>
+              <div className="flex items-center gap-1.5 ms-2">
+                <span className="text-slate-500">حجم الصفحة:</span>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="px-2 py-1 rounded border border-slate-200 bg-white text-xs font-medium text-slate-700 outline-none"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                >
+                  السابق
+                </button>
+                <button
+                  type="button"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                >
+                  التالي
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Modal: Create Ticket */}
