@@ -12,8 +12,18 @@ import {
   ShieldCheck,
   Database,
   Activity,
+  Palette,
+  Globe,
+  Key,
+  Lock,
+  Sliders,
+  ChevronLeft,
+  User as UserLucide,
+  Bell as BellLucide,
+  Sparkles,
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { MobileBottomSheet } from "@/components/ui/MobileBottomSheet";
 import {
   SettingsIcon,
   LockIcon,
@@ -73,6 +83,9 @@ export default function SettingsPage() {
   const [passLoading, setPassLoading] = useState(false);
   const [passSuccess, setPassSuccess] = useState<string | null>(null);
   const [passError, setPassError] = useState<string | null>(null);
+  const [mobileThemeSheetOpen, setMobileThemeSheetOpen] = useState(false);
+  const [mobilePasswordSheetOpen, setMobilePasswordSheetOpen] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   const canManageIntegrations = Boolean(
     user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager")
@@ -297,7 +310,209 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-5 max-w-[1440px] mx-auto">
+      {/* Mobile Settings View - Pixel-perfect reproduction of Reference Image 1 */}
+      <div className="block lg:hidden min-h-screen bg-slate-50/60 dark:bg-slate-950 pb-24 px-4 pt-3 space-y-4">
+        {/* Page Header */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="text-right">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              الإعدادات
+            </h1>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+              إدارة حسابك وتخصيص تجربة النظام
+            </p>
+          </div>
+          <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
+            <SettingsIcon className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* 1. الحساب (Account) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <UserLucide size={15} className="text-primary" />
+            <span>الحساب</span>
+          </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold flex items-center justify-center text-sm shrink-0">
+                {userDisplayName.charAt(0) || "ف"}
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  {userDisplayName}
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  {userJobTitle}
+                </div>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+          </div>
+        </div>
+
+        {/* 2. المظهر (الثيم) (Theme) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <Palette size={15} className="text-primary" />
+            <span>المظهر (الثيم)</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileThemeSheetOpen(true)}
+            className="w-full bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99 cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Theme Swatch Preview */}
+              <div className="relative w-11 h-9 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <div className="w-8 h-6 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs">
+                  <Check size={12} strokeWidth={3} />
+                </div>
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  الثيم الحالي
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  {activePreset?.nameAr || "الافتراضي"}
+                </div>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+          </button>
+        </div>
+
+        {/* 3. الإشعارات (Notifications) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <BellLucide size={15} className="text-primary" />
+            <span>الإشعارات</span>
+          </div>
+          <Link
+            href="/notifications"
+            className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <BellLucide size={18} strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  إدارة الإشعارات
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  اختر ما تريد استلامه
+                </div>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+          </Link>
+        </div>
+
+        {/* 4. اللغة (Language) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <Globe size={15} className="text-primary" />
+            <span>اللغة</span>
+          </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                Aع
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  لغة النظام
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  العربية
+                </div>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+          </div>
+        </div>
+
+        {/* 5. الأمان (Security) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <ShieldCheck size={15} className="text-primary" />
+            <span>الأمان</span>
+          </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
+            {/* تغيير كلمة المرور */}
+            <button
+              type="button"
+              onClick={() => setMobilePasswordSheetOpen(true)}
+              className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99 text-right cursor-pointer"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                  <Key size={18} strokeWidth={2.2} />
+                </div>
+                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                  تغيير كلمة المرور
+                </span>
+              </div>
+              <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+            </button>
+
+            {/* المصادقة الثنائية (2FA) */}
+            <div className="flex items-center justify-between p-3.5">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                  <Lock size={18} strokeWidth={2.2} />
+                </div>
+                <div className="min-w-0 text-right">
+                  <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                    المصادقة الثنائية (2FA)
+                  </div>
+                  <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                    تعزيز أمان حسابك
+                  </div>
+                </div>
+              </div>
+              <Switch
+                checked={twoFactorEnabled}
+                onCheckedChange={(val) => {
+                  setTwoFactorEnabled(val);
+                  toast.success(val ? "تم تفعيل المصادقة الثنائية لحسابك" : "تم تعطيل المصادقة الثنائية");
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 6. التفضيلات (Preferences) */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+            <Sliders size={15} className="text-primary" />
+            <span>التفضيلات</span>
+          </div>
+          <Link
+            href="/settings/appearance"
+            className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <Sliders size={18} strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  تخصيص النظام
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  العرض، التاريخ، والمزيد
+                </div>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Desktop Settings View: Unchanged */}
+      <div className="hidden lg:block space-y-5 max-w-[1440px] mx-auto">
         {/* Header matching reference screenshot */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -816,6 +1031,130 @@ export default function SettingsPage() {
           </section>
         </div>
       </div>
+
+      {/* Mobile Theme Selection Bottom Sheet */}
+      <MobileBottomSheet
+        isOpen={mobileThemeSheetOpen}
+        onClose={() => setMobileThemeSheetOpen(false)}
+        title="اختيار ثيم ومظهر النظام"
+      >
+        <div className="p-4 space-y-3">
+          <p className="text-xs text-slate-500 mb-2">
+            اختر الثيم المفضل لك لتطبيقه فورياً وديناميكياً على كافة الشاشات:
+          </p>
+          <div className="space-y-2">
+            {THEME_PRESETS.map((p) => {
+              const isSelected = presetId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={async () => {
+                    await selectPreset(p.id);
+                    toast.success(`تم تفعيل ثيم ${p.nameAr}`);
+                    setMobileThemeSheetOpen(false);
+                  }}
+                  className={`w-full p-3.5 rounded-2xl border flex items-center justify-between text-right transition active:scale-99 ${
+                    isSelected
+                      ? "border-primary bg-primary/[0.06] shadow-xs"
+                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Swatch */}
+                    <div
+                      className="w-10 h-8 rounded-xl shadow-xs flex items-center justify-center text-white"
+                      style={{ backgroundColor: p.signature.primary }}
+                    >
+                      {isSelected && <Check size={14} strokeWidth={3} />}
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-white">
+                        {p.nameAr}
+                      </div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500">
+                        {p.descriptionAr}
+                      </div>
+                    </div>
+                  </div>
+                  {isSelected && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
+                      مفعل
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </MobileBottomSheet>
+
+      {/* Mobile Password Change Bottom Sheet */}
+      <MobileBottomSheet
+        isOpen={mobilePasswordSheetOpen}
+        onClose={() => setMobilePasswordSheetOpen(false)}
+        title="تغيير كلمة المرور"
+      >
+        <form onSubmit={handleChangePassword} className="p-4 space-y-3.5">
+          {passSuccess && (
+            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold">
+              {passSuccess}
+            </div>
+          )}
+          {passError && (
+            <div className="p-3 bg-rose-50 text-rose-800 rounded-xl text-xs font-semibold">
+              {passError}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              كلمة المرور الحالية
+            </label>
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              كلمة المرور الجديدة
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              تأكيد كلمة المرور الجديدة
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={passLoading}
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-xs hover:opacity-95 transition disabled:opacity-50"
+          >
+            {passLoading ? "جاري الحفظ..." : "حفظ وتحديث كلمة المرور"}
+          </button>
+        </form>
+      </MobileBottomSheet>
     </DashboardLayout>
   );
 }

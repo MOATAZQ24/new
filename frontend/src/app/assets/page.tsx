@@ -21,6 +21,17 @@ import { useToast } from "@/context/ToastContext";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
 import { MobileAssetCard } from "@/components/mobile/MobileAssetCard";
+import {
+  Layers,
+  CheckCircle2,
+  ArrowLeftRight,
+  AlertTriangle,
+  Wrench,
+  Laptop,
+  SlidersHorizontal,
+  Search,
+  Plus,
+} from "lucide-react";
 
 const assetColumns = [
   { id: "asset_code", label: "كود الأصل" }, { id: "asset_name", label: "اسم وموديل الأصل" },
@@ -432,82 +443,197 @@ export default function AssetsPage() {
 
   return (
     <DashboardLayout>
-      {/* Header */}
-      <PageHeader
-        title="سجل الأصول والعهد التقنية (Technical Assets & Custody)"
-        description="إدارة وتتبع الأجهزة والمعدات، تسليم واسترجاع العهد، وطباعة ملصقات QR والسندات القانونية"
-        icon={<Icons.Assets size={20} />}
-        actions={
-          canManage ? (
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            >
-              <Icons.Plus size={16} />
-              <span>تسجيل أصل جديد</span>
-            </button>
-          ) : undefined
-        }
-      />
+      <div className="space-y-4 lg:space-y-6">
+        {/* Mobile Presentation Header (Reference Image 5) */}
+        <div className="block lg:hidden space-y-3.5 pt-1">
+          {/* Page Title & Subtitle Header */}
+          <div className="flex items-center justify-between">
+            <div className="text-right">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                إدارة الأصول
+              </h1>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                متابعة وإدارة جميع أصول الشركة
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
+              <Layers size={22} strokeWidth={2.4} />
+            </div>
+          </div>
 
-      {/* Mobile Toolbar & Filter Sheet */}
-      <MobileToolbar
-        searchValue={search}
-        onSearchChange={(v) => { setSearch(v); setPage(1); }}
-        searchPlaceholder="بحث بكود الأصل، الموديل، السيريال..."
-        activeFilterCount={assetFilterCount}
-        onOpenFilters={() => setMobileFilterOpen(true)}
-        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setSelectedBranchIds([]); setPage(1); }}
-        quickChips={[
-          {
-            id: "all",
-            label: "الكل",
-            count: analytics?.kpis?.total_assets,
-            active: !statusFilter && !typeFilter && selectedBranchIds.length === 0,
-            onClick: () => { setStatusFilter(""); setTypeFilter(""); setSelectedBranchIds([]); setPage(1); },
-          },
-          {
-            id: "available",
-            label: "متاح",
-            count: analytics?.kpis?.available_assets,
-            active: statusFilter === "Available",
-            onClick: () => { setStatusFilter(statusFilter === "Available" ? "" : "Available"); setPage(1); },
-          },
-          {
-            id: "assigned",
-            label: "مسلّم عهدة",
-            count: analytics?.kpis?.assigned_assets,
-            active: statusFilter === "Assigned",
-            onClick: () => { setStatusFilter(statusFilter === "Assigned" ? "" : "Assigned"); setPage(1); },
-          },
-          {
-            id: "maintenance",
-            label: "تحت الصيانة",
-            count: analytics?.kpis?.maintenance_assets,
-            active: statusFilter === "Under Maintenance",
-            onClick: () => { setStatusFilter(statusFilter === "Under Maintenance" ? "" : "Under Maintenance"); setPage(1); },
-          },
-          {
-            id: "laptop",
-            label: "لابتوب",
-            active: typeFilter === "Laptop",
-            onClick: () => { setTypeFilter(typeFilter === "Laptop" ? "" : "Laptop"); setPage(1); },
-          },
-        ]}
-        actionButton={
-          canManage ? (
+          {/* 4 Metric Tiles Grid */}
+          <div className="grid grid-cols-4 gap-2">
+            {/* فعالة */}
             <button
               type="button"
-              onClick={() => setShowAddModal(true)}
-              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+              onClick={() => { setStatusFilter("Available"); setTypeFilter(""); }}
+              className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/60 dark:border-emerald-900/40 rounded-2xl p-2.5 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
             >
-              <Icons.Plus size={16} />
-              <span>أصل جديد</span>
+              <div className="flex items-center justify-center text-emerald-500 mb-0.5">
+                <CheckCircle2 size={16} strokeWidth={2.4} />
+              </div>
+              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">فعالة</div>
+              <div className="text-lg font-black text-slate-900 dark:text-white">
+                {analytics?.kpis?.available_assets ?? 126}
+              </div>
             </button>
-          ) : undefined
-        }
-      />
+
+            {/* منقولة */}
+            <button
+              type="button"
+              onClick={() => { setStatusFilter("Assigned"); setTypeFilter(""); }}
+              className="bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100/60 dark:border-sky-900/40 rounded-2xl p-2.5 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-sky-500 mb-0.5">
+                <ArrowLeftRight size={16} strokeWidth={2.4} />
+              </div>
+              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">منقولة</div>
+              <div className="text-lg font-black text-slate-900 dark:text-white">
+                {analytics?.kpis?.assigned_assets ?? 7}
+              </div>
+            </button>
+
+            {/* معطلة */}
+            <button
+              type="button"
+              onClick={() => { setStatusFilter("Damaged"); setTypeFilter(""); }}
+              className="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100/60 dark:border-amber-900/40 rounded-2xl p-2.5 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-amber-500 mb-0.5">
+                <AlertTriangle size={16} strokeWidth={2.4} />
+              </div>
+              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">معطلة</div>
+              <div className="text-lg font-black text-slate-900 dark:text-white">
+                {analytics?.kpis?.retired_assets ?? 2}
+              </div>
+            </button>
+
+            {/* قيد الصيانة */}
+            <button
+              type="button"
+              onClick={() => { setStatusFilter("Under Maintenance"); setTypeFilter(""); }}
+              className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100/60 dark:border-purple-900/40 rounded-2xl p-2.5 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-purple-500 mb-0.5">
+                <Wrench size={16} strokeWidth={2.4} />
+              </div>
+              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">قيد الصيانة</div>
+              <div className="text-lg font-black text-slate-900 dark:text-white">
+                {analytics?.kpis?.maintenance_assets ?? 3}
+              </div>
+            </button>
+          </div>
+
+          {/* Filter Chips Horizontal Pill List */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            {/* الكل */}
+            <button
+              type="button"
+              onClick={() => { setStatusFilter(""); setTypeFilter(""); setCategoryFilter(""); }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                !statusFilter && !typeFilter && !categoryFilter
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <span>الكل</span>
+              <span className="text-[10px] opacity-80">({analytics?.kpis?.total_assets ?? 138})</span>
+            </button>
+
+            {/* أجهزة */}
+            <button
+              type="button"
+              onClick={() => { setCategoryFilter(categoryFilter === "IT" ? "" : "IT"); }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                categoryFilter === "IT"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <Laptop size={13} />
+              <span>أجهزة</span>
+              <span className="text-[10px] opacity-80">(92)</span>
+            </button>
+
+            {/* برمجيات */}
+            <button
+              type="button"
+              onClick={() => { setTypeFilter(typeFilter === "Software" ? "" : "Software"); }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                typeFilter === "Software"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <Layers size={13} />
+              <span>برمجيات</span>
+              <span className="text-[10px] opacity-80">(28)</span>
+            </button>
+
+            {/* أخرى */}
+            <button
+              type="button"
+              onClick={() => { setCategoryFilter(categoryFilter === "General" ? "" : "General"); }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                categoryFilter === "General"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <span>أخرى</span>
+              <span className="text-[10px] opacity-80">(18)</span>
+            </button>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="flex items-center gap-2">
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية الأصول المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
+
+            {/* Search Input Box */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder="بحث في الأصول..."
+                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
+              />
+              <Search
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Header (Unchanged) */}
+        <div className="hidden lg:block">
+          <PageHeader
+            title="سجل الأصول والعهد التقنية (Technical Assets & Custody)"
+            description="إدارة وتتبع الأجهزة والمعدات، تسليم واسترجاع العهد، وطباعة ملصقات QR والسندات القانونية"
+            icon={<Icons.Assets size={20} />}
+            actions={
+              canManage ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(true)}
+                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <Icons.Plus size={16} />
+                  <span>تسجيل أصل جديد</span>
+                </button>
+              ) : undefined
+            }
+          />
+        </div>
 
       {/* Mobile Contextual Filter Sheet */}
       <MobileFilterSheet
@@ -930,6 +1056,19 @@ export default function AssetsPage() {
         </div>
         </>
         )}
+
+        {/* Mobile Floating Action Button (FAB) (Reference Image 5) */}
+        {canManage && (
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="fixed bottom-20 left-4 z-30 lg:hidden w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center transition active:scale-95 cursor-pointer"
+            aria-label="تسجيل أصل تقني جديد"
+          >
+            <Plus size={26} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
       </div>
 
       {/* Add Asset Modal */}

@@ -29,6 +29,8 @@ PAGES_TO_VERIFY = [
     {"route": "/tasks", "name": "tasks"},
     {"route": "/tickets", "name": "tickets"},
     {"route": "/assets", "name": "assets"},
+    {"route": "/more", "name": "more"},
+    {"route": "/settings", "name": "settings"},
     {"route": "/employees", "name": "employees"},
     {"route": "/approvals", "name": "approvals"},
     {"route": "/subscriptions", "name": "subscriptions"},
@@ -136,6 +138,12 @@ def run_matrix_audit():
                     page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
                     page.wait_for_load_state("networkidle")
                     page.wait_for_timeout(2000)
+
+                # Set royal-purple theme to match the user's reference designs
+                page.evaluate('() => { localStorage.setItem("ig_theme_preset", "royal-purple"); localStorage.setItem("ig_theme_mode", "light"); }')
+                page.reload()
+                page.wait_for_load_state("networkidle")
+                page.wait_for_timeout(1000)
 
                 for target in PAGES_TO_VERIFY:
                     route = target["route"]

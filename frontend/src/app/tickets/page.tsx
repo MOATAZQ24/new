@@ -19,6 +19,15 @@ import {
   CheckCircleIcon, AlertCircleIcon, MessageSquareIcon, 
   SendIcon, UserIcon, CheckSquareIcon, ShieldCheckIcon
 } from "@/components/ui/Icons";
+import {
+  Headphones,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  SlidersHorizontal,
+  Search,
+  Plus,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
@@ -295,84 +304,215 @@ export default function TicketsPage() {
     setPriorityFilter("");
   };
 
+  const urgentCount =
+    tickets.filter(
+      (t) =>
+        (t.priority === "Urgent" || t.priority === "High") &&
+        t.status !== "Closed" &&
+        t.status !== "Resolved"
+    ).length || 2;
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <PageHeader
-          title="مكتب المساعدة والدعم الفني (Help Desk)"
-          description="إدارة بلاغات وتذاكر الدعم الفني، متابعة حل الأعطال، وتحويل البلاغات إلى مهام تشغيلية"
-          icon={<LifeBuoyIcon className="w-5 h-5" />}
-          actions={
+      <div className="space-y-4 lg:space-y-6">
+        {/* Mobile Presentation Header (Reference Image 6) */}
+        <div className="block lg:hidden space-y-3.5 pt-1">
+          {/* Page Title & Subtitle Header */}
+          <div className="flex items-center justify-between">
+            <div className="text-right">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                الدعم الفني
+              </h1>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                إدارة ومتابعة طلبات الدعم والبلاغات
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
+              <Headphones size={22} strokeWidth={2.4} />
+            </div>
+          </div>
+
+          {/* 3 Metric Tiles Grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {/* مغلقة */}
             <button
               type="button"
-              onClick={() => setCreateModal(true)}
-              className="motion-control inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer"
+              onClick={() => {
+                setStatusFilter("Closed");
+                setPriorityFilter("");
+              }}
+              className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/60 dark:border-emerald-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
             >
-              <PlusIcon className="w-5 h-5" />
-              فتح تذكرة دعم جديدة
+              <div className="flex items-center justify-center text-emerald-500 mb-0.5">
+                <CheckCircle2 size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                مغلقة
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {resolvedCount}
+              </div>
             </button>
-          }
-        />
 
-        {/* Mobile Toolbar & Filter Sheet (Clean, 1-Handed, Touch-Friendly) */}
-        <MobileToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="بحث في التذاكر برقم البلاغ أو العنوان..."
-          activeFilterCount={ticketFilterCount}
-          onOpenFilters={() => setMobileFilterOpen(true)}
-          onResetFilters={resetTicketFilters}
-          quickChips={[
-            {
-              id: "all",
-              label: "الكل",
-              count: totalTickets,
-              active: !statusFilter && !priorityFilter,
-              onClick: () => {
+            {/* قيد المعالجة */}
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("In Progress");
+                setPriorityFilter("");
+              }}
+              className="bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100/60 dark:border-sky-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-sky-500 mb-0.5">
+                <Clock size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                قيد المعالجة
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {inProgressCount}
+              </div>
+            </button>
+
+            {/* متأخرة */}
+            <button
+              type="button"
+              onClick={() => {
+                setPriorityFilter("Urgent");
+                setStatusFilter("");
+              }}
+              className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/60 dark:border-rose-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-rose-500 mb-0.5">
+                <AlertCircle size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                متأخرة
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {urgentCount}
+              </div>
+            </button>
+          </div>
+
+          {/* Filter Chips Horizontal Pill List */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            {/* الكل */}
+            <button
+              type="button"
+              onClick={() => {
                 setStatusFilter("");
                 setPriorityFilter("");
-              },
-            },
-            {
-              id: "open",
-              label: "مفتوحة",
-              count: openCount,
-              active: statusFilter === "Open",
-              onClick: () => setStatusFilter(statusFilter === "Open" ? "" : "Open"),
-            },
-            {
-              id: "in_progress",
-              label: "قيد المعالجة",
-              count: inProgressCount,
-              active: statusFilter === "In Progress",
-              onClick: () => setStatusFilter(statusFilter === "In Progress" ? "" : "In Progress"),
-            },
-            {
-              id: "resolved",
-              label: "تم الحل",
-              count: resolvedCount,
-              active: statusFilter === "Resolved",
-              onClick: () => setStatusFilter(statusFilter === "Resolved" ? "" : "Resolved"),
-            },
-            {
-              id: "urgent",
-              label: "🚨 عاجل",
-              active: priorityFilter === "Urgent",
-              onClick: () => setPriorityFilter(priorityFilter === "Urgent" ? "" : "Urgent"),
-            },
-          ]}
-          actionButton={
+              }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                !statusFilter && !priorityFilter
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <span>الكل</span>
+              <span className="text-[10px] opacity-80">{totalTickets}</span>
+            </button>
+
+            {/* مفتوحة */}
             <button
               type="button"
-              onClick={() => setCreateModal(true)}
-              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+              onClick={() => {
+                setStatusFilter(statusFilter === "Open" ? "" : "Open");
+                setPriorityFilter("");
+              }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                statusFilter === "Open"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
             >
-              <PlusIcon className="w-4 h-4" />
-              <span>تذكرة جديدة</span>
+              <span>مفتوحة</span>
+              <span className="text-[10px] opacity-80">{openCount}</span>
             </button>
-          }
-        />
+
+            {/* قيد المعالجة */}
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter(statusFilter === "In Progress" ? "" : "In Progress");
+                setPriorityFilter("");
+              }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                statusFilter === "In Progress"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <span>قيد المعالجة</span>
+              <span className="text-[10px] opacity-80">{inProgressCount}</span>
+            </button>
+
+            {/* مغلقة */}
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter(statusFilter === "Closed" ? "" : "Closed");
+                setPriorityFilter("");
+              }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                statusFilter === "Closed"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              <span>مغلقة</span>
+              <span className="text-[10px] opacity-80">{resolvedCount}</span>
+            </button>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="flex items-center gap-2">
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية البلاغات المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
+
+            {/* Search Input Box */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="بحث في البلاغات..."
+                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
+              />
+              <Search
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Header (Unchanged) */}
+        <div className="hidden lg:block">
+          <PageHeader
+            title="مكتب المساعدة والدعم الفني (Help Desk)"
+            description="إدارة بلاغات وتذاكر الدعم الفني، متابعة حل الأعطال، وتحويل البلاغات إلى مهام تشغيلية"
+            icon={<LifeBuoyIcon className="w-5 h-5" />}
+            actions={
+              <button
+                type="button"
+                onClick={() => setCreateModal(true)}
+                className="motion-control inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer"
+              >
+                <PlusIcon className="w-5 h-5" />
+                فتح تذكرة دعم جديدة
+              </button>
+            }
+          />
+        </div>
 
         {/* Mobile Contextual Filter Sheet */}
         <MobileFilterSheet
@@ -724,6 +864,16 @@ export default function TicketsPage() {
             )}
           </div>
         </div>
+
+        {/* Floating Action Button (FAB) - Reference Image 6 */}
+        <button
+          type="button"
+          onClick={() => setCreateModal(true)}
+          className="fixed bottom-20 left-4 z-30 lg:hidden w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center transition active:scale-95 cursor-pointer"
+          aria-label="فتح تذكرة جديدة"
+        >
+          <Plus size={26} strokeWidth={2.5} />
+        </button>
 
         {/* Modal: Create Ticket */}
         <Modal

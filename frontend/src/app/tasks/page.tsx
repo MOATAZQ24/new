@@ -15,6 +15,15 @@ import {
   CheckSquareIcon, PlusIcon,
   ClockIcon, MessageSquareIcon, SendIcon, AlertCircleIcon, UserIcon, LifeBuoyIcon
 } from "@/components/ui/Icons";
+import {
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  SlidersHorizontal,
+  Plus,
+  ListTodo,
+  Search,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
@@ -598,152 +607,272 @@ export default function TasksPage() {
     setPage(1);
   };
 
+  const userDisplayName =
+    user?.employee?.full_name || user?.full_name || user?.username || "فهد";
+  const userFirstName = userDisplayName.split(" ")[0] || "فهد";
+  const userInitial = userFirstName.charAt(0) || "ف";
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <PageHeader
-          title="إدارة المهام التشغيلية والتشاركية"
-          description="متابعة المهام الفنية، تتبع المعوقات، والتكامل الفوري مع Telegram والاعتماد متعدد المستويات"
-          icon={<CheckSquareIcon className="w-5 h-5" />}
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingTask(null);
-                  setSelectedEmployee(null);
-                  setFormData({
-                    title: "",
-                    description: "",
-                    assigned_to_id: "",
-                    priority: "Medium",
-                    status: "Assigned",
-                    start_date: "",
-                    due_date: "",
-                    related_asset_id: "",
-                    notes: "",
-                    notify_telegram: true,
-                    is_voice_task: true,
-                    voice_note_url: "",
-                    voice_note_duration: 0,
-                  });
-                  setVoiceRecording(null);
-                  setCreateMode("voice");
-                  setCreateError(null);
-                  setCreateModal(true);
-                }}
-                className="motion-control inline-flex items-center gap-1.5 bg-gradient-to-r from-[#123D32] to-[#187A5A] hover:opacity-95 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer"
-              >
-                <span>🎙️</span>
-                <span>تسجيل مهمة صوتية</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingTask(null);
-                  setSelectedEmployee(null);
-                  setFormData({
-                    title: "",
-                    description: "",
-                    assigned_to_id: "",
-                    priority: "Medium",
-                    status: "Assigned",
-                    start_date: "",
-                    due_date: "",
-                    related_asset_id: "",
-                    notes: "",
-                    notify_telegram: true,
-                    is_voice_task: false,
-                    voice_note_url: "",
-                    voice_note_duration: 0,
-                  });
-                  setVoiceRecording(null);
-                  setCreateMode("text");
-                  setCreateError(null);
-                  setCreateModal(true);
-                }}
-                className="motion-control inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xs transition-colors cursor-pointer"
-              >
-                <PlusIcon className="w-5 h-5 text-[#187A5A]" />
-                إضافة مهمة نصية
-              </button>
+      <div className="space-y-4 lg:space-y-6">
+        {/* Mobile Presentation Header (Reference Images 2, 4, 7) */}
+        <div className="block lg:hidden space-y-3.5 pt-1">
+          {/* Greeting Row */}
+          <div className="flex items-center justify-between">
+            <div className="text-right">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                مرحباً، {userFirstName}
+              </h1>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                أعمالك اليوم
+              </p>
             </div>
-          }
-        />
+            <div className="w-10 h-10 rounded-full bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold flex items-center justify-center text-sm shadow-xs">
+              {userInitial}
+            </div>
+          </div>
 
-        {/* Mobile Toolbar & Filter Sheet (Clean, 1-Handed, Touch-Friendly) */}
-        <MobileToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="بحث في المهام والمسؤولين..."
-          activeFilterCount={activeFilterCount}
-          onOpenFilters={() => setMobileFilterOpen(true)}
-          onResetFilters={resetAllFilters}
-          quickChips={[
-            {
-              id: "all",
-              label: "الكل",
-              count: summary?.total ?? totalTasks,
-              active: !statusFilter && !overdueOnly && filterMode === "all",
-              onClick: () => {
-                setStatusFilter("");
-                setOverdueOnly(false);
-                setFilterMode("all");
-              },
-            },
-            {
-              id: "my",
-              label: "مهامي",
-              active: filterMode === "my",
-              onClick: () => setFilterMode(filterMode === "my" ? "all" : "my"),
-            },
-            {
-              id: "active",
-              label: "🔄 النشطة",
-              count: summary?.active,
-              active: statusFilter === "active",
-              onClick: () => {
-                setStatusFilter(statusFilter === "active" ? "" : "active");
-                setOverdueOnly(false);
-              },
-            },
-            {
-              id: "overdue",
-              label: "🔴 المتأخرة",
-              count: overdueCount,
-              active: overdueOnly || statusFilter === "overdue",
-              onClick: () => {
-                setOverdueOnly(!overdueOnly);
-                if (!overdueOnly) setStatusFilter("");
-              },
-            },
-            {
-              id: "completed",
-              label: "🟢 المكتملة",
-              count: completedCount,
-              active: statusFilter === "completed",
-              onClick: () => {
-                setStatusFilter(statusFilter === "completed" ? "" : "completed");
-                setOverdueOnly(false);
-              },
-            },
-          ]}
-          actionButton={
+          {/* 3 Metric Tiles Grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {/* المهام اليوم */}
             <button
               type="button"
               onClick={() => {
-                setCreateMode("voice");
-                setCreateModal(true);
+                setStatusFilter("");
+                setOverdueOnly(false);
+                setFilterMode("all");
               }}
-              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+              className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/60 dark:border-emerald-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
             >
-              <span>🎙️</span>
-              <span>مهمة جديدة</span>
+              <div className="flex items-center justify-center text-emerald-500 mb-0.5">
+                <CheckCircle2 size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                المهام اليوم
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {summary?.total ?? totalTasks}
+              </div>
             </button>
-          }
-        />
+
+            {/* قيد التنفيذ */}
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("in_progress");
+                setOverdueOnly(false);
+              }}
+              className="bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100/60 dark:border-sky-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-sky-500 mb-0.5">
+                <Clock size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                قيد التنفيذ
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {inProgressCount}
+              </div>
+            </button>
+
+            {/* متأخرة */}
+            <button
+              type="button"
+              onClick={() => {
+                setOverdueOnly(true);
+                setStatusFilter("");
+              }}
+              className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/60 dark:border-rose-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <div className="flex items-center justify-center text-rose-500 mb-0.5">
+                <AlertCircle size={18} strokeWidth={2.4} />
+              </div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                متأخرة
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white">
+                {overdueCount}
+              </div>
+            </button>
+          </div>
+
+          {/* Section Title & Filter Chips */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-sm text-slate-900 dark:text-white">
+                <ListTodo size={16} className="text-primary" />
+                <span>المهام</span>
+              </div>
+            </div>
+
+            {/* Filter Chips Horizontal Pill List */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              {/* الكل */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter("");
+                  setOverdueOnly(false);
+                  setFilterMode("all");
+                }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                  !statusFilter && !overdueOnly && filterMode === "all"
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                الكل
+              </button>
+
+              {/* مهامي */}
+              <button
+                type="button"
+                onClick={() => setFilterMode("my")}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                  filterMode === "my"
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                مهامي
+              </button>
+
+              {/* قيد التنفيذ */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter(statusFilter === "in_progress" ? "" : "in_progress");
+                  setOverdueOnly(false);
+                }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                  statusFilter === "in_progress"
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                قيد التنفيذ
+              </button>
+
+              {/* المتأخرة */}
+              <button
+                type="button"
+                onClick={() => {
+                  setOverdueOnly(!overdueOnly);
+                  if (!overdueOnly) setStatusFilter("");
+                }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                  overdueOnly || statusFilter === "overdue"
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                المتأخرة
+              </button>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="flex items-center gap-2">
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية المهام المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
+
+            {/* Search Input Box */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="بحث في المهام..."
+                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
+              />
+              <Search
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Header & Actions (Unchanged) */}
+        <div className="hidden lg:block">
+          <PageHeader
+            title="إدارة المهام التشغيلية والتشاركية"
+            description="متابعة المهام الفنية، تتبع المعوقات، والتكامل الفوري مع Telegram والاعتماد متعدد المستويات"
+            icon={<CheckSquareIcon className="w-5 h-5" />}
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTask(null);
+                    setSelectedEmployee(null);
+                    setFormData({
+                      title: "",
+                      description: "",
+                      assigned_to_id: "",
+                      priority: "Medium",
+                      status: "Assigned",
+                      start_date: "",
+                      due_date: "",
+                      related_asset_id: "",
+                      notes: "",
+                      notify_telegram: true,
+                      is_voice_task: true,
+                      voice_note_url: "",
+                      voice_note_duration: 0,
+                    });
+                    setVoiceRecording(null);
+                    setCreateMode("voice");
+                    setCreateError(null);
+                    setCreateModal(true);
+                  }}
+                  className="motion-control inline-flex items-center gap-1.5 bg-gradient-to-r from-[#123D32] to-[#187A5A] hover:opacity-95 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer"
+                >
+                  <span>🎙️</span>
+                  <span>تسجيل مهمة صوتية</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTask(null);
+                    setSelectedEmployee(null);
+                    setFormData({
+                      title: "",
+                      description: "",
+                      assigned_to_id: "",
+                      priority: "Medium",
+                      status: "Assigned",
+                      start_date: "",
+                      due_date: "",
+                      related_asset_id: "",
+                      notes: "",
+                      notify_telegram: true,
+                      is_voice_task: false,
+                      voice_note_url: "",
+                      voice_note_duration: 0,
+                    });
+                    setVoiceRecording(null);
+                    setCreateMode("text");
+                    setCreateError(null);
+                    setCreateModal(true);
+                  }}
+                  className="motion-control inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xs transition-colors cursor-pointer"
+                >
+                  <PlusIcon className="w-5 h-5 text-[#187A5A]" />
+                  إضافة مهمة نصية
+                </button>
+              </div>
+            }
+          />
+        </div>
 
         {/* Mobile Filter Sheet */}
         <MobileFilterSheet
@@ -1364,6 +1493,38 @@ export default function TasksPage() {
             </div>
           )}
         </div>
+
+        {/* Floating Action Button (FAB) - Reference Images 2, 4, 7 */}
+        <button
+          type="button"
+          onClick={() => {
+            setEditingTask(null);
+            setSelectedEmployee(null);
+            setFormData({
+              title: "",
+              description: "",
+              assigned_to_id: "",
+              priority: "Medium",
+              status: "Assigned",
+              start_date: "",
+              due_date: "",
+              related_asset_id: "",
+              notes: "",
+              notify_telegram: true,
+              is_voice_task: false,
+              voice_note_url: "",
+              voice_note_duration: 0,
+            });
+            setVoiceRecording(null);
+            setCreateMode("text");
+            setCreateError(null);
+            setCreateModal(true);
+          }}
+          className="fixed bottom-20 left-4 z-30 lg:hidden w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center transition active:scale-95 cursor-pointer"
+          aria-label="إضافة مهمة جديدة"
+        >
+          <Plus size={26} strokeWidth={2.5} />
+        </button>
 
         {/* Modal: Create Task */}
         <Modal

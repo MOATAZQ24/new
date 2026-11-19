@@ -3,15 +3,16 @@
 import React from "react";
 import {
   Laptop,
-  Copy,
+  Printer,
+  Wifi,
+  Monitor,
+  Wrench,
   Check,
-  QrCode,
-  UserCheck,
+  X,
   ChevronLeft,
-  Tag,
-  Building2,
+  MapPin,
+  Layers,
 } from "lucide-react";
-import { StatusBadge } from "@/components/ui/Badge";
 
 interface MobileAssetCardProps {
   asset: {
@@ -26,6 +27,7 @@ interface MobileAssetCardProps {
     assigned_employee_name?: string;
     company_name?: string;
     branch_name?: string;
+    location_name?: string;
   };
   onClick: () => void;
   onCopySerial?: (serial: string) => void;
@@ -37,17 +39,67 @@ interface MobileAssetCardProps {
 export function MobileAssetCard({
   asset,
   onClick,
-  onCopySerial,
-  copiedSerial,
-  onShowQr,
-  onCustodyAction,
 }: MobileAssetCardProps) {
-  const isSerialCopied = copiedSerial === asset.serial_number;
+  // Determine hardware visual icon
+  const getDeviceIcon = () => {
+    const t = (asset.asset_type + " " + asset.asset_name + " " + (asset.model || "")).toLowerCase();
+    if (t.includes("print") || t.includes("طابع")) return Printer;
+    if (t.includes("شبك") || t.includes("راوتر") || t.includes("unifi") || t.includes("switch") || t.includes("router"))
+      return Wifi;
+    if (t.includes("مكتب") || t.includes("desktop") || t.includes("optiplex") || t.includes("شاش") || t.includes("pc"))
+      return Monitor;
+    if (t.includes("لابتوب") || t.includes("laptop") || t.includes("thinkpad") || t.includes("كمبيوتر"))
+      return Laptop;
+    return Layers;
+  };
+
+  const Icon = getDeviceIcon();
+
+  // Status Meta matching Reference Image 5 (فعالة, قيد الصيانة, معطلة, منقولة)
+  const getStatusMeta = () => {
+    const s = (asset.status || "").toLowerCase();
+    if (s.includes("maint") || s.includes("صيان")) {
+      return {
+        label: "قيد الصيانة",
+        pillClass: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
+        icon: Wrench,
+      };
+    }
+    if (s.includes("damag") || s.includes("عطل") || s.includes("معطل") || s.includes("disabl") || s.includes("retir")) {
+      return {
+        label: "معطلة",
+        pillClass: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400",
+        icon: X,
+      };
+    }
+    if (s.includes("trans") || s.includes("منقول")) {
+      return {
+        label: "منقولة",
+        pillClass: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300",
+        icon: Check,
+      };
+    }
+    return {
+      label: "فعالة",
+      pillClass: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300",
+      icon: Check,
+    };
+  };
+
+  const statusMeta = getStatusMeta();
+  const StatusIcon = statusMeta.icon;
+
+  // Friendly location: Branch / Location / Company
+  const locationLabel =
+    asset.location_name ||
+    (asset.branch_name ? `الرياض - ${asset.branch_name}` : "الرياض - الإدارة العامة");
+
+  const displayName = [asset.brand, asset.model].filter(Boolean).join(" ") || asset.asset_name;
 
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs hover:border-[#187A5A] transition active:scale-[0.99] cursor-pointer space-y-3"
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -57,125 +109,43 @@ export function MobileAssetCard({
         }
       }}
     >
-      {/* Header: Asset Code + Type + Status */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span
-            dir="ltr"
-            className="font-mono font-bold text-xs text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800 px-2 py-0.5 rounded-lg"
-          >
-            {asset.asset_code}
-          </span>
-          <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-lg">
-            {asset.asset_type}
-          </span>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        {/* Right side (RTL): Device Icon/Visual + Title + Type + Location */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center shrink-0">
+            <Icon size={24} strokeWidth={1.8} />
+          </div>
 
-        <StatusBadge status={asset.status} />
-      </div>
+          <div className="min-w-0 text-right">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+              {displayName}
+            </h3>
 
-      {/* Asset Name & Brand/Model */}
-      <div>
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-          {asset.asset_name}
-        </h3>
-        {(asset.brand || asset.model) && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {[asset.brand, asset.model].filter(Boolean).join(" ")}
-          </p>
-        )}
-      </div>
-
-      {/* Serial Number & Custody Assignment */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 space-y-2 text-xs">
-        {/* Serial Number with One-Tap Copy */}
-        {asset.serial_number && (
-          <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 rounded-xl px-2.5 py-1.5">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] text-slate-400">S/N:</span>
-              <span
-                dir="ltr"
-                className="font-mono text-[11px] text-slate-700 dark:text-slate-300 font-bold truncate"
-              >
-                {asset.serial_number}
-              </span>
+            {/* Type with icon */}
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <Icon size={12} className="text-slate-400 shrink-0" />
+              <span>{asset.asset_type || "جهاز تقني"}</span>
             </div>
 
-            {onCopySerial && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCopySerial(asset.serial_number!);
-                }}
-                className="p-1 text-slate-400 hover:text-[#187A5A] dark:hover:text-emerald-400 transition cursor-pointer shrink-0"
-                title="نسخ الرقم التسلسلي"
-              >
-                {isSerialCopied ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                    تم النسخ!
-                  </span>
-                ) : (
-                  <Copy size={13} />
-                )}
-              </button>
-            )}
+            {/* Location with MapPin icon */}
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 dark:text-slate-500 font-medium">
+              <MapPin size={12} className="text-slate-400 shrink-0" />
+              <span className="truncate">{locationLabel}</span>
+            </div>
           </div>
-        )}
-
-        {/* Assigned Employee or In-Stock Status */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-slate-400">العهدة والموقع:</span>
-          {asset.assigned_employee_name ? (
-            <span className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-              <UserCheck size={13} />
-              <span>{asset.assigned_employee_name}</span>
-            </span>
-          ) : (
-            <span className="font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">
-              في المستودع (متاح)
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Footer: Quick Action Buttons */}
-      <div
-        className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-1.5">
-          {onShowQr && (
-            <button
-              type="button"
-              onClick={onShowQr}
-              className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1 hover:bg-slate-100 transition active:scale-95 cursor-pointer"
-            >
-              <QrCode size={13} />
-              <span>QR</span>
-            </button>
-          )}
-
-          {onCustodyAction && (
-            <button
-              type="button"
-              onClick={onCustodyAction}
-              className="px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-[#187A5A] dark:text-emerald-400 text-xs font-semibold flex items-center gap-1 hover:bg-emerald-100 transition active:scale-95 cursor-pointer"
-            >
-              <UserCheck size={13} />
-              <span>{asset.assigned_employee_name ? "استرجاع / تحويل" : "صرف عهدة"}</span>
-            </button>
-          )}
         </div>
 
-        <button
-          type="button"
-          onClick={onClick}
-          className="text-xs font-bold text-[#187A5A] dark:text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
-        >
-          <span>التفاصيل</span>
-          <ChevronLeft size={14} />
-        </button>
+        {/* Left side (RTL): Status badge with icon + Chevron */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusMeta.pillClass}`}
+          >
+            <StatusIcon size={12} strokeWidth={2.5} className="shrink-0" />
+            <span>{statusMeta.label}</span>
+          </div>
+
+          <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+        </div>
       </div>
     </div>
   );

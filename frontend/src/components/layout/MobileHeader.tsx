@@ -48,31 +48,31 @@ export function MobileHeader() {
   return (
     <>
       <header
-        className="fixed top-0 inset-x-0 z-30 lg:hidden h-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-3.5 flex items-center justify-between gap-2 shadow-2xs select-none"
+        className="fixed top-0 inset-x-0 z-30 lg:hidden h-16 bg-gradient-to-b from-primary/[0.08] via-white/95 to-white/90 dark:via-slate-900/95 dark:to-slate-900/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 px-4 flex items-center justify-between gap-2 shadow-2xs select-none"
         aria-label="شريط الجوال العلوي"
       >
-        {/* Active Company & Switcher Trigger */}
+        {/* Right side (RTL): Brand name and logo badge */}
         <button
           type="button"
           onClick={() => setCompanySheetOpen(true)}
-          className="flex items-center gap-2 max-w-[55%] text-start p-1 -m-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-98 cursor-pointer"
+          className="flex items-center gap-2.5 text-start -m-1.5 p-1.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/[0.05] transition active:scale-98 cursor-pointer"
           title="تبديل المنشأة أو الشركة"
         >
-          <div className="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-[var(--accent-foreground)] font-bold text-sm shadow-xs shrink-0 overflow-hidden">
+          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
             {activeCompany?.company_logo?.startsWith("/workspace/") ? (
               <img
                 src={mediaUrl(activeCompany.company_logo)}
                 alt=""
-                className="w-8 h-8 object-contain rounded-lg"
+                className="w-9 h-9 object-contain rounded-xl"
               />
             ) : (
-              <BrandMark size={28} variant="gold-badge" />
+              <BrandMark size={30} variant="gold-badge" />
             )}
           </div>
 
-          <div className="min-w-0 flex items-center gap-1">
-            <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
-              {activeCompany?.name_ar || activeCompany?.name_en || "بوابة المستثمر"}
+          <div className="min-w-0 flex items-center gap-1.5">
+            <span className="font-bold text-sm text-slate-900 dark:text-white tracking-tight">
+              Investor Gate OS
             </span>
             {companiesList.length > 1 && (
               <ChevronDown size={14} className="text-slate-400 shrink-0" />
@@ -80,39 +80,29 @@ export function MobileHeader() {
           </div>
         </button>
 
-        {/* Action Buttons: Search, Notifications, Profile */}
-        <div className="flex items-center gap-1">
+        {/* Left side (RTL): Search & Notifications round floating buttons */}
+        <div className="flex items-center gap-2">
           {/* Quick Universal Search Trigger */}
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="w-9 h-9 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition active:scale-95 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-2xs border border-slate-100 dark:border-slate-800/80 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition active:scale-95 cursor-pointer"
             aria-label="البحث السريع (Ctrl+K)"
           >
-            <Search size={18} />
+            <Search size={18} strokeWidth={2.2} />
           </button>
 
           {/* Notifications Link */}
           <Link
             href="/notifications"
-            className="w-9 h-9 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center relative transition active:scale-95"
+            className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-2xs border border-slate-100 dark:border-slate-800/80 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 relative transition active:scale-95"
             aria-label="مركز الإشعارات"
           >
-            <Bell size={18} />
+            <Bell size={18} strokeWidth={2.2} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-800" />
             )}
           </Link>
-
-          {/* User Profile Avatar / Sheet Trigger */}
-          <button
-            type="button"
-            onClick={() => setProfileSheetOpen(true)}
-            className="w-8 h-8 rounded-full bg-[#123D32] text-[#C5A46D] font-bold text-xs flex items-center justify-center ms-1 ring-1 ring-slate-200 dark:ring-slate-700 shadow-2xs cursor-pointer active:scale-95"
-            aria-label="قائمة الحساب والمستخدم"
-          >
-            {user?.full_name ? user.full_name.slice(0, 1).toUpperCase() : <User size={14} />}
-          </button>
         </div>
       </header>
 

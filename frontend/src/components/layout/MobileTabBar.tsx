@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, CheckSquare, Headphones, Laptop, Grid } from "lucide-react";
+import { Home, CheckSquare, Headphones, Layers, LayoutGrid } from "lucide-react";
 import { MobileMoreMenuSheet } from "./MobileMoreMenuSheet";
 
 export function MobileTabBar() {
@@ -12,10 +12,10 @@ export function MobileTabBar() {
 
   const navItems = [
     {
-      name: "اليوم",
-      sub: "My Day",
+      name: "الرئيسية",
+      sub: "Home",
       href: "/",
-      icon: Compass,
+      icon: Home,
       isActive: pathname === "/",
     },
     {
@@ -36,21 +36,22 @@ export function MobileTabBar() {
       name: "الأصول",
       sub: "Assets",
       href: "/assets",
-      icon: Laptop,
+      icon: Layers,
       isActive: pathname.startsWith("/assets"),
     },
   ];
 
   const isMoreActive =
-    !navItems.some((item) => item.isActive) && pathname !== "/";
+    pathname === "/more" ||
+    (!navItems.some((item) => item.isActive) && pathname !== "/");
 
   return (
     <>
       <nav
-        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 shadow-lg select-none pb-[max(env(safe-area-inset-bottom),8px)]"
+        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 shadow-lg select-none pb-[max(env(safe-area-inset-bottom),8px)]"
         aria-label="شريط التنقل السفلي للجوال"
       >
-        <div className="grid grid-cols-5 h-14 items-center">
+        <div className="grid grid-cols-5 h-16 items-center px-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.isActive;
@@ -58,60 +59,57 @@ export function MobileTabBar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center h-full transition-all duration-150 active:scale-92 ${
-                  active
-                    ? "text-[#123D32] dark:text-emerald-400 font-bold"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
-                }`}
+                className="flex items-center justify-center h-full active:scale-95 transition-transform"
                 title={item.sub}
               >
-                <div className="relative">
+                <div
+                  className={`w-14 h-12 rounded-2xl flex flex-col items-center justify-center transition-all duration-150 ${
+                    active
+                      ? "bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold shadow-2xs"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+                  }`}
+                >
                   <Icon
-                    size={21}
-                    strokeWidth={active ? 2.5 : 2}
-                    className={`transition-transform duration-150 ${active ? "scale-105" : ""}`}
+                    size={20}
+                    strokeWidth={active ? 2.4 : 2}
+                    className="shrink-0"
                   />
-                  {active && (
-                    <span className="absolute -bottom-1.5 inset-x-0 mx-auto w-1 h-1 bg-[#187A5A] dark:bg-emerald-400 rounded-full" />
-                  )}
+                  <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[50px] leading-tight">
+                    {item.name}
+                  </span>
                 </div>
-                <span className="text-[10px] mt-1 tracking-tight truncate max-w-[56px]">
-                  {item.name}
-                </span>
               </Link>
             );
           })}
 
           {/* 5th Tab: "المزيد" (More) */}
-          <button
-            type="button"
-            onClick={() => setMoreMenuOpen(true)}
-            className={`flex flex-col items-center justify-center h-full transition-all duration-150 active:scale-92 cursor-pointer ${
-              isMoreActive || moreMenuOpen
-                ? "text-[#123D32] dark:text-emerald-400 font-bold"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
-            }`}
+          <Link
+            href="/more"
+            className="flex items-center justify-center h-full active:scale-95 transition-transform"
             title="المزيد من القوائم والوحدات"
             aria-label="المزيد من الوحدات"
           >
-            <div className="relative">
-              <Grid
-                size={21}
-                strokeWidth={isMoreActive || moreMenuOpen ? 2.5 : 2}
-                className={`transition-transform duration-150 ${
-                  isMoreActive || moreMenuOpen ? "scale-105" : ""
-                }`}
+            <div
+              className={`w-14 h-12 rounded-2xl flex flex-col items-center justify-center transition-all duration-150 ${
+                isMoreActive
+                  ? "bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold shadow-2xs"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+              }`}
+            >
+              <LayoutGrid
+                size={20}
+                strokeWidth={isMoreActive ? 2.4 : 2}
+                className="shrink-0"
               />
-              {(isMoreActive || moreMenuOpen) && (
-                <span className="absolute -bottom-1.5 inset-x-0 mx-auto w-1 h-1 bg-[#187A5A] dark:bg-emerald-400 rounded-full" />
-              )}
+              <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[50px] leading-tight">
+                المزيد
+              </span>
             </div>
-            <span className="text-[10px] mt-1 tracking-tight">المزيد</span>
-          </button>
+          </Link>
         </div>
       </nav>
 
-      {/* More Menu Bottom Sheet */}
+      {/* More Menu Bottom Sheet retained for backward compatibility / fallback */}
       <MobileMoreMenuSheet
         isOpen={moreMenuOpen}
         onClose={() => setMoreMenuOpen(false)}

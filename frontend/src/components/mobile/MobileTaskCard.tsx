@@ -2,15 +2,16 @@
 
 import React from "react";
 import {
-  Mic,
+  Printer,
+  Wrench,
+  Laptop,
+  CheckSquare,
   Calendar,
-  AlertTriangle,
-  RotateCcw,
-  User,
   ChevronLeft,
-  Volume2,
+  Mic,
+  Check,
+  AlertTriangle,
 } from "lucide-react";
-import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 
 interface MobileTaskCardProps {
   task: {
@@ -22,6 +23,7 @@ interface MobileTaskCardProps {
     status: string;
     stage_label?: string;
     assigned_to_name?: string;
+    department_name?: string;
     due_date?: string | null;
     is_voice_task?: boolean;
     voice_note_duration?: number;
@@ -40,17 +42,81 @@ export function MobileTaskCard({
   onClick,
   onPlayVoice,
 }: MobileTaskCardProps) {
-  const formattedDueDate = task.due_date
-    ? new Date(task.due_date).toLocaleDateString("ar-SA", {
-        month: "short",
-        day: "numeric",
-      })
-    : null;
+  // Determine Category Icon based on task title and keywords
+  const getCategoryIcon = () => {
+    const t = (task.title + " " + (task.description || "")).toLowerCase();
+    if (t.includes("طابع") || t.includes("print")) return Printer;
+    if (t.includes("صيان") || t.includes("طلب") || t.includes("maint")) return Wrench;
+    if (
+      t.includes("جهاز") ||
+      t.includes("حاسب") ||
+      t.includes("لابتوب") ||
+      t.includes("برامج") ||
+      t.includes("software") ||
+      t.includes("تحديث")
+    )
+      return Laptop;
+    return CheckSquare;
+  };
+
+  const Icon = getCategoryIcon();
+
+  // Status Meta matching Reference Images (قيد التنفيذ, بانتظار القبول, مكتملة)
+  const getStatusMeta = () => {
+    const s = (task.status || "").toLowerCase();
+    if (s.includes("complet") || s.includes("مكتمل") || s.includes("done")) {
+      return {
+        label: "مكتملة",
+        pillClass: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300",
+        dotClass: "bg-emerald-500",
+        isComplete: true,
+      };
+    }
+    if (
+      s.includes("wait") ||
+      s.includes("new") ||
+      s.includes("assign") ||
+      s.includes("قبول") ||
+      s.includes("معلق") ||
+      s.includes("مفتوح")
+    ) {
+      return {
+        label: "بانتظار القبول",
+        pillClass: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
+        dotClass: "bg-amber-500",
+        isComplete: false,
+      };
+    }
+    return {
+      label: "قيد التنفيذ",
+      pillClass: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300",
+      dotClass: "bg-sky-500",
+      isComplete: false,
+    };
+  };
+
+  const statusMeta = getStatusMeta();
+
+  // Format Due Date (اليوم, غداً, or formatted date)
+  const formatFriendlyDate = (dateStr?: string | null) => {
+    if (!dateStr) return "اليوم";
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.round((d.getTime() - now.getTime()) / (1000 * 3600 * 24));
+    if (diffDays === 0) return "اليوم";
+    if (diffDays === 1) return "غداً";
+    if (diffDays === -1) return "أمس";
+    return d.toLocaleDateString("ar-SA", { day: "numeric", month: "long" });
+  };
+
+  const friendlyDate = formatFriendlyDate(task.due_date);
+  const subtitle =
+    task.department_name || task.assigned_to_name || "قسم العمليات";
 
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs hover:border-[#187A5A] transition active:scale-[0.99] cursor-pointer space-y-3"
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -60,131 +126,79 @@ export function MobileTaskCard({
         }
       }}
     >
-      {/* Top Bar: Reference + Stage + Badges */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {task.reference && (
-            <span
-              dir="ltr"
-              className="font-mono font-bold text-xs text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg"
-            >
-              #{task.reference}
-            </span>
-          )}
-          {task.stage_label && (
-            <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-lg">
-              {task.stage_label}
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        {/* Right side (RTL): Category Icon + Title + Meta */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
+            <Icon size={20} strokeWidth={2.2} />
+          </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <PriorityBadge priority={task.priority} />
-          <StatusBadge status={task.status} />
-        </div>
-      </div>
-
-      {/* Voice Note Banner (if voice task) */}
-      {task.is_voice_task && (
-        <div className="bg-emerald-50/90 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-2.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Mic size={15} />
-            </span>
-            <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-              مهمة صوتية مسجلة
-              {task.voice_note_duration ? (
-                <span className="text-[11px] font-normal text-emerald-700 dark:text-emerald-300 mr-1.5">
-                  ({task.voice_note_duration} ثانية)
+          <div className="min-w-0 text-right">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+              {task.title}
+            </h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium">
+              {subtitle}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+              <Calendar size={13} className="shrink-0 text-slate-400" />
+              <span>{friendlyDate}</span>
+              {task.reference && (
+                <span dir="ltr" className="font-mono text-[10px] text-slate-400 px-1 bg-slate-50 dark:bg-slate-800 rounded">
+                  #{task.reference}
                 </span>
-              ) : null}
+              )}
             </div>
           </div>
+        </div>
 
-          {task.voice_note_url && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onPlayVoice) onPlayVoice();
-                else onClick();
-              }}
-              className="px-3 py-1.5 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1 active:scale-95 transition shadow-2xs cursor-pointer"
-            >
-              <Volume2 size={13} />
-              <span>استماع</span>
-            </button>
-          )}
+        {/* Left side (RTL): Status pill with colored dot + Chevron */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusMeta.pillClass}`}
+          >
+            {statusMeta.isComplete ? (
+              <Check size={12} strokeWidth={3} className="shrink-0" />
+            ) : (
+              <span className={`w-2 h-2 rounded-full shrink-0 ${statusMeta.dotClass}`} />
+            )}
+            <span>{statusMeta.label}</span>
+          </div>
+
+          <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+        </div>
+      </div>
+
+      {/* Voice task waveform / audio indicator if voice task */}
+      {task.is_voice_task && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onPlayVoice) onPlayVoice();
+            else onClick();
+          }}
+          className="bg-primary/[0.06] dark:bg-primary/15 border border-primary/20 rounded-xl px-3 py-2 flex items-center justify-between gap-2 mt-2"
+        >
+          <div className="flex items-center gap-2 text-primary font-bold text-xs">
+            <Mic size={15} />
+            <span>مهمة صوتية مسجلة</span>
+            {task.voice_note_duration ? (
+              <span className="text-[11px] opacity-80 font-mono">
+                ({task.voice_note_duration} ث)
+              </span>
+            ) : null}
+          </div>
+          <span className="text-[10px] font-bold text-primary underline">تشغيل</span>
         </div>
       )}
 
-      {/* Overdue / Blocked / Rework alert tags */}
-      {(task.is_overdue || task.is_blocked || (task.rework_count && task.rework_count > 0)) && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {task.is_overdue && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-              <AlertTriangle size={12} />
-              <span>متأخرة عن الموعد المحدد</span>
-            </span>
-          )}
-
-          {task.is_blocked && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-              <AlertTriangle size={12} />
-              <span>معلّق: {task.blocker_reason || "بانتظار طرف خارجي"}</span>
-            </span>
-          )}
-
-          {task.rework_count && task.rework_count > 0 && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300 border border-orange-300">
-              <RotateCcw size={12} />
-              <span>جولة تعديل #{task.rework_count}</span>
-            </span>
-          )}
+      {/* Blocker alert if blocked */}
+      {task.is_blocked && (
+        <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5">
+          <AlertTriangle size={14} className="shrink-0" />
+          <span className="truncate">{task.blocker_reason || "المهمة متوقفة لوجود عائق"}</span>
         </div>
       )}
-
-      {/* Task Title & Description Preview */}
-      <div>
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-          {task.title}
-        </h3>
-        {task.description && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-            {task.description}
-          </p>
-        )}
-      </div>
-
-      {/* Footer: Assignee & Due Date & Chevron */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 font-medium">
-            <User size={13} className="text-slate-400 shrink-0" />
-            <span className="text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
-              {task.assigned_to_name || "غير مسندة"}
-            </span>
-          </div>
-
-          {formattedDueDate && (
-            <div
-              className={`flex items-center gap-1 font-medium ${
-                task.is_overdue
-                  ? "text-rose-600 dark:text-rose-400 font-bold"
-                  : "text-slate-500 dark:text-slate-400"
-              }`}
-            >
-              <Calendar size={12} />
-              <span>{formattedDueDate}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 text-[#187A5A] dark:text-emerald-400 font-bold">
-          <span>التفاصيل</span>
-          <ChevronLeft size={14} />
-        </div>
-      </div>
     </div>
   );
 }
