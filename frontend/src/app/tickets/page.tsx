@@ -327,8 +327,8 @@ export default function TicketsPage() {
                 إدارة ومتابعة طلبات الدعم والبلاغات
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
-              <Headphones size={22} strokeWidth={2.4} />
+            <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+              <Headphones size={24} strokeWidth={2.2} className="text-white" />
             </div>
           </div>
 
@@ -466,18 +466,8 @@ export default function TicketsPage() {
             </button>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* Search & Filter Bar (Search on right, filter button on left) */}
           <div className="flex items-center gap-2">
-            {/* Filter Sheet Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setMobileFilterOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
-              aria-label="تصفية البلاغات المتقدمة"
-            >
-              <SlidersHorizontal size={18} strokeWidth={2.2} />
-            </button>
-
             {/* Search Input Box */}
             <div className="relative flex-1">
               <input
@@ -492,6 +482,16 @@ export default function TicketsPage() {
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               />
             </div>
+
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية البلاغات المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
           </div>
         </div>
 

@@ -2,6 +2,23 @@
 @import "./tailwind.gen.css";
 @import "tailwindcss";
 
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
 :root {
   --background: #F6FAF8;
   --foreground: #0F241D;
@@ -116,6 +133,18 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Dynamic primary & accent semantic utilities */
+.bg-primary { background-color: var(--primary) !important; color: var(--primary-foreground) !important; }
+.text-primary { color: var(--primary) !important; }
+.border-primary { border-color: var(--primary) !important; }
+[class*="bg-primary/[0.08]"], [class*="bg-primary/8"] { background-color: color-mix(in srgb, var(--primary) 8%, transparent) !important; }
+[class*="bg-primary/[0.1]"], [class*="bg-primary/10"] { background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important; }
+[class*="bg-primary/[0.12]"], [class*="bg-primary/12"] { background-color: color-mix(in srgb, var(--primary) 12%, transparent) !important; }
+[class*="bg-primary/[0.15]"], [class*="bg-primary/15"] { background-color: color-mix(in srgb, var(--primary) 15%, transparent) !important; }
+[class*="bg-primary/[0.2]"], [class*="bg-primary/20"] { background-color: color-mix(in srgb, var(--primary) 20%, transparent) !important; }
+[class*="border-primary/20"], [class*="border-primary/[0.2]"] { border-color: color-mix(in srgb, var(--primary) 20%, transparent) !important; }
+[class*="border-primary/40"], [class*="border-primary/[0.4]"] { border-color: color-mix(in srgb, var(--primary) 40%, transparent) !important; }
 
 /* Existing utility classes consume semantic theme tokens without replacing page markup. */
 html { font-size: var(--workspace-font-size, 16px); overflow-x: clip; }

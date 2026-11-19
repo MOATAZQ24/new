@@ -24,6 +24,7 @@ const allowedDevOrigins = Array.from(
 const nextConfig: NextConfig = {
   allowedDevOrigins,
   output: "standalone",
+  devIndicators: false,
   async rewrites() {
     return [
       { source: "/api/:path*", destination: `${backendOrigin}/api/:path*` },

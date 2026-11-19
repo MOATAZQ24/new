@@ -130,11 +130,11 @@ export function MobileTicketCard({ ticket, onClick }: MobileTicketCardProps) {
             )}
 
             {/* Ticket Code & Date */}
-            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-              <span dir="ltr" className="font-mono text-slate-500 dark:text-slate-400 font-bold">
+            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium flex-wrap">
+              <span dir="ltr" className="font-mono text-slate-500 dark:text-slate-400 font-bold shrink-0 whitespace-nowrap">
                 #{ticket.ticket_number}
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                 <Calendar size={12} className="text-slate-400 shrink-0" />
                 <span>{friendlyDate}</span>
               </span>

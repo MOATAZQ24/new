@@ -447,6 +447,7 @@ export default function AssetsPage() {
         {/* Mobile Presentation Header (Reference Image 5) */}
         <div className="block lg:hidden space-y-3.5 pt-1">
           {/* Page Title & Subtitle Header */}
+          {/* Page Title & Subtitle Header */}
           <div className="flex items-center justify-between">
             <div className="text-right">
               <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -456,8 +457,8 @@ export default function AssetsPage() {
                 متابعة وإدارة جميع أصول الشركة
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
-              <Layers size={22} strokeWidth={2.4} />
+            <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+              <Layers size={24} strokeWidth={2.2} className="text-white" />
             </div>
           </div>
 
@@ -585,18 +586,8 @@ export default function AssetsPage() {
             </button>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* Search & Filter Bar (Search on right, filter button on left) */}
           <div className="flex items-center gap-2">
-            {/* Filter Sheet Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setMobileFilterOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
-              aria-label="تصفية الأصول المتقدمة"
-            >
-              <SlidersHorizontal size={18} strokeWidth={2.2} />
-            </button>
-
             {/* Search Input Box */}
             <div className="relative flex-1">
               <input
@@ -611,6 +602,16 @@ export default function AssetsPage() {
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               />
             </div>
+
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية الأصول المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
           </div>
         </div>
 
@@ -845,7 +846,6 @@ export default function AssetsPage() {
 
       <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter, asset_category: categoryFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setCategoryFilter(filters.asset_category || ""); setPage(1); }} />
       </div>
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       {/* Assets Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {loading ? (
@@ -1056,6 +1056,9 @@ export default function AssetsPage() {
         </div>
         </>
         )}
+        <div className="p-3">
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </div>
 
         {/* Mobile Floating Action Button (FAB) (Reference Image 5) */}
         {canManage && (

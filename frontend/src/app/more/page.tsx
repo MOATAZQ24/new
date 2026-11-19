@@ -96,8 +96,8 @@ export default function MorePage() {
               الوصول إلى جميع الوحدات والخدمات
             </p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-primary/[0.12] dark:bg-primary/20 text-primary flex items-center justify-center shadow-xs">
-            <LayoutGrid size={22} strokeWidth={2.4} />
+          <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+            <LayoutGrid size={24} strokeWidth={2.2} className="text-white" />
           </div>
         </div>
 

@@ -617,8 +617,11 @@ export default function TasksPage() {
       <div className="space-y-4 lg:space-y-6">
         {/* Mobile Presentation Header (Reference Images 2, 4, 7) */}
         <div className="block lg:hidden space-y-3.5 pt-1">
-          {/* Greeting Row */}
-          <div className="flex items-center justify-between">
+          {/* Greeting Row (Avatar & Greeting grouped on right) */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-primary/[0.15] dark:bg-primary/25 text-primary font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+              {userInitial}
+            </div>
             <div className="text-right">
               <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 مرحباً، {userFirstName}
@@ -626,9 +629,6 @@ export default function TasksPage() {
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
                 أعمالك اليوم
               </p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold flex items-center justify-center text-sm shadow-xs">
-              {userInitial}
             </div>
           </div>
 
@@ -771,18 +771,8 @@ export default function TasksPage() {
             </div>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* Search & Filter Bar (Search on right, filter button on left) */}
           <div className="flex items-center gap-2">
-            {/* Filter Sheet Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setMobileFilterOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
-              aria-label="تصفية المهام المتقدمة"
-            >
-              <SlidersHorizontal size={18} strokeWidth={2.2} />
-            </button>
-
             {/* Search Input Box */}
             <div className="relative flex-1">
               <input
@@ -797,6 +787,16 @@ export default function TasksPage() {
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               />
             </div>
+
+            {/* Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="تصفية المهام المتقدمة"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+            </button>
           </div>
         </div>
 
@@ -2486,8 +2486,8 @@ export default function TasksPage() {
           </div>
         </Modal>
 
-        {/* Mobile & Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment */}
-        <div className="fixed bottom-20 lg:bottom-8 right-5 lg:right-8 z-50">
+        {/* Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment (Hidden on Mobile to preserve single clean FAB) */}
+        <div className="hidden lg:block fixed bottom-8 right-8 z-50">
           <button
             type="button"
             onClick={() => {

@@ -117,7 +117,7 @@ export function MobileAssetCard({
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+            <h3 dir="auto" className="font-bold text-sm text-slate-900 dark:text-white truncate">
               {displayName}
             </h3>
 
