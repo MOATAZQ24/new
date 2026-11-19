@@ -336,6 +336,14 @@ export default function TasksPage() {
           return;
         }
 
+        if (!formData.assigned_to_id) {
+          const msg = "يرجى اختيار الموظف أو الفني المسند إليه حتى يتم إرسال المهمة الصوتية وإشعاره فوراً.";
+          setCreateError(msg);
+          toast.error(msg);
+          setCreateLoading(false);
+          return;
+        }
+
         const uploadData = new FormData();
         uploadData.append("file", voiceRecording.blob, "voice_task.webm");
         uploadData.append("duration", String(voiceRecording.duration));
@@ -932,9 +940,25 @@ export default function TasksPage() {
                       )}
                       
                       {task.is_voice_task && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                          🎙️ مهمة صوتية {task.voice_note_duration ? `(${task.voice_note_duration} ث)` : ""}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            🎙️ مهمة صوتية {task.voice_note_duration ? `(${task.voice_note_duration} ث)` : ""}
+                          </span>
+                          {task.voice_note_url && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDetail(task.id);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#123D32] text-white hover:bg-[#187A5A] transition cursor-pointer shadow-xs"
+                              title="تشغيل التسجيل الصوتي للمهمة"
+                            >
+                              <span>▶</span>
+                              <span>استماع للتسجيل</span>
+                            </button>
+                          )}
+                        </div>
                       )}
                       
                       {task.is_blocked && (
@@ -1157,6 +1181,13 @@ export default function TasksPage() {
                         setFormData(current => ({ ...current, assigned_to_id: employee?.id || "", notify_telegram: employee?.is_telegram_linked ?? true }));
                       }}
                     />
+
+                    {!formData.assigned_to_id && (
+                      <p className="text-[11px] text-amber-700 font-semibold mt-1.5 flex items-center gap-1.5 bg-amber-50/80 p-2 rounded border border-amber-200">
+                        <span>⚠️</span>
+                        <span>يجب اختيار الموظف المسند إليه حتى يتم إرسال التسجيل الصوتي وإشعاره على Telegram فوراً.</span>
+                      </p>
+                    )}
 
                     {/* Live Telegram Connection & Notification Capability Indicator */}
                     {formData.assigned_to_id && (() => {
