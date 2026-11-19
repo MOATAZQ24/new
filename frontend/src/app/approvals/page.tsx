@@ -11,6 +11,7 @@ import { Icons, ShieldCheckIcon } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { MobileApprovalCard } from "@/components/mobile/MobileApprovalCard";
 
 interface WorkflowItem {
   id: string;
@@ -241,8 +242,8 @@ export default function ApprovalsPage() {
           }
         />
 
-        {/* 5 KPI Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* 5 KPI Summary Cards (Hidden on mobile) */}
+        <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-slate-900">{data?.kpis.total_approvals ?? 0}</div>
@@ -329,72 +330,92 @@ export default function ApprovalsPage() {
                 description="يتم إنشاء مسارات الاعتماد تلقائياً عند طلب شراء أجهزة جديدة، أو طلبات الصيانة الاستثنائية وتراخيص البرمجيات."
               />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-100">
-                    <tr>
-                      <th className="py-3 px-4">عنوان الطلب / المسار</th>
-                      <th className="py-3 px-4">النوع</th>
-                      <th className="py-3 px-4">مقدم الطلب</th>
-                      <th className="py-3 px-4">المبلغ المقدر</th>
-                      <th className="py-3 px-4">الأولوية</th>
-                      <th className="py-3 px-4">الحالة</th>
-                      <th className="py-3 px-4">تاريخ التقديم</th>
-                      <th className="py-3 px-4 text-center">الإجراءات</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {data.approvals.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{item.title}</div>
-                          {item.decision_notes && (
-                            <div className="text-[11px] text-slate-500 mt-0.5">ملاحظات: {item.decision_notes}</div>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{item.workflow_type}</td>
-                        <td className="py-3 px-4 font-medium text-slate-700">{item.initiator_name}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                          {item.amount_sar ? `${item.amount_sar.toLocaleString()} ر.س` : "—"}
-                        </td>
-                        <td className="py-3 px-4">
-                          <PriorityBadge priority={item.priority} />
-                        </td>
-                        <td className="py-3 px-4">
-                          <StatusBadge status={item.current_state} />
-                        </td>
-                        <td className="py-3 px-4 text-slate-500" dir="ltr">
-                          {item.created_at?.slice(0, 10)}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {item.current_state === "Pending" && data.can_approve ? (
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenDecision(item, "Approved")}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
-                              >
-                                اعتماد ✓
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenDecision(item, "Rejected")}
-                                className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] transition-colors cursor-pointer"
-                              >
-                                رفض ✕
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-slate-400 font-medium">
-                              {item.current_state === "Approved" ? "معتمد" : item.current_state === "Rejected" ? "مرفوض" : "قيد المراجعة"}
-                            </span>
-                          )}
-                        </td>
+              <>
+                {/* Mobile Approvals Cards (Purpose-built for mobile, 1-tap decision buttons) */}
+                <div className="block lg:hidden p-3 space-y-3">
+                  {data.approvals.map((item) => (
+                    <MobileApprovalCard
+                      key={item.id}
+                      item={item}
+                      canApprove={data.can_approve}
+                      onApprove={() => handleOpenDecision(item, "Approved")}
+                      onReject={() => handleOpenDecision(item, "Rejected")}
+                      onClick={() => {
+                        setSelectedApproval(item);
+                        setDecisionModal(true);
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Desktop Approvals Table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-100">
+                      <tr>
+                        <th className="py-3 px-4">عنوان الطلب / المسار</th>
+                        <th className="py-3 px-4">النوع</th>
+                        <th className="py-3 px-4">مقدم الطلب</th>
+                        <th className="py-3 px-4">المبلغ المقدر</th>
+                        <th className="py-3 px-4">الأولوية</th>
+                        <th className="py-3 px-4">الحالة</th>
+                        <th className="py-3 px-4">تاريخ التقديم</th>
+                        <th className="py-3 px-4 text-center">الإجراءات</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {data.approvals.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900">{item.title}</div>
+                            {item.decision_notes && (
+                              <div className="text-[11px] text-slate-500 mt-0.5">ملاحظات: {item.decision_notes}</div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-slate-600">{item.workflow_type}</td>
+                          <td className="py-3 px-4 font-medium text-slate-700">{item.initiator_name}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                            {item.amount_sar ? `${item.amount_sar.toLocaleString()} ر.س` : "—"}
+                          </td>
+                          <td className="py-3 px-4">
+                            <PriorityBadge priority={item.priority} />
+                          </td>
+                          <td className="py-3 px-4">
+                            <StatusBadge status={item.current_state} />
+                          </td>
+                          <td className="py-3 px-4 text-slate-500" dir="ltr">
+                            {item.created_at?.slice(0, 10)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {item.current_state === "Pending" && data.can_approve ? (
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenDecision(item, "Approved")}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
+                                >
+                                  اعتماد ✓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenDecision(item, "Rejected")}
+                                  className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] transition-colors cursor-pointer"
+                                >
+                                  رفض ✕
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                {item.current_state === "Approved" ? "معتمد" : item.current_state === "Rejected" ? "مرفوض" : "قيد المراجعة"}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -436,8 +457,53 @@ export default function ApprovalsPage() {
                 }
               />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-right text-xs">
+              <>
+                {/* Mobile Purchase Cards */}
+                <div className="block lg:hidden p-3 space-y-3">
+                  {data.purchase_requests.map((p) => (
+                    <div
+                      key={p.id}
+                      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
+                          #{p.request_number}
+                        </span>
+                        <StatusBadge status={p.status} />
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                          {p.item_name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                          <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
+                            {p.category}
+                          </span>
+                          {p.vendor_name && <span>المورد: {p.vendor_name}</span>}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                        <div className="font-mono text-slate-600 dark:text-slate-300">
+                          {p.quantity} × {p.unit_cost_sar.toLocaleString()} ر.س
+                        </div>
+                        <div className="font-mono font-black text-xs text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md">
+                          {p.total_cost_sar.toLocaleString()} ر.س
+                        </div>
+                      </div>
+
+                      <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-between">
+                        <span>{p.requester_name} ({p.department_name})</span>
+                        <span dir="ltr">{p.created_at?.slice(0, 10)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Purchases Table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-right text-xs">
                   <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-100">
                     <tr>
                       <th className="py-3 px-4">رقم الطلب</th>
@@ -477,6 +543,7 @@ export default function ApprovalsPage() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </div>
         )}

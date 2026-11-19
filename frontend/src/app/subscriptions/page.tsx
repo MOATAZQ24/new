@@ -585,78 +585,145 @@ export default function SubscriptionsPage() {
                   description="يمكنك تعديل الفلاتر أو إضافة اشتراك أو ترخيص تقني جديد"
                 />
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
-                      <tr>
-                        <th className="p-3">#</th>
-                        <th className="p-3">الاشتراك / الخدمة</th>
-                        <th className="p-3">النوع</th>
-                        <th className="p-3">الفرع</th>
-                        <th className="p-3 text-center">المستخدمون</th>
-                        <th className="p-3">تاريخ الانتهاء</th>
-                        <th className="p-3">الحالة</th>
-                        <th className="p-3 text-center">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredSubscriptions.map((s, idx) => {
-                        const isSelected = inspectedSub?.id === s.id;
-                        return (
-                          <tr
-                            key={s.id}
-                            onClick={() => setInspectedSub(s)}
-                            className={`hover:bg-emerald-50/40 transition-colors cursor-pointer ${
-                              isSelected ? "bg-emerald-50/50" : ""
-                            }`}
-                          >
-                            <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
-                            <td className="p-3 font-bold text-slate-900">
-                              <div>{s.service_name}</div>
-                              <div className="text-[11px] text-slate-500 font-normal">
-                                {s.provider || s.account_email || "—"}
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <span className="px-2 py-0.5 rounded-lg bg-sky-50 text-sky-800 font-semibold text-[11px]">
-                                {s.subscription_type}
-                              </span>
-                            </td>
-                            <td className="p-3 text-slate-700">{s.branch_name || "جميع الفروع"}</td>
-                            <td className="p-3 text-center font-mono font-bold text-slate-800 whitespace-nowrap">
+                <>
+                  {/* Mobile Subscription Cards (Purpose-built for mobile, zero clipped columns) */}
+                  <div className="block md:hidden divide-y divide-slate-100">
+                    {filteredSubscriptions.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => setInspectedSub(s)}
+                        className={`p-4 space-y-2.5 transition-colors cursor-pointer active:bg-slate-50 ${
+                          inspectedSub?.id === s.id ? "bg-emerald-50/50" : ""
+                        }`}
+                      >
+                        {/* Top: Service Type + Status */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-2 py-0.5 rounded-lg bg-sky-50 text-sky-800 font-semibold text-[11px]">
+                            {s.subscription_type}
+                          </span>
+                          <StatusBadge status={s.status} />
+                        </div>
+
+                        {/* Service & Provider */}
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                            {s.service_name}
+                          </h4>
+                          <div className="text-xs text-slate-500 mt-0.5">
+                            {s.provider || s.account_email || "ترخيص تقني"}
+                          </div>
+                        </div>
+
+                        {/* Seats, Renewal Date & Branch */}
+                        <div className="pt-1 flex items-center justify-between text-xs text-slate-600 border-t border-slate-50">
+                          <div className="flex items-center gap-1 font-mono">
+                            <span className="text-slate-400 text-[11px]">المقاعد: </span>
+                            <span className="font-bold text-[#187A5A]">
                               <bdi dir="ltr">{s.allocated_seats ?? 0} / {s.seat_limit ?? 1}</bdi>
-                            </td>
-                            <td className="p-3 font-mono text-slate-700">
-                              <bdi dir="ltr">{s.renewal_date || "—"}</bdi>
-                            </td>
-                            <td className="p-3">
-                              <StatusBadge status={s.status} />
-                            </td>
-                            <td className="p-3 text-center" onClick={(ev) => ev.stopPropagation()}>
-                              <div className="flex items-center justify-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setInspectedSub(s)}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-[#187A5A] hover:bg-emerald-50 cursor-pointer"
-                                  title="عرض التفاصيل"
-                                >
-                                  <Icons.Eye size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => void openSeatsManager(s)}
-                                  className="px-2 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white text-[11px] font-bold cursor-pointer whitespace-nowrap"
-                                >
-                                  المقاعد
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            </span>
+                          </div>
+                          {s.renewal_date && (
+                            <div className="text-[11px] text-slate-500 font-mono" dir="ltr">
+                              تجديد: {s.renewal_date}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="pt-2 flex items-center gap-2 border-t border-slate-100" onClick={(ev) => ev.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => void openSeatsManager(s)}
+                            className="flex-1 py-1.5 px-3 rounded-xl bg-[#123D32] active:bg-[#187A5A] text-white text-xs font-bold text-center transition"
+                          >
+                            إدارة المقاعد المخصصة
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setInspectedSub(s)}
+                            className="py-1.5 px-3 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50"
+                          >
+                            التفاصيل
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Subscriptions Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-right text-xs">
+                      <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+                        <tr>
+                          <th className="p-3">#</th>
+                          <th className="p-3">الاشتراك / الخدمة</th>
+                          <th className="p-3">النوع</th>
+                          <th className="p-3">الفرع</th>
+                          <th className="p-3 text-center">المستخدمون</th>
+                          <th className="p-3">تاريخ الانتهاء</th>
+                          <th className="p-3">الحالة</th>
+                          <th className="p-3 text-center">الإجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredSubscriptions.map((s, idx) => {
+                          const isSelected = inspectedSub?.id === s.id;
+                          return (
+                            <tr
+                              key={s.id}
+                              onClick={() => setInspectedSub(s)}
+                              className={`hover:bg-emerald-50/40 transition-colors cursor-pointer ${
+                                isSelected ? "bg-emerald-50/50" : ""
+                              }`}
+                            >
+                              <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                              <td className="p-3 font-bold text-slate-900">
+                                <div>{s.service_name}</div>
+                                <div className="text-[11px] text-slate-500 font-normal">
+                                  {s.provider || s.account_email || "—"}
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <span className="px-2 py-0.5 rounded-lg bg-sky-50 text-sky-800 font-semibold text-[11px]">
+                                  {s.subscription_type}
+                                </span>
+                              </td>
+                              <td className="p-3 text-slate-700">{s.branch_name || "جميع الفروع"}</td>
+                              <td className="p-3 text-center font-mono font-bold text-slate-800 whitespace-nowrap">
+                                <bdi dir="ltr">{s.allocated_seats ?? 0} / {s.seat_limit ?? 1}</bdi>
+                              </td>
+                              <td className="p-3 font-mono text-slate-700">
+                                <bdi dir="ltr">{s.renewal_date || "—"}</bdi>
+                              </td>
+                              <td className="p-3">
+                                <StatusBadge status={s.status} />
+                              </td>
+                              <td className="p-3 text-center" onClick={(ev) => ev.stopPropagation()}>
+                                <div className="flex items-center justify-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setInspectedSub(s)}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-[#187A5A] hover:bg-emerald-50 cursor-pointer"
+                                    title="عرض التفاصيل"
+                                  >
+                                    <Icons.Eye size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void openSeatsManager(s)}
+                                    className="px-2 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white text-[11px] font-bold cursor-pointer whitespace-nowrap"
+                                  >
+                                    المقاعد
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </div>

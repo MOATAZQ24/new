@@ -18,6 +18,9 @@ import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { MobileToolbar } from "@/components/mobile/MobileToolbar";
+import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
+import { MobileAssetCard } from "@/components/mobile/MobileAssetCard";
 
 const assetColumns = [
   { id: "asset_code", label: "كود الأصل" }, { id: "asset_name", label: "اسم وموديل الأصل" },
@@ -114,6 +117,7 @@ export default function AssetsPage() {
   const [transferTargetBranchId, setTransferTargetBranchId] = useState("");
   const [transferReason, setTransferReason] = useState("");
   const [copiedSerial, setCopiedSerial] = useState<string | null>(null);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -447,7 +451,148 @@ export default function AssetsPage() {
         }
       />
 
-      {/* Branch-Aware Asset KPI Cards & Charts */}
+      {/* Mobile Toolbar & Filter Sheet */}
+      <MobileToolbar
+        searchValue={search}
+        onSearchChange={(v) => { setSearch(v); setPage(1); }}
+        searchPlaceholder="بحث بكود الأصل، الموديل، السيريال..."
+        activeFilterCount={assetFilterCount}
+        onOpenFilters={() => setMobileFilterOpen(true)}
+        onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setSelectedBranchIds([]); setPage(1); }}
+        quickChips={[
+          {
+            id: "all",
+            label: "الكل",
+            count: analytics?.kpis?.total_assets,
+            active: !statusFilter && !typeFilter && selectedBranchIds.length === 0,
+            onClick: () => { setStatusFilter(""); setTypeFilter(""); setSelectedBranchIds([]); setPage(1); },
+          },
+          {
+            id: "available",
+            label: "متاح",
+            count: analytics?.kpis?.available_assets,
+            active: statusFilter === "Available",
+            onClick: () => { setStatusFilter(statusFilter === "Available" ? "" : "Available"); setPage(1); },
+          },
+          {
+            id: "assigned",
+            label: "مسلّم عهدة",
+            count: analytics?.kpis?.assigned_assets,
+            active: statusFilter === "Assigned",
+            onClick: () => { setStatusFilter(statusFilter === "Assigned" ? "" : "Assigned"); setPage(1); },
+          },
+          {
+            id: "maintenance",
+            label: "تحت الصيانة",
+            count: analytics?.kpis?.maintenance_assets,
+            active: statusFilter === "Under Maintenance",
+            onClick: () => { setStatusFilter(statusFilter === "Under Maintenance" ? "" : "Under Maintenance"); setPage(1); },
+          },
+          {
+            id: "laptop",
+            label: "لابتوب",
+            active: typeFilter === "Laptop",
+            onClick: () => { setTypeFilter(typeFilter === "Laptop" ? "" : "Laptop"); setPage(1); },
+          },
+        ]}
+        actionButton={
+          canManage ? (
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+            >
+              <Icons.Plus size={16} />
+              <span>أصل جديد</span>
+            </button>
+          ) : undefined
+        }
+      />
+
+      {/* Mobile Contextual Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        title="تصفية الأصول التقنية"
+        activeCount={assetFilterCount}
+        onReset={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setSelectedBranchIds([]); setPage(1); }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              الفرع
+            </label>
+            <select
+              value={selectedBranchIds[0] || ""}
+              onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع الفروع</option>
+              {companyBranches.map((br) => (
+                <option key={br.id} value={br.id}>
+                  {br.branch_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              فئة الأصل
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع الفئات (تقنية وعامة)</option>
+              <option value="IT">أصول تقنية (IT)</option>
+              <option value="General">أصول عامة (General)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              نوع الأصل
+            </label>
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع أنواع الأصول</option>
+              <option value="Laptop">أجهزة لابتوب (Laptop)</option>
+              <option value="Desktop">أجهزة مكتبية (Desktop)</option>
+              <option value="Monitor">شاشات (Monitor)</option>
+              <option value="Mobile Phone">هواتف ذكيّة (Mobile Phone)</option>
+              <option value="Tablet">أجهزة لوحية (Tablet)</option>
+              <option value="Printer">طابعات (Printer)</option>
+              <option value="Other">أخرى (Other)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              حالة الأصل
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Available">متاح للتسليم (Available)</option>
+              <option value="Assigned">مسلّم كعهدة (Assigned)</option>
+              <option value="Under Maintenance">تحت الصيانة (Under Maintenance)</option>
+              <option value="Damaged">تالف (Damaged)</option>
+              <option value="Retired">متقاعد (Retired)</option>
+            </select>
+          </div>
+        </div>
+      </MobileFilterSheet>
+
+      {/* Desktop View: Branch-Aware Asset KPI Cards & Charts & Desktop Filters */}
+      <div className="hidden lg:block space-y-5">
       {analytics && (
         <div className="space-y-5 my-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -573,6 +718,7 @@ export default function AssetsPage() {
       />
 
       <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter, asset_category: categoryFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setCategoryFilter(filters.asset_category || ""); setPage(1); }} />
+      </div>
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       {/* Assets Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
@@ -596,8 +742,50 @@ export default function AssetsPage() {
             }
           />
         ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-right text-xs">
+          <>
+            {/* Mobile Asset Cards (Purpose-built for mobile, no cramped tables or horizontal scrolling) */}
+            <div className="block lg:hidden p-3 space-y-3">
+              {assets.map((ast) => (
+                <MobileAssetCard
+                  key={ast.id}
+                  asset={{
+                    id: ast.id,
+                    asset_code: ast.asset_code,
+                    asset_name: ast.asset_name,
+                    brand: ast.brand || undefined,
+                    model: ast.model || undefined,
+                    asset_type: ast.asset_type,
+                    serial_number: ast.serial_number || undefined,
+                    status: ast.status,
+                    assigned_employee_name: ast.assigned_employee_name || undefined,
+                    branch_name: ast.branch_name || undefined,
+                  }}
+                  onClick={() => setSelectedAsset(ast)}
+                  onCopySerial={(sn) => copyToClipboard(sn)}
+                  copiedSerial={copiedSerial}
+                  onShowQr={() => {
+                    setSelectedAsset(ast);
+                    setShowQRModal(true);
+                  }}
+                  onCustodyAction={
+                    canManage
+                      ? () => {
+                          setSelectedAsset(ast);
+                          if (ast.status === "Assigned") {
+                            setShowReturnModal(true);
+                          } else {
+                            setShowHandoverModal(true);
+                          }
+                        }
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+
+            {/* Desktop Assets Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-right text-xs">
             <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
               <PreferenceRow tableId="/assets" columns={assetColumns}>
                 <th className="p-3.5">كود الأصل</th>
@@ -740,6 +928,7 @@ export default function AssetsPage() {
             </tbody>
           </table>
         </div>
+        </>
         )}
       </div>
 

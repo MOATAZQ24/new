@@ -21,6 +21,9 @@ import {
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { MobileToolbar } from "@/components/mobile/MobileToolbar";
+import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
+import { MobileTicketCard } from "@/components/mobile/MobileTicketCard";
 
 interface TicketItem {
   id: string;
@@ -68,6 +71,7 @@ export default function TicketsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Dependencies
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
@@ -311,8 +315,133 @@ export default function TicketsPage() {
           }
         />
 
-        {/* Interactive Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Mobile Toolbar & Filter Sheet (Clean, 1-Handed, Touch-Friendly) */}
+        <MobileToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="بحث في التذاكر برقم البلاغ أو العنوان..."
+          activeFilterCount={ticketFilterCount}
+          onOpenFilters={() => setMobileFilterOpen(true)}
+          onResetFilters={resetTicketFilters}
+          quickChips={[
+            {
+              id: "all",
+              label: "الكل",
+              count: totalTickets,
+              active: !statusFilter && !priorityFilter,
+              onClick: () => {
+                setStatusFilter("");
+                setPriorityFilter("");
+              },
+            },
+            {
+              id: "open",
+              label: "مفتوحة",
+              count: openCount,
+              active: statusFilter === "Open",
+              onClick: () => setStatusFilter(statusFilter === "Open" ? "" : "Open"),
+            },
+            {
+              id: "in_progress",
+              label: "قيد المعالجة",
+              count: inProgressCount,
+              active: statusFilter === "In Progress",
+              onClick: () => setStatusFilter(statusFilter === "In Progress" ? "" : "In Progress"),
+            },
+            {
+              id: "resolved",
+              label: "تم الحل",
+              count: resolvedCount,
+              active: statusFilter === "Resolved",
+              onClick: () => setStatusFilter(statusFilter === "Resolved" ? "" : "Resolved"),
+            },
+            {
+              id: "urgent",
+              label: "🚨 عاجل",
+              active: priorityFilter === "Urgent",
+              onClick: () => setPriorityFilter(priorityFilter === "Urgent" ? "" : "Urgent"),
+            },
+          ]}
+          actionButton={
+            <button
+              type="button"
+              onClick={() => setCreateModal(true)}
+              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+            >
+              <PlusIcon className="w-4 h-4" />
+              <span>تذكرة جديدة</span>
+            </button>
+          }
+        />
+
+        {/* Mobile Contextual Filter Sheet */}
+        <MobileFilterSheet
+          isOpen={mobileFilterOpen}
+          onClose={() => setMobileFilterOpen(false)}
+          title="تصفية تذاكر الدعم الفني"
+          activeCount={ticketFilterCount}
+          onReset={resetTicketFilters}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                تصنيف التذكرة
+              </label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="">جميع التصنيفات</option>
+                <option value="Hardware">أجهزة وعتاد (Hardware)</option>
+                <option value="Software">برمجيات وأنظمة (Software)</option>
+                <option value="Network">شبكات واتصالات (Network)</option>
+                <option value="Access">صلاحيات ووصول (Access)</option>
+                <option value="Email">بريد إلكتروني (Email)</option>
+                <option value="Other">أخرى</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                حالة البلاغ
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="">جميع الحالات</option>
+                <option value="Open">مفتوحة (Open)</option>
+                <option value="Assigned">مسندة لفني</option>
+                <option value="In Progress">قيد المعالجة</option>
+                <option value="Waiting for User">في انتظار رد المستخدم</option>
+                <option value="Resolved">تم الحل</option>
+                <option value="Closed">مغلقة</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                مستوى الأولوية
+              </label>
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="">جميع الأولويات</option>
+                <option value="Urgent">عاجل (Urgent)</option>
+                <option value="High">مرتفع (High)</option>
+                <option value="Medium">متوسط (Medium)</option>
+                <option value="Low">منخفض (Low)</option>
+              </select>
+            </div>
+          </div>
+        </MobileFilterSheet>
+
+        {/* Desktop Interactive Stats (Hidden on Mobile to remove clutter) */}
+        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
             title="إجمالي التذاكر"
             value={totalTickets}
@@ -347,63 +476,65 @@ export default function TicketsPage() {
           />
         </div>
 
-        {/* Filters */}
-        <DataToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="بحث برقم التذكرة (TCK-...)، عنوان المشكلة، أو التفاصيل..."
-          searchLabel="بحث في التذاكر"
-          activeFilterCount={ticketFilterCount}
-          onResetFilters={resetTicketFilters}
-          onRefresh={() => void loadTickets()}
-          refreshing={loading}
-          filters={
-            <>
-              <select
-                aria-label="تصفية حسب التصنيف"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
-              >
-                <option value="">جميع التصنيفات</option>
-                <option value="Hardware">أجهزة وعتاد (Hardware)</option>
-                <option value="Software">برمجيات وأنظمة (Software)</option>
-                <option value="Network">شبكات واتصالات (Network)</option>
-                <option value="Access">صلاحيات ووصول (Access)</option>
-                <option value="Email">بريد إلكتروني (Email)</option>
-                <option value="Other">أخرى</option>
-              </select>
+        {/* Desktop Filters Toolbar (Hidden on Mobile) */}
+        <div className="hidden lg:block">
+          <DataToolbar
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="بحث برقم التذكرة (TCK-...)، عنوان المشكلة، أو التفاصيل..."
+            searchLabel="بحث في التذاكر"
+            activeFilterCount={ticketFilterCount}
+            onResetFilters={resetTicketFilters}
+            onRefresh={() => void loadTickets()}
+            refreshing={loading}
+            filters={
+              <>
+                <select
+                  aria-label="تصفية حسب التصنيف"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                >
+                  <option value="">جميع التصنيفات</option>
+                  <option value="Hardware">أجهزة وعتاد (Hardware)</option>
+                  <option value="Software">برمجيات وأنظمة (Software)</option>
+                  <option value="Network">شبكات واتصالات (Network)</option>
+                  <option value="Access">صلاحيات ووصول (Access)</option>
+                  <option value="Email">بريد إلكتروني (Email)</option>
+                  <option value="Other">أخرى</option>
+                </select>
 
-              <select
-                aria-label="تصفية حسب الحالة"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
-              >
-                <option value="">جميع الحالات</option>
-                <option value="Open">مفتوحة (Open)</option>
-                <option value="Assigned">مسندة لفني</option>
-                <option value="In Progress">قيد المعالجة</option>
-                <option value="Waiting for User">في انتظار رد المستخدم</option>
-                <option value="Resolved">تم الحل</option>
-                <option value="Closed">مغلقة</option>
-              </select>
+                <select
+                  aria-label="تصفية حسب الحالة"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                >
+                  <option value="">جميع الحالات</option>
+                  <option value="Open">مفتوحة (Open)</option>
+                  <option value="Assigned">مسندة لفني</option>
+                  <option value="In Progress">قيد المعالجة</option>
+                  <option value="Waiting for User">في انتظار رد المستخدم</option>
+                  <option value="Resolved">تم الحل</option>
+                  <option value="Closed">مغلقة</option>
+                </select>
 
-              <select
-                aria-label="تصفية حسب الأولوية"
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
-              >
-                <option value="">جميع الأولويات</option>
-                <option value="Urgent">عاجل</option>
-                <option value="High">مرتفع</option>
-                <option value="Medium">متوسط</option>
-                <option value="Low">منخفض</option>
-              </select>
-            </>
-          }
-        />
+                <select
+                  aria-label="تصفية حسب الأولوية"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                >
+                  <option value="">جميع الأولويات</option>
+                  <option value="Urgent">عاجل</option>
+                  <option value="High">مرتفع</option>
+                  <option value="Medium">متوسط</option>
+                  <option value="Low">منخفض</option>
+                </select>
+              </>
+            }
+          />
+        </div>
 
         {loadError && (
           <AlertBanner
@@ -437,81 +568,95 @@ export default function TicketsPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-right">
-                <thead className="bg-gray-50 text-gray-600 font-medium text-xs border-b">
-                  <tr>
-                    <th className="py-3 px-4">رقم التذكرة</th>
-                    <th className="py-3 px-4">عنوان البلاغ والمشكلة</th>
-                    <th className="py-3 px-4">مقدم البلاغ</th>
-                    <th className="py-3 px-4">الفني المسؤول</th>
-                    <th className="py-3 px-4">التصنيف</th>
-                    <th className="py-3 px-4">الأولوية</th>
-                    <th className="py-3 px-4">الحالة</th>
-                    <th className="py-3 px-4">تاريخ الفتح</th>
-                    <th className="py-3 px-4 text-center">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {tickets.map((t) => (
-                    <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="py-3 px-4">
-                        <span 
-                          onClick={() => handleOpenDetail(t.id)}
-                          className="font-mono text-xs font-bold text-[#187A5A] hover:underline cursor-pointer bg-[#187A5A]/10 px-2 py-0.5 rounded"
-                        >
-                          {t.ticket_number}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div 
-                          onClick={() => handleOpenDetail(t.id)}
-                          className="font-semibold text-gray-900 cursor-pointer hover:text-[#187A5A]"
-                        >
-                          {t.issue_title}
-                        </div>
-                        {t.related_asset_name && (
-                          <div className="text-xs text-gray-400">الأصل: {t.related_asset_name}</div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {t.requester_name || "مستخدم غير محدد"}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {t.assigned_technician_name ? (
-                          <span className="inline-flex items-center gap-1 text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-700">
-                            <UserIcon className="w-3 h-3 text-gray-400" />
-                            {t.assigned_technician_name}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-amber-600 font-medium">بانتظار التكليف</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-xs text-gray-600">
-                        {t.category}
-                      </td>
-                      <td className="py-3 px-4">
-                        <PriorityBadge priority={t.priority} />
-                      </td>
-                      <td className="py-3 px-4">
-                        <StatusBadge status={t.status} />
-                      </td>
-                      <td className="py-3 px-4 text-xs text-gray-500" dir="ltr">
-                        {t.created_at?.slice(0, 10)}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => handleOpenDetail(t.id)}
-                          className="px-3 py-1 text-xs font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded transition-colors"
-                        >
-                          معاينة وإدارة
-                        </button>
-                      </td>
+            <>
+              {/* Mobile Ticket Cards (Purpose-built for mobile, no cramped tables or horizontal scrolling) */}
+              <div className="block lg:hidden p-3 space-y-3">
+                {tickets.map((t) => (
+                  <MobileTicketCard
+                    key={t.id}
+                    ticket={t}
+                    onClick={() => handleOpenDetail(t.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Tickets Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm text-right">
+                  <thead className="bg-gray-50 text-gray-600 font-medium text-xs border-b">
+                    <tr>
+                      <th className="py-3 px-4">رقم التذكرة</th>
+                      <th className="py-3 px-4">عنوان البلاغ والمشكلة</th>
+                      <th className="py-3 px-4">مقدم البلاغ</th>
+                      <th className="py-3 px-4">الفني المسؤول</th>
+                      <th className="py-3 px-4">التصنيف</th>
+                      <th className="py-3 px-4">الأولوية</th>
+                      <th className="py-3 px-4">الحالة</th>
+                      <th className="py-3 px-4">تاريخ الفتح</th>
+                      <th className="py-3 px-4 text-center">الإجراءات</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {tickets.map((t) => (
+                      <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
+                        <td className="py-3 px-4">
+                          <span 
+                            onClick={() => handleOpenDetail(t.id)}
+                            className="font-mono text-xs font-bold text-[#187A5A] hover:underline cursor-pointer bg-[#187A5A]/10 px-2 py-0.5 rounded"
+                          >
+                            {t.ticket_number}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div 
+                            onClick={() => handleOpenDetail(t.id)}
+                            className="font-semibold text-gray-900 cursor-pointer hover:text-[#187A5A]"
+                          >
+                            {t.issue_title}
+                          </div>
+                          {t.related_asset_name && (
+                            <div className="text-xs text-gray-400">الأصل: {t.related_asset_name}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {t.requester_name || "مستخدم غير محدد"}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {t.assigned_technician_name ? (
+                            <span className="inline-flex items-center gap-1 text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-700">
+                              <UserIcon className="w-3 h-3 text-gray-400" />
+                              {t.assigned_technician_name}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-amber-600 font-medium">بانتظار التكليف</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-xs text-gray-600">
+                          {t.category}
+                        </td>
+                        <td className="py-3 px-4">
+                          <PriorityBadge priority={t.priority} />
+                        </td>
+                        <td className="py-3 px-4">
+                          <StatusBadge status={t.status} />
+                        </td>
+                        <td className="py-3 px-4 text-xs text-gray-500" dir="ltr">
+                          {t.created_at?.slice(0, 10)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => handleOpenDetail(t.id)}
+                            className="px-3 py-1 text-xs font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded transition-colors"
+                          >
+                            معاينة وإدارة
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {/* Pagination Controls */}

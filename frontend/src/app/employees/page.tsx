@@ -15,6 +15,9 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { AddEmployeeModal } from "./AddEmployeeModal";
+import { MobileToolbar } from "@/components/mobile/MobileToolbar";
+import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
+import { MobileEmployeeCard } from "@/components/mobile/MobileEmployeeCard";
 
 export interface BranchOption {
   id: string;
@@ -157,6 +160,7 @@ export default function EmployeesPage() {
   const [selectedFilterBranchIds, setSelectedFilterBranchIds] = useState<string[]>([]);
   const [companyBranches, setCompanyBranches] = useState<BranchOption[]>([]);
   const [companyDepartments, setCompanyDepartments] = useState<DepartmentOption[]>([]);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Edit employee form
   const [editEmpId, setEditEmpId] = useState("");
@@ -611,6 +615,135 @@ export default function EmployeesPage() {
         </div>
       )}
 
+      {/* Mobile Toolbar & Filter Sheet */}
+      <MobileToolbar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="بحث في الموظفين والمستخدمين..."
+        activeFilterCount={(statusFilter ? 1 : 0) + (selectedFilterBranchIds.length > 0 ? 1 : 0) + (showArchived ? 1 : 0)}
+        onOpenFilters={() => setMobileFilterOpen(true)}
+        onResetFilters={() => { setSearch(""); setStatusFilter(""); setSelectedFilterBranchIds([]); setShowArchived(false); }}
+        quickChips={[
+          {
+            id: "all",
+            label: "الكل",
+            count: summary.total,
+            active: !statusFilter && !showArchived,
+            onClick: () => { setStatusFilter(""); setShowArchived(false); },
+          },
+          {
+            id: "active",
+            label: "النشطين",
+            count: summary.active,
+            active: statusFilter === "Active" && !showArchived,
+            onClick: () => { setStatusFilter(statusFilter === "Active" ? "" : "Active"); setShowArchived(false); },
+          },
+          {
+            id: "leave",
+            label: "في إجازة",
+            active: statusFilter === "On Leave",
+            onClick: () => { setStatusFilter(statusFilter === "On Leave" ? "" : "On Leave"); },
+          },
+          {
+            id: "archived",
+            label: "الأرشيف",
+            count: summary.archived,
+            active: showArchived,
+            onClick: () => setShowArchived(!showArchived),
+          },
+        ]}
+        actionButton={
+          canManage ? (
+            <button
+              type="button"
+              onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
+              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+            >
+              <Icons.Plus size={15} />
+              <span>موظف جديد</span>
+            </button>
+          ) : undefined
+        }
+      />
+
+      {/* Mobile Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        title="تصفية قائمة الموظفين"
+        activeCount={(statusFilter ? 1 : 0) + (selectedFilterBranchIds.length > 0 ? 1 : 0) + (showArchived ? 1 : 0)}
+        onReset={() => { setSearch(""); setStatusFilter(""); setSelectedFilterBranchIds([]); setShowArchived(false); }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              الشركة أو المنشأة
+            </label>
+            <select
+              value={activeCompanyId || ""}
+              onChange={(e) => {
+                if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
+              }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name_ar}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              حالة التوظيف
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Active">نشط (Active)</option>
+              <option value="On Leave">في إجازة (On Leave)</option>
+              <option value="Suspended">موقوف (Suspended)</option>
+              <option value="Terminated">مغادر (Terminated)</option>
+              <option value="Archived">مؤرشف (Archived)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              الفرع
+            </label>
+            <select
+              value={selectedFilterBranchIds[0] || ""}
+              onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+            >
+              <option value="">جميع الفروع</option>
+              {companyBranches.map((br) => (
+                <option key={br.id} value={br.id}>
+                  {br.branch_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+              className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 w-4 h-4"
+            />
+            <span>عرض الموظفين المؤرشفين واستعادتهم</span>
+          </label>
+        </div>
+      </MobileFilterSheet>
+
+      {/* Desktop View: KPIs & Search Toolbar (Hidden on Mobile) */}
+      <div className="hidden lg:block space-y-4">
       {/* 6 Top Harmonized KPIs */}
       {tab === "employees" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
@@ -785,6 +918,7 @@ export default function EmployeesPage() {
           </>
         )}
       </div>
+      </div>
 
       {/* Content Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
@@ -809,8 +943,31 @@ export default function EmployeesPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-right text-xs">
+            <>
+              {/* Mobile Employee Cards (Purpose-built for mobile, zero clipped columns) */}
+              <div className="block lg:hidden p-3 space-y-3">
+                {employees.map((emp) => (
+                  <MobileEmployeeCard
+                    key={emp.id}
+                    employee={{
+                      id: emp.id,
+                      full_name: emp.full_name,
+                      employee_number: emp.employee_number,
+                      company_name: emp.company_name || activeCompany?.name_ar || undefined,
+                      branch_name: Array.isArray(emp.branch_names) && emp.branch_names.length > 0 ? emp.branch_names[0] : (emp.branch_name || undefined),
+                      job_title: emp.job_title || undefined,
+                      status: emp.employment_status || "Active",
+                      assets_count: emp.assets_count ?? emp.assigned_assets?.length ?? 0,
+                      subscriptions_count: emp.subscriptions_count ?? 0,
+                    }}
+                    onClick={() => setInspectedEmp(emp)}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Employees Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-right text-xs">
                 <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
                   <tr>
                     <th className="p-3">#</th>
@@ -955,6 +1112,7 @@ export default function EmployeesPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )
         ) : users.length === 0 ? (
           <EmptyState

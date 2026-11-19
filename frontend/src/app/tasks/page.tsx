@@ -22,6 +22,9 @@ import { useToast } from "@/context/ToastContext";
 import EmployeeCombobox, { type EmployeeOption } from "@/components/ui/EmployeeCombobox";
 import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks/VoiceTaskRecorder";
 import VoiceTaskPlayer from "@/components/tasks/VoiceTaskPlayer";
+import { MobileToolbar } from "@/components/mobile/MobileToolbar";
+import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
+import { MobileTaskCard } from "@/components/mobile/MobileTaskCard";
 
 interface TaskItem {
   id: string;
@@ -119,6 +122,7 @@ export default function TasksPage() {
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [filterMode, setFilterMode] = useState<"all" | "my">("all");
   const [sortBy, setSortBy] = useState<"created_desc" | "due_asc" | "updated_desc">("created_desc");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalFiltered, setTotalFiltered] = useState(0);
@@ -669,8 +673,217 @@ export default function TasksPage() {
           }
         />
 
-        {/* Interactive Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Mobile Toolbar & Filter Sheet (Clean, 1-Handed, Touch-Friendly) */}
+        <MobileToolbar
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="بحث في المهام والمسؤولين..."
+          activeFilterCount={activeFilterCount}
+          onOpenFilters={() => setMobileFilterOpen(true)}
+          onResetFilters={resetAllFilters}
+          quickChips={[
+            {
+              id: "all",
+              label: "الكل",
+              count: summary?.total ?? totalTasks,
+              active: !statusFilter && !overdueOnly && filterMode === "all",
+              onClick: () => {
+                setStatusFilter("");
+                setOverdueOnly(false);
+                setFilterMode("all");
+              },
+            },
+            {
+              id: "my",
+              label: "مهامي",
+              active: filterMode === "my",
+              onClick: () => setFilterMode(filterMode === "my" ? "all" : "my"),
+            },
+            {
+              id: "active",
+              label: "🔄 النشطة",
+              count: summary?.active,
+              active: statusFilter === "active",
+              onClick: () => {
+                setStatusFilter(statusFilter === "active" ? "" : "active");
+                setOverdueOnly(false);
+              },
+            },
+            {
+              id: "overdue",
+              label: "🔴 المتأخرة",
+              count: overdueCount,
+              active: overdueOnly || statusFilter === "overdue",
+              onClick: () => {
+                setOverdueOnly(!overdueOnly);
+                if (!overdueOnly) setStatusFilter("");
+              },
+            },
+            {
+              id: "completed",
+              label: "🟢 المكتملة",
+              count: completedCount,
+              active: statusFilter === "completed",
+              onClick: () => {
+                setStatusFilter(statusFilter === "completed" ? "" : "completed");
+                setOverdueOnly(false);
+              },
+            },
+          ]}
+          actionButton={
+            <button
+              type="button"
+              onClick={() => {
+                setCreateMode("voice");
+                setCreateModal(true);
+              }}
+              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+            >
+              <span>🎙️</span>
+              <span>مهمة جديدة</span>
+            </button>
+          }
+        />
+
+        {/* Mobile Filter Sheet */}
+        <MobileFilterSheet
+          isOpen={mobileFilterOpen}
+          onClose={() => setMobileFilterOpen(false)}
+          title="تصفية وترتيب المهام"
+          activeCount={activeFilterCount}
+          onReset={resetAllFilters}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                نطاق المهام
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFilterMode("all")}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                    filterMode === "all"
+                      ? "bg-[#187A5A] text-white border-[#187A5A]"
+                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  جميع المهام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMode("my")}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                    filterMode === "my"
+                      ? "bg-[#187A5A] text-white border-[#187A5A]"
+                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  مهامي المسندة إلي
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                المرحلة أو الحالة
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="">جميع الحالات والمراحل</option>
+                <optgroup label="مراحل دورة العمل الموحدة">
+                  <option value="active">🔄 المهام النشطة</option>
+                  <option value="new">📨 بانتظار القبول</option>
+                  <option value="in_progress">🔵 قيد التنفيذ</option>
+                  <option value="waiting">🟡 بانتظار التوضيح</option>
+                  <option value="overdue">🔴 متأخرة عن الموعد</option>
+                  <option value="completed">🟢 مكتملة</option>
+                  <option value="rejected">⛔ مرفوضة</option>
+                  <option value="cancelled">⚫ ملغاة</option>
+                </optgroup>
+                <optgroup label="الحالات التفصيلية">
+                  <option value="Draft">مسودة (Draft)</option>
+                  <option value="Assigned">تم الإسناد (Assigned)</option>
+                  <option value="Accepted">تم القبول (Accepted)</option>
+                  <option value="In Progress">قيد التنفيذ (In Progress)</option>
+                  <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
+                  <option value="Waiting for Response">بانتظار التوضيح (Waiting)</option>
+                  <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
+                  <option value="Rework Required">مطلوب تعديلات (Rework)</option>
+                  <option value="Completed">معتمد ومكتمل (Completed)</option>
+                  <option value="Rejected">مرفوض (Rejected)</option>
+                  <option value="Cancelled">ملغي (Cancelled)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            {filterEmployees.length > 0 && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  الموظف المسند إليه
+                </label>
+                <select
+                  value={filterAssigneeId}
+                  onChange={(e) => setFilterAssigneeId(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                >
+                  <option value="">جميع الموظفين</option>
+                  {filterEmployees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                مستوى الأولوية
+              </label>
+              <select
+                value={priorityFilter}
+                onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="">جميع الأولويات</option>
+                <option value="Urgent">عاجل جداً (Urgent)</option>
+                <option value="High">مرتفع (High)</option>
+                <option value="Medium">متوسط (Medium)</option>
+                <option value="Low">منخفض (Low)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                ترتيب العرض
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value as "created_desc" | "due_asc" | "updated_desc"); setPage(1); }}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              >
+                <option value="created_desc">الأحدث أولاً</option>
+                <option value="due_asc">الأقرب موعداً</option>
+                <option value="updated_desc">آخر تحديث</option>
+              </select>
+            </div>
+
+            <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-rose-600 dark:text-rose-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={overdueOnly}
+                onChange={(e) => { setOverdueOnly(e.target.checked); setPage(1); }}
+                className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
+              />
+              <span>عرض المهام المتأخرة عن الموعد فقط</span>
+            </label>
+          </div>
+        </MobileFilterSheet>
+
+        {/* Desktop Interactive Stats (Hidden on Mobile) */}
+        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatsCard
             title="إجمالي المهام"
             value={totalTasks}
@@ -713,7 +926,8 @@ export default function TasksPage() {
           />
         </div>
 
-        {/* Filters & Tabs */}
+        {/* Desktop Filters & Tabs (Hidden on Mobile) */}
+        <div className="hidden lg:block">
         <DataToolbar
           searchValue={search}
           onSearchChange={setSearch}
@@ -870,6 +1084,7 @@ export default function TasksPage() {
             </div>
           }
         />
+        </div>
 
         {loadError && (
           <AlertBanner
@@ -918,8 +1133,22 @@ export default function TasksPage() {
               }
             />
           ) : (
-            <div className="divide-y divide-gray-100">
-              {tasks.map((task) => (
+            <>
+              {/* Mobile Task Cards (Purpose-built for mobile, zero clipping or cramped rows) */}
+              <div className="block lg:hidden p-3 space-y-3">
+                {tasks.map((task) => (
+                  <MobileTaskCard
+                    key={task.id}
+                    task={task}
+                    onClick={() => handleOpenDetail(task.id)}
+                    onPlayVoice={() => handleOpenDetail(task.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Task List */}
+              <div className="hidden lg:block divide-y divide-gray-100">
+                {tasks.map((task) => (
                 <div
                   key={task.id}
                   className="motion-task-row p-5 hover:bg-gray-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -1086,6 +1315,7 @@ export default function TasksPage() {
                 </div>
               ))}
             </div>
+            </>
           )}
 
           {totalPages > 1 && (
