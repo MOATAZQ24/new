@@ -14,13 +14,15 @@ import { api, exportReportDownload } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { AddEmployeeModal } from "./AddEmployeeModal";
 
-interface BranchOption {
+export interface BranchOption {
   id: string;
   branch_name: string;
+  location?: string | null;
 }
 
-interface DepartmentOption {
+export interface DepartmentOption {
   id: string;
   department_name: string;
   branch_id?: string | null;
@@ -42,7 +44,7 @@ interface EmployeeAssignedAsset {
   condition: string;
 }
 
-interface EmployeeRow {
+export interface EmployeeRow {
   id: string;
   employee_number: string;
   full_name: string;
@@ -50,8 +52,10 @@ interface EmployeeRow {
   email?: string | null;
   phone?: string | null;
   employment_status: string;
+  company_id?: string | null;
   company_name?: string | null;
   branch_id?: string | null;
+  branch_name?: string | null;
   branch_ids?: string[];
   branch_names?: string[];
   department_id?: string | null;
@@ -595,7 +599,7 @@ export default function EmployeesPage() {
             <span className="font-bold text-emerald-900">تم إنشاء حساب الدخول المؤقت للمستخدم: </span>
             <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#123D32]">{tempPasswordBanner.username}</code>
             <span className="mx-1.5 text-emerald-700">كلمة المرور المؤقتة:</span>
-            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-rose-700">{tempPasswordBanner.password}</code>
+            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#187A5A]">{tempPasswordBanner.password}</code>
           </div>
           <button
             type="button"
@@ -1171,289 +1175,19 @@ export default function EmployeesPage() {
       )}
 
       {/* Add Employee Modal */}
-      <Modal
+      <AddEmployeeModal
         isOpen={showAddEmpModal}
         onClose={() => setShowAddEmpModal(false)}
-        title="إضافة موظف أو فني جديد"
-      >
-        <form onSubmit={handleCreateEmployee} noValidate className="space-y-4">
-          {empFormError && (
-            <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800">
-              {empFormError}
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="add-emp-number" className="block text-xs font-bold text-slate-700 mb-1">
-                الرقم الوظيفي *
-              </label>
-              <input
-                id="add-emp-number"
-                type="text"
-                required
-                value={empNumber}
-                onChange={(e) => setEmpNumber(e.target.value)}
-                placeholder="EMP-001"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
-              />
-            </div>
-            <div>
-              <label htmlFor="add-emp-name" className="block text-xs font-bold text-slate-700 mb-1">
-                الاسم الكامل *
-              </label>
-              <input
-                id="add-emp-name"
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="الاسم الثلاثي"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="add-emp-title" className="block text-xs font-bold text-slate-700 mb-1">
-              المسمى الوظيفي
-            </label>
-            <input
-              id="add-emp-title"
-              type="text"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="مثال: مهندس شبكات / فني دعم فني"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="add-emp-email" className="block text-xs font-bold text-slate-700 mb-1">
-                البريد الإلكتروني
-              </label>
-              <input
-                id="add-emp-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.sa"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              />
-            </div>
-            <div>
-              <label htmlFor="add-emp-phone" className="block text-xs font-bold text-slate-700 mb-1">
-                رقم الهاتف
-              </label>
-              <input
-                id="add-emp-phone"
-                type="text"
-                dir="ltr"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+966 50 000 0000"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] text-left font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Multi-Branch Selection (Canonical 5 Branches) */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              الفروع المعتمدة (الأول المختار هو الفرع الرئيسي) *
-            </label>
-            <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              {companyBranches.map((br) => {
-                const idx = empBranchIds.indexOf(br.id);
-                const checked = idx !== -1;
-                return (
-                  <button
-                    key={br.id}
-                    type="button"
-                    onClick={() => {
-                      if (checked && empBranchIds.length > 1) {
-                        setEmpBranchIds(empBranchIds.filter((x) => x !== br.id));
-                      } else if (!checked) {
-                        setEmpBranchIds([...empBranchIds, br.id]);
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
-                      checked
-                        ? "bg-[#123D32] text-white border-[#123D32]"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
-                    }`}
-                  >
-                    {idx === 0 ? "★ أساسي: " : checked ? "✓ مساند: " : ""}{br.branch_name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Optional Secondary Companies (Multi-Company Staffing) */}
-          {(user?.companies || []).length > 1 && (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                منشآت إضافية تابعة لنفس الشخص (اختياري)
-              </label>
-              <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                {(user?.companies || [])
-                  .filter((c) => c.id !== activeCompanyId)
-                  .map((c) => {
-                    const picked = empExtraCompanyIds.includes(c.id);
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() =>
-                          setEmpExtraCompanyIds((prev) =>
-                            picked ? prev.filter((x) => x !== c.id) : [...prev, c.id]
-                          )
-                        }
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
-                          picked
-                            ? "bg-[#187A5A] text-white border-[#187A5A]"
-                            : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
-                        }`}
-                      >
-                        {picked ? "✓ " : ""}{c.name_ar}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="add-emp-dept" className="block text-xs font-bold text-slate-700 mb-1">
-                القسم الإداري
-              </label>
-              <select
-                id="add-emp-dept"
-                value={empDeptId}
-                onChange={(e) => setEmpDeptId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              >
-                <option value="">اختر القسم...</option>
-                {companyDepartments
-                  .filter((d) => !d.branch_id || !empBranchIds[0] || d.branch_id === empBranchIds[0])
-                  .map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.department_name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="add-emp-manager" className="block text-xs font-bold text-slate-700 mb-1">
-                المدير المباشر
-              </label>
-              <select
-                id="add-emp-manager"
-                value={empManagerId}
-                onChange={(e) => setEmpManagerId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              >
-                <option value="">بدون مدير مباشر / الإدارة التنفيذية</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.full_name} (#{e.employee_number})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                الحالة الوظيفية
-              </label>
-              <select
-                value={empStatus}
-                onChange={(e) => setEmpStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              >
-                <option value="Active">على رأس العمل (Active)</option>
-                <option value="On Leave">في إجازة (On Leave)</option>
-                <option value="Suspended">موقوف (Suspended)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                الدور الوظيفي في المنشأة
-              </label>
-              <select
-                value={empRoleName}
-                onChange={(e) => setEmpRoleName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
-              >
-                <option value="Employee">موظف (Employee)</option>
-                <option value="IT Technician">فني تقنية معلومات (IT Technician)</option>
-                <option value="IT Manager">مدير تقنية معلومات (IT Manager)</option>
-                <option value="Company Admin">مدير شركة (Company Admin)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={createUserAccount}
-                onChange={(e) => setCreateUserAccount(e.target.checked)}
-                className="rounded border-slate-300 text-[#123D32]"
-              />
-              إنشاء حساب دخول للنظام لهذا الموظف تلقائياً
-            </label>
-            {createUserAccount && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label htmlFor="add-emp-username" className="block text-[11px] font-bold text-slate-700 mb-1">اسم المستخدم *</label>
-                  <input
-                    id="add-emp-username"
-                    type="text"
-                    required={createUserAccount}
-                    value={empUsername}
-                    onChange={(e) => setEmpUsername(e.target.value)}
-                    placeholder="emp.username"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A] font-mono"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="add-emp-password" className="block text-[11px] font-bold text-slate-700 mb-1">كلمة المرور (توليد مؤقت إن تركت فارغة)</label>
-                  <input
-                    id="add-emp-password"
-                    type="password"
-                    value={empAccountPassword}
-                    onChange={(e) => setEmpAccountPassword(e.target.value)}
-                    placeholder="كلمة مرور قوية..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A]"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setShowAddEmpModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
-            >
-              إلغاء
-            </button>
-            <button
-              type="submit"
-              disabled={submittingEmp}
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-            >
-              {submittingEmp ? "جارٍ الحفظ..." : "حفظ الموظف"}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        activeCompanyId={activeCompanyId}
+        userCompanies={companies}
+        existingEmployees={employees}
+        onEmployeeCreated={({ temporaryPassword }) => {
+          fetchEmployees();
+          if (temporaryPassword) {
+            setTempPasswordBanner(temporaryPassword);
+          }
+        }}
+      />
 
       {/* Edit Employee Modal */}
       <Modal
