@@ -12,6 +12,9 @@ import { api, exportReportDownload } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { MobileToolbar } from "@/components/mobile/MobileToolbar";
+import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
+import { MobileSubscriptionCard } from "@/components/mobile/MobileSubscriptionCard";
 
 interface SubscriptionItem {
   id: string;
@@ -84,6 +87,7 @@ export default function SubscriptionsPage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 220);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Seat Allocation Modal state
   const [activeSub, setActiveSub] = useState<SubscriptionItem | null>(null);
@@ -426,8 +430,8 @@ export default function SubscriptionsPage() {
 
         {/* Row 3: Split Sidebar Inspector (Right) + Inline Filter Toolbar & Subscriptions Table (Left) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* Right Inspector: تفاصيل الاشتراك */}
-          <aside className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
+          {/* Right Inspector: تفاصيل الاشتراك (Desktop Only) */}
+          <aside className="hidden lg:block lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Icons.Info size={16} className="text-[#123D32]" />
@@ -499,7 +503,123 @@ export default function SubscriptionsPage() {
 
           {/* Left Main Area: Inline Toolbar + Subscriptions Table */}
           <div className="lg:col-span-8 space-y-3 min-w-0">
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs flex flex-wrap items-center gap-2">
+            {/* Mobile Toolbar & Filter Sheet */}
+            <MobileToolbar
+              searchValue={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="بحث في الاشتراكات والمزودين..."
+              activeFilterCount={(typeFilter ? 1 : 0) + (statusFilter ? 1 : 0) + (selectedBranchIds.length > 0 ? 1 : 0)}
+              onOpenFilters={() => setMobileFilterOpen(true)}
+              onResetFilters={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setSelectedBranchIds([]); }}
+              quickChips={[
+                {
+                  id: "all",
+                  label: "الكل",
+                  count: summary?.total_subscriptions_count,
+                  active: !statusFilter && !typeFilter,
+                  onClick: () => { setStatusFilter(""); setTypeFilter(""); setSelectedBranchIds([]); },
+                },
+                {
+                  id: "active",
+                  label: "نشط",
+                  count: summary?.active_subscriptions_count,
+                  active: statusFilter === "Active",
+                  onClick: () => setStatusFilter(statusFilter === "Active" ? "" : "Active"),
+                },
+                {
+                  id: "expiring",
+                  label: "تجديد قريب",
+                  count: summary?.expiring_soon_count,
+                  active: statusFilter === "Expiring Soon",
+                  onClick: () => setStatusFilter(statusFilter === "Expiring Soon" ? "" : "Expiring Soon"),
+                },
+                {
+                  id: "saas",
+                  label: "SaaS",
+                  active: typeFilter === "SaaS",
+                  onClick: () => setTypeFilter(typeFilter === "SaaS" ? "" : "SaaS"),
+                },
+              ]}
+              actionButton={
+                canManage ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(true)}
+                    className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+                  >
+                    <Icons.Plus size={15} />
+                    <span>اشتراك جديد</span>
+                  </button>
+                ) : undefined
+              }
+            />
+
+            {/* Mobile Filter Sheet */}
+            <MobileFilterSheet
+              isOpen={mobileFilterOpen}
+              onClose={() => setMobileFilterOpen(false)}
+              title="تصفية الاشتراكات والتراخيص"
+              activeCount={(typeFilter ? 1 : 0) + (statusFilter ? 1 : 0) + (selectedBranchIds.length > 0 ? 1 : 0)}
+              onReset={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setSelectedBranchIds([]); }}
+            >
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    نوع الاشتراك
+                  </label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                  >
+                    <option value="">جميع الأنواع</option>
+                    <option value="SaaS">SaaS</option>
+                    <option value="Hosting">Hosting</option>
+                    <option value="Domain">Domain</option>
+                    <option value="Security">Security</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    الفرع
+                  </label>
+                  <select
+                    value={selectedBranchIds[0] || ""}
+                    onChange={(e) => setSelectedBranchIds(e.target.value ? [e.target.value] : [])}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                  >
+                    <option value="">جميع الفروع</option>
+                    {companyBranches.map((br) => (
+                      <option key={br.id} value={br.id}>
+                        {br.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    حالة الاشتراك
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                  >
+                    <option value="">جميع الحالات</option>
+                    <option value="Active">نشط</option>
+                    <option value="Expiring Soon">تجديد قريب</option>
+                    <option value="Expired">منتهي</option>
+                    <option value="Suspended">معلق</option>
+                  </select>
+                </div>
+              </div>
+            </MobileFilterSheet>
+
+            {/* Desktop Toolbar (Hidden on Mobile) */}
+            <div className="hidden lg:flex bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[180px]">
                 <Icons.Search size={14} className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
                 <input
@@ -587,71 +707,18 @@ export default function SubscriptionsPage() {
               ) : (
                 <>
                   {/* Mobile Subscription Cards (Purpose-built for mobile, zero clipped columns) */}
-                  <div className="block md:hidden divide-y divide-slate-100">
+                  <div className="block lg:hidden p-3 space-y-3">
                     {filteredSubscriptions.map((s) => (
-                      <div
+                      <MobileSubscriptionCard
                         key={s.id}
-                        onClick={() => setInspectedSub(s)}
-                        className={`p-4 space-y-2.5 transition-colors cursor-pointer active:bg-slate-50 ${
-                          inspectedSub?.id === s.id ? "bg-emerald-50/50" : ""
-                        }`}
-                      >
-                        {/* Top: Service Type + Status */}
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="px-2 py-0.5 rounded-lg bg-sky-50 text-sky-800 font-semibold text-[11px]">
-                            {s.subscription_type}
-                          </span>
-                          <StatusBadge status={s.status} />
-                        </div>
-
-                        {/* Service & Provider */}
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                            {s.service_name}
-                          </h4>
-                          <div className="text-xs text-slate-500 mt-0.5">
-                            {s.provider || s.account_email || "ترخيص تقني"}
-                          </div>
-                        </div>
-
-                        {/* Seats, Renewal Date & Branch */}
-                        <div className="pt-1 flex items-center justify-between text-xs text-slate-600 border-t border-slate-50">
-                          <div className="flex items-center gap-1 font-mono">
-                            <span className="text-slate-400 text-[11px]">المقاعد: </span>
-                            <span className="font-bold text-[#187A5A]">
-                              <bdi dir="ltr">{s.allocated_seats ?? 0} / {s.seat_limit ?? 1}</bdi>
-                            </span>
-                          </div>
-                          {s.renewal_date && (
-                            <div className="text-[11px] text-slate-500 font-mono" dir="ltr">
-                              تجديد: {s.renewal_date}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="pt-2 flex items-center gap-2 border-t border-slate-100" onClick={(ev) => ev.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => void openSeatsManager(s)}
-                            className="flex-1 py-1.5 px-3 rounded-xl bg-[#123D32] active:bg-[#187A5A] text-white text-xs font-bold text-center transition"
-                          >
-                            إدارة المقاعد المخصصة
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setInspectedSub(s)}
-                            className="py-1.5 px-3 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50"
-                          >
-                            التفاصيل
-                          </button>
-                        </div>
-                      </div>
+                        subscription={s}
+                        onClick={() => void openSeatsManager(s)}
+                      />
                     ))}
                   </div>
 
                   {/* Desktop Subscriptions Table */}
-                  <div className="hidden md:block overflow-x-auto">
+                  <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-right text-xs">
                       <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
                         <tr>

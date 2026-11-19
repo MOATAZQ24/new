@@ -1115,6 +1115,26 @@ export default function TasksPage() {
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           {loading ? (
             <TableSkeleton variant="list" rows={5} />
+          ) : loadError ? (
+            <div className="p-8 text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-2xl font-bold border border-rose-200">
+                ⚠️
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-gray-900">تعذر تحميل قائمة المهام</h3>
+                <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">{loadError}</p>
+              </div>
+              <div className="flex items-center justify-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => void loadTasks()}
+                  className="motion-control inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-xl shadow-xs transition cursor-pointer"
+                >
+                  <span>🔄</span>
+                  <span>إعادة المحاولة الآن</span>
+                </button>
+              </div>
+            </div>
           ) : tasks.length === 0 ? (
             <EmptyState
               icon={<CheckSquareIcon className="w-7 h-7" />}

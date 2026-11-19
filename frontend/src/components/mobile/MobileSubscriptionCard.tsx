@@ -19,7 +19,7 @@ interface MobileSubscriptionCardProps {
     provider?: string;
     account_email?: string;
     subscription_type: string;
-    branch_name?: string;
+    branch_name?: string | null;
     allocated_seats?: number;
     seat_limit?: number;
     renewal_date?: string;

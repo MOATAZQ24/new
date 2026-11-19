@@ -2,7 +2,7 @@ import hashlib
 import os
 import json
 import secrets
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from pydantic_settings import BaseSettings
 
 
@@ -107,6 +107,19 @@ class Settings(BaseSettings):
             return origins
         except Exception:
             return []
+
+    @property
+    def cors_origin_regex(self) -> Optional[str]:
+        """Regex for CORS origin matching. In development, automatically permits RFC1918 private subnets
+        (192.168.x.x, 10.x.x.x, 172.16-31.x.x) and loopback for seamless real mobile device testing over LAN.
+        In production, strictly adheres to explicit CORS_ORIGIN_REGEX if configured.
+        """
+        env_regex = os.getenv("CORS_ORIGIN_REGEX", "").strip()
+        if env_regex:
+            return env_regex
+        if not self.is_production:
+            return r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$"
+        return None
 
     class Config:
         env_file = ".env"

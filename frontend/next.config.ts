@@ -1,9 +1,28 @@
 import type { NextConfig } from "next";
+import os from "os";
 
 const backendOrigin = process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:8000";
 
+// Dynamically discover all local network interface IPv4 addresses for seamless real mobile LAN testing
+const nets = os.networkInterfaces();
+const localIps = Object.values(nets)
+  .flat()
+  .filter((net): net is os.NetworkInterfaceInfo => !!net && net.family === "IPv4")
+  .map((net) => net.address);
+
+const allowedDevOrigins = Array.from(
+  new Set([
+    "127.0.0.1",
+    "localhost",
+    ...localIps,
+    "192.168.8.194",
+    "192.168.8.137",
+    "*.local",
+  ])
+);
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["192.168.8.137", "127.0.0.1", "localhost"],
+  allowedDevOrigins,
   output: "standalone",
   async rewrites() {
     return [

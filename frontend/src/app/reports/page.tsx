@@ -12,6 +12,7 @@ import {
 import { api, exportReportDownload } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { MobileReportSummary } from "@/components/mobile/MobileReportSummary";
 
 interface ReportsOverviewData {
   kpis: {
@@ -369,8 +370,17 @@ export default function ReportsPage() {
               </section>
             </div>
 
-            {/* Row 3: 3 Bottom Cards (Quick Actions 2x2, Summary by Company Table, Latest Reports) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+            {/* Mobile Purpose-Built Report Summary & Instant Field Exports */}
+            <div className="block lg:hidden">
+              <MobileReportSummary
+                companies={overview.company_breakdown}
+                onExport={(docKey, fmt) => void handleExport(docKey, fmt)}
+                exportingKey={downloading}
+              />
+            </div>
+
+            {/* Row 3: 3 Bottom Cards (Quick Actions 2x2, Summary by Company Table, Latest Reports) (Desktop Only) */}
+            <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <Icons.Sparkles size={17} className="text-[#C5A46D]" />

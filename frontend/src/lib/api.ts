@@ -28,6 +28,25 @@ export class ApiError extends Error {
     this.data = data;
     this.response = { status, data };
   }
+
+  get isNetworkError(): boolean {
+    return this.status === 0;
+  }
+  get isTimeout(): boolean {
+    return this.status === 408;
+  }
+  get isUnauthorized(): boolean {
+    return this.status === 401;
+  }
+  get isForbidden(): boolean {
+    return this.status === 403;
+  }
+  get isNotFound(): boolean {
+    return this.status === 404;
+  }
+  get isServerError(): boolean {
+    return this.status >= 500;
+  }
 }
 
 export function parseApiErrorMessage(jsonResult: unknown, status: number = 500): string {
@@ -83,9 +102,13 @@ export function parseApiErrorMessage(jsonResult: unknown, status: number = 500):
   return `حدث خطأ أثناء تنفيذ الطلب (رمز الحالة: ${status})`;
 }
 
+export interface ApiRequestOptions extends RequestInit {
+  timeoutMs?: number;
+}
+
 export async function apiRequest<T = unknown>(
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<ApiResponse<T>> {
   const url = `${API_BASE}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
@@ -104,12 +127,45 @@ export async function apiRequest<T = unknown>(
     headers["X-Company-ID"] = activeCompanyId;
   }
 
-  const response = await fetch(url, {
-    cache: "no-store",
-    ...options,
-    headers,
-    credentials: "include", // Sends HttpOnly session cookies
-  });
+  // Robust timeout handling: prevent infinite skeleton loading on mobile networks (default 15s)
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      cache: "no-store",
+      ...options,
+      signal: options.signal || controller.signal,
+      headers,
+      credentials: "include", // Sends HttpOnly session cookies
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(
+        `انتهت مهلة انتظار استجابة الخادم (${Math.round(timeoutMs / 1000)} ثانية). يرجى التحقق من اتصال الشبكة وإعادة المحاولة.`,
+        408,
+        { code: "TIMEOUT" }
+      );
+    }
+    const isNetwork =
+      err instanceof TypeError ||
+      (err instanceof Error &&
+        (err.message.toLowerCase().includes("fetch") ||
+          err.message.toLowerCase().includes("network") ||
+          err.message.toLowerCase().includes("failed")));
+    if (isNetwork) {
+      throw new ApiError(
+        "تعذر الاتصال بالخادم (Network Error). يرجى التأكد من اتصال الهاتف بنفس الشبكة والوصول لعنوان النظام.",
+        0,
+        { code: "NETWORK_ERROR", original: err instanceof Error ? err.message : String(err) }
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   let jsonResult: unknown;
   try {
