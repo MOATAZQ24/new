@@ -1,0 +1,18 @@
+{
+  "name": "Investor Gate OS",
+  "short_name": "بوابة المستثمر",
+  "description": "نظام إدارة عمليات تقنية المعلومات الموحد لمنشآت الأعمال",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7F8",
+  "theme_color": "#123D32",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

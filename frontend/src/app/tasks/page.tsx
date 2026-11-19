@@ -2076,7 +2076,7 @@ export default function TasksPage() {
         </Modal>
 
         {/* Mobile & Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment */}
-        <div className="fixed bottom-6 right-6 z-50 sm:bottom-8 sm:right-8">
+        <div className="fixed bottom-20 lg:bottom-8 right-5 lg:right-8 z-50">
           <button
             type="button"
             onClick={() => {

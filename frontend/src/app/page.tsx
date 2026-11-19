@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { MobileMyDay } from "@/components/dashboard/MobileMyDay";
 import { AlertBanner } from "@/components/ui/AlertBanner";
 import { EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { Icons } from "@/components/ui/Icons";
@@ -107,6 +108,7 @@ export default function DashboardPage() {
   const [failure, setFailure] = useState("");
   const [loading, setLoading] = useState(true);
   const [donutMode, setDonutMode] = useState<"employees" | "tickets">("employees");
+  const [mobileViewMode, setMobileViewMode] = useState<"my_day" | "full">("my_day");
 
   const todayArabic = useMemo(() => {
     return new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
@@ -195,8 +197,33 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-5 max-w-[1440px] mx-auto">
-        {/* Header Row matching Reference Screenshots 1, 3, 5 */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* On Mobile: Dedicated "My Day" Zero-Friction Experience */}
+        {data && mobileViewMode === "my_day" ? (
+          <div className="lg:hidden">
+            <MobileMyDay
+              data={data}
+              onSwitchToFullDashboard={() => setMobileViewMode("full")}
+            />
+          </div>
+        ) : null}
+
+        {/* Full Dashboard: Always shown on desktop; on mobile shown only when toggled to "full" */}
+        <div className={`space-y-5 ${mobileViewMode === "my_day" ? "hidden lg:block" : "block"}`}>
+          {mobileViewMode === "full" && (
+            <div className="lg:hidden flex items-center justify-between pb-1">
+              <button
+                type="button"
+                onClick={() => setMobileViewMode("my_day")}
+                className="text-xs font-bold text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer"
+              >
+                <span>←</span>
+                <span>العودة إلى ملخص اليوم (My Day)</span>
+              </button>
+            </div>
+          )}
+
+          {/* Header Row matching Reference Screenshots 1, 3, 5 */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
               <Icons.Dashboard size={20} />
@@ -728,6 +755,7 @@ export default function DashboardPage() {
             </div>
           </>
         ) : null}
+        </div>
       </div>
     </DashboardLayout>
   );
