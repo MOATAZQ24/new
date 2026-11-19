@@ -111,6 +111,8 @@ export default function CompaniesPage() {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editStatus, setEditStatus] = useState("Active");
+  const [deleteTarget, setDeleteTarget] = useState<CompanyRow | null>(null);
+  const [deletingCompany, setDeletingCompany] = useState(false);
 
   const isSuperAdmin = user?.is_superadmin;
   const canManage = isSuperAdmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
@@ -243,13 +245,22 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleDeleteCompany = async (companyId: string, companyName: string) => {
-    if (!confirm(`هل أنت متأكد من رغبتك في حذف شركة "${companyName}" وجميع بياناتها؟`)) return;
+  const handleConfirmDeleteCompany = async () => {
+    if (!deleteTarget || deletingCompany) return;
+    setDeletingCompany(true);
     try {
-      await api.delete(`/companies/${companyId}`);
-      fetchCompanies();
+      await api.delete(`/companies/${deleteTarget.id}`);
+      toast.success(`تم حذف شركة "${deleteTarget.company_name_ar}" بنجاح`);
+      const deletedId = deleteTarget.id;
+      setDeleteTarget(null);
+      if (selectedCompany?.id === deletedId) {
+        setSelectedCompany(null);
+      }
+      await fetchCompanies();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "فشل حذف الشركة");
+    } finally {
+      setDeletingCompany(false);
     }
   };
 
@@ -645,12 +656,13 @@ export default function CompaniesPage() {
                       {isSuperAdmin && (
                         <button
                           type="button"
-                          onClick={() => handleDeleteCompany(selectedCompany.id, selectedCompany.company_name_ar)}
+                          onClick={() => setDeleteTarget(selectedCompany)}
                           aria-label={`حذف شركة ${selectedCompany.company_name_ar}`}
-                          className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold cursor-pointer flex items-center gap-1"
                           title="حذف الشركة"
                         >
-                          <Icons.Trash size={14} />
+                          <Icons.Trash size={13} />
+                          <span>حذف الشركة</span>
                         </button>
                       )}
                     </div>
@@ -1540,6 +1552,43 @@ export default function CompaniesPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Company Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => { if (!deletingCompany) setDeleteTarget(null); }}
+        title="تأكيد حذف الشركة"
+      >
+        <div className="space-y-4">
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 leading-relaxed">
+            هل أنت متأكد من حذف شركة{" "}
+            <strong>{deleteTarget?.company_name_ar}</strong>{" "}
+            (<span className="font-mono">{deleteTarget?.company_code}</span>)؟
+            <div className="mt-1 text-[11px] text-rose-700">
+              ملاحظة: لا يُسمح بحذف الشركة إذا كانت مرتبطة بموظفين أو أصول أو تذاكر أو مهام أو اشتراكات نشطة.
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              disabled={deletingCompany}
+              onClick={() => setDeleteTarget(null)}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              disabled={deletingCompany}
+              onClick={() => void handleConfirmDeleteCompany()}
+              className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
+            >
+              {deletingCompany ? "جاري الحذف..." : "تأكيد الحذف"}
+            </button>
+          </div>
+        </div>
       </Modal>
     </DashboardLayout>
   );

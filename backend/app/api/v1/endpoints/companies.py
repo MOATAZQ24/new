@@ -274,11 +274,48 @@ def delete_company(
     current_user: User = Depends(require_role(["Super Admin"])),
     db: Session = Depends(get_db),
 ):
-    """Delete company (Super Admin only)."""
+    """Delete company (Super Admin only), safeguarding active operational records."""
     authorize_company(db, current_user, company_id)
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="الشركة غير موجودة")
+
+    if db.query(Company).count() <= 1:
+        raise HTTPException(status_code=400, detail="لا يمكن حذف آخر شركة متبقية في النظام")
+
+    from app.models.asset import TechnicalAsset
+    from app.models.task import Task
+    from app.models.ticket import HelpDeskTicket
+    from app.models.subscription import ThirdPartySubscription
+    from app.models.workspace import CompanyWorkspace, WorkspacePreference
+    from app.models.user import CompanyMembership
+    from app.models.audit import AuditLog
+
+    emp_cnt = db.query(Employee).filter(Employee.company_id == company_id).count()
+    asset_cnt = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == company_id).count()
+    ticket_cnt = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == company_id).count()
+    task_cnt = db.query(Task).filter(Task.company_id == company_id).count()
+    sub_cnt = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == company_id).count()
+
+    if emp_cnt or asset_cnt or ticket_cnt or task_cnt or sub_cnt:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"لا يمكن حذف الشركة لارتباطها بسجلات تشغيلية "
+                f"(موظفين: {emp_cnt}، أصول: {asset_cnt}، تذاكر: {ticket_cnt}، مهام: {task_cnt}، اشتراكات: {sub_cnt})"
+            ),
+        )
+
+    company_name = company.company_name_ar
+    company_code = company.company_code
+
+    # Cleanly remove structural/preference rows and detach historical audit logs
+    db.query(CompanyWorkspace).filter(CompanyWorkspace.company_id == company_id).delete(synchronize_session=False)
+    db.query(WorkspacePreference).filter(WorkspacePreference.company_id == company_id).delete(synchronize_session=False)
+    db.query(CompanyMembership).filter(CompanyMembership.company_id == company_id).delete(synchronize_session=False)
+    db.query(Department).filter(Department.company_id == company_id).delete(synchronize_session=False)
+    db.query(Branch).filter(Branch.company_id == company_id).delete(synchronize_session=False)
+    db.query(AuditLog).filter(AuditLog.company_id == company_id).update({AuditLog.company_id: None}, synchronize_session=False)
 
     log_audit(
         db=db,
@@ -286,7 +323,8 @@ def delete_company(
         resource_type="Company",
         resource_id=str(company.id),
         user_id=current_user.id,
-        company_id=company.id,
+        company_id=None,
+        old_values={"company_name_ar": company_name, "company_code": company_code},
     )
 
     db.delete(company)
