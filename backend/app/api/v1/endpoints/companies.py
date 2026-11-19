@@ -280,6 +280,7 @@ def update_company(
 
 
 @router.get("/{company_id}/impact")
+@router.get("/{company_id}/safeguards")
 def get_company_impact(
     company_id: uuid.UUID,
     current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
