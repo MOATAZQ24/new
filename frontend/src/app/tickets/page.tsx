@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatsCard from "@/components/ui/StatsCard";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
@@ -54,6 +55,9 @@ interface TicketDetail extends TicketItem {
   requester_email?: string;
   notes?: string;
   comments: TicketCommentItem[];
+  linked_task_id?: string | null;
+  linked_task_title?: string | null;
+  linked_task_status?: string | null;
 }
 
 export default function TicketsPage() {
@@ -767,7 +771,26 @@ export default function TicketsPage() {
                 </div>
               </div>
 
-              {/* Convert to Task Box */}
+              {/* Linked Task Banner or Convert to Task Box */}
+              {selectedTicket.linked_task_id ? (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div className="flex items-center gap-2.5">
+                    <CheckSquareIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div>
+                      <h4 className="text-xs font-bold text-emerald-950">تم تحويل هذه التذكرة إلى مهمة فنية بنجاح</h4>
+                      <p className="text-xs text-emerald-800">
+                        المهمة: <strong>{selectedTicket.linked_task_title || "مهمة تشغيلية"}</strong> {selectedTicket.linked_task_status ? `(الحالة: ${selectedTicket.linked_task_status})` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/tasks?search=${encodeURIComponent(selectedTicket.ticket_number)}`}
+                    className="motion-control px-3.5 py-1.5 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-xl whitespace-nowrap"
+                  >
+                    عرض المهمة المرتبطة &larr;
+                  </Link>
+                </div>
+              ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-amber-50/70 rounded-xl border border-amber-200/80">
                   <div className="flex items-center gap-2.5">
                     <CheckSquareIcon className="w-5 h-5 text-[#C5A46D] shrink-0" />
@@ -794,6 +817,7 @@ export default function TicketsPage() {
                     </button>
                   </div>
                 </div>
+              )}
 
               {/* Comments & History */}
               <div className="space-y-3">

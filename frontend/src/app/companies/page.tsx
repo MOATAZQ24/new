@@ -23,10 +23,31 @@ interface CompanyRow {
   contact_email?: string | null;
   contact_phone?: string | null;
   status: string;
+  is_deleted?: boolean;
+  deleted_at?: string | null;
   branches_count?: number;
   employees_count?: number;
   logo_url?: string | null;
   [key: string]: unknown;
+}
+
+interface CompanyImpact {
+  company_id: string;
+  company_name_ar: string;
+  company_code: string;
+  is_deleted: boolean;
+  status: string;
+  branches_count: number;
+  departments_count: number;
+  employees_count: number;
+  assets_count: number;
+  tickets_count: number;
+  tasks_count: number;
+  subscriptions_count: number;
+  memberships_count: number;
+  can_delete: boolean;
+  can_archive: boolean;
+  reasons: string[];
 }
 
 interface BranchSummaryItem {
@@ -112,7 +133,12 @@ export default function CompaniesPage() {
   const [editPhone, setEditPhone] = useState("");
   const [editStatus, setEditStatus] = useState("Active");
   const [deleteTarget, setDeleteTarget] = useState<CompanyRow | null>(null);
+  const [companyImpact, setCompanyImpact] = useState<CompanyImpact | null>(null);
+  const [loadingImpact, setLoadingImpact] = useState(false);
   const [deletingCompany, setDeletingCompany] = useState(false);
+  const [archivingCompany, setArchivingCompany] = useState(false);
+  const [restoringCompany, setRestoringCompany] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const isSuperAdmin = user?.is_superadmin;
   const canManage = isSuperAdmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
@@ -137,6 +163,7 @@ export default function CompaniesPage() {
       const params = new URLSearchParams();
       if (debouncedSearch.trim()) params.append("search", debouncedSearch.trim());
       if (statusFilter) params.append("status", statusFilter);
+      if (showArchived) params.append("include_archived", "true");
       const q = params.toString();
       if (q) url += `?${q}`;
 
@@ -178,7 +205,7 @@ export default function CompaniesPage() {
       void fetchCompanies();
     }, 0);
     return () => window.clearTimeout(t);
-  }, [activeCompanyId, statusFilter, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeCompanyId, statusFilter, showArchived, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,14 +272,31 @@ export default function CompaniesPage() {
     }
   };
 
+  const openDeleteOrArchiveModal = async (company: CompanyRow) => {
+    setDeleteTarget(company);
+    setLoadingImpact(true);
+    setCompanyImpact(null);
+    try {
+      const res = await api.get<CompanyImpact>(`/companies/${company.id}/impact`);
+      if (res.data) {
+        setCompanyImpact(res.data);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل تحميل تقييم أثر حذف الشركة");
+    } finally {
+      setLoadingImpact(false);
+    }
+  };
+
   const handleConfirmDeleteCompany = async () => {
     if (!deleteTarget || deletingCompany) return;
     setDeletingCompany(true);
     try {
       await api.delete(`/companies/${deleteTarget.id}`);
-      toast.success(`تم حذف شركة "${deleteTarget.company_name_ar}" بنجاح`);
+      toast.success(`تم حذف شركة "${deleteTarget.company_name_ar}" نهائياً بنجاح`);
       const deletedId = deleteTarget.id;
       setDeleteTarget(null);
+      setCompanyImpact(null);
       if (selectedCompany?.id === deletedId) {
         setSelectedCompany(null);
       }
@@ -261,6 +305,40 @@ export default function CompaniesPage() {
       toast.error(err instanceof Error ? err.message : "فشل حذف الشركة");
     } finally {
       setDeletingCompany(false);
+    }
+  };
+
+  const handleArchiveCompany = async () => {
+    if (!deleteTarget || archivingCompany) return;
+    setArchivingCompany(true);
+    try {
+      await api.post(`/companies/${deleteTarget.id}/archive`);
+      toast.success(`تم أرشفة شركة "${deleteTarget.company_name_ar}" بنجاح وحفظ كافة سجلاتها`);
+      const targetId = deleteTarget.id;
+      setDeleteTarget(null);
+      setCompanyImpact(null);
+      await fetchCompanies();
+      if (selectedCompany?.id === targetId) {
+        setSelectedCompany(null);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل أرشفة الشركة");
+    } finally {
+      setArchivingCompany(false);
+    }
+  };
+
+  const handleRestoreCompany = async (company: CompanyRow) => {
+    if (restoringCompany) return;
+    setRestoringCompany(true);
+    try {
+      await api.post(`/companies/${company.id}/restore`);
+      toast.success(`تم استعادة شركة "${company.company_name_ar}" إلى الحالة النشطة بنجاح`);
+      await fetchCompanies();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل استعادة الشركة");
+    } finally {
+      setRestoringCompany(false);
     }
   };
 
@@ -454,8 +532,22 @@ export default function CompaniesPage() {
                 <option value="">كل الحالات</option>
                 <option value="Active">نشطة</option>
                 <option value="Inactive">غير نشطة</option>
+                <option value="Archived">المؤرشفة</option>
                 <option value="Suspended">موقوفة</option>
               </select>
+              <button
+                type="button"
+                onClick={() => setShowArchived(!showArchived)}
+                className={`motion-control flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                  showArchived
+                    ? "bg-amber-50 border-amber-300 text-amber-800 font-bold"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                }`}
+                title="عرض الشركات المؤرشفة أو المستبعدة"
+              >
+                <Icons.Refresh size={13} className={showArchived ? "text-amber-700" : "text-slate-500"} />
+                <span>{showArchived ? "إخفاء الأرشيف" : "عرض الأرشيف"}</span>
+              </button>
               {isSuperAdmin && (
                 <button
                   type="button"
@@ -593,24 +685,34 @@ export default function CompaniesPage() {
                   </div>
                 )}
 
-                {standaloneList.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => void selectCompanyNode(c)}
-                    className={`w-full text-right px-3 py-2.5 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-colors cursor-pointer ${
-                      selectedCompany?.id === c.id
-                        ? "bg-[#123D32] text-white"
-                        : "bg-slate-50 hover:bg-slate-100 text-slate-800"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2 truncate">
-                      <Icons.Building size={15} />
-                      <span className="truncate">{c.company_name_ar}</span>
-                    </span>
-                    <span className="text-[10px] font-mono opacity-80">{c.company_code}</span>
-                  </button>
-                ))}
+                {standaloneList.map((c) => {
+                  const isArchived = Boolean(c.is_deleted || c.status === "Archived");
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => void selectCompanyNode(c)}
+                      className={`w-full text-right px-3 py-2.5 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-colors cursor-pointer ${
+                        selectedCompany?.id === c.id
+                          ? "bg-[#123D32] text-white"
+                          : isArchived
+                          ? "bg-amber-50/70 border border-amber-200/80 text-amber-900 hover:bg-amber-100/60"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <Icons.Building size={15} />
+                        <span className="truncate">{c.company_name_ar}</span>
+                        {isArchived && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-200 text-amber-800 font-normal">
+                            مؤرشفة
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] font-mono opacity-80">{c.company_code}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {isSuperAdmin && (
@@ -657,16 +759,29 @@ export default function CompaniesPage() {
                         </button>
                       )}
                       {isSuperAdmin && (
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTarget(selectedCompany)}
-                          aria-label={`حذف شركة ${selectedCompany.company_name_ar}`}
-                          className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold cursor-pointer flex items-center gap-1"
-                          title="حذف الشركة"
-                        >
-                          <Icons.Trash size={13} />
-                          <span>حذف الشركة</span>
-                        </button>
+                        Boolean(selectedCompany.is_deleted || selectedCompany.status === "Archived") ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleRestoreCompany(selectedCompany)}
+                            disabled={restoringCompany}
+                            className="px-2.5 py-1.5 rounded-xl border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+                            title="استعادة الشركة وتفعيلها"
+                          >
+                            <Icons.Refresh size={13} />
+                            <span>{restoringCompany ? "جاري الاستعادة..." : "استعادة الشركة"}</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void openDeleteOrArchiveModal(selectedCompany)}
+                            aria-label={`إدارة حذف أو أرشفة شركة ${selectedCompany.company_name_ar}`}
+                            className="px-2.5 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+                            title="حذف أو أرشفة الشركة"
+                          >
+                            <Icons.Trash size={13} />
+                            <span>حذف / أرشفة</span>
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -1557,39 +1672,144 @@ export default function CompaniesPage() {
         </form>
       </Modal>
 
-      {/* Delete Company Confirmation Modal */}
+      {/* Delete / Archive Company Modal with Live Impact Analysis */}
       <Modal
         isOpen={Boolean(deleteTarget)}
-        onClose={() => { if (!deletingCompany) setDeleteTarget(null); }}
-        title="تأكيد حذف الشركة"
+        onClose={() => {
+          if (!deletingCompany && !archivingCompany) {
+            setDeleteTarget(null);
+            setCompanyImpact(null);
+          }
+        }}
+        title="إدارة حذف أو أرشفة الشركة"
       >
         <div className="space-y-4">
-          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 leading-relaxed">
-            هل أنت متأكد من حذف شركة{" "}
-            <strong>{deleteTarget?.company_name_ar}</strong>{" "}
-            (<span className="font-mono">{deleteTarget?.company_code}</span>)؟
-            <div className="mt-1 text-[11px] text-rose-700">
-              ملاحظة: لا يُسمح بحذف الشركة إذا كانت مرتبطة بموظفين أو أصول أو تذاكر أو مهام أو اشتراكات نشطة.
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">{deleteTarget?.company_name_ar}</h3>
+                <div className="text-xs text-slate-500 font-mono mt-0.5">
+                  {deleteTarget?.company_code} • {deleteTarget?.company_name_en}
+                </div>
+              </div>
+              <StatusBadge status={deleteTarget?.status || "Active"} />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          {loadingImpact ? (
+            <div className="py-8 text-center text-xs text-slate-500 space-y-2">
+              <div className="w-6 h-6 border-2 border-[#187A5A] border-t-transparent rounded-full animate-spin mx-auto" />
+              <div>جاري فحص الارتباطات التشغيلية وتقييم أثر الحذف...</div>
+            </div>
+          ) : companyImpact ? (
+            <div className="space-y-3">
+              <div className="text-xs font-bold text-slate-700">تقييم الأثر التشغيلي والارتباطات:</div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-100/70 border border-slate-200 text-center">
+                  <div className="text-[11px] text-slate-500">الفروع والأقسام</div>
+                  <div className="font-bold text-slate-900 mt-1 font-mono">
+                    {companyImpact.branches_count} فرع / {companyImpact.departments_count} قسم
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-center">
+                  <div className="text-[11px] text-amber-700">الموظفون</div>
+                  <div className="font-bold text-amber-900 mt-1 font-mono">
+                    {companyImpact.employees_count} موظف
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+                  <div className="text-[11px] text-emerald-700">الأصول التقنية</div>
+                  <div className="font-bold text-emerald-900 mt-1 font-mono">
+                    {companyImpact.assets_count} أصل
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-center">
+                  <div className="text-[11px] text-blue-700">تذاكر الدعم</div>
+                  <div className="font-bold text-blue-900 mt-1 font-mono">
+                    {companyImpact.tickets_count} تذكرة
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-center">
+                  <div className="text-[11px] text-purple-700">المهام التشغيلية</div>
+                  <div className="font-bold text-purple-900 mt-1 font-mono">
+                    {companyImpact.tasks_count} مهمة
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-center">
+                  <div className="text-[11px] text-rose-700">الاشتراكات</div>
+                  <div className="font-bold text-rose-900 mt-1 font-mono">
+                    {companyImpact.subscriptions_count} اشتراك
+                  </div>
+                </div>
+              </div>
+
+              {!companyImpact.can_delete ? (
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-950">
+                    <Icons.ShieldAlert size={15} className="text-amber-700" />
+                    <span>حماية البيانات التشغيلية: الحذف النهائي المباشر غير متاح</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    تحتوي هذه الشركة على سجلات فعلية (موظفين، أصول، تذاكر، أو اشتراكات). لمنع فقدان البيانات والعهد وتلف العلاقات المحاسبية، يرجى اختيار <strong>أرشفة وتعطيل الشركة</strong>. ستبقى كافة السجلات التاريخية محفوظة ومتاحة للاطلاع والتقارير.
+                  </p>
+                  {companyImpact.reasons.length > 0 && (
+                    <ul className="list-disc list-inside text-[11px] text-amber-800 space-y-0.5">
+                      {companyImpact.reasons.map((r, idx) => (
+                        <li key={idx}>{r}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-950">
+                    <Icons.ShieldCheck size={15} className="text-emerald-700" />
+                    <span>جاهزة للحذف النهائي أو الأرشفة</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    هذه الشركة لا ترتبط بأي سجلات تشغيلية نشطة (موظفون، أصول، تذاكر، اشتراكات). يمكنك حذفها نهائياً أو أرشفتها.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
-              disabled={deletingCompany}
-              onClick={() => setDeleteTarget(null)}
+              disabled={deletingCompany || archivingCompany}
+              onClick={() => {
+                setDeleteTarget(null);
+                setCompanyImpact(null);
+              }}
               className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
             >
               إلغاء
             </button>
-            <button
-              type="button"
-              disabled={deletingCompany}
-              onClick={() => void handleConfirmDeleteCompany()}
-              className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
-            >
-              {deletingCompany ? "جاري الحذف..." : "تأكيد الحذف"}
-            </button>
+
+            {companyImpact?.can_archive && (
+              <button
+                type="button"
+                disabled={deletingCompany || archivingCompany}
+                onClick={() => void handleArchiveCompany()}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Icons.Refresh size={13} />
+                <span>{archivingCompany ? "جاري الأرشفة..." : "أرشفة وتعطيل الشركة (موصى به)"}</span>
+              </button>
+            )}
+
+            {companyImpact?.can_delete && (
+              <button
+                type="button"
+                disabled={deletingCompany || archivingCompany}
+                onClick={() => void handleConfirmDeleteCompany()}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Icons.Trash size={13} />
+                <span>{deletingCompany ? "جاري الحذف النهائي..." : "حذف نهائي للشركة"}</span>
+              </button>
+            )}
           </div>
         </div>
       </Modal>

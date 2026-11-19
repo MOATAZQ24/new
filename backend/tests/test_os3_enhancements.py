@@ -17,7 +17,8 @@ from app.core.database import SessionLocal
 from app.models.company import Company
 from app.models.user import User, Employee
 from app.models.ticket import HelpDeskTicket
-from app.api.v1.endpoints import tickets, employees
+from app.api.v1.endpoints import tickets, employees, companies
+from fastapi import HTTPException
 
 
 def run_tests():
@@ -197,6 +198,74 @@ def run_tests():
         print(f"  -> Employee summary for IGT: {emp_summary['data']}")
         assert emp_summary["data"]["total"] >= 200, "Expected >= 200 employees for IGT"
         print("  [PASS] Directory summary KPIs verified!")
+
+        # -------------------------------------------------------------
+        # TEST 4: Company Impact, Archive, Restore & Safeguards Lifecycle
+        # -------------------------------------------------------------
+        print("\n[TEST 4] Testing Company Impact Analysis, Archival & Safeguards...")
+
+        # 4.1 Check impact analysis for active company with records
+        igt_impact = companies.get_company_impact(
+            company_id=active_cid,
+            current_user=admin,
+            db=db,
+        )
+        print(f"  -> IGT operational impact: {igt_impact['data']}")
+        assert igt_impact["data"]["can_delete"] is False, "Active company with records must not be eligible for hard delete"
+        assert igt_impact["data"]["can_archive"] is True, "Active company must be eligible for archival"
+        assert igt_impact["data"]["employees_count"] >= 200, "Expected >= 200 employees in impact analysis"
+        assert len(igt_impact["data"]["reasons"]) > 0, "Reasons must be provided for blocked deletion"
+
+        # 4.2 Verify safeguard blocks hard delete on active company
+        try:
+            companies.delete_company(company_id=active_cid, current_user=admin, db=db)
+            assert False, "delete_company must raise 400 when operational records exist"
+        except HTTPException as e:
+            assert e.status_code == 400
+            print(f"  -> Verified hard delete blocked by safeguard: {e.detail}")
+
+        # 4.3 Create a standalone test company
+        test_company = Company(
+            company_name_ar="شركة الاختبار التجريبية",
+            company_name_en="Experimental Test Corp",
+            company_code=f"TC-{uuid.uuid4().hex[:6].upper()}",
+            status="Active",
+            company_type="Internal",
+            is_deleted=False,
+        )
+        db.add(test_company)
+        db.commit()
+        db.refresh(test_company)
+        print(f"  -> Created standalone test company: {test_company.company_name_ar} ({test_company.id})")
+
+        # 4.4 Test impact on empty company
+        empty_impact = companies.get_company_impact(
+            company_id=test_company.id,
+            current_user=admin,
+            db=db,
+        )
+        assert empty_impact["data"]["can_delete"] is True, "Empty company with 0 records should be eligible for delete"
+
+        # 4.5 Test Archive
+        archive_resp = companies.archive_company(company_id=test_company.id, current_user=admin, db=db)
+        print(f"  -> Archive response: {archive_resp['message']}")
+        db.refresh(test_company)
+        assert test_company.is_deleted is True
+        assert test_company.status == "Archived"
+
+        # 4.6 Test Restore
+        restore_resp = companies.restore_company(company_id=test_company.id, current_user=admin, db=db)
+        print(f"  -> Restore response: {restore_resp['message']}")
+        db.refresh(test_company)
+        assert test_company.is_deleted is False
+        assert test_company.status == "Active"
+
+        # 4.7 Test Clean Delete
+        del_resp = companies.delete_company(company_id=test_company.id, current_user=admin, db=db)
+        print(f"  -> Delete response: {del_resp['message']}")
+        check_deleted = db.query(Company).filter(Company.id == test_company.id).first()
+        assert check_deleted is None, "Company must be permanently deleted"
+        print("  [PASS] Company Impact, Archive, Restore & Safeguards verified!")
 
         print("\n=== ALL OS 3.0 TESTS PASSED SUCCESSFULLY! ===")
 

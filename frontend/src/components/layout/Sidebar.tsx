@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { name: "الموظفون", href: "/employees", icon: "Users" },
   { name: "الأصول والعهد", href: "/assets", icon: "Assets" },
   { name: "الاشتراكات", href: "/subscriptions", icon: "Subscriptions" },
+  { name: "مركز الاعتمادات", href: "/approvals", icon: "ShieldCheck" },
   { name: "Help Desk", href: "/tickets", icon: "HelpDesk" },
   { name: "المهام", href: "/tasks", icon: "Tasks" },
   { name: "التقارير", href: "/reports", icon: "Reports" },

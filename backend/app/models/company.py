@@ -1,11 +1,13 @@
 """Company, Branch, and Department models."""
 
 import uuid
+from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy import (
     String,
     Boolean,
+    DateTime,
     Text,
     ForeignKey,
     Index,
@@ -33,6 +35,8 @@ class Company(UUIDMixin, TimestampMixin, Base):
         nullable=True,
     )
     status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     branches: Mapped[List["Branch"]] = relationship(

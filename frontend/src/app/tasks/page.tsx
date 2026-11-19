@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatsCard from "@/components/ui/StatsCard";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
@@ -12,7 +13,7 @@ import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { AlertBanner } from "@/components/ui/AlertBanner";
 import {
   CheckSquareIcon, PlusIcon,
-  ClockIcon, MessageSquareIcon, SendIcon, AlertCircleIcon, UserIcon
+  ClockIcon, MessageSquareIcon, SendIcon, AlertCircleIcon, UserIcon, LifeBuoyIcon
 } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
@@ -52,6 +53,9 @@ interface TaskItem {
   rework_count: number;
   related_asset_name?: string;
   related_asset_id?: string;
+  related_ticket_id?: string;
+  related_ticket_number?: string;
+  related_ticket_title?: string;
   notes?: string;
   is_overdue: boolean;
   comments_count: number;
@@ -1307,6 +1311,24 @@ export default function TasksPage() {
                       <span className="text-emerald-700 font-bold">
                         ✓ {selectedTask.acknowledged_at.slice(0, 16).replace("T", " ")}
                       </span>
+                    </div>
+                  )}
+
+                  {selectedTask.related_ticket_id && (
+                    <div className="col-span-2 sm:col-span-3 bg-sky-50 border border-sky-200 p-2.5 rounded-lg flex items-center justify-between gap-2 mt-2">
+                      <div className="flex items-center gap-2 text-xs text-sky-950 font-medium">
+                        <LifeBuoyIcon className="w-4 h-4 text-sky-600 shrink-0" />
+                        <span>
+                          تذكرة الدعم الفني المرتبطة: <strong className="font-mono text-sky-800">{selectedTask.related_ticket_number || "تذكرة دعم"}</strong>
+                          {selectedTask.related_ticket_title ? ` — ${selectedTask.related_ticket_title}` : ""}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/tickets?search=${encodeURIComponent(selectedTask.related_ticket_number || "")}`}
+                        className="motion-control px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[11px] font-bold whitespace-nowrap"
+                      >
+                        عرض التذكرة &larr;
+                      </Link>
                     </div>
                   )}
                 </div>

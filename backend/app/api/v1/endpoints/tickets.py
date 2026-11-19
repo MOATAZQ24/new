@@ -64,6 +64,8 @@ def list_tickets(
 ):
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
     query = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid)
+    page_val = page if isinstance(page, int) else 1
+    per_page_val = per_page if isinstance(per_page, int) else 20
 
     # If simple employee role, only show their submitted tickets
     user_roles = get_user_roles(current_user, db, company_id=target_cid)
@@ -134,7 +136,7 @@ def list_tickets(
             "updated_at": t.updated_at,
         })
 
-    pagination = paginate(total=total, page=page, per_page=per_page)
+    pagination = paginate(total=total, page=page_val, per_page=per_page_val)
     return success_response(data=data, pagination=pagination)
 
 
@@ -261,6 +263,8 @@ def get_ticket(
         for c in comments
     ]
 
+    linked_task = db.query(Task).filter(Task.related_ticket_id == ticket.id).first()
+
     data = {
         "id": str(ticket.id),
         "company_id": str(ticket.company_id),
@@ -278,6 +282,9 @@ def get_ticket(
         "category": ticket.category,
         "related_asset_id": str(ticket.related_asset_id) if ticket.related_asset_id else None,
         "related_asset_name": ticket.related_asset.asset_name if ticket.related_asset else None,
+        "linked_task_id": str(linked_task.id) if linked_task else None,
+        "linked_task_title": linked_task.title if linked_task else None,
+        "linked_task_status": linked_task.status if linked_task else None,
         "resolved_at": ticket.resolved_at,
         "closed_at": ticket.closed_at,
         "notes": ticket.notes,

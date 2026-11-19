@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -27,6 +28,7 @@ def list_companies(
     per_page: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
+    include_archived: bool = Query(False),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -46,29 +48,34 @@ def list_companies(
         allowed_ids = [cid[0] for cid in user_cids]
         query = query.filter(Company.id.in_(allowed_ids))
 
-    if search:
-        s = f"%{search}%"
+    page_val = page if isinstance(page, int) else 1
+    per_page_val = per_page if isinstance(per_page, int) else 20
+
+    if isinstance(search, str) and search.strip():
+        s = f"%{search.strip()}%"
         query = query.filter(
             (Company.company_name_ar.ilike(s))
             | (Company.company_name_en.ilike(s))
             | (Company.company_code.ilike(s))
         )
 
-    if status_filter:
-        query = query.filter(Company.status == status_filter)
+    if isinstance(status_filter, str) and status_filter.strip():
+        query = query.filter(Company.status == status_filter.strip())
+    elif not include_archived:
+        query = query.filter(Company.is_deleted == False)
 
     total = query.count()
     companies = (
         query.order_by(Company.created_at.desc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
+        .offset((page_val - 1) * per_page_val)
+        .limit(per_page_val)
         .all()
     )
 
     data = []
     for c in companies:
         b_count = db.query(Branch).filter(Branch.company_id == c.id, Branch.status == "Active").count()
-        e_count = db.query(Employee).filter(Employee.company_id == c.id).count()
+        e_count = db.query(Employee).filter(Employee.company_id == c.id, Employee.is_deleted == False).count()
         data.append({
             "id": str(c.id),
             "company_name_ar": c.company_name_ar,
@@ -80,13 +87,15 @@ def list_companies(
             "company_type": getattr(c, "company_type", "Internal"),
             "parent_company_id": str(c.parent_company_id) if getattr(c, "parent_company_id", None) else None,
             "status": c.status,
+            "is_deleted": bool(getattr(c, "is_deleted", False)),
+            "deleted_at": c.deleted_at,
             "branches_count": b_count,
             "employees_count": e_count,
             "created_at": c.created_at,
             "updated_at": c.updated_at,
         })
 
-    pagination = paginate(total=total, page=page, per_page=per_page)
+    pagination = paginate(total=total, page=page_val, per_page=per_page_val)
     return success_response(data=data, pagination=pagination)
 
 
@@ -209,6 +218,8 @@ def get_company(company_id: uuid.UUID, current_user: User = Depends(get_current_
         "company_type": getattr(company, "company_type", "Internal"),
         "parent_company_id": str(company.parent_company_id) if getattr(company, "parent_company_id", None) else None,
         "status": company.status,
+        "is_deleted": bool(getattr(company, "is_deleted", False)),
+        "deleted_at": company.deleted_at,
         "branches_count": b_count,
         "employees_count": e_count,
         "created_at": company.created_at,
@@ -268,13 +279,145 @@ def update_company(
     return success_response(message="تم تحديث بيانات الشركة بنجاح")
 
 
+@router.get("/{company_id}/impact")
+def get_company_impact(
+    company_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin"])),
+    db: Session = Depends(get_db),
+):
+    """Analyze the operational impact of deleting or archiving a company."""
+    authorize_company(db, current_user, company_id)
+    company = db.query(Company).filter(Company.id == company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="الشركة غير موجودة")
+
+    from app.models.asset import TechnicalAsset
+    from app.models.task import Task
+    from app.models.ticket import HelpDeskTicket
+    from app.models.subscription import ThirdPartySubscription
+    from app.models.user import CompanyMembership
+
+    total_companies = db.query(Company).filter(Company.is_deleted == False).count()
+    branches_count = db.query(Branch).filter(Branch.company_id == company_id).count()
+    depts_count = db.query(Department).filter(Department.company_id == company_id).count()
+    emp_cnt = db.query(Employee).filter(Employee.company_id == company_id, Employee.is_deleted == False).count()
+    asset_cnt = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == company_id).count()
+    ticket_cnt = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == company_id).count()
+    task_cnt = db.query(Task).filter(Task.company_id == company_id).count()
+    sub_cnt = db.query(ThirdPartySubscription).filter(ThirdPartySubscription.company_id == company_id).count()
+    members_cnt = db.query(CompanyMembership).filter(CompanyMembership.company_id == company_id).count()
+
+    reasons = []
+    if total_companies <= 1:
+        reasons.append("هذه هي الشركة الوحيدة المتبقية في النظام، ولا يمكن حذفها.")
+    if emp_cnt > 0:
+        reasons.append(f"مرتبطة بعدد {emp_cnt} موظفاً نشطاً.")
+    if asset_cnt > 0:
+        reasons.append(f"مرتبطة بعدد {asset_cnt} أصلاً تقنياً مسجلاً.")
+    if ticket_cnt > 0:
+        reasons.append(f"مرتبطة بعدد {ticket_cnt} تذكرة دعم فني.")
+    if task_cnt > 0:
+        reasons.append(f"مرتبطة بعدد {task_cnt} مهمة تشغيلية.")
+    if sub_cnt > 0:
+        reasons.append(f"مرتبطة بعدد {sub_cnt} اشتراكاً برمجياً أو ترخيصاً.")
+
+    has_operational_data = bool(emp_cnt or asset_cnt or ticket_cnt or task_cnt or sub_cnt)
+    can_delete = (not has_operational_data) and (total_companies > 1)
+    can_archive = (not getattr(company, "is_deleted", False)) and (total_companies > 1)
+
+    return success_response(data={
+        "company_id": str(company.id),
+        "company_name_ar": company.company_name_ar,
+        "company_code": company.company_code,
+        "is_deleted": bool(getattr(company, "is_deleted", False)),
+        "status": company.status,
+        "branches_count": branches_count,
+        "departments_count": depts_count,
+        "employees_count": emp_cnt,
+        "assets_count": asset_cnt,
+        "tickets_count": ticket_cnt,
+        "tasks_count": task_cnt,
+        "subscriptions_count": sub_cnt,
+        "memberships_count": members_cnt,
+        "can_delete": can_delete,
+        "can_archive": can_archive,
+        "reasons": reasons,
+    })
+
+
+@router.post("/{company_id}/archive")
+def archive_company(
+    company_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin"])),
+    db: Session = Depends(get_db),
+):
+    """Safely archive / soft-delete a company, preserving all historical and operational records."""
+    authorize_company(db, current_user, company_id)
+    company = db.query(Company).filter(Company.id == company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="الشركة غير موجودة")
+
+    total_active = db.query(Company).filter(Company.is_deleted == False).count()
+    if total_active <= 1 and not company.is_deleted:
+        raise HTTPException(status_code=400, detail="لا يمكن أرشفة الشركة الوحيدة النشطة في النظام")
+
+    company.is_deleted = True
+    company.deleted_at = datetime.now(timezone.utc)
+    company.status = "Archived"
+
+    log_audit(
+        db=db,
+        action="ARCHIVE",
+        resource_type="Company",
+        resource_id=str(company.id),
+        user_id=current_user.id,
+        company_id=company.id,
+        old_values={"status": "Active"},
+        new_values={"status": "Archived", "is_deleted": True},
+    )
+
+    db.commit()
+    return success_response(message=f"تم أرشفة شركة '{company.company_name_ar}' بنجاح وحفظ كافة سجلاتها التشغيلية والتاريخية")
+
+
+@router.post("/{company_id}/restore")
+def restore_company(
+    company_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin"])),
+    db: Session = Depends(get_db),
+):
+    """Restore an archived company to Active status."""
+    authorize_company(db, current_user, company_id)
+    company = db.query(Company).filter(Company.id == company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="الشركة غير موجودة")
+
+    company.is_deleted = False
+    company.deleted_at = None
+    company.status = "Active"
+
+    log_audit(
+        db=db,
+        action="RESTORE",
+        resource_type="Company",
+        resource_id=str(company.id),
+        user_id=current_user.id,
+        company_id=company.id,
+        old_values={"status": "Archived", "is_deleted": True},
+        new_values={"status": "Active", "is_deleted": False},
+    )
+
+    db.commit()
+    return success_response(message=f"تم استعادة شركة '{company.company_name_ar}' بنجاح إلى الحالة النشطة")
+
+
 @router.delete("/{company_id}")
 def delete_company(
     company_id: uuid.UUID,
     current_user: User = Depends(require_role(["Super Admin"])),
     db: Session = Depends(get_db),
 ):
-    """Delete company (Super Admin only), safeguarding active operational records."""
+    """Delete company permanently (Super Admin only), safeguarding active operational records."""
     authorize_company(db, current_user, company_id)
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
@@ -301,8 +444,9 @@ def delete_company(
         raise HTTPException(
             status_code=400,
             detail=(
-                f"لا يمكن حذف الشركة لارتباطها بسجلات تشغيلية "
-                f"(موظفين: {emp_cnt}، أصول: {asset_cnt}، تذاكر: {ticket_cnt}، مهام: {task_cnt}، اشتراكات: {sub_cnt})"
+                f"لا يمكن الحذف النهائي لاحتواء الشركة على سجلات تشغيلية "
+                f"(موظفين: {emp_cnt}، أصول: {asset_cnt}، تذاكر: {ticket_cnt}، مهام: {task_cnt}، اشتراكات: {sub_cnt}). "
+                f"يرجى استخدام خيار الأرشفة لحفظ سلامة البيانات التاريخية."
             ),
         )
 

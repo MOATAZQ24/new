@@ -21,6 +21,7 @@ const CORE_MODULES = [
   { label: "الموظفون", sub: "Employees & 360°", href: "/employees", kw: "employees staff موظفين" },
   { label: "الأصول والعهد", sub: "Assets & Custody", href: "/assets", kw: "assets custody أصول عهد" },
   { label: "الاشتراكات والتراخيص", sub: "Subscriptions", href: "/subscriptions", kw: "subscriptions saas اشتراكات" },
+  { label: "مركز الاعتمادات والطلبات", sub: "Approval Center & Requests", href: "/approvals", kw: "approvals requests purchase اعتمادات موافقات شراء طلبات" },
   { label: "مكتب المساعدة (Help Desk)", sub: "Tickets", href: "/tickets", kw: "tickets helpdesk تذاكر دعم" },
   { label: "المهام والمواعيد", sub: "Tasks & Deadlines", href: "/tasks", kw: "tasks deadlines مهام" },
   { label: "التقارير والتصدير", sub: "Reports", href: "/reports", kw: "reports export pdf csv تقارير" },

@@ -93,18 +93,21 @@ def list_assets(
     parsed_branches = enterprise_service.parse_branch_ids_filter(db, target_cid, branch_id, branch_ids)
     query = db.query(TechnicalAsset).filter(TechnicalAsset.company_id == target_cid)
 
+    page_val = page if isinstance(page, int) else 1
+    per_page_val = per_page if isinstance(per_page, int) else 20
+
     if parsed_branches:
         query = query.filter(TechnicalAsset.branch_id.in_(parsed_branches))
-    if department_id:
+    if department_id and isinstance(department_id, uuid.UUID):
         query = query.filter(TechnicalAsset.department_id == department_id)
-    if asset_category:
+    if asset_category and isinstance(asset_category, str):
         query = query.filter(TechnicalAsset.asset_category == asset_category)
-    if asset_type:
+    if asset_type and isinstance(asset_type, str):
         query = query.filter(TechnicalAsset.asset_type == asset_type)
-    if status_filter:
-        query = query.filter(TechnicalAsset.status == status_filter)
-    if search:
-        s = f"%{search}%"
+    if isinstance(status_filter, str) and status_filter.strip():
+        query = query.filter(TechnicalAsset.status == status_filter.strip())
+    if isinstance(search, str) and search.strip():
+        s = f"%{search.strip()}%"
         query = query.filter(
             (TechnicalAsset.asset_name.ilike(s))
             | (TechnicalAsset.asset_code.ilike(s))
@@ -114,14 +117,15 @@ def list_assets(
         )
 
     total = query.count()
-    ordering = getattr(TechnicalAsset, sort).asc() if sort and sort != "employee" else TechnicalAsset.created_at.desc()
-    if sort == "employee":
+    sort_str = sort if isinstance(sort, str) else ""
+    ordering = getattr(TechnicalAsset, sort_str).asc() if sort_str and sort_str != "employee" and hasattr(TechnicalAsset, sort_str) else TechnicalAsset.created_at.desc()
+    if sort_str == "employee":
         query = query.outerjoin(Employee, TechnicalAsset.assigned_employee_id == Employee.id)
         ordering = Employee.full_name.asc()
     assets = (
         query.order_by(ordering, TechnicalAsset.id)
-        .offset((page - 1) * per_page)
-        .limit(per_page)
+        .offset((page_val - 1) * per_page_val)
+        .limit(per_page_val)
         .all()
     )
 
@@ -156,7 +160,7 @@ def list_assets(
             "created_at": a.created_at,
         })
 
-    pagination = paginate(total=total, page=page, per_page=per_page)
+    pagination = paginate(total=total, page=page_val, per_page=per_page_val)
     return success_response(data=data, pagination=pagination)
 
 
