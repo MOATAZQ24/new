@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { MustChangePasswordModal } from "@/components/auth/MustChangePasswordModal";
+import { CommandPalette } from "@/components/ui/CommandPalette";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -16,6 +17,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mandatory password change modal on first login */}
       <MustChangePasswordModal />
+      <CommandPalette />
 
       {/* Mobile Drawer Backdrop */}
       {mobileNavOpen && (

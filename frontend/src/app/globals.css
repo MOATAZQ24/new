@@ -194,6 +194,21 @@ body { font-family: var(--workspace-font, 'IBM Plex Sans Arabic', 'Inter', sans-
 .workspace-topnav {
   inset-inline-start: var(--sidebar-width, 256px);
   inset-inline-end: 0;
+  background-color: color-mix(in srgb, var(--header-background) 88%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+.overflow-x-auto table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: var(--surface-muted);
+}
+.overflow-x-auto table tbody tr {
+  transition: background-color var(--motion-fast) var(--motion-easing);
 }
 .workspace-sidebar[data-collapsed="true"] .workspace-nav-label,
 .workspace-sidebar[data-collapsed="true"] .workspace-brand-text,

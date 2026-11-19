@@ -304,7 +304,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/assets"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--primary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-[#187A5A] flex items-center justify-center shrink-0">
@@ -323,7 +323,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/tickets"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--secondary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-[#123D32]/10 dark:bg-slate-700 text-[#123D32] dark:text-emerald-300 flex items-center justify-center shrink-0">
@@ -342,7 +342,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--accent)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-[#C5A46D]/15 dark:bg-amber-900/30 text-[#8A6D3B] dark:text-amber-300 flex items-center justify-center shrink-0">
@@ -361,7 +361,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-rose-300 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-rose-500 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-rose-300 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-900/40 text-rose-600 flex items-center justify-center shrink-0">

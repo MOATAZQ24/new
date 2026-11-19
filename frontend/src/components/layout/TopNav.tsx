@@ -447,12 +447,15 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
                 <Icons.X size={13} />
               </button>
             ) : (
-              <span
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("ig:open-command-palette"))}
+                title="فتح لوحة الأوامر السريعة (Ctrl+K)"
                 dir="ltr"
-                className="text-[10px] font-mono text-slate-500 bg-white/90 dark:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 pointer-events-none shrink-0"
+                className="text-[10px] font-mono text-slate-500 bg-white/90 dark:bg-slate-700 hover:border-[#187A5A] px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 shrink-0 cursor-pointer"
               >
                 Ctrl+K
-              </span>
+              </button>
             )}
           </div>
 
