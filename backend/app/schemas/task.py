@@ -24,13 +24,16 @@ class TaskCommentResponse(TaskCommentBase):
 
 
 class TaskBase(BaseModel):
-    title: str
+    title: Optional[str] = "مهمة جديدة"
     description: Optional[str] = None
     priority: str = "Medium"  # Low, Medium, High, Urgent
     status: str = "To Do"  # To Do, In Progress, On Hold, Completed, Cancelled
     start_date: Optional[date] = None
     due_date: Optional[date] = None
     notes: Optional[str] = None
+    is_voice_task: bool = False
+    voice_note_url: Optional[str] = None
+    voice_note_duration: Optional[int] = 0
 
 
 class TaskCreate(TaskBase):
@@ -59,6 +62,9 @@ class TaskUpdate(BaseModel):
     project_id: Optional[uuid.UUID] = None
     notes: Optional[str] = None
     attachments: Optional[Any] = None
+    is_voice_task: Optional[bool] = None
+    voice_note_url: Optional[str] = None
+    voice_note_duration: Optional[int] = None
 
 
 class TaskBlockRequest(BaseModel):

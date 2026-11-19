@@ -92,6 +92,11 @@ class Task(UUIDMixin, TimestampMixin, Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     attachments: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
+    # Voice Task Recording
+    is_voice_task: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    voice_note_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    voice_note_duration: Mapped[Optional[int]] = mapped_column(Integer, default=0, nullable=True)
+
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
     branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])

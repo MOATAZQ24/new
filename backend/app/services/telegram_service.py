@@ -859,21 +859,32 @@ def format_task_notification(task: Task, event_type: str, company_name: str) -> 
         "task.cancelled": "🚫 <b>تم إلغاء المهمة</b>",
     }
     header = event_titles.get(event_type, f"🔔 <b>إشعار بالمهمة: {task.title}</b>")
+    if getattr(task, "is_voice_task", False) and event_type == "task.assigned":
+        header = "🎙️ <b>تم إسناد مهمة صوتية جديدة إليك</b>"
 
     body_lines = [
         header,
         f"🏢 <b>المنشأة:</b> {company_name}",
         f"🔢 <b>رقم المرجع:</b> <code>{ref_num}</code>",
         f"📝 <b>عنوان المهمة:</b> {task.title}",
+    ]
+
+    if getattr(task, "is_voice_task", False):
+        body_lines.append(f"🎙️ <b>التسجيل الصوتي:</b> رسالة صوتية مسجلة ({getattr(task, 'voice_note_duration', 0) or 0} ثانية)")
+
+    body_lines.extend([
         f"👤 <b>الموظف المسند إليه:</b> {emp_name}",
         f"⚡ <b>الأولوية:</b> {p_text}",
         f"📊 <b>الحالة:</b> {STAGE_LABELS_AR.get(stage_of(task.status), task.status)} ({task.status})",
         f"📅 <b>تاريخ الاستحقاق:</b> {due_str}",
-    ]
+    ])
 
     if task.description:
         desc_snippet = (task.description[:180] + "...") if len(task.description) > 180 else task.description
         body_lines.append(f"📄 <b>الوصف:</b> {desc_snippet}")
+
+    if getattr(task, "is_voice_task", False):
+        body_lines.append("🔒 <i>ملاحظة أمنية: حرصاً على سرية البيانات، يمكنك تشغيل التسجيل الصوتي من خلال منصة Investor Gate OS.</i>")
 
     body_lines.append("\n<i>نظام Investor Gate لإدارة العمليات التقنية</i>")
     message_text = "\n".join(body_lines)

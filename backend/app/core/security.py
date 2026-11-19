@@ -77,12 +77,14 @@ def invalidate_session(db: Session, token: str, response: Response):
 def get_current_user(
     request: Request, db: Session = Depends(get_db)
 ) -> User:
-    # Check Cookie first, then Authorization: Bearer header
+    # Check Cookie first, then Authorization: Bearer header, then query token for media streaming
     token = request.cookies.get("session_token")
     if not token:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header[7:]
+    if not token:
+        token = request.query_params.get("token")
 
     if not token:
         raise HTTPException(

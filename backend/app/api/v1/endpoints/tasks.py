@@ -1,7 +1,10 @@
+import os
+import re
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
@@ -31,6 +34,139 @@ from app.services import task_workflow as wf
 from sqlalchemy import func, and_
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])
+
+VOICE_UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "uploads", "voice_tasks"))
+os.makedirs(VOICE_UPLOAD_DIR, exist_ok=True)
+
+
+@router.post("/voice-upload")
+async def upload_task_voice_note(
+    file: UploadFile = File(...),
+    duration: int = Form(0),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician", "Employee"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+):
+    """Secure audio upload for native voice tasks.
+    Enforces <= 10MB file size, duration <= 300 seconds, and tenant company isolation.
+    """
+    if duration > 300:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="الحد الأقصى لمدّة الرسالة الصوتية هو 5 دقائق (300 ثانية)."
+        )
+
+    content = await file.read()
+    max_bytes = 10 * 1024 * 1024
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="حجم الملف الصوتي يتجاوز الحد المسموح به (10 ميجابايت)."
+        )
+    if len(content) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="الملف الصوتي المرفوع فارغ."
+        )
+
+    content_type = file.content_type or "audio/webm"
+    ext = ".webm"
+    if "mp4" in content_type or "m4a" in content_type:
+        ext = ".m4a"
+    elif "ogg" in content_type:
+        ext = ".ogg"
+    elif "wav" in content_type:
+        ext = ".wav"
+    elif "mp3" in content_type or "mpeg" in content_type:
+        ext = ".mp3"
+
+    file_id = f"voice_{uuid.uuid4().hex}{ext}"
+    company_folder = os.path.join(VOICE_UPLOAD_DIR, str(active_cid))
+    os.makedirs(company_folder, exist_ok=True)
+
+    dest_path = os.path.join(company_folder, file_id)
+    with open(dest_path, "wb") as f:
+        f.write(content)
+
+    return success_response(
+        data={
+            "voice_note_url": f"/api/v1/tasks/voice/{file_id}",
+            "filename": file_id,
+            "duration": duration,
+            "size_bytes": len(content),
+            "content_type": content_type,
+        },
+        message="تم رفع التسجيل الصوتي بنجاح"
+    )
+
+
+@router.get("/voice/{filename}")
+def get_task_voice_note(
+    filename: str,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Stream an authenticated voice note with company-level RBAC and byte-range support.
+    Accepts standard Bearer authorization header or session token query param for HTML5 audio tags.
+    """
+    clean_filename = os.path.basename(filename)
+    if not re.match(r"^voice_[a-fA-F0-9]+\.(webm|ogg|m4a|mp4|wav|mp3)$", clean_filename):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="اسم الملف الصوتي غير صالح")
+
+    target_path = os.path.join(VOICE_UPLOAD_DIR, str(active_cid), clean_filename)
+    found = os.path.isfile(target_path)
+
+    # If not found directly and user is superadmin, search across company directories
+    if not found and current_user.is_superadmin:
+        if os.path.exists(VOICE_UPLOAD_DIR):
+            for cid_dir in os.listdir(VOICE_UPLOAD_DIR):
+                cand = os.path.join(VOICE_UPLOAD_DIR, cid_dir, clean_filename)
+                if os.path.isfile(cand):
+                    target_path = cand
+                    found = True
+                    break
+
+    # If still not found, check if a Task with company_id == active_cid references this filename
+    if not found:
+        task = db.query(Task).filter(
+            Task.company_id == active_cid,
+            Task.voice_note_url.like(f"%{clean_filename}%")
+        ).first()
+        if task:
+            cand = os.path.join(VOICE_UPLOAD_DIR, str(task.company_id), clean_filename)
+            if os.path.isfile(cand):
+                target_path = cand
+                found = True
+
+    if not found or not os.path.isfile(target_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="التسجيل الصوتي غير موجود")
+
+    # Double check tenant security: ensure target_path is within allowed company folder (or superadmin)
+    if not current_user.is_superadmin:
+        company_folder = os.path.abspath(os.path.join(VOICE_UPLOAD_DIR, str(active_cid)))
+        if not os.path.abspath(target_path).startswith(company_folder):
+            task = db.query(Task).filter(Task.voice_note_url.like(f"%{clean_filename}%")).first()
+            if not task or task.company_id != active_cid:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="ليس لديك صلاحية الوصول لهذا التسجيل الصوتي")
+
+    media_type = "audio/webm"
+    if clean_filename.endswith(".m4a") or clean_filename.endswith(".mp4"):
+        media_type = "audio/mp4"
+    elif clean_filename.endswith(".ogg"):
+        media_type = "audio/ogg"
+    elif clean_filename.endswith(".wav"):
+        media_type = "audio/wav"
+    elif clean_filename.endswith(".mp3"):
+        media_type = "audio/mpeg"
+
+    return FileResponse(
+        target_path,
+        media_type=media_type,
+        headers={
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "private, max-age=3600"
+        }
+    )
 
 
 @router.get('/assignees')
@@ -192,6 +328,9 @@ def list_tasks(
             "related_ticket_number": t.related_ticket.ticket_number if t.related_ticket else None,
             "project_id": str(t.project_id) if t.project_id else None,
             "notes": t.notes,
+            "is_voice_task": bool(t.is_voice_task),
+            "voice_note_url": t.voice_note_url,
+            "voice_note_duration": t.voice_note_duration,
             "is_overdue": wf.is_overdue(t, today),
             "comments_count": len(t.comments),
             "created_at": t.created_at,
@@ -252,9 +391,17 @@ def create_task(
     validate_company_fk(db, HelpDeskTicket, payload.related_ticket_id, target_cid, "التذكرة المرتبطة")
     validate_company_fk(db, Project, payload.project_id, target_cid, "المشروع")
 
+    is_voice = bool(payload.is_voice_task or payload.voice_note_url)
+    clean_title = (payload.title or "").strip()
+    if not clean_title or clean_title == "مهمة جديدة":
+        if is_voice:
+            clean_title = f"مهمة صوتية ({payload.voice_note_duration or 0} ثانية)"
+        else:
+            clean_title = "مهمة تشغيلية"
+
     # Double-submit guard: identical task from the same creator within 20 seconds returns the existing record.
     recent = db.query(Task).filter(
-        Task.company_id == target_cid, Task.assigned_by_id == current_user.id, Task.title == payload.title.strip(),
+        Task.company_id == target_cid, Task.assigned_by_id == current_user.id, Task.title == clean_title,
         Task.assigned_to_id == payload.assigned_to_id, Task.created_at >= datetime.utcnow() - timedelta(seconds=20),
     ).first()
     if recent:
@@ -264,7 +411,7 @@ def create_task(
     task = Task(
         company_id=target_cid,
         branch_id=payload.branch_id,
-        title=payload.title.strip(),
+        title=clean_title,
         description=payload.description,
         assigned_to_id=payload.assigned_to_id,
         assigned_by_id=current_user.id,
@@ -277,6 +424,9 @@ def create_task(
         project_id=payload.project_id,
         notes=payload.notes,
         attachments=payload.attachments,
+        is_voice_task=is_voice,
+        voice_note_url=payload.voice_note_url,
+        voice_note_duration=payload.voice_note_duration or 0,
     )
     db.add(task)
     db.commit()
@@ -441,6 +591,9 @@ def get_task(
         "related_ticket_title": task.related_ticket.issue_title if task.related_ticket else None,
         "notes": task.notes,
         "attachments": task.attachments,
+        "is_voice_task": bool(task.is_voice_task),
+        "voice_note_url": task.voice_note_url,
+        "voice_note_duration": task.voice_note_duration,
         "is_overdue": is_overdue,
         "comments": comments_data,
         "telegram_info": telegram_info,
@@ -636,6 +789,12 @@ def update_task(
         task.due_date = payload.due_date
     if payload.notes is not None:
         task.notes = payload.notes
+    if 'is_voice_task' in payload.model_fields_set and payload.is_voice_task is not None:
+        task.is_voice_task = payload.is_voice_task
+    if 'voice_note_url' in payload.model_fields_set:
+        task.voice_note_url = payload.voice_note_url
+    if 'voice_note_duration' in payload.model_fields_set and payload.voice_note_duration is not None:
+        task.voice_note_duration = payload.voice_note_duration
 
     db.commit()
 

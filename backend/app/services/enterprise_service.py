@@ -936,6 +936,8 @@ def get_employee_360_profile(
                     "title": t.title,
                     "priority": t.priority,
                     "status": t.status,
+                    "is_voice_task": bool(getattr(t, "is_voice_task", False)),
+                    "voice_note_duration": getattr(t, "voice_note_duration", None),
                     "due_date": t.due_date.isoformat() if t.due_date else None,
                     "is_overdue": bool(t.due_date and t.due_date < today and t.status not in ("Completed", "Cancelled", "Rejected")),
                     "project_id": str(t.project_id) if getattr(t, "project_id", None) else None,

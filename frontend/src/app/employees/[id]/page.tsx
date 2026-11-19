@@ -126,6 +126,8 @@ interface Profile360Data {
       status: string;
       due_date: string | null;
       is_overdue: boolean;
+      is_voice_task?: boolean;
+      voice_note_duration?: number;
     }[];
     projects: {
       id: string;
@@ -424,6 +426,11 @@ export default function Employee360ProfilePage() {
                         <div>
                           <span className="font-mono font-bold text-[#187A5A] me-2">{t.reference}</span>
                           <span className="font-semibold text-slate-900">{t.title}</span>
+                          {t.is_voice_task && (
+                            <span className="inline-flex items-center gap-1 ms-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              🎙️ مهمة صوتية {t.voice_note_duration ? `(${t.voice_note_duration} ث)` : ""}
+                            </span>
+                          )}
                           {t.due_date && (
                             <div className="text-[11px] text-slate-500 mt-0.5">
                               الاستحقاق: <span className="font-mono">{t.due_date}</span>

@@ -16,3 +16,7 @@ __pycache__
 /nginx/ssl/*.key
 /nginx/ssl/*.crt
 scratch/
+backend/uploads/
+*.webm
+*.ogg
+

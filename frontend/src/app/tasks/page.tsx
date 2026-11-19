@@ -20,6 +20,8 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import EmployeeCombobox, { type EmployeeOption } from "@/components/ui/EmployeeCombobox";
+import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks/VoiceTaskRecorder";
+import VoiceTaskPlayer from "@/components/tasks/VoiceTaskPlayer";
 
 interface TaskItem {
   id: string;
@@ -59,6 +61,9 @@ interface TaskItem {
   notes?: string;
   is_overdue: boolean;
   comments_count: number;
+  is_voice_task?: boolean;
+  voice_note_url?: string;
+  voice_note_duration?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -126,6 +131,8 @@ export default function TasksPage() {
 
   // Modals & Feedback
   const [createModal, setCreateModal] = useState(false);
+  const [createMode, setCreateMode] = useState<"text" | "voice">("text");
+  const [voiceRecording, setVoiceRecording] = useState<VoiceRecordingResult | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -163,6 +170,9 @@ export default function TasksPage() {
     related_asset_id: "",
     notes: "",
     notify_telegram: true,
+    is_voice_task: false,
+    voice_note_url: "",
+    voice_note_duration: 0,
   });
 
   const buildBaseParams = useCallback(() => {
@@ -312,9 +322,46 @@ export default function TasksPage() {
     setCreateLoading(true);
     setCreateError(null);
     try {
+      const isVoice = createMode === "voice" && !editingTask;
+      let voiceUrl = formData.voice_note_url || "";
+      let voiceDur = formData.voice_note_duration || 0;
+
+      if (isVoice) {
+        if (!voiceRecording?.blob) {
+          setCreateError("يرجى تسجيل الرسالة الصوتية أولاً قبل إرسال المهمة.");
+          setCreateLoading(false);
+          return;
+        }
+
+        const uploadData = new FormData();
+        uploadData.append("file", voiceRecording.blob, "voice_task.webm");
+        uploadData.append("duration", String(voiceRecording.duration));
+
+        const uploadRes = await api.post<{
+          voice_note_url: string;
+          duration: number;
+          filename: string;
+        }>("/tasks/voice-upload", uploadData);
+
+        voiceUrl = uploadRes.data.voice_note_url;
+        voiceDur = uploadRes.data.duration;
+      }
+
+      const finalTitle = formData.title.trim()
+        ? formData.title.trim()
+        : isVoice
+        ? `مهمة صوتية (${voiceDur} ثانية)`
+        : "";
+
+      if (!finalTitle && !isVoice) {
+        setCreateError("يرجى إدخال عنوان المهمة.");
+        setCreateLoading(false);
+        return;
+      }
+
       const payload = {
         company_id: currentCompany?.id || undefined,
-        title: formData.title.trim(),
+        title: finalTitle,
         description: formData.description?.trim() || null,
         assigned_to_id: formData.assigned_to_id || null,
         priority: formData.priority,
@@ -324,6 +371,9 @@ export default function TasksPage() {
         related_asset_id: formData.related_asset_id || null,
         notes: formData.notes?.trim() || null,
         notify_telegram: formData.notify_telegram,
+        is_voice_task: isVoice || formData.is_voice_task,
+        voice_note_url: voiceUrl || null,
+        voice_note_duration: voiceDur || 0,
       };
       const res = editingTask
         ? await api.put<{ delivery_status?: { status?: string } }>(`/tasks/${editingTask.id}`, payload)
@@ -332,6 +382,8 @@ export default function TasksPage() {
       setCreateModal(false);
       setSelectedEmployee(null);
       setEditingTask(null);
+      setVoiceRecording(null);
+      setCreateMode("text");
       setFormData({
         title: "",
         description: "",
@@ -343,11 +395,16 @@ export default function TasksPage() {
         related_asset_id: "",
         notes: "",
         notify_telegram: true,
+        is_voice_task: false,
+        voice_note_url: "",
+        voice_note_duration: 0,
       });
 
       const dStatus = res.data?.delivery_status?.status;
       if (editingTask) {
         setToastMessage("تم تحديث المهمة والإسناد بنجاح ✓");
+      } else if (isVoice) {
+        setToastMessage("تم تسجيل وإرسال المهمة الصوتية بنجاح 🎙️ ✓");
       } else if (dStatus === "Sent") {
         setToastMessage("تم إنشاء المهمة بنجاح، وتم تسليم إشعار Telegram للموظف فوراً! 🟢");
       } else if (dStatus === "Pending") {
@@ -530,14 +587,69 @@ export default function TasksPage() {
           description="متابعة المهام الفنية، تتبع المعوقات، والتكامل الفوري مع Telegram والاعتماد متعدد المستويات"
           icon={<CheckSquareIcon className="w-5 h-5" />}
           actions={
-            <button
-              type="button"
-              onClick={() => { setEditingTask(null); setSelectedEmployee(null); setFormData({ title: "", description: "", assigned_to_id: "", priority: "Medium", status: "Assigned", start_date: "", due_date: "", related_asset_id: "", notes: "", notify_telegram: true }); setCreateError(null); setCreateModal(true); }}
-              className="motion-control inline-flex items-center gap-2 bg-[#187A5A] hover:bg-[#123D32] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer"
-            >
-              <PlusIcon className="w-5 h-5" />
-              إضافة مهمة جديدة
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingTask(null);
+                  setSelectedEmployee(null);
+                  setFormData({
+                    title: "",
+                    description: "",
+                    assigned_to_id: "",
+                    priority: "Medium",
+                    status: "Assigned",
+                    start_date: "",
+                    due_date: "",
+                    related_asset_id: "",
+                    notes: "",
+                    notify_telegram: true,
+                    is_voice_task: true,
+                    voice_note_url: "",
+                    voice_note_duration: 0,
+                  });
+                  setVoiceRecording(null);
+                  setCreateMode("voice");
+                  setCreateError(null);
+                  setCreateModal(true);
+                }}
+                className="motion-control inline-flex items-center gap-1.5 bg-gradient-to-r from-[#123D32] to-[#187A5A] hover:opacity-95 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer"
+              >
+                <span>🎙️</span>
+                <span>تسجيل مهمة صوتية</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingTask(null);
+                  setSelectedEmployee(null);
+                  setFormData({
+                    title: "",
+                    description: "",
+                    assigned_to_id: "",
+                    priority: "Medium",
+                    status: "Assigned",
+                    start_date: "",
+                    due_date: "",
+                    related_asset_id: "",
+                    notes: "",
+                    notify_telegram: true,
+                    is_voice_task: false,
+                    voice_note_url: "",
+                    voice_note_duration: 0,
+                  });
+                  setVoiceRecording(null);
+                  setCreateMode("text");
+                  setCreateError(null);
+                  setCreateModal(true);
+                }}
+                className="motion-control inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xs transition-colors cursor-pointer"
+              >
+                <PlusIcon className="w-5 h-5 text-[#187A5A]" />
+                إضافة مهمة نصية
+              </button>
+            </div>
           }
         />
 
@@ -811,6 +923,12 @@ export default function TasksPage() {
                         </span>
                       )}
                       
+                      {task.is_voice_task && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          🎙️ مهمة صوتية {task.voice_note_duration ? `(${task.voice_note_duration} ث)` : ""}
+                        </span>
+                      )}
+                      
                       {task.is_blocked && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
                           ⚠️ معلّق: {task.blocker_reason}
@@ -969,9 +1087,38 @@ export default function TasksPage() {
         <Modal
           isOpen={createModal}
           onClose={() => setCreateModal(false)}
-          title={editingTask ? "تعديل المهمة" : "إضافة مهمة جديدة"}
+          title={editingTask ? "تعديل المهمة" : (createMode === "voice" ? "تسجيل مهمة صوتية جديدة 🎙️" : "إضافة مهمة جديدة")}
           maxWidth="max-w-2xl"
         >
+          {!editingTask && (
+            <div className="flex border-b border-gray-200 mb-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setCreateMode("text")}
+                className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+                  createMode === "text"
+                    ? "border-[#187A5A] text-[#123D32]"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>📝</span>
+                <span>مهمة نصية اعتيادية</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreateMode("voice")}
+                className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+                  createMode === "voice"
+                    ? "border-[#187A5A] text-[#123D32]"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>🎙️</span>
+                <span>مهمة صوتية (WhatsApp-style)</span>
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleCreateTask} className="space-y-4">
             {createError && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
@@ -979,30 +1126,55 @@ export default function TasksPage() {
                 <span className="leading-relaxed">{createError}</span>
               </div>
             )}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                عنوان المهمة <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="مثال: ترقية خوادم قواعد البيانات، تهيئة طابعات القسم المالي"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-              />
-            </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">وصف المهمة</label>
-              <textarea
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="تفاصيل وإرشادات تنفيذ المهمة الفنية..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-              />
-            </div>
+            {createMode === "voice" && !editingTask ? (
+              <div className="space-y-4">
+                <VoiceTaskRecorder
+                  onRecordingComplete={(res) => setVoiceRecording(res)}
+                  disabled={createLoading}
+                />
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    عنوان المهمة الصوتية <span className="text-gray-400 font-normal">(اختياري — سيتم تعيين عنوان تلقائي في حال تركه فارغاً)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="مثال: تعليمات فحص السيرفر الصباحية"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    عنوان المهمة <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={createMode !== "voice"}
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="مثال: ترقية خوادم قواعد البيانات، تهيئة طابعات القسم المالي"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">وصف المهمة</label>
+                  <textarea
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="تفاصيل وإرشادات تنفيذ المهمة الفنية..."
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -1143,7 +1315,13 @@ export default function TasksPage() {
                 className="px-5 py-2 text-sm font-medium text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm flex items-center gap-2"
               >
                 {createLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
-                {createLoading ? "جاري الحفظ..." : editingTask ? "حفظ تعديلات المهمة" : "حفظ وإنشاء المهمة"}
+                {createLoading
+                  ? "جاري الحفظ والمعالجة..."
+                  : editingTask
+                  ? "حفظ تعديلات المهمة"
+                  : createMode === "voice"
+                  ? "إرسال المهمة الصوتية 🎙️"
+                  : "حفظ وإنشاء المهمة"}
               </button>
             </div>
           </form>
@@ -1160,7 +1338,21 @@ export default function TasksPage() {
             <div className="space-y-6">
               {isManagerOrAdmin && <button type="button" className="rounded-lg bg-[#187A5A] px-4 py-2 text-sm text-white" onClick={() => {
                 setEditingTask(selectedTask); setSelectedEmployee(null); setCreateError(null);
-                setFormData({ title: selectedTask.title, description: selectedTask.description || "", assigned_to_id: selectedTask.assigned_to_id || "", priority: selectedTask.priority, status: selectedTask.status, start_date: selectedTask.start_date || "", due_date: selectedTask.due_date || "", related_asset_id: selectedTask.related_asset_id || "", notes: selectedTask.notes || "", notify_telegram: true });
+                setFormData({
+                  title: selectedTask.title,
+                  description: selectedTask.description || "",
+                  assigned_to_id: selectedTask.assigned_to_id || "",
+                  priority: selectedTask.priority,
+                  status: selectedTask.status,
+                  start_date: selectedTask.start_date || "",
+                  due_date: selectedTask.due_date || "",
+                  related_asset_id: selectedTask.related_asset_id || "",
+                  notes: selectedTask.notes || "",
+                  notify_telegram: true,
+                  is_voice_task: Boolean(selectedTask.is_voice_task),
+                  voice_note_url: selectedTask.voice_note_url || "",
+                  voice_note_duration: selectedTask.voice_note_duration || 0,
+                });
                 setDetailModal(false); setCreateModal(true);
               }}>تعديل المهمة والإسناد</button>}
               {actionError && (
@@ -1267,6 +1459,26 @@ export default function TasksPage() {
                     أنشئت بواسطة: {selectedTask.assigned_by_name || "النظام"}
                   </div>
                 </div>
+
+                {selectedTask.is_voice_task && selectedTask.voice_note_url && (
+                  <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-950">
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-sm">🎙️</span>
+                        <span>الرسالة الصوتية للمهمة (Voice Task Note)</span>
+                      </span>
+                      {selectedTask.voice_note_duration ? (
+                        <span className="text-gray-500 font-mono text-[11px]">
+                          المدة: {selectedTask.voice_note_duration} ثانية
+                        </span>
+                      ) : null}
+                    </div>
+                    <VoiceTaskPlayer
+                      src={selectedTask.voice_note_url}
+                      duration={selectedTask.voice_note_duration}
+                    />
+                  </div>
+                )}
 
                 {selectedTask.description && (
                   <p className="text-sm text-gray-800 leading-relaxed bg-white p-3 rounded-lg border border-gray-100">
