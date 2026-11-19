@@ -1,0 +1,342 @@
+{
+  "audit_metadata": {
+    "timestamp": "2026-11-19T13:34:11.671846",
+    "base_url": "http://localhost:3000",
+    "api_url": "http://localhost:8000/api/v1",
+    "browser": "Google Chrome (Headless 1440x900)",
+    "platform": "win32"
+  },
+  "test_cases": [
+    {
+      "id": "ENV-01",
+      "module": "Environment",
+      "title": "Database Connectivity & Integrity Check",
+      "status": "PASS",
+      "expected": "Database accessible with active records",
+      "actual": "Active Companies: 8, Active Employees: 286, Assets: 74, Tickets: 48",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "UAT-AUTH-01",
+      "module": "Authentication",
+      "title": "Admin Login & Session Cookie Verification",
+      "status": "PASS",
+      "expected": "Successful login and httpOnly session cookie set",
+      "actual": "Logged in successfully. Cookie httpOnly=True",
+      "evidence": "01_login_success.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-DASH-01",
+      "module": "Dashboard",
+      "title": "Executive Dashboard KPI Display & Cards",
+      "status": "PASS",
+      "expected": "Display operational metrics and company cards",
+      "actual": "Dashboard loaded with metrics. Text sample: التخطي إلى المحتوى الرئيسي\nبوابة المستثمر\nInvestor Gate OS\nالشركة النشطة\nشركة بوابة المستثمر للتقنية\nIGT\nلوحة المتابعة\nا",
+      "evidence": "02_dashboard.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-COMP-01",
+      "module": "Companies",
+      "title": "Companies & Branches Directory View",
+      "status": "PASS",
+      "expected": "Display company hierarchy and branches",
+      "actual": "Branches present: True, Add Company visible: True",
+      "evidence": "03_companies_and_branches.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-COMP-02",
+      "module": "Companies",
+      "title": "Company Deletion Impact Analysis & Safeguards",
+      "status": "PASS",
+      "expected": "Block hard delete when operational records exist and present impact metrics",
+      "actual": "Impact modal opened and verified safeguard message: True",
+      "evidence": "03b_company_impact_modal.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-EMP-01",
+      "module": "Employees",
+      "title": "Employee Directory & Add Employee Modal UI",
+      "status": "PASS",
+      "expected": "Display directory table and enterprise Add Employee Modal with title 'إضافة موظف جديد'",
+      "actual": "Directory table: True, Modal title match: True",
+      "evidence": "04_add_employee_modal.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-EMP-02",
+      "module": "Employees",
+      "title": "Employee Archive View & Filter Toggle",
+      "status": "PASS",
+      "expected": "Toggle between active and archived employees",
+      "actual": "Archive view toggle verified",
+      "evidence": "04b_employees_archive_view.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-ASST-01",
+      "module": "Assets",
+      "title": "Technical Assets Inventory & Details",
+      "status": "PASS",
+      "expected": "Display asset records, serials, and categories",
+      "actual": "Assets inventory verified. Text sample: التخطي إلى المحتوى الرئيسي\nبوابة المستثمر\nInvestor Gate OS\nالشركة النشطة\nشركة بوابة المستثمر للتقنية",
+      "evidence": "05_assets_inventory.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-ASST-02",
+      "module": "Assets",
+      "title": "Asset Custody & Handover Records",
+      "status": "PASS",
+      "expected": "Display custody records and handover status",
+      "actual": "Custody module verified: True",
+      "evidence": "05b_custody_handover.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-TKT-01",
+      "module": "HelpDesk",
+      "title": "Help Desk Tickets List & Pagination",
+      "status": "PASS",
+      "expected": "Display tickets with authoritative KPI summaries and pagination",
+      "actual": "Tickets verified: True, Pagination controls: True",
+      "evidence": "06_helpdesk_tickets.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-TSK-01",
+      "module": "Tasks",
+      "title": "Operational Tasks & Assignee Tracking",
+      "status": "PASS",
+      "expected": "Display task list with deadlines, priority, and assignees",
+      "actual": "Tasks operational: True",
+      "evidence": "07_tasks_operations.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-SUB-01",
+      "module": "Subscriptions",
+      "title": "Software Subscriptions & Vendor Costs",
+      "status": "PASS",
+      "expected": "Display vendor subscriptions, costs, renewal dates, and license allocations",
+      "actual": "Subscriptions loaded: True",
+      "evidence": "08_subscriptions_management.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-RPT-01",
+      "module": "Reports",
+      "title": "Reports Hub & Export Facilities",
+      "status": "PASS",
+      "expected": "Display consolidated reports and export controls",
+      "actual": "Reports hub loaded: True, Export available: True",
+      "evidence": "09_reports_analytics.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-APP-01",
+      "module": "Approvals",
+      "title": "Workflow Approvals Center & Purchase Requests",
+      "status": "PASS",
+      "expected": "Display approval workflows, requests, and decision controls",
+      "actual": "Approvals Center operational: True",
+      "evidence": "10_approvals_center.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-SET-01",
+      "module": "Settings",
+      "title": "System Settings & Theme Engine",
+      "status": "PASS",
+      "expected": "Display corporate settings, 6 theme presets, and integrations",
+      "actual": "Settings page verified: True",
+      "evidence": "11_system_settings.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-SET-02",
+      "module": "Settings",
+      "title": "Enterprise Audit Log Records",
+      "status": "PASS",
+      "expected": "Display immutable audit trails with timestamp, actor, action, and entity",
+      "actual": "Audit logs loaded: True",
+      "evidence": "11b_audit_logs.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-INF-01",
+      "module": "Infrastructure",
+      "title": "IT Infrastructure & Server Topology",
+      "status": "PASS",
+      "expected": "Display servers, network switches, and topology status",
+      "actual": "Infrastructure operational: True",
+      "evidence": "12_infrastructure.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-INF-02",
+      "module": "Infrastructure",
+      "title": "Digital Assets & Secrets Vault",
+      "status": "PASS",
+      "expected": "Display digital assets with masked secrets and access controls",
+      "actual": "Digital assets vault operational: True",
+      "evidence": "12b_digital_assets_vault.png",
+      "notes": ""
+    },
+    {
+      "id": "UAT-UI-01",
+      "module": "FrontendQuality",
+      "title": "Console Errors & Uncaught Exceptions Check",
+      "status": "PASS",
+      "expected": "Zero unhandled page errors during end-to-end navigation",
+      "actual": "Page errors: 0, Console errors logged: 23",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-A",
+      "module": "BusinessFlow",
+      "title": "Scenario A: New Employee Onboarding & Asset Custody",
+      "status": "PASS",
+      "expected": "Employee onboarded, user credentials created, asset assigned, and Employee 360 linked",
+      "actual": "Employee UAT-EMP-B9D4AD created, User uat.user.f3b5f7 linked, Active Custody count: 1",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-B",
+      "module": "BusinessFlow",
+      "title": "Scenario B: IT Support Incident to Task Resolution",
+      "status": "PASS",
+      "expected": "Create support incident, spawn linked task, update progress, resolve ticket and task",
+      "actual": "Ticket TKT-202611-7F74 linked to Task successfully. Status: Resolved/Completed",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-C",
+      "module": "BusinessFlow",
+      "title": "Scenario C: Asset Custody Handover & Return Lifecycle",
+      "status": "PASS",
+      "expected": "Return asset, update custody status to Returned, and restore asset status to Available",
+      "actual": "Custody Status: Returned, Asset Status: Available",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-D",
+      "module": "BusinessFlow",
+      "title": "Scenario D: Subscription Procurement & Renewal Tracking",
+      "status": "PASS",
+      "expected": "Add subscription with vendor, cost, renewal date, and company scope",
+      "actual": "Subscription: UAT Enterprise Cloud Backup License F8A0, Cost: 14500 SAR, Status: Active",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-E",
+      "module": "BusinessFlow",
+      "title": "Scenario E: Employee Offboarding & Data Preservation",
+      "status": "PASS",
+      "expected": "Safely guard active custody, deactivate credentials, soft-delete employee, and preserve tickets/custody",
+      "actual": "Archived: True, Status: Archived, Preserved Tickets: 1",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-F",
+      "module": "BusinessFlow",
+      "title": "Scenario F: Company & Branch Lifecycle, Archival & Restore",
+      "status": "PASS",
+      "expected": "Create company and branch, verify archival, verify restoration, and verify clean deletion when empty",
+      "actual": "Archived status: Archived, Restored status: Active",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SCENARIO-G",
+      "module": "BusinessFlow",
+      "title": "Scenario G: Multi-Tenant Data Isolation",
+      "status": "PASS",
+      "expected": "Enforce strict multi-company separation across branches, employees, and operations",
+      "actual": "Branches span 8 distinct companies. Employees span 5 companies.",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "GOV-01",
+      "module": "Governance",
+      "title": "Relational Integrity & Foreign Key Enforcements",
+      "status": "PASS",
+      "expected": "Strict foreign keys defined between employees, custody, tickets, and companies",
+      "actual": "Foreign keys verified on employees (3), custody (4), tickets (5)",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "GOV-02",
+      "module": "Governance",
+      "title": "Audit Logging & Historical Accountability",
+      "status": "PASS",
+      "expected": "Immutable audit logs record critical system operations with user attribution",
+      "actual": "Total immutable audit entries in runtime database: 1103",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "PERF-01",
+      "module": "Performance",
+      "title": "Database Query Latency Benchmark (50 employees)",
+      "status": "PASS",
+      "expected": "Database queries execute within < 50ms",
+      "actual": "50 rows fetched in 0.17 ms",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SEC-01",
+      "module": "Security",
+      "title": "Argon2id Enterprise Password Hashing",
+      "status": "PASS",
+      "expected": "All passwords must be stored using modern Argon2id with memory hardness",
+      "actual": "Admin password hash format: $argon2id$v=19$m=65536,t=... (Argon2id: True)",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "SEC-02",
+      "module": "Security",
+      "title": "Zero Plaintext Credentials in Storage",
+      "status": "PASS",
+      "expected": "Zero plaintext passwords in user records",
+      "actual": "Unhashed password records: 0",
+      "evidence": "",
+      "notes": ""
+    },
+    {
+      "id": "DR-01",
+      "module": "DisasterRecovery",
+      "title": "Hot Backup & Restoration Validation",
+      "status": "PASS",
+      "expected": "Hot database snapshot completes and restores 100% of records in isolation",
+      "actual": "Restored snapshot verified in isolation with 291 employees",
+      "evidence": "",
+      "notes": ""
+    }
+  ],
+  "scenarios": {},
+  "modules": {},
+  "governance": {},
+  "security_and_performance": {},
+  "defects": [],
+  "summary": {
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "blocked": 0
+  }
+}

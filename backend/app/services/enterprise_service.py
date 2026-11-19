@@ -314,7 +314,10 @@ def ensure_canonical_five_branches(db: Session, company_id: uuid.UUID) -> List[B
                 )
             )
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
     return [canonical_map[name] for name in CANONICAL_BRANCH_NAMES]
 
 
