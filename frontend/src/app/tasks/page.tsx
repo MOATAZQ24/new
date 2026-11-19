@@ -135,6 +135,7 @@ export default function TasksPage() {
   const [voiceRecording, setVoiceRecording] = useState<VoiceRecordingResult | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [showAdvancedVoiceFields, setShowAdvancedVoiceFields] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
@@ -1141,18 +1142,124 @@ export default function TasksPage() {
                   disabled={createLoading}
                 />
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    عنوان المهمة الصوتية <span className="text-gray-400 font-normal">(اختياري — سيتم تعيين عنوان تلقائي في حال تركه فارغاً)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="مثال: تعليمات فحص السيرفر الصباحية"
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                  />
+                <div className="bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100 space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#123D32] mb-1">
+                      الموظف / الفني المسند إليه <span className="text-red-500">*</span>
+                    </label>
+                    <EmployeeCombobox
+                      value={formData.assigned_to_id}
+                      initialName={undefined}
+                      companyId={currentCompany?.id}
+                      onResolve={setSelectedEmployee}
+                      onChange={(employee) => {
+                        setSelectedEmployee(employee);
+                        setFormData(current => ({ ...current, assigned_to_id: employee?.id || "", notify_telegram: employee?.is_telegram_linked ?? true }));
+                      }}
+                    />
+
+                    {/* Live Telegram Connection & Notification Capability Indicator */}
+                    {formData.assigned_to_id && (() => {
+                      const selectedEmp = selectedEmployee;
+                      if (!selectedEmp) return null;
+                      return (
+                        <div className="mt-2 p-2 bg-white rounded-lg border border-emerald-200 text-xs space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-gray-700">إشعار Telegram المباشر:</span>
+                            {selectedEmp.is_telegram_linked ? (
+                              <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                🟢 سيصل التسجيل الصوتي فوراً ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                ⚪ غير مرتبط بـ Telegram
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      عنوان المهمة الصوتية <span className="text-gray-400 font-normal">(اختياري — سيتم تعيين عنوان تلقائي في حال تركه فارغاً)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="مثال: تعليمات فحص السيرفر الصباحية"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    />
+                  </div>
                 </div>
+
+                {/* Collapsible toggle for advanced fields */}
+                <div className="pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedVoiceFields(!showAdvancedVoiceFields)}
+                    className="text-xs font-semibold text-[#187A5A] hover:text-[#123D32] flex items-center gap-1.5 py-1 cursor-pointer transition-colors"
+                  >
+                    <span>{showAdvancedVoiceFields ? "▲ إخفاء الخيارات الإضافية" : "⚙️ خيارات إضافية (أولوية، موعد نهائي، أصل مرتبط...)"}</span>
+                  </button>
+                </div>
+
+                {showAdvancedVoiceFields && (
+                  <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">الأصل المرتبط</label>
+                        <select
+                          value={formData.related_asset_id}
+                          onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                        >
+                          <option value="">-- غير مرتبط بأصل --</option>
+                          {assets.map((ast) => (
+                            <option key={ast.id} value={ast.id}>{ast.asset_name} ({ast.asset_code})</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">مستوى الأولوية</label>
+                        <select
+                          value={formData.priority}
+                          onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                        >
+                          <option value="Urgent">عاجل جداً (Urgent)</option>
+                          <option value="High">مرتفع (High)</option>
+                          <option value="Medium">متوسط (Medium)</option>
+                          <option value="Low">منخفض (Low)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الاستحقاق (الموعد النهائي)</label>
+                        <input
+                          type="date"
+                          value={formData.due_date}
+                          onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
+                        <input
+                          type="text"
+                          value={formData.notes}
+                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                          placeholder="ملاحظة سريعة..."
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -1180,133 +1287,133 @@ export default function TasksPage() {
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <EmployeeCombobox
+                      value={formData.assigned_to_id}
+                      initialName={editingTask?.assigned_to_name}
+                      companyId={currentCompany?.id}
+                      onResolve={setSelectedEmployee}
+                      onChange={(employee) => {
+                        setSelectedEmployee(employee);
+                        setFormData(current => ({ ...current, assigned_to_id: employee?.id || "", notify_telegram: employee?.is_telegram_linked ?? true }));
+                      }}
+                    />
+
+                    {/* Live Telegram Connection & Notification Capability Indicator */}
+                    {formData.assigned_to_id && (() => {
+                      const selectedEmp = selectedEmployee;
+                      if (!selectedEmp) return null;
+                      return (
+                        <div className="mt-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-gray-700">حالة الربط بـ Telegram:</span>
+                            {selectedEmp.is_telegram_linked ? (
+                              <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                🟢 مرتبط ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                ⚪ غير مرتبط
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700">
+                              <input
+                                type="checkbox"
+                                checked={formData.notify_telegram && !!selectedEmp.is_telegram_linked}
+                                disabled={!selectedEmp.is_telegram_linked}
+                                onChange={(e) => setFormData({ ...formData, notify_telegram: e.target.checked })}
+                                className="rounded border-gray-300 text-[#187A5A] focus:ring-[#187A5A]"
+                              />
+                              <span>إرسال إشعار فوري عبر Telegram</span>
+                            </label>
+                            {selectedEmp.is_telegram_linked ? (
+                              <span className="text-[10px] text-emerald-600 bg-emerald-100/60 px-1.5 py-0.5 rounded font-medium">متاح للإرسال</span>
+                            ) : (
+                              <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">يتطلب ربط الحساب أولاً</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">الأصل المرتبط</label>
+                    <select
+                      value={formData.related_asset_id}
+                      onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    >
+                      <option value="">-- غير مرتبط بأصل --</option>
+                      {assets.map((ast) => (
+                        <option key={ast.id} value={ast.id}>{ast.asset_name} ({ast.asset_code})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">مستوى الأولوية</label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    >
+                      <option value="Urgent">عاجل جداً (Urgent)</option>
+                      <option value="High">مرتفع (High)</option>
+                      <option value="Medium">متوسط (Medium)</option>
+                      <option value="Low">منخفض (Low)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">حالة البداية</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    >
+                      <option value="Assigned">تم الإسناد (Assigned)</option>
+                      <option value="Draft">مسودة (Draft)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ البدء</label>
+                    <input
+                      type="date"
+                      value={formData.start_date}
+                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الاستحقاق (الموعد النهائي)</label>
+                    <input
+                      type="date"
+                      value={formData.due_date}
+                      onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
+                  <textarea
+                    rows={2}
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  />
+                </div>
               </>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <EmployeeCombobox
-                  value={formData.assigned_to_id}
-                  initialName={editingTask?.assigned_to_name}
-                  companyId={currentCompany?.id}
-                  onResolve={setSelectedEmployee}
-                  onChange={(employee) => {
-                    setSelectedEmployee(employee);
-                    setFormData(current => ({ ...current, assigned_to_id: employee?.id || "", notify_telegram: employee?.is_telegram_linked ?? true }));
-                  }}
-                />
-
-                {/* Live Telegram Connection & Notification Capability Indicator */}
-                {formData.assigned_to_id && (() => {
-                  const selectedEmp = selectedEmployee;
-                  if (!selectedEmp) return null;
-                  return (
-                    <div className="mt-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-700">حالة الربط بـ Telegram:</span>
-                        {selectedEmp.is_telegram_linked ? (
-                          <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            🟢 مرتبط ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                            ⚪ غير مرتبط
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
-                        <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700">
-                          <input
-                            type="checkbox"
-                            checked={formData.notify_telegram && !!selectedEmp.is_telegram_linked}
-                            disabled={!selectedEmp.is_telegram_linked}
-                            onChange={(e) => setFormData({ ...formData, notify_telegram: e.target.checked })}
-                            className="rounded border-gray-300 text-[#187A5A] focus:ring-[#187A5A]"
-                          />
-                          <span>إرسال إشعار فوري عبر Telegram</span>
-                        </label>
-                        {selectedEmp.is_telegram_linked ? (
-                          <span className="text-[10px] text-emerald-600 bg-emerald-100/60 px-1.5 py-0.5 rounded font-medium">متاح للإرسال</span>
-                        ) : (
-                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">يتطلب ربط الحساب أولاً</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">الأصل المرتبط</label>
-                <select
-                  value={formData.related_asset_id}
-                  onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                >
-                  <option value="">-- غير مرتبط بأصل --</option>
-                  {assets.map((ast) => (
-                    <option key={ast.id} value={ast.id}>{ast.asset_name} ({ast.asset_code})</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">مستوى الأولوية</label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                >
-                  <option value="Urgent">عاجل جداً (Urgent)</option>
-                  <option value="High">مرتفع (High)</option>
-                  <option value="Medium">متوسط (Medium)</option>
-                  <option value="Low">منخفض (Low)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">حالة البداية</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                >
-                  <option value="Assigned">تم الإسناد (Assigned)</option>
-                  <option value="Draft">مسودة (Draft)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ البدء</label>
-                <input
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الاستحقاق (الموعد النهائي)</label>
-                <input
-                  type="date"
-                  value={formData.due_date}
-                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
-              <textarea
-                rows={2}
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
-              />
-            </div>
 
             {createError && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
@@ -1936,6 +2043,48 @@ export default function TasksPage() {
             </div>
           </div>
         </Modal>
+
+        {/* Mobile & Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment */}
+        <div className="fixed bottom-6 right-6 z-50 sm:bottom-8 sm:right-8">
+          <button
+            type="button"
+            onClick={() => {
+              setEditingTask(null);
+              setVoiceRecording(null);
+              setCreateError(null);
+              setShowAdvancedVoiceFields(false);
+              setCreateMode("voice");
+              setFormData({
+                title: "",
+                description: "",
+                assigned_to_id: "",
+                priority: "Medium",
+                status: "Assigned",
+                start_date: new Date().toISOString().split("T")[0],
+                due_date: "",
+                related_asset_id: "",
+                notes: "",
+                notify_telegram: true,
+                is_voice_task: true,
+                voice_note_url: "",
+                voice_note_duration: 0,
+              });
+              setCreateModal(true);
+            }}
+            className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#123D32] via-[#187A5A] to-[#1e9e74] text-white shadow-2xl hover:shadow-emerald-900/60 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#C5A46D]/60 border-2 border-[#C5A46D]/80 cursor-pointer"
+            title="تسجيل وإسناد مهمة صوتية سريعة"
+            aria-label="تسجيل وإسناد مهمة صوتية سريعة"
+          >
+            {/* Animated ping ring */}
+            <span className="absolute -inset-1 rounded-full bg-[#187A5A] opacity-35 animate-ping pointer-events-none group-hover:opacity-70" />
+            <span className="relative text-2xl sm:text-3xl select-none drop-shadow-md">🎙️</span>
+
+            {/* Desktop / Tablet Hover Tooltip */}
+            <span className="absolute left-full ml-3 px-3 py-1.5 bg-gray-900/95 text-white text-xs font-bold rounded-xl shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden sm:block border border-gray-700">
+              إسناد مهمة صوتية سريعة ⚡ (WhatsApp Style)
+            </span>
+          </button>
+        </div>
       </div>
     </DashboardLayout>
   );

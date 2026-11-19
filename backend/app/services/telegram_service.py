@@ -221,37 +221,71 @@ def send_telegram_direct_message(bot_token: str, chat_id: str, text: str) -> Dic
         return {"success": False, "message": f"تعذر إرسال الإشعار: {str(e)}"}
 
 
-def send_telegram_audio_file(
+def send_telegram_unified_voice_message(
     bot_token: str,
     chat_id: str,
     audio_file_path: str,
-    caption: Optional[str] = None,
+    caption: str,
+    reply_markup: Optional[Dict[str, Any]] = None,
     duration: int = 0,
 ) -> Dict[str, Any]:
-    """Send an audio file directly to a recipient chat on Telegram via sendAudio."""
+    """Send a single, synchronized voice message containing the voice note waveform player,
+    full task metadata caption, and action buttons (Accept / Reject) in the EXACT same Telegram message.
+    Eliminates delivery lag and guarantees zero desynchronization.
+    """
     clean_token = bot_token.strip()
     clean_chat = str(chat_id).strip()
     if not clean_token or not clean_chat:
-        return {"success": False, "message": "بيانات الاتصال مفقودة"}
+        return {"ok": False, "error": "بيانات الاتصال بـ Telegram مفقودة"}
     if not os.path.isfile(audio_file_path):
-        return {"success": False, "message": "ملف التسجيل الصوتي غير موجود"}
+        return {"ok": False, "error": "ملف التسجيل الصوتي غير موجود"}
 
     boundary = "----WebKitFormBoundary" + uuid.uuid4().hex
-    body = bytearray()
+    body_base = bytearray()
 
-    def add_field(name: str, val: str):
-        body.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{val}\r\n".encode("utf-8"))
+    def add_field(data: bytearray, name: str, val: str):
+        data.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{val}\r\n".encode("utf-8"))
 
-    add_field("chat_id", clean_chat)
+    add_field(body_base, "chat_id", clean_chat)
     if caption:
-        add_field("caption", caption[:1024])
+        add_field(body_base, "caption", caption[:1024])
+        add_field(body_base, "parse_mode", "HTML")
     if duration > 0:
-        add_field("duration", str(duration))
+        add_field(body_base, "duration", str(duration))
+    if reply_markup:
+        add_field(body_base, "reply_markup", json.dumps(reply_markup))
 
     try:
         with open(audio_file_path, "rb") as f:
             file_bytes = f.read()
 
+        # 1. Primary: sendVoice (Native round waveform voice note with audio controls and action keyboard)
+        body_voice = bytearray(body_base)
+        body_voice.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"voice\"; filename=\"voice.ogg\"\r\nContent-Type: audio/ogg\r\n\r\n".encode("utf-8"))
+        body_voice.extend(file_bytes)
+        body_voice.extend(f"\r\n--{boundary}--\r\n".encode("utf-8"))
+
+        url_voice = f"https://api.telegram.org/bot{clean_token}/sendVoice"
+        req_voice = urllib.request.Request(
+            url_voice,
+            data=bytes(body_voice),
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "User-Agent": "InvestorGateOS/1.0"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req_voice, timeout=12.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if data.get("ok"):
+                return {
+                    "ok": True,
+                    "http_status": resp.status,
+                    "message_id": (data.get("result") or {}).get("message_id"),
+                }
+    except Exception as e:
+        logger.warning("Unified sendVoice attempt encountered issue (%s), attempting sendAudio fallback...", e)
+
+    # 2. Fallback: sendAudio (Also sends audio player + caption + buttons in a single message)
+    try:
+        body_audio = bytearray(body_base)
         filename = os.path.basename(audio_file_path)
         mime_type = "audio/webm"
         if filename.endswith(".ogg"):
@@ -261,26 +295,27 @@ def send_telegram_audio_file(
         elif filename.endswith(".m4a") or filename.endswith(".mp4"):
             mime_type = "audio/mp4"
 
-        body.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"{filename}\"\r\nContent-Type: {mime_type}\r\n\r\n".encode("utf-8"))
-        body.extend(file_bytes)
-        body.extend(f"\r\n--{boundary}--\r\n".encode("utf-8"))
+        body_audio.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"{filename}\"\r\nContent-Type: {mime_type}\r\n\r\n".encode("utf-8"))
+        body_audio.extend(file_bytes)
+        body_audio.extend(f"\r\n--{boundary}--\r\n".encode("utf-8"))
 
-        url = f"https://api.telegram.org/bot{clean_token}/sendAudio"
-        req = urllib.request.Request(
-            url,
-            data=bytes(body),
+        url_audio = f"https://api.telegram.org/bot{clean_token}/sendAudio"
+        req_audio = urllib.request.Request(
+            url_audio,
+            data=bytes(body_audio),
             headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "User-Agent": "InvestorGateOS/1.0"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=15.0) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        with urllib.request.urlopen(req_audio, timeout=12.0) as resp2:
+            data2 = json.loads(resp2.read().decode("utf-8"))
             return {
-                "success": data.get("ok") is True,
-                "message_id": (data.get("result") or {}).get("message_id"),
+                "ok": data2.get("ok") is True,
+                "http_status": resp2.status,
+                "message_id": (data2.get("result") or {}).get("message_id"),
             }
-    except Exception as e:
-        logger.warning("Failed to send audio to Telegram: %s", e)
-        return {"success": False, "message": str(e)}
+    except Exception as e2:
+        logger.error("Unified voice delivery completely failed: %s", e2)
+        return {"ok": False, "error": str(e2)}
 
 
 def get_telegram_worker_status() -> Dict[str, Any]:
@@ -1100,7 +1135,53 @@ def dispatch_outbox_notifications(
             item.last_error = "تم كتم الإشعارات بحسب تفضيل المستخدم (User muted notifications)"
             continue
 
-        # Dispatch via Telegram Bot API
+        # Check if this is a voice task with an audio file on disk
+        local_audio_path = None
+        if item.payload and item.payload.get("is_voice_task") and item.payload.get("voice_note_url"):
+            try:
+                v_url = str(item.payload.get("voice_note_url", ""))
+                clean_fn = os.path.basename(v_url)
+                voice_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "voice_tasks"))
+                cand = os.path.join(voice_dir, str(item.company_id), clean_fn)
+                if os.path.isfile(cand):
+                    local_audio_path = cand
+            except Exception as ex:
+                logger.warning("Error checking local audio path: %s", ex)
+
+        api_result = {"ok": False}
+
+        # ── UNIFIED SINGLE-MESSAGE DELIVERY ───────────────────────────────
+        # When an audio recording exists, deliver the voice note waveform,
+        # full Arabic metadata caption, and inline action keyboard in
+        # EXACTLY ONE Telegram message. Zero latency, 100% synchronous!
+        if local_audio_path:
+            unified_res = send_telegram_unified_voice_message(
+                bot_token=bot_token,
+                chat_id=item.recipient_chat_id,
+                audio_file_path=local_audio_path,
+                caption=item.message_text,
+                reply_markup=item.reply_markup,
+                duration=int(item.payload.get("voice_note_duration") or 0),
+            )
+            if unified_res.get("ok"):
+                item.status = "Sent"
+                item.sent_at = datetime.utcnow()
+                item.last_error = None
+                item.payload = {**(item.payload or {}), "telegram_api_result": unified_res}
+                sent += 1
+                db.add(IntegrationLog(
+                    company_id=item.company_id,
+                    service_name="telegram",
+                    action=f"notify:{item.event_type}:unified_voice",
+                    status="SUCCESS",
+                    request_payload={"chat_id": item.recipient_chat_id, "task_id": item.payload.get("task_id")},
+                    response_payload=unified_res,
+                ))
+                continue
+            else:
+                logger.warning("Unified voice delivery had an error, trying standard message fallback: %s", unified_res)
+
+        # Standard sendMessage for text tasks or fallback
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         post_data = {
             "chat_id": item.recipient_chat_id,
@@ -1110,7 +1191,6 @@ def dispatch_outbox_notifications(
         if item.reply_markup:
             post_data["reply_markup"] = item.reply_markup
 
-        api_result = {"ok": False}
         try:
             req = urllib.request.Request(
                 url,
@@ -1130,25 +1210,6 @@ def dispatch_outbox_notifications(
                     item.sent_at = datetime.utcnow()
                     item.last_error = None
                     sent += 1
-
-                    # Send voice note file directly to Telegram chat if available
-                    if item.payload and item.payload.get("is_voice_task") and item.payload.get("voice_note_url"):
-                        try:
-                            v_url = str(item.payload.get("voice_note_url", ""))
-                            clean_fn = os.path.basename(v_url)
-                            voice_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "voice_tasks"))
-                            local_audio = os.path.join(voice_dir, str(item.company_id), clean_fn)
-                            if os.path.isfile(local_audio):
-                                task_ref = f"#TASK-{str(item.payload.get('task_id', ''))[:8].upper()}"
-                                send_telegram_audio_file(
-                                    bot_token=bot_token,
-                                    chat_id=item.recipient_chat_id,
-                                    audio_file_path=local_audio,
-                                    caption=f"🎙️ التسجيل الصوتي للمهمة {task_ref}",
-                                    duration=int(item.payload.get("voice_note_duration") or 0),
-                                )
-                        except Exception as err:
-                            logger.warning("Audio delivery alongside notification failed: %s", err)
                 else:
                     item.retry_count += 1
                     item.last_error = f"Telegram API returned status {resp.status}, ok={api_result['ok']}"
