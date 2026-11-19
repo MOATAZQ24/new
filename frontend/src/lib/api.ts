@@ -164,13 +164,19 @@ export const api = {
   post: <T = unknown>(url: string, data?: unknown, headers?: Record<string, string>) =>
     apiRequest<T>(url, {
       method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
       headers,
     }),
   put: <T = unknown>(url: string, data?: unknown, headers?: Record<string, string>) =>
     apiRequest<T>(url, {
       method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
+      headers,
+    }),
+  patch: <T = unknown>(url: string, data?: unknown, headers?: Record<string, string>) =>
+    apiRequest<T>(url, {
+      method: "PATCH",
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
       headers,
     }),
   delete: <T = unknown>(url: string, headers?: Record<string, string>) =>

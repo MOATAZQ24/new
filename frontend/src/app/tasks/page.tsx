@@ -328,7 +328,9 @@ export default function TasksPage() {
 
       if (isVoice) {
         if (!voiceRecording?.blob) {
-          setCreateError("يرجى تسجيل الرسالة الصوتية أولاً قبل إرسال المهمة.");
+          const msg = "يرجى تسجيل الرسالة الصوتية أولاً قبل إرسال المهمة.";
+          setCreateError(msg);
+          toast.error(msg);
           setCreateLoading(false);
           return;
         }
@@ -354,7 +356,9 @@ export default function TasksPage() {
         : "";
 
       if (!finalTitle && !isVoice) {
-        setCreateError("يرجى إدخال عنوان المهمة.");
+        const msg = "يرجى إدخال عنوان المهمة.";
+        setCreateError(msg);
+        toast.error(msg);
         setCreateLoading(false);
         return;
       }
@@ -401,24 +405,27 @@ export default function TasksPage() {
       });
 
       const dStatus = res.data?.delivery_status?.status;
+      let successMsg = "تم إنشاء المهمة بنجاح ✓";
       if (editingTask) {
-        setToastMessage("تم تحديث المهمة والإسناد بنجاح ✓");
+        successMsg = "تم تحديث المهمة والإسناد بنجاح ✓";
       } else if (isVoice) {
-        setToastMessage("تم تسجيل وإرسال المهمة الصوتية بنجاح 🎙️ ✓");
+        successMsg = "تم تسجيل وإرسال المهمة الصوتية بنجاح 🎙️ ✓";
       } else if (dStatus === "Sent") {
-        setToastMessage("تم إنشاء المهمة بنجاح، وتم تسليم إشعار Telegram للموظف فوراً! 🟢");
+        successMsg = "تم إنشاء المهمة بنجاح، وتم تسليم إشعار Telegram للموظف فوراً! 🟢";
       } else if (dStatus === "Pending") {
-        setToastMessage("تم إنشاء المهمة بنجاح، وإدراج إشعار Telegram في قائمة الإرسال الفوري 🟡");
-      } else {
-        setToastMessage("تم إنشاء المهمة بنجاح ✓");
+        successMsg = "تم إنشاء المهمة بنجاح، وإدراج إشعار Telegram في قائمة الإرسال الفوري 🟡";
       }
+      setToastMessage(successMsg);
+      toast.success(successMsg);
       setTimeout(() => setToastMessage(null), 6000);
 
       setPage(1);
       loadTasks();
     } catch (err: unknown) {
       console.error("Failed to create task", err);
-      setCreateError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء المهمة");
+      const msg = err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء المهمة";
+      setCreateError(msg);
+      toast.error(msg);
     } finally {
       setCreateLoading(false);
     }
@@ -1301,6 +1308,13 @@ export default function TasksPage() {
               />
             </div>
 
+            {createError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+                <span className="font-bold shrink-0">⚠️ خطأ:</span>
+                <span className="leading-relaxed">{createError}</span>
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 pt-3 border-t">
               <button
                 type="button"
@@ -1316,7 +1330,7 @@ export default function TasksPage() {
               >
                 {createLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
                 {createLoading
-                  ? "جاري الحفظ والمعالجة..."
+                  ? (createMode === "voice" ? "جاري رفع التسجيل الصوتي وإرسال المهمة..." : "جاري الحفظ والمعالجة...")
                   : editingTask
                   ? "حفظ تعديلات المهمة"
                   : createMode === "voice"
