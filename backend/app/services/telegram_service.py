@@ -221,6 +221,68 @@ def send_telegram_direct_message(bot_token: str, chat_id: str, text: str) -> Dic
         return {"success": False, "message": f"تعذر إرسال الإشعار: {str(e)}"}
 
 
+def send_telegram_audio_file(
+    bot_token: str,
+    chat_id: str,
+    audio_file_path: str,
+    caption: Optional[str] = None,
+    duration: int = 0,
+) -> Dict[str, Any]:
+    """Send an audio file directly to a recipient chat on Telegram via sendAudio."""
+    clean_token = bot_token.strip()
+    clean_chat = str(chat_id).strip()
+    if not clean_token or not clean_chat:
+        return {"success": False, "message": "بيانات الاتصال مفقودة"}
+    if not os.path.isfile(audio_file_path):
+        return {"success": False, "message": "ملف التسجيل الصوتي غير موجود"}
+
+    boundary = "----WebKitFormBoundary" + uuid.uuid4().hex
+    body = bytearray()
+
+    def add_field(name: str, val: str):
+        body.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{val}\r\n".encode("utf-8"))
+
+    add_field("chat_id", clean_chat)
+    if caption:
+        add_field("caption", caption[:1024])
+    if duration > 0:
+        add_field("duration", str(duration))
+
+    try:
+        with open(audio_file_path, "rb") as f:
+            file_bytes = f.read()
+
+        filename = os.path.basename(audio_file_path)
+        mime_type = "audio/webm"
+        if filename.endswith(".ogg"):
+            mime_type = "audio/ogg"
+        elif filename.endswith(".mp3"):
+            mime_type = "audio/mpeg"
+        elif filename.endswith(".m4a") or filename.endswith(".mp4"):
+            mime_type = "audio/mp4"
+
+        body.extend(f"--{boundary}\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"{filename}\"\r\nContent-Type: {mime_type}\r\n\r\n".encode("utf-8"))
+        body.extend(file_bytes)
+        body.extend(f"\r\n--{boundary}--\r\n".encode("utf-8"))
+
+        url = f"https://api.telegram.org/bot{clean_token}/sendAudio"
+        req = urllib.request.Request(
+            url,
+            data=bytes(body),
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "User-Agent": "InvestorGateOS/1.0"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return {
+                "success": data.get("ok") is True,
+                "message_id": (data.get("result") or {}).get("message_id"),
+            }
+    except Exception as e:
+        logger.warning("Failed to send audio to Telegram: %s", e)
+        return {"success": False, "message": str(e)}
+
+
 def get_telegram_worker_status() -> Dict[str, Any]:
     """Check whether the Telegram Long-Polling background daemon is active."""
     worker_status_file = os.path.abspath(
@@ -884,7 +946,7 @@ def format_task_notification(task: Task, event_type: str, company_name: str) -> 
         body_lines.append(f"📄 <b>الوصف:</b> {desc_snippet}")
 
     if getattr(task, "is_voice_task", False):
-        body_lines.append("🔒 <i>ملاحظة أمنية: حرصاً على سرية البيانات، يمكنك تشغيل التسجيل الصوتي من خلال منصة Investor Gate OS.</i>")
+        body_lines.append("🎙️ <i>ملاحظة: التسجيل الصوتي مرفق مع الإشعار أدناه، ويمكنك أيضاً الاستماع إليه وإدارة المهمة من خلال منصة Investor Gate OS.</i>")
 
     body_lines.append("\n<i>نظام Investor Gate لإدارة العمليات التقنية</i>")
     message_text = "\n".join(body_lines)
@@ -950,6 +1012,9 @@ def enqueue_task_notification(
             "priority": task.priority,
             "employee_id": str(emp_id),
             "is_employee_linked": bool(link and link.is_verified),
+            "is_voice_task": bool(getattr(task, "is_voice_task", False)),
+            "voice_note_url": getattr(task, "voice_note_url", None),
+            "voice_note_duration": getattr(task, "voice_note_duration", 0),
             **(extra_payload or {}),
         }
 
@@ -1065,6 +1130,25 @@ def dispatch_outbox_notifications(
                     item.sent_at = datetime.utcnow()
                     item.last_error = None
                     sent += 1
+
+                    # Send voice note file directly to Telegram chat if available
+                    if item.payload and item.payload.get("is_voice_task") and item.payload.get("voice_note_url"):
+                        try:
+                            v_url = str(item.payload.get("voice_note_url", ""))
+                            clean_fn = os.path.basename(v_url)
+                            voice_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "voice_tasks"))
+                            local_audio = os.path.join(voice_dir, str(item.company_id), clean_fn)
+                            if os.path.isfile(local_audio):
+                                task_ref = f"#TASK-{str(item.payload.get('task_id', ''))[:8].upper()}"
+                                send_telegram_audio_file(
+                                    bot_token=bot_token,
+                                    chat_id=item.recipient_chat_id,
+                                    audio_file_path=local_audio,
+                                    caption=f"🎙️ التسجيل الصوتي للمهمة {task_ref}",
+                                    duration=int(item.payload.get("voice_note_duration") or 0),
+                                )
+                        except Exception as err:
+                            logger.warning("Audio delivery alongside notification failed: %s", err)
                 else:
                     item.retry_count += 1
                     item.last_error = f"Telegram API returned status {resp.status}, ok={api_result['ok']}"
