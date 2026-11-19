@@ -1130,7 +1130,7 @@ export default function TasksPage() {
             {createMode === "voice" && !editingTask ? (
               <div className="space-y-4">
                 <VoiceTaskRecorder
-                  onRecordingComplete={(res) => setVoiceRecording(res)}
+                  onRecordingComplete={setVoiceRecording}
                   disabled={createLoading}
                 />
 

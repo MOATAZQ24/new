@@ -36,6 +36,12 @@ export default function VoiceTaskRecorder({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const recordedBlobRef = useRef<Blob | null>(null);
+  const secondsRef = useRef<number>(0);
+  const onRecordingCompleteRef = useRef(onRecordingComplete);
+
+  useEffect(() => {
+    onRecordingCompleteRef.current = onRecordingComplete;
+  }, [onRecordingComplete]);
 
   // Stop & clear all stream tracks
   const stopTracks = useCallback(() => {
@@ -123,31 +129,33 @@ export default function VoiceTaskRecorder({
         setPreviewUrl(objUrl);
         setRecordState("recorded");
 
-        // Pass back to parent
-        setSeconds((prevSeconds) => {
-          const finalDuration = Math.max(1, prevSeconds);
-          onRecordingComplete({
-            blob: finalBlob,
-            duration: finalDuration,
-            previewUrl: objUrl,
-          });
-          return finalDuration;
-        });
+        const finalDuration = Math.max(1, secondsRef.current);
+        setSeconds(finalDuration);
+
+        // Safely pass back to parent outside render cycle
+        setTimeout(() => {
+          if (onRecordingCompleteRef.current) {
+            onRecordingCompleteRef.current({
+              blob: finalBlob,
+              duration: finalDuration,
+              previewUrl: objUrl,
+            });
+          }
+        }, 0);
       };
 
       recorder.start(250); // Slice data every 250ms for reliability
+      secondsRef.current = 0;
       setSeconds(0);
       setRecordState("recording");
 
       timerRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          if (prev >= 299) {
-            // Reached 300 seconds (5 minutes max) -> auto-stop
-            stopRecording();
-            return 300;
-          }
-          return prev + 1;
-        });
+        secondsRef.current += 1;
+        setSeconds(secondsRef.current);
+        if (secondsRef.current >= 300) {
+          // Reached 300 seconds (5 minutes max) -> auto-stop
+          stopRecording();
+        }
       }, 1000);
     } catch (err: unknown) {
       stopTracks();
@@ -183,13 +191,11 @@ export default function VoiceTaskRecorder({
       mediaRecorderRef.current.resume();
       setRecordState("recording");
       timerRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          if (prev >= 299) {
-            stopRecording();
-            return 300;
-          }
-          return prev + 1;
-        });
+        secondsRef.current += 1;
+        setSeconds(secondsRef.current);
+        if (secondsRef.current >= 300) {
+          stopRecording();
+        }
       }, 1000);
     }
   };
@@ -218,11 +224,16 @@ export default function VoiceTaskRecorder({
     setPreviewUrl(null);
     setPreviewPlaying(false);
     setPreviewProgress(0);
+    secondsRef.current = 0;
     setSeconds(0);
     recordedBlobRef.current = null;
     setRecordState("idle");
     setErrorMessage(null);
-    onRecordingComplete(null);
+    setTimeout(() => {
+      if (onRecordingCompleteRef.current) {
+        onRecordingCompleteRef.current(null);
+      }
+    }, 0);
   };
 
   const togglePreviewPlay = () => {
