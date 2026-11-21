@@ -1,3 +1,10 @@
+/**
+ * Project: Investor Gate OS (IGOS)
+ * Original Developer: Moataz Qasem
+ * Initial Development Year: 2026
+ * Attribution: See AUTHORS.md and NOTICE.
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "./tailwind.gen.css";
 @import "tailwindcss";

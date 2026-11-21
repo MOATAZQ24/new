@@ -107,9 +107,12 @@
       ".woff",
       ".woff2",
       ".ttf",
-      ".eot"
+      ".eot",
+      ".d.ts"
     ],
     "filename_patterns": [
+      "next-env.d.ts",
+      "*.gen.css",
       "package-lock.json",
       "poetry.lock",
       "it_ops.db*",

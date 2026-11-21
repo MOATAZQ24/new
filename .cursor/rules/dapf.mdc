@@ -1,0 +1,21 @@
+---
+description: IGOS Developer Attribution & Provenance Governance (IGOS-DAPF)
+globs: *
+alwaysApply: true
+---
+# IGOS Developer Attribution & Provenance Governance (IGOS-DAPF)
+
+## Core Attribution Mandate
+- **Project:** Investor Gate OS (IGOS)
+- **Original Developer:** Moataz Qasem (2026)
+- **Framework:** IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+- **Canonical Policy:** `docs/governance/AI_AGENT_GOVERNANCE.md`
+
+## Mandatory Directives for Cursor
+1. **Preserve Attribution:** Moataz Qasem must remain attributed as the Original Developer in all metadata and first-party source headers.
+2. **Never Overwrite Historical Records:** Do not delete or rewrite `AUTHORS.md`, `CONTRIBUTORS.md`, `COPYRIGHT.md`, `NOTICE`, or `PROVENANCE.json`.
+3. **New First-Party Files:** Prepend standardized IGOS-DAPF header to all newly created source files (`.py`, `.ts`, `.tsx`, `.js`, `.ps1`, `.sh`, `.sql`).
+4. **Refactoring Continuity:** Header preservation is mandatory during refactoring, re-architecting, optimization, and code migration.
+5. **Add Contributors:** Register subsequent contributors in `CONTRIBUTORS.md` without erasing original developer attribution.
+6. **Integrity Validation:** Execute `python scripts/governance/validate_attribution.py` before concluding any task.
+7. **Transparent Governance:** Enforce governance through transparent build, test, and CI checks without runtime interference.
