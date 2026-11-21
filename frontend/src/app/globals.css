@@ -27,39 +27,40 @@
 }
 
 :root {
-  --background: #F7F8FC;
-  --foreground: #131127;
+  /* Investor Gate OS Design System (IGDS) - Light Palette */
+  --background: #F7F8FA;
+  --foreground: #202124;
   --surface: #FFFFFF;
-  --surface-muted: #F3F4F9;
+  --surface-muted: #F1F3F5;
   --surface-elevated: #FFFFFF;
   --card: #FFFFFF;
-  --card-foreground: #131127;
-  --sidebar-background: #131127;
+  --card-foreground: #202124;
+  --sidebar-background: #0F172A;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-active: #7C3AED;
+  --sidebar-active: #078363;
   --header-background: #FFFFFF;
-  --primary: #7C3AED;
+  --primary: #078363;
   --primary-foreground: #FFFFFF;
-  --secondary: #131127;
-  --accent: #8B5CF6;
+  --secondary: #1E293B;
+  --accent: #4285F4;
   --accent-foreground: #FFFFFF;
-  --muted: #F3F4F9;
+  --muted: #F1F3F5;
   --muted-foreground: #64748B;
-  --border: #E5E7EB;
+  --border: #E2E8E5;
   --input: #F8FAFC;
-  --ring: #7C3AED;
+  --ring: #078363;
   --hover: #F1F5F9;
-  --selected: #EDE9FE;
+  --selected: #E6F4EA;
   --popover: #FFFFFF;
-  --chart-1: #7C3AED;
-  --chart-2: #131127;
-  --chart-3: #8B5CF6;
-  --chart-4: #6366F1;
-  --chart-5: #64748B;
-  --success: #059669;
+  --chart-1: #078363;
+  --chart-2: #4285F4;
+  --chart-3: #D97706;
+  --chart-4: #64748B;
+  --chart-5: #0F172A;
+  --success: #078363;
   --warning: #D97706;
   --destructive: #DC2626;
-  --info: #0284C7;
+  --info: #4285F4;
 
   /* Compatibility aliases */
   --primary-dark: var(--sidebar-background);
@@ -272,6 +273,36 @@ html.dark {
   color-scheme: dark;
 }
 :is(html[data-theme="dark"], html.dark) {
+  /* Investor Gate OS Design System (IGDS) - Dark Palette */
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --surface: #1E293B;
+  --surface-muted: #162032;
+  --surface-elevated: #1E293B;
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --sidebar-background: #090E17;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-active: #10B981;
+  --header-background: #1E293B;
+  --primary: #10B981;
+  --primary-foreground: #090E17;
+  --secondary: #334155;
+  --accent: #60A5FA;
+  --accent-foreground: #090E17;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --border: #334155;
+  --input: #162032;
+  --ring: #10B981;
+  --hover: #26354A;
+  --selected: #132E27;
+  --popover: #1E293B;
+  --chart-1: #10B981;
+  --chart-2: #60A5FA;
+  --chart-3: #F59E0B;
+  --chart-4: #94A3B8;
+  --chart-5: #38BDF8;
   --text-main: var(--foreground);
   --text-muted: var(--muted-foreground);
   --bg-main: var(--background);

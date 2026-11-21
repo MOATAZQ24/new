@@ -139,8 +139,8 @@ export default function NotificationsPage() {
           <span className="text-xs text-gray-500 px-2 font-medium">مستوى الأولوية:</span>
           {[
             { id: "", label: "الكل" },
-            { id: "Urgent", label: "🚨 عاجل جداً (Urgent)" },
-            { id: "High", label: "⚡ مرتفع (High)" },
+            { id: "Urgent", label: "عاجل جداً (Urgent)" },
+            { id: "High", label: "مرتفع (High)" },
             { id: "Normal", label: "عادي (Normal)" },
             { id: "Low", label: "منخفض (Low)" },
           ].map((tab) => (

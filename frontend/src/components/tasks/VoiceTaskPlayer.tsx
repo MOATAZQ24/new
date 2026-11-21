@@ -9,6 +9,7 @@
 
 
 import React, { useState, useEffect, useRef } from "react";
+import { Mic, AlertTriangle } from "lucide-react";
 
 interface VoiceTaskPlayerProps {
   src: string;
@@ -179,14 +180,14 @@ export default function VoiceTaskPlayer({
 
       {title && (
         <div className="flex items-center gap-1.5 mb-2.5 text-xs font-bold text-emerald-950">
-          <span className="text-sm">🎙️</span>
+          <Mic className="w-3.5 h-3.5 text-emerald-700" />
           <span>{title}</span>
         </div>
       )}
 
       {error ? (
         <div className="flex items-center gap-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-xl">
-          <span>⚠️</span>
+          <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
           <span>{error}</span>
         </div>
       ) : (

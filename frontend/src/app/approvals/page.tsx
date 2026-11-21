@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import { Icons, ShieldCheckIcon } from "@/components/ui/Icons";
+import { Check, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -400,16 +401,18 @@ export default function ApprovalsPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenDecision(item, "Approved")}
-                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors cursor-pointer inline-flex items-center gap-1"
                                 >
-                                  اعتماد ✓
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>اعتماد</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleOpenDecision(item, "Rejected")}
-                                  className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] transition-colors cursor-pointer inline-flex items-center gap-1"
                                 >
-                                  رفض ✕
+                                  <X className="w-3.5 h-3.5" />
+                                  <span>رفض</span>
                                 </button>
                               </div>
                             ) : (

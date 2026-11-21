@@ -14,6 +14,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
+import { ChevronUp, ChevronDown, Check } from "lucide-react";
 import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -1413,8 +1414,9 @@ export default function IntegrationsCenterPage() {
                           <td className="p-3.5 font-mono text-slate-700">{emp.telegram_chat_id || "—"}</td>
                           <td className="p-3.5">
                             {emp.is_linked ? (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                مرتبط ومفعل ✓
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                <Check size={11} />
+                                <span>مرتبط ومفعل</span>
                               </span>
                             ) : emp.is_pending_verification ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
@@ -1558,7 +1560,7 @@ export default function IntegrationsCenterPage() {
                               className="p-1 hover:bg-slate-200 rounded disabled:opacity-30 cursor-pointer"
                               title="تحريك لأعلى"
                             >
-                              ▲
+                              <ChevronUp size={14} />
                             </button>
                             <button
                               onClick={() => handleMoveMenuOrder(idx, "down")}
@@ -1566,7 +1568,7 @@ export default function IntegrationsCenterPage() {
                               className="p-1 hover:bg-slate-200 rounded disabled:opacity-30 cursor-pointer"
                               title="تحريك لأسفل"
                             >
-                              ▼
+                              <ChevronDown size={14} />
                             </button>
                           </div>
 
@@ -1986,7 +1988,7 @@ export default function IntegrationsCenterPage() {
                   <option value="">اختر الموظف...</option>
                   {employeeLinks.map((emp) => (
                     <option key={emp.employee_id} value={emp.employee_id}>
-                      {emp.full_name} ({emp.job_title}) {emp.is_linked ? "✓ مرتبط" : "(غير مرتبط)"}
+                      {emp.full_name} ({emp.job_title}) {emp.is_linked ? "(مرتبط ومفعل)" : "(غير مرتبط)"}
                     </option>
                   ))}
                 </select>

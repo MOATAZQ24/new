@@ -11,7 +11,7 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Icons } from "@/components/ui/Icons";
-import { Layers } from "lucide-react";
+import { Layers, Sun, Moon, Laptop, CheckCircle2 } from "lucide-react";
 import { useCustomization } from "@/context/CustomizationContext";
 import { useToast } from "@/context/ToastContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
@@ -296,8 +296,8 @@ export default function AppearancePage() {
                     : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                 }`}
               >
-                <div className="text-2xl mb-1">
-                  {t === "light" ? "☀️" : t === "dark" ? "🌙" : "🌓"}
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-2">
+                  {t === "light" ? <Sun size={20} /> : t === "dark" ? <Moon size={20} /> : <Laptop size={20} />}
                 </div>
                 <div className="font-bold text-sm text-slate-900 dark:text-white">
                   {t === "light" ? "فاتح (Light)" : t === "dark" ? "داكن (Dark)" : "تلقائي (System)"}
@@ -644,11 +644,14 @@ export default function AppearancePage() {
 
         {/* Bottom Save Bar */}
         <div className="sticky bottom-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg rounded-2xl p-4 flex items-center justify-between gap-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {saved
-              ? "✅ تم حفظ جميع إعدادات المظهر بنجاح وتطبيقها على حسابك"
-              : "التغييرات محفوظة مؤقتاً — اضغط «حفظ الإعدادات» لتثبيتها على الخادم"}
-          </p>
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            {saved && <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />}
+            <p>
+              {saved
+                ? "تم حفظ جميع إعدادات المظهر بنجاح وتطبيقها على حسابك"
+                : "التغييرات محفوظة مؤقتاً — اضغط «حفظ الإعدادات» لتثبيتها على الخادم"}
+            </p>
+          </div>
           <button
             onClick={handleSave}
             disabled={saving}

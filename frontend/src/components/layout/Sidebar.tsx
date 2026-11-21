@@ -12,6 +12,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/ui/Icons";
+import { Star } from "lucide-react";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
@@ -191,7 +192,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                 {IconComp && <IconComp size={18} />}
               </span>
               <span className="workspace-nav-label flex-1 truncate">
-                {item.pinned ? "★ " : ""}
+                {item.pinned && <Star size={11} className="inline ml-1 text-amber-400 fill-amber-400" />}
                 {item.name}
               </span>
             </Link>

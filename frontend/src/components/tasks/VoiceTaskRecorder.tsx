@@ -9,6 +9,7 @@
 
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { AlertCircle, CheckCircle2, Mic } from "lucide-react";
 
 export interface VoiceRecordingResult {
   blob: Blob;
@@ -288,7 +289,7 @@ export default function VoiceTaskRecorder({
 
       {errorMessage && (
         <div className="mb-3 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-start gap-2">
-          <span className="font-bold shrink-0">⚠️ تنبيه:</span>
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <span className="leading-relaxed">{errorMessage}</span>
         </div>
       )}
@@ -312,7 +313,7 @@ export default function VoiceTaskRecorder({
           </button>
           <div className="space-y-1">
             <span className="block text-sm font-bold text-gray-800">
-              اضغط لبدء تسجيل المهمة الصوتية 🎙️
+              اضغط لبدء تسجيل المهمة الصوتية
             </span>
             <span className="block text-xs text-gray-500">
               يمكنك تسجيل تعليمات المهمة مباشرة بصوتك كرسالة صوتية (الحد الأقصى: 5 دقائق)
@@ -414,7 +415,7 @@ export default function VoiceTaskRecorder({
         <div className="flex flex-col gap-3 py-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-              <span>✅</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>تم تسجيل الرسالة الصوتية بنجاح</span>
             </span>
             <span className="font-mono text-xs font-bold text-[#187A5A]">

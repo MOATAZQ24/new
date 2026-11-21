@@ -58,8 +58,6 @@ import ServiceDeskCommandCenter from "@/components/service-desk/ServiceDeskComma
 import TicketWorkspace from "@/components/service-desk/TicketWorkspace";
 import TicketKanban from "@/components/service-desk/TicketKanban";
 import ApprovalCenter from "@/components/service-desk/ApprovalCenter";
-import WorkflowBuilder from "@/components/service-desk/WorkflowBuilder";
-import KnowledgeBaseSearch from "@/components/service-desk/KnowledgeBaseSearch";
 import {
   ServicePriorityBadge,
   ServiceStatusBadge,
@@ -128,7 +126,7 @@ export default function TicketsPage() {
 
   // Enterprise Service Desk Navigation View
   const [currentView, setCurrentView] = useState<
-    "operations" | "kanban" | "self_service" | "approvals" | "knowledge" | "workflows"
+    "operations" | "kanban" | "self_service" | "approvals"
   >("operations");
 
   // Enterprise Modals
@@ -414,12 +412,10 @@ export default function TicketsPage() {
         <div className="bg-card border border-border/80 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             {[
-              { id: "operations", label: "مركز التذاكر والعمليات", icon: LayoutGrid },
-              { id: "kanban", label: "لوحة كانبان (Kanban)", icon: Kanban },
-              { id: "self_service", label: "بوابة الخدمة الذاتية", icon: LifeBuoy },
+              { id: "operations", label: "سجل تذاكر العمليات", icon: LayoutGrid },
+              { id: "kanban", label: "لوحة كانبان", icon: Kanban },
+              { id: "self_service", label: "بوابة البلاغات (3 خطوات)", icon: LifeBuoy },
               { id: "approvals", label: "مركز الاعتمادات", icon: ShieldCheck },
-              { id: "knowledge", label: "قاعدة المعرفة", icon: BookOpen },
-              { id: "workflows", label: "مسارات العمل (ITIL)", icon: GitMerge },
             ].map((v) => {
               const Icon = v.icon;
               const isActive = currentView === v.id;
@@ -492,6 +488,43 @@ export default function TicketsPage() {
                 }
               }}
             />
+
+            {/* Technician Fast Queue Tabs */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/70">
+                {[
+                  { id: "all", label: "جميع التذاكر" },
+                  { id: "my_assigned", label: "تذاكري المعينة" },
+                  { id: "in_progress", label: "قيد المعالجة" },
+                  { id: "resolved", label: "تم الحل / مغلقة" },
+                ].map((tab) => {
+                  const isActive =
+                    (tab.id === "all" && !statusFilter) ||
+                    (tab.id === "in_progress" && statusFilter === "In Progress") ||
+                    (tab.id === "resolved" && (statusFilter === "Resolved" || statusFilter === "Closed")) ||
+                    (tab.id === "my_assigned" && statusFilter === "Assigned");
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        if (tab.id === "all") setStatusFilter("");
+                        else if (tab.id === "my_assigned") setStatusFilter("Assigned");
+                        else if (tab.id === "in_progress") setStatusFilter("In Progress");
+                        else if (tab.id === "resolved") setStatusFilter("Resolved");
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                        isActive
+                          ? "bg-card text-foreground shadow-2xs border border-border"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Desktop Filters Toolbar */}
             <div className="hidden lg:block">
@@ -762,14 +795,6 @@ export default function TicketsPage() {
         {currentView === "approvals" && (
           <ApprovalCenter onRefreshParent={() => loadTickets()} />
         )}
-
-        {/* VIEW 5: KNOWLEDGE BASE SEARCH */}
-        {currentView === "knowledge" && (
-          <KnowledgeBaseSearch onOpenTicketWizard={() => setWizardModalOpen(true)} />
-        )}
-
-        {/* VIEW 6: WORKFLOW BUILDER */}
-        {currentView === "workflows" && <WorkflowBuilder />}
 
         {/* ADAPTIVE TICKET WIZARD MODAL */}
         <Modal

@@ -18,11 +18,18 @@ interface ToastItem {
   message: string;
   variant: ToastVariant;
   title?: string;
+  action?: { label: string; onClick: () => void };
 }
 
 interface ToastContextValue {
-  showToast: (message: string, variant?: ToastVariant, title?: string, durationMs?: number) => void;
-  success: (message: string, title?: string) => void;
+  showToast: (
+    message: string,
+    variant?: ToastVariant,
+    title?: string,
+    durationMs?: number,
+    action?: { label: string; onClick: () => void }
+  ) => void;
+  success: (message: string, title?: string, action?: { label: string; onClick: () => void }) => void;
   error: (message: string, title?: string) => void;
   warning: (message: string, title?: string) => void;
   info: (message: string, title?: string) => void;
@@ -62,9 +69,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const showToast = useCallback(
-    (message: string, variant: ToastVariant = "info", title?: string, durationMs = 5000) => {
+    (
+      message: string,
+      variant: ToastVariant = "info",
+      title?: string,
+      durationMs = 5000,
+      action?: { label: string; onClick: () => void }
+    ) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      setToasts((prev) => [...prev.slice(-3), { id, message, variant, title }]);
+      setToasts((prev) => [...prev.slice(-3), { id, message, variant, title, action }]);
       if (durationMs > 0) {
         setTimeout(() => {
           setToasts((prev) => prev.filter((item) => item.id !== id));
@@ -78,7 +91,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     () => ({
       showToast,
       dismissToast,
-      success: (message, title) => showToast(message, "success", title),
+      success: (message, title, action) => showToast(message, "success", title, 5000, action),
       error: (message, title) => showToast(message, "error", title, 7000),
       warning: (message, title) => showToast(message, "warning", title, 6000),
       info: (message, title) => showToast(message, "info", title),
@@ -110,6 +123,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   <div className="text-xs font-bold mb-0.5">{item.title}</div>
                 )}
                 <p className="text-xs leading-relaxed break-words">{item.message}</p>
+                {item.action && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      item.action?.onClick();
+                      dismissToast(item.id);
+                    }}
+                    className="mt-2 text-xs font-black text-primary hover:underline cursor-pointer"
+                  >
+                    {item.action.label}
+                  </button>
+                )}
               </div>
               <button
                 type="button"

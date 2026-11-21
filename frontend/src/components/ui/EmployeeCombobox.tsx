@@ -137,7 +137,10 @@ export default function EmployeeCombobox({ value, initialName, companyId, onChan
           <span className="block break-words text-xs text-gray-500">{[employee.department_name, employee.job_title].filter(Boolean).join(" · ")}</span>
           <span className="mt-1 flex flex-wrap gap-2 text-xs">
             <span className={employee.assignable ? "text-emerald-700" : "text-gray-500"}>{employee.assignable ? "نشط (Active)" : "غير نشط (Inactive)"}</span>
-            <span className={employee.is_telegram_linked ? "text-emerald-700" : "text-gray-500"}>{employee.is_telegram_linked ? "🟢 Telegram مرتبط" : "⚪ Telegram غير مرتبط"}</span>
+            <span className={`inline-flex items-center gap-1 ${employee.is_telegram_linked ? "text-emerald-700" : "text-gray-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${employee.is_telegram_linked ? "bg-emerald-500" : "bg-gray-400"}`} />
+              <span>{employee.is_telegram_linked ? "Telegram مرتبط" : "Telegram غير مرتبط"}</span>
+            </span>
             {employee.employee_number && <span className="text-gray-500">الرقم الوظيفي: <bdi>{employee.employee_number}</bdi></span>}
           </span>
         </li>)}

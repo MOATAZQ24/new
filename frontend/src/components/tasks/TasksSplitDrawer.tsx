@@ -68,6 +68,7 @@ interface TasksSplitDrawerProps {
   onOpenComment: (taskId: string) => void;
   onEdit: (taskId: string) => void;
   onCopyLink?: (taskId: string) => void;
+  className?: string;
 }
 
 export function TasksSplitDrawer({
@@ -78,6 +79,7 @@ export function TasksSplitDrawer({
   onOpenComment,
   onEdit,
   onCopyLink,
+  className = "",
 }: TasksSplitDrawerProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -163,7 +165,7 @@ export function TasksSplitDrawer({
   return (
     <div
       dir="rtl"
-      className="w-full lg:w-[380px] xl:w-[400px] shrink-0 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col h-[calc(100vh-130px)] sticky top-20 overflow-hidden text-right transition-all animate-in fade-in slide-in-from-right duration-200"
+      className={`w-full bg-card border border-border/80 rounded-2xl shadow-xs flex flex-col h-full overflow-hidden text-right transition-all animate-in fade-in duration-200 ${className}`}
     >
       {/* 1. Header Toolbar (Reference 2) */}
       <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
@@ -211,7 +213,7 @@ export function TasksSplitDrawer({
         <div className="space-y-1.5">
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 leading-snug">
             {currentPriority.flame && (
-              <span className="text-rose-500">🔥</span>
+              <Flame size={16} className="text-rose-500 shrink-0" />
             )}
             <span>{task.title}</span>
           </h2>
@@ -249,9 +251,9 @@ export function TasksSplitDrawer({
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">
                 الأولوية
               </span>
-              <div className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                <Flame size={14} className="text-rose-500" />
                 <span>{currentPriority.label}</span>
-                <span>🔥</span>
               </div>
             </div>
           </div>
@@ -415,7 +417,7 @@ export function TasksSplitDrawer({
             {/* 1. بدء التنفيذ */}
             <div className="relative">
               <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
-                ▶
+                <Play size={8} className="fill-current mr-0.5" />
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs font-bold text-slate-900 dark:text-white">
@@ -430,7 +432,7 @@ export function TasksSplitDrawer({
             {/* 2. إسناد المهمة */}
             <div className="relative">
               <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-purple-500 text-white flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
-                👤
+                <User size={9} />
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs font-bold text-slate-900 dark:text-white">

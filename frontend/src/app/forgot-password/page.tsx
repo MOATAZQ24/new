@@ -10,6 +10,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
@@ -63,7 +64,7 @@ export default function ForgotPasswordPage() {
 
         {error && (
           <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-            <span>⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -72,12 +73,13 @@ export default function ForgotPasswordPage() {
           <div className="space-y-5 py-2">
             <div role="status" aria-live="polite" className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-emerald-900">
-                <span>✓</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>تم إرسال تعليمات الاستعادة</span>
               </div>
               <p>{message}</p>
-              <p className="text-[11px] text-emerald-700 pt-1">
-                ⚠️ الرابط المرسل صالح للاستخدام <strong>لمرة واحدة فقط</strong> وينتهي تلقائياً بعد <strong>15 دقيقة</strong>. يُرجى مراجعة صندوق الوارد والبريد غير الهام (Spam).
+              <p className="text-[11px] text-emerald-700 pt-1 flex items-start gap-1.5">
+                <Info className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <span>الرابط المرسل صالح للاستخدام <strong>لمرة واحدة فقط</strong> وينتهي تلقائياً بعد <strong>15 دقيقة</strong>. يُرجى مراجعة صندوق الوارد والبريد غير الهام (Spam).</span>
               </p>
             </div>
 

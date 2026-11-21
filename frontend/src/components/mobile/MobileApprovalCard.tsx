@@ -155,7 +155,7 @@ export function MobileApprovalCard({
               className="py-2.5 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition shadow-xs cursor-pointer"
             >
               <Check size={15} />
-              <span>اعتماد الطلب ✓</span>
+              <span>اعتماد الطلب</span>
             </button>
           )}
         </div>

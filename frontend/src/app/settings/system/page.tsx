@@ -16,6 +16,7 @@ import {
   ShieldCheckIcon, RefreshCwIcon, AlertCircleIcon, 
   CheckSquareIcon, ClockIcon, UserIcon
 } from "@/components/ui/Icons";
+import { Lock, Save, Database, HardDrive, Shield, Package, ScrollText } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -122,7 +123,7 @@ export default function SystemSettingsPage() {
       <DashboardLayout>
         <div className="max-w-2xl mx-auto p-12 text-center space-y-4">
           <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
-            🔒
+            <Lock className="w-8 h-8" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">صلاحية وصول مقيدة</h1>
           <p className="text-sm text-gray-600 leading-relaxed">
@@ -193,7 +194,7 @@ export default function SystemSettingsPage() {
               disabled={backupLoading}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#187A5A] hover:bg-[#123D32] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
             >
-              <span>💾</span>
+              <Save className="w-4 h-4" />
               <span>{backupLoading ? "جاري إنشاء النسخة والتحقق..." : "إنشاء نسخة احتياطية فورية"}</span>
             </button>
           </div>
@@ -249,7 +250,7 @@ export default function SystemSettingsPage() {
             {/* Database Engine Card */}
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <span>🗄️</span> محرك قاعدة البيانات وسجلات الجداول
+                <Database className="w-4 h-4 text-[#187A5A]" /> محرك قاعدة البيانات وسجلات الجداول
               </h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -299,7 +300,7 @@ export default function SystemSettingsPage() {
             {/* Storage & Environment Card */}
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <span>💽</span> مساحة القرص والبيئة التشغيلية
+                <HardDrive className="w-4 h-4 text-[#187A5A]" /> مساحة القرص والبيئة التشغيلية
               </h3>
               
               {health.storage.used_percent !== undefined && (
@@ -323,7 +324,10 @@ export default function SystemSettingsPage() {
               )}
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1 text-blue-900">
-                <span className="font-bold block">🛡️ نمط الاستضافة الشبكية:</span>
+                <span className="font-bold flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  <span>نمط الاستضافة الشبكية:</span>
+                </span>
                 <p className="text-blue-800 leading-relaxed">
                   النظام يعمل بنمط <strong>{health.environment}</strong> داخل شبكة المنشأة المحلية (LAN)، دون فتح أي منافذ استقبال عامة، مع الاعتماد التام على الاتصالات الصادرة المشفرة عبر TLS.
                 </p>
@@ -336,7 +340,7 @@ export default function SystemSettingsPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden space-y-3 p-5">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <span>💾</span> النسخ الاحتياطية المتوفرة للتعافي ({backups.length})
+              <Save className="w-4 h-4 text-[#187A5A]" /> النسخ الاحتياطية المتوفرة للتعافي ({backups.length})
             </h3>
             <span className="text-xs text-gray-500">مخزنة في دليل النسخ المؤمّن على الخادم</span>
           </div>
@@ -348,7 +352,9 @@ export default function SystemSettingsPage() {
               {backups.map((b) => (
                 <div key={b.filename} className="py-3 flex items-center justify-between text-xs gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">📦</span>
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                      <Package className="w-4 h-4" />
+                    </div>
                     <div>
                       <strong className="text-gray-800 font-mono text-xs">{b.filename}</strong>
                       <span className="text-gray-400 block text-[10px] mt-0.5">
@@ -371,7 +377,7 @@ export default function SystemSettingsPage() {
         {/* Operational Diagnostics & Audit Logs */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-5 space-y-3">
           <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <span>📜</span> سجل العمليات التشغيلية والأمان الحديثة
+            <ScrollText className="w-4 h-4 text-[#187A5A]" /> سجل العمليات التشغيلية والأمان الحديثة
           </h3>
 
           <div className="overflow-x-auto max-h-72 overflow-y-auto">

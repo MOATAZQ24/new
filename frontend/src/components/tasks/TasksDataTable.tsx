@@ -22,6 +22,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  Zap,
+  ArrowDown,
+  Target,
   Paperclip,
   Hourglass,
 } from "lucide-react";
@@ -162,16 +165,16 @@ export function TasksDataTable({
     switch (priority) {
       case "Critical":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+            <Flame className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             <span>حرج جداً</span>
-            <span>🔥</span>
           </span>
         );
       case "Urgent":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+            <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>عاجل</span>
-            <span>⚡</span>
           </span>
         );
       case "High":
@@ -182,17 +185,17 @@ export function TasksDataTable({
         );
       case "Low":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+            <ArrowDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>منخفض</span>
-            <span>🍃</span>
           </span>
         );
       case "Medium":
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
+            <Target className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>متوسط</span>
-            <span>🎯</span>
           </span>
         );
     }

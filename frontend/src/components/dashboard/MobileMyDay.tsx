@@ -23,6 +23,7 @@ import {
   Laptop,
   CheckSquare,
   ChevronLeft,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -74,7 +75,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
             {arabicDate}
           </div>
           <h1 className="text-xl font-black mt-1 leading-tight">
-            مرحباً، {firstName} 👋
+            مرحباً، {firstName}
           </h1>
           <p className="text-xs text-emerald-100/90 mt-1 leading-relaxed">
             {activeCompany?.name_ar || activeCompany?.name_en || "بوابة المستثمر للتقنية"} — إليك أهم مهامك وأولوياتك اليوم.
@@ -306,9 +307,10 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
         <button
           type="button"
           onClick={onSwitchToFullDashboard}
-          className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-[#187A5A] transition py-2 px-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs"
+          className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-[#187A5A] transition py-2 px-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
         >
-          📊 عرض لوحة المؤشرات البيانية الكاملة
+          <BarChart3 className="w-3.5 h-3.5" />
+          <span>عرض لوحة المؤشرات البيانية الكاملة</span>
         </button>
       </div>
     </div>

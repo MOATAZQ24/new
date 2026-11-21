@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
+import { Check, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 import type { BranchOption, DepartmentOption, EmployeeRow } from "./page";
@@ -745,7 +746,7 @@ export function AddEmployeeModal({
                               : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
                           }`}
                         >
-                          <span className="text-[10px]">{isChecked ? "✓" : "+"}</span>
+                          <span className="text-[10px]">{isChecked ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}</span>
                           <span>{b.branch_name}</span>
                           <span
                             className={`text-[9px] px-1 rounded ${
@@ -924,7 +925,7 @@ export function AddEmployeeModal({
                               : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
                           }`}
                         >
-                          <span>{isPicked ? "✓" : "+"}</span>
+                          <span>{isPicked ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}</span>
                           <span>{c.name_ar || c.company_name_ar || c.name_en || c.id}</span>
                         </button>
                       );

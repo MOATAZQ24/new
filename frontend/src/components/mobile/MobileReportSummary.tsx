@@ -18,6 +18,7 @@ import {
   CheckSquare,
   Download,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 interface CompanyMetric {
@@ -111,7 +112,7 @@ export function MobileReportSummary({
 
                 <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 flex items-center justify-center shrink-0">
                   {isGenerating ? (
-                    <span className="text-[10px] font-bold animate-spin">⏳</span>
+                    <Loader2 size={15} className="animate-spin text-primary" />
                   ) : (
                     <Download size={15} />
                   )}

@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { CopyIcon } from "@/components/ui/Icons";
+import { Shield, List, RefreshCw, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import TelegramActionPermissions from "./TelegramActionPermissions";
 
@@ -398,36 +399,39 @@ export default function TelegramLinkingModal({
             </button>
             <button
               onClick={() => setActiveTab("permissions")}
-              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "permissions"
                   ? "border-[#187A5A] text-[#123D32]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              🛡️ صلاحيات Telegram والبيانات
+              <Shield className="w-3.5 h-3.5" />
+              <span>صلاحيات Telegram والبيانات</span>
             </button>
             <button
               onClick={() => setActiveTab("activity")}
-              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "activity"
                   ? "border-[#187A5A] text-[#123D32]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              📋 سجل الأنشطة والتدقيق
+              <List className="w-3.5 h-3.5" />
+              <span>سجل الأنشطة والتدقيق</span>
             </button>
             <button
               onClick={() => {
                 setActiveTab("link_command");
                 startLinkingWorkflow();
               }}
-              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "link_command"
                   ? "border-amber-600 text-amber-800"
                   : "border-transparent text-slate-500 hover:text-amber-800"
               }`}
             >
-              🔄 إعادة الربط
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>إعادة الربط</span>
             </button>
           </div>
         )}
@@ -453,7 +457,7 @@ export default function TelegramLinkingModal({
 
         {successMessage && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
-            <span>✓</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}

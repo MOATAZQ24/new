@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Icons } from "@/components/ui/Icons";
+import { Mic } from "lucide-react";
 import { EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
@@ -436,7 +437,8 @@ export default function Employee360ProfilePage() {
                           <span className="font-semibold text-slate-900">{t.title}</span>
                           {t.is_voice_task && (
                             <span className="inline-flex items-center gap-1 ms-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                              🎙️ مهمة صوتية {t.voice_note_duration ? `(${t.voice_note_duration} ث)` : ""}
+                              <Mic className="w-3 h-3 text-emerald-700" />
+                              <span>مهمة صوتية {t.voice_note_duration ? `(${t.voice_note_duration} ث)` : ""}</span>
                             </span>
                           )}
                           {t.due_date && (

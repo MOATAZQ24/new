@@ -11,6 +11,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 
 function ResetPasswordContent() {
@@ -122,7 +123,7 @@ function ResetPasswordContent() {
           <div className="space-y-4 py-2">
             <div role="alert" aria-live="assertive" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-red-900">
-                <span>⚠️</span>
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                 <span>الرابط غير صالح أو منتهي الصلاحية</span>
               </div>
               <p>{displayedTokenError}</p>
@@ -153,7 +154,7 @@ function ResetPasswordContent() {
           <div className="space-y-5 py-2">
             <div role="status" aria-live="polite" className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-sm text-emerald-900">
-                <span>✓</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>تم تغيير كلمة المرور بنجاح!</span>
               </div>
               <p>
@@ -175,7 +176,7 @@ function ResetPasswordContent() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {submitError && (
               <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <span>⚠️</span>
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                 <span>{submitError}</span>
               </div>
             )}

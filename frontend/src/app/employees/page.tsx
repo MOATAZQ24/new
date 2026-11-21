@@ -23,6 +23,7 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { AddEmployeeModal } from "./AddEmployeeModal";
+import { Send, Settings, Bell, Star, Check } from "lucide-react";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
 import { MobileEmployeeCard } from "@/components/mobile/MobileEmployeeCard";
@@ -1444,7 +1445,7 @@ export default function EmployeesPage() {
                         : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
                     }`}
                   >
-                    {idx === 0 ? "★ أساسي: " : checked ? "✓ مساند: " : ""}{br.branch_name}
+                    {idx === 0 ? "أساسي: " : checked ? "مساند: " : ""}{br.branch_name}
                   </button>
                 );
               })}
@@ -1665,16 +1666,20 @@ export default function EmployeesPage() {
           {/* Telegram Account Integration Card */}
           <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <span className="text-xl">✈️</span>
+              <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 text-sky-600 flex items-center justify-center">
+                <Send className="w-4 h-4" />
+              </div>
               <div>
                 <span className="font-bold text-slate-800 block">ربط إشعارات Telegram:</span>
                 {selectedEmp?.is_telegram_linked ? (
-                  <span className="text-emerald-700 font-medium inline-flex items-center gap-1">
-                    🟢 مرتبط ومفعل ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "حساب مؤكد"})
+                  <span className="text-emerald-700 font-medium inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>مرتبط ومفعل ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "حساب مؤكد"})</span>
                   </span>
                 ) : (
-                  <span className="text-slate-500 font-medium">
-                    ⚪ غير مرتبط — اربط حساب الموظف لتصل إليه تكليفات المهام والإشعارات التشغيلية فوراً
+                  <span className="text-slate-500 font-medium inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-300" />
+                    <span>غير مرتبط — اربط حساب الموظف لتصل إليه تكليفات المهام والإشعارات التشغيلية فوراً</span>
                   </span>
                 )}
               </div>
@@ -1696,15 +1701,17 @@ export default function EmployeesPage() {
                     onClick={() => setShowTelegramLinkModal(true)}
                     className="px-3 py-1.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
-                    <span>⚙️ إدارة وصلاحيات Telegram</span>
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>إدارة وصلاحيات Telegram</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSendDirectEmpTest(selectedEmp.id)}
                     disabled={sendingEmpTest}
-                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-blue-200 disabled:opacity-50"
+                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-blue-200 disabled:opacity-50 flex items-center gap-1"
                   >
-                    {sendingEmpTest ? "جاري الإرسال..." : "🔔 إرسال رسالة اختبار"}
+                    <Bell className="w-3.5 h-3.5" />
+                    <span>{sendingEmpTest ? "جاري الإرسال..." : "إرسال رسالة اختبار"}</span>
                   </button>
                 </>
               )}
