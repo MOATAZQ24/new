@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IGOS-DAPF Attribution Registry Schema",
+  "description": "Schema for the canonical developer attribution registry in Investor Gate OS.",
+  "type": "object",
+  "required": [
+    "project",
+    "original_developer",
+    "framework",
+    "licensing",
+    "provenance",
+    "contributors"
+  ],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name", "code", "description", "initial_development_year"],
+      "properties": {
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "initial_development_year": { "type": "integer", "minimum": 2020, "maximum": 2100 },
+        "repository_origin": { "type": "string" }
+      }
+    },
+    "original_developer": {
+      "type": "object",
+      "required": ["name", "role", "period", "status", "attribution_protection"],
+      "properties": {
+        "name": { "type": "string", "enum": ["Moataz Qasem"] },
+        "role": { "type": "string" },
+        "period": { "type": "string" },
+        "status": { "type": "string" },
+        "attribution_protection": { "type": "string", "enum": ["MANDATORY", "ENFORCED"] },
+        "canonical_reference": { "type": "string" }
+      }
+    },
+    "framework": {
+      "type": "object",
+      "required": ["name", "abbreviation", "version", "status"],
+      "properties": {
+        "name": { "type": "string" },
+        "abbreviation": { "type": "string", "enum": ["IGOS-DAPF"] },
+        "version": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "licensing": {
+      "type": "object",
+      "required": ["attribution_vs_ownership", "applicable_license", "commercial_status"],
+      "properties": {
+        "attribution_vs_ownership": { "type": "string" },
+        "applicable_license": { "type": "string" },
+        "commercial_status": { "type": "string" },
+        "license_file": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["canonical_records", "verification_method", "amendment_procedure"],
+      "properties": {
+        "canonical_records": { "type": "array", "items": { "type": "string" } },
+        "verification_method": { "type": "string" },
+        "amendment_procedure": { "type": "string" }
+      }
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "role", "year", "contributions"],
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "year": { "type": "string" },
+          "contributions": { "type": "string" }
+        }
+      }
+    }
+  }
+}

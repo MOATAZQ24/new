@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IGOS-DAPF Governance Policy Schema",
+  "description": "Schema for IGOS-DAPF governance and source code attribution policies.",
+  "type": "object",
+  "required": [
+    "framework",
+    "policy_version",
+    "developer_identity",
+    "header_policies",
+    "protected_files",
+    "exclusions",
+    "ai_governance"
+  ],
+  "properties": {
+    "framework": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "developer_identity": {
+      "type": "object",
+      "required": ["name", "role", "year"],
+      "properties": {
+        "name": { "type": "string", "enum": ["Moataz Qasem"] },
+        "role": { "type": "string" },
+        "year": { "type": "integer" }
+      }
+    },
+    "header_policies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["comment_style", "header_template"],
+        "properties": {
+          "comment_style": { "type": "string", "enum": ["hash", "c_block", "html_comment", "dash_dash"] },
+          "header_template": { "type": "string" },
+          "preserve_directives": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "protected_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exclusions": {
+      "type": "object",
+      "required": ["directories", "extensions", "filename_patterns"],
+      "properties": {
+        "directories": { "type": "array", "items": { "type": "string" } },
+        "extensions": { "type": "array", "items": { "type": "string" } },
+        "filename_patterns": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "ai_governance": {
+      "type": "object",
+      "required": ["mandate_count", "mandatory_rules"],
+      "properties": {
+        "mandate_count": { "type": "integer", "minimum": 1 },
+        "mandatory_rules": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

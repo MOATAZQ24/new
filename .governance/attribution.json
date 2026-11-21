@@ -1,0 +1,57 @@
+{
+  "$schema": "./schema/attribution.schema.json",
+  "project": {
+    "name": "Investor Gate OS",
+    "code": "IGOS",
+    "description": "Secure, self-hosted, multi-company IT operations and administrative intelligence platform.",
+    "initial_development_year": 2026,
+    "repository_origin": "Investor Gate Technical Operations"
+  },
+  "original_developer": {
+    "name": "Moataz Qasem",
+    "role": "Original Developer & Lead Software Architect",
+    "period": "2026 – Present",
+    "status": "Permanent Historical Record",
+    "attribution_protection": "MANDATORY",
+    "canonical_reference": "AUTHORS.md"
+  },
+  "framework": {
+    "name": "IGOS Developer Attribution & Provenance Framework",
+    "abbreviation": "IGOS-DAPF",
+    "version": "1.0.0",
+    "status": "Binding Governance Policy"
+  },
+  "licensing": {
+    "attribution_vs_ownership": "Original developer attribution recognizes historical authorship and provenance. It is legally distinct from software copyright ownership, commercial licensing, or proprietary asset transfer.",
+    "applicable_license": "Proprietary / Self-Hosted Enterprise Edition",
+    "commercial_status": "Internal Enterprise Operations Platform",
+    "license_file": "COPYRIGHT.md"
+  },
+  "provenance": {
+    "canonical_records": [
+      ".governance/attribution.json",
+      "AUTHORS.md",
+      "CONTRIBUTORS.md",
+      "COPYRIGHT.md",
+      "NOTICE",
+      "PROVENANCE.json",
+      "DEVELOPMENT_HISTORY.md"
+    ],
+    "verification_method": "Deterministic SHA-256 integrity manifest and automated validator suite (scripts/governance/)",
+    "amendment_procedure": "Authorized amendment requires formal administrative sign-off, recorded in CONTRIBUTORS.md and signed integrity manifest regeneration."
+  },
+  "contributors": [
+    {
+      "name": "Moataz Qasem",
+      "role": "Original Developer & Software Architect",
+      "year": "2026",
+      "contributions": "Foundational system architecture, complete data schemas, multi-tenant RBAC, frontend design system, and operational modules."
+    },
+    {
+      "name": "Platform Engineering Team",
+      "role": "Contributing Engineers",
+      "year": "2026",
+      "contributions": "Automated regression testing, LAN mobile accessibility testing, Telegram worker resilience, and DevSecOps tooling."
+    }
+  ]
+}

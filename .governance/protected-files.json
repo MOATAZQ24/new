@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "framework": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)",
+  "protected_files": [
+    {
+      "path": ".governance/attribution.json",
+      "description": "Canonical developer attribution registry",
+      "classification": "CRITICAL_GOVERNANCE"
+    },
+    {
+      "path": ".governance/policy.json",
+      "description": "Governance and header policy configuration",
+      "classification": "CRITICAL_GOVERNANCE"
+    },
+    {
+      "path": ".governance/protected-files.json",
+      "description": "Registry of protected governance records",
+      "classification": "CRITICAL_GOVERNANCE"
+    },
+    {
+      "path": "AUTHORS.md",
+      "description": "Official author ledger recognizing original developer",
+      "classification": "CORE_DOCUMENTATION"
+    },
+    {
+      "path": "CONTRIBUTORS.md",
+      "description": "Contributor ledger and contribution policy",
+      "classification": "CORE_DOCUMENTATION"
+    },
+    {
+      "path": "COPYRIGHT.md",
+      "description": "Copyright and attribution distinction declaration",
+      "classification": "LEGAL_METADATA"
+    },
+    {
+      "path": "NOTICE",
+      "description": "Standard software notice of original development",
+      "classification": "LEGAL_METADATA"
+    },
+    {
+      "path": "PROVENANCE.json",
+      "description": "Machine-readable software provenance manifest",
+      "classification": "CORE_PROVENANCE"
+    },
+    {
+      "path": "DEVELOPMENT_HISTORY.md",
+      "description": "Chronological history of architectural milestones",
+      "classification": "HISTORICAL_RECORD"
+    },
+    {
+      "path": "docs/governance/AI_AGENT_GOVERNANCE.md",
+      "description": "Canonical AI agent governance directives",
+      "classification": "AI_GOVERNANCE_POLICY"
+    },
+    {
+      "path": "docs/governance/DEVELOPER_ATTRIBUTION.md",
+      "description": "Detailed developer attribution specifications",
+      "classification": "GOVERNANCE_SPECIFICATION"
+    },
+    {
+      "path": "docs/governance/FRAMEWORK_OVERVIEW.md",
+      "description": "IGOS-DAPF architecture and trust model overview",
+      "classification": "GOVERNANCE_SPECIFICATION"
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "description": "GitHub review and code ownership enforcement",
+      "classification": "REPOSITORY_ENFORCEMENT"
+    },
+    {
+      "path": ".github/workflows/governance-validation.yml",
+      "description": "CI/CD automated governance validation gate",
+      "classification": "CI_CD_ENFORCEMENT"
+    }
+  ]
+}

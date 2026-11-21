@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IGOS-DAPF Integrity Manifest Schema",
+  "description": "Schema for cryptographic integrity manifest protecting provenance files.",
+  "type": "object",
+  "required": [
+    "framework",
+    "algorithm",
+    "generated_at",
+    "project",
+    "files",
+    "file_count",
+    "verification_policy"
+  ],
+  "properties": {
+    "framework": { "type": "string" },
+    "algorithm": { "type": "string", "enum": ["SHA-256", "sha256"] },
+    "generated_at": { "type": "string" },
+    "project": { "type": "string" },
+    "file_count": { "type": "integer", "minimum": 1 },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sha256", "size_bytes"],
+        "properties": {
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "verification_policy": {
+      "type": "object",
+      "required": ["tamper_detection", "enforcement"],
+      "properties": {
+        "tamper_detection": { "type": "string" },
+        "enforcement": { "type": "string" }
+      }
+    }
+  }
+}
