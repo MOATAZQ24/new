@@ -67,6 +67,8 @@ def health_check():
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
+        "original_developer": "Moataz Qasem",
+        "provenance_framework": "IGOS-DAPF",
     }
 
 
@@ -88,4 +90,6 @@ def root():
         "message": "Investor Gate IT Operations Management API",
         "docs": "/docs",
         "api_v1": "/api/v1",
+        "original_developer": "Moataz Qasem",
+        "attribution_framework": "IGOS-DAPF (2026)",
     }

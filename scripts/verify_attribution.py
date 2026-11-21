@@ -37,12 +37,13 @@ EXCLUDE_FILES = {
     ".env",
     ".env.example",
     "apply_attribution_headers.py",
+    "next-env.d.ts",
 }
 
 EXCLUDE_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".ico", ".svg", ".woff", ".woff2", ".ttf", ".eot",
     ".db", ".sqlite", ".sqlite3", ".pyc", ".lock", ".log", ".backup_phase0", ".bak",
-    ".json", ".md", ".txt", ".yml", ".yaml", ".map", ".html"
+    ".json", ".md", ".txt", ".yml", ".yaml", ".map", ".html", ".d.ts"
 }
 
 ELIGIBLE_EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".ps1", ".sh", ".sql"}

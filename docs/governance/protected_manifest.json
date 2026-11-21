@@ -13,6 +13,6 @@
     "docs/governance/DEVELOPER_ATTRIBUTION.md": "08d522ce037dc1fa05cec9e4cb4ccd983a84b87be7294aac64fb28bb26078c8b",
     "docs/governance/AI_AGENT_GOVERNANCE.md": "44bbd2a74d78cafb1ad6a64ca3b4719fcfe023b8924f0079186b01a0ea575107",
     "docs/governance/attribution_policy.json": "c13fec1e32a3ac05ab3993928c597ac05fc8f5dd168f9dd2176e69680ad4b46e",
-    "scripts/verify_attribution.py": "be85a363a6fc1d051e86ae4bfe6e72bef053be548faf2cef6a93feace90b286f"
+    "scripts/verify_attribution.py": "90d4f0dc9a6969ea89a06fb741905bb98735d96ea441db3551ffb8c437ffe2b0"
   }
 }

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "release": {
+    "version": "3.0.0",
+    "name": "Investor Gate OS - Enterprise Operational Intelligence & DAPF Release",
+    "release_date": "2026-11-21",
+    "provenance_framework": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)"
+  },
+  "original_developer": {
+    "name": "Moataz Qasem",
+    "role": "Original Developer & Software Architect",
+    "initial_development_year": 2026,
+    "provenance_status": "Verified & Protected"
+  },
+  "modules_covered": [
+    "Frontend Application (Next.js 16, React 19, Tailwind CSS)",
+    "Backend Core & APIs (FastAPI, Python 3.13, Uvicorn)",
+    "Database Schemas & Migrations (SQLAlchemy, Alembic, PostgreSQL)",
+    "Authentication, RBAC & Multi-Company Isolation",
+    "Task Management & Dispatch Hub (Split Workspace, Live Countdowns)",
+    "IT Service Desk & SLA Management",
+    "Technical Assets & Custody Tracking",
+    "Telegram Operations Hub & Bot Poller",
+    "Developer & QA Toolkit (Playwright, MSW, React Scan, axe-core, ZAP, Gitleaks)",
+    "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)"
+  ],
+  "governance_manifest": {
+    "protected_metadata_manifest": "docs/governance/protected_manifest.json",
+    "attribution_validator": "scripts/verify_attribution.py",
+    "integrity_validator": "scripts/verify_provenance_integrity.py",
+    "git_pre_commit_hook": ".githooks/pre-commit",
+    "ci_workflow": ".github/workflows/attribution-integrity.yml",
+    "codeowners": ".github/CODEOWNERS"
+  }
+}
