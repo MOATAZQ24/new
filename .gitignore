@@ -20,4 +20,9 @@ scratch/
 backend/uploads/
 *.webm
 *.ogg
+playwright-report/
+frontend/playwright-report/
+test-results/
+frontend/test-results/
+*report.json
 

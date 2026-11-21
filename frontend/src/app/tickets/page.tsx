@@ -565,6 +565,7 @@ export default function TicketsPage() {
                 تصنيف التذكرة
               </label>
               <select
+                aria-label="تصنيف التذكرة"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
@@ -584,6 +585,7 @@ export default function TicketsPage() {
                 حالة البلاغ
               </label>
               <select
+                aria-label="حالة البلاغ"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
@@ -603,6 +605,7 @@ export default function TicketsPage() {
                 مستوى الأولوية
               </label>
               <select
+                aria-label="مستوى الأولوية"
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
@@ -865,6 +868,7 @@ export default function TicketsPage() {
               <div className="flex items-center gap-1.5 ms-2">
                 <span className="text-slate-500">حجم الصفحة:</span>
                 <select
+                  aria-label="حجم الصفحة والتذاكر المعروضة"
                   value={perPage}
                   onChange={(e) => {
                     setPerPage(Number(e.target.value));

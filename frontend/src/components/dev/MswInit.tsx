@@ -12,7 +12,7 @@ export function MswInit() {
     import("@/mocks/browser")
       .then(({ worker }) => {
         if (worker) {
-          worker.start({ onUnhandledRequest: "bypass" });
+          (worker as any).start?.();
           console.info("[DevToolkit] MSW Mock Service Worker started.");
         }
       })

@@ -280,6 +280,7 @@ export function TasksDataTable({
               <th className="p-3 w-10 text-center">
                 <input
                   type="checkbox"
+                  aria-label="تحديد جميع المهام"
                   checked={selectedIds.length > 0 && selectedIds.length === tasks.length}
                   onChange={toggleSelectAll}
                   className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
@@ -317,6 +318,7 @@ export function TasksDataTable({
                   >
                     <input
                       type="checkbox"
+                      aria-label={`تحديد المهمة ${task.title}`}
                       checked={isChecked}
                       onChange={() => {}}
                       className="rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
@@ -394,6 +396,7 @@ export function TasksDataTable({
                   <td className="p-3 text-center">
                     <button
                       type="button"
+                      aria-label="خيارات المهمة"
                       onClick={(e) => {
                         e.stopPropagation();
                         onActionClick?.(task, e);
@@ -416,6 +419,7 @@ export function TasksDataTable({
         <div>
           <select
             defaultValue="50"
+            aria-label="عدد المهام لكل صفحة"
             className="bg-transparent border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-300 outline-none"
           >
             <option value="25">25 لكل صفحة</option>
@@ -427,6 +431,7 @@ export function TasksDataTable({
         <div className="flex items-center gap-1">
           <button
             type="button"
+            aria-label="الصفحة السابقة"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
             className="p-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
@@ -437,6 +442,7 @@ export function TasksDataTable({
             <button
               key={p}
               type="button"
+              aria-label={`الصفحة ${p}`}
               onClick={() => onPageChange(p)}
               className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
                 page === p
@@ -449,6 +455,7 @@ export function TasksDataTable({
           ))}
           <button
             type="button"
+            aria-label="الصفحة التالية"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
             className="p-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"

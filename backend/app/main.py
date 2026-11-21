@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import SessionLocal, init_db
 from app.api.v1.router import api_router
+from app.core.telemetry import metrics_collector, TelemetryMiddleware
 
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
@@ -39,8 +40,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TelemetryMiddleware)
 
 app.include_router(api_router, prefix="/api")
+
+
+@app.get("/api/v1/metrics")
+@app.get("/metrics")
+def get_metrics(format: str = "json"):
+    if format == "prometheus":
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(metrics_collector.get_prometheus_text(), media_type="text/plain; version=0.0.4")
+    return metrics_collector.get_summary()
 
 
 @app.get("/api/health")
