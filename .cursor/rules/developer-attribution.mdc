@@ -1,0 +1,19 @@
+---
+description: Developer Attribution & Provenance Preservation Rule for Cursor IDE (IGOS-DAPF)
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Cursor Rule: Developer Attribution & Provenance Preservation (IGOS-DAPF)
+
+When assisting in the **Investor Gate OS (IGOS)** project:
+
+- **Original Developer:** Moataz Qasem (Initial Development: 2026)
+- **Framework:** IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+
+## Rules:
+1. Preserve Moataz Qasem's original developer attribution in all repository documentation, metadata, and source headers.
+2. Never remove, replace, or overwrite original attribution during refactorings, optimizations, or file rewrites.
+3. Automatically include the standard IGOS-DAPF attribution header in newly created first-party source files (`.py`, `.ts`, `.tsx`, `.js`, `.ps1`, `.sh`, `.sql`).
+4. Register any subsequent contributors in `CONTRIBUTORS.md` without altering the original developer record in `AUTHORS.md` or `PROVENANCE.json`.
+5. Run `python scripts/verify_attribution.py` to ensure zero attribution regressions before finishing tasks.

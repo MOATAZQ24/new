@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "policy_name": "IGOS-DAPF AI Agent Governance Policy",
+  "version": "1.0.0",
+  "original_developer": {
+    "name": "Moataz Qasem",
+    "role": "Original Developer & Software Architect",
+    "year": 2026
+  },
+  "rules": {
+    "preserve_original_developer": true,
+    "preserve_metadata_files": [
+      "AUTHORS.md",
+      "CONTRIBUTORS.md",
+      "COPYRIGHT.md",
+      "NOTICE",
+      "PROVENANCE.json",
+      "DEVELOPMENT_HISTORY.md",
+      "docs/governance/DEVELOPER_ATTRIBUTION.md",
+      "docs/governance/AI_AGENT_GOVERNANCE.md"
+    ],
+    "require_headers_on_new_first_party_files": true,
+    "enforce_pre_completion_check": "python scripts/verify_attribution.py",
+    "supported_agents": [
+      "google-antigravity",
+      "claude-code",
+      "cursor",
+      "openai-codex",
+      "github-copilot",
+      "gemini-cli"
+    ]
+  }
+}
