@@ -85,6 +85,12 @@ def _migrate_columns():
             ("companies", "parent_company_id", "CHAR(32)", "UUID"),
             ("third_party_subscriptions", "branch_id", "CHAR(32)", "UUID"),
             ("third_party_subscriptions", "seat_limit", "INTEGER DEFAULT 1", "INTEGER DEFAULT 1"),
+            ("helpdesk_tickets", "catalog_item_id", "CHAR(32)", "UUID"),
+            ("helpdesk_tickets", "custom_fields_data", "TEXT", "JSON"),
+            ("helpdesk_tickets", "current_approval_stage", "VARCHAR(100)", "VARCHAR(100)"),
+            ("helpdesk_tickets", "approval_status", "VARCHAR(50) DEFAULT 'None'", "VARCHAR(50) DEFAULT 'None'"),
+            ("helpdesk_tickets", "first_response_at", "DATETIME", "TIMESTAMP"),
+            ("helpdesk_tickets", "escalated_at", "DATETIME", "TIMESTAMP"),
         ]
 
         for table, col, sqlite_type, pg_type in columns:

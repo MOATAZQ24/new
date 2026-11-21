@@ -14,7 +14,16 @@ from app.models.infrastructure import ITInfrastructure
 from app.models.subscription import ThirdPartySubscription, EmployeeSubscription
 from app.models.maintenance import MaintenanceRecord
 from app.models.task import Task, TaskComment, TaskParticipant
-from app.models.ticket import HelpDeskTicket, TicketComment, ProblemRecord, KnowledgeArticle
+from app.models.ticket import (
+    HelpDeskTicket,
+    TicketComment,
+    ProblemRecord,
+    KnowledgeArticle,
+    ServiceCatalogItem,
+    TicketApproval,
+    ServiceWorkflow,
+    SlaPolicy,
+)
 from app.models.notification import Notification
 from app.models.audit import AuditLog
 from app.models.integration import IntegrationConfig, IntegrationLog
@@ -70,6 +79,10 @@ __all__ = [
     "TicketComment",
     "ProblemRecord",
     "KnowledgeArticle",
+    "ServiceCatalogItem",
+    "TicketApproval",
+    "ServiceWorkflow",
+    "SlaPolicy",
     "Notification",
     "AuditLog",
     "IntegrationConfig",

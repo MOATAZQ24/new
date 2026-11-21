@@ -84,6 +84,18 @@ class HelpDeskTicket(UUIDMixin, TimestampMixin, Base):
         nullable=True,
     )
 
+    # Enterprise Service Desk Extensions
+    catalog_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("service_catalog_items.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    custom_fields_data: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    current_approval_stage: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    approval_status: Mapped[str] = mapped_column(String(50), default="None", nullable=False)  # None, Pending, Approved, Rejected
+    first_response_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    escalated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -96,8 +108,12 @@ class HelpDeskTicket(UUIDMixin, TimestampMixin, Base):
     assigned_technician: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_technician_id])
     related_asset: Mapped[Optional["TechnicalAsset"]] = relationship("TechnicalAsset", foreign_keys=[related_asset_id])
     problem_record: Mapped[Optional["ProblemRecord"]] = relationship("ProblemRecord", foreign_keys=[problem_id])
+    catalog_item: Mapped[Optional["ServiceCatalogItem"]] = relationship("ServiceCatalogItem", foreign_keys=[catalog_item_id])
     comments: Mapped[List["TicketComment"]] = relationship(
         "TicketComment", back_populates="ticket", cascade="all, delete-orphan"
+    )
+    approvals: Mapped[List["TicketApproval"]] = relationship(
+        "TicketApproval", back_populates="ticket", cascade="all, delete-orphan"
     )
 
     __table_args__ = (
@@ -206,4 +222,145 @@ class KnowledgeArticle(UUIDMixin, TimestampMixin, Base):
         Index("ix_knowledge_articles_company_id", "company_id"),
         Index("ix_knowledge_articles_category", "category"),
         Index("ix_knowledge_articles_published", "is_published"),
+    )
+
+
+class ServiceCatalogItem(UUIDMixin, TimestampMixin, Base):
+    """Configurable Service Catalog offering with schema-driven adaptive form definition."""
+
+    __tablename__ = "service_catalog_items"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    name_ar: Mapped[str] = mapped_column(String(255), nullable=False)
+    name_en: Mapped[str] = mapped_column(String(255), nullable=False)
+    description_ar: Mapped[str] = mapped_column(Text, nullable=False)
+    description_en: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    icon: Mapped[str] = mapped_column(String(100), default="Laptop", nullable=False)
+    default_priority: Mapped[str] = mapped_column(String(50), default="Medium", nullable=False)
+    estimated_duration_hours: Mapped[int] = mapped_column(Integer, default=24, nullable=False)
+    requires_approval: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    approval_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    dynamic_form_schema: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    workflow_template: Mapped[Optional[str]] = mapped_column(String(100), default="Standard_Incident", nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    display_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    tickets: Mapped[List["HelpDeskTicket"]] = relationship("HelpDeskTicket", back_populates="catalog_item")
+
+    __table_args__ = (
+        Index("ix_service_catalog_items_company_id", "company_id"),
+        Index("ix_service_catalog_items_category", "category"),
+        Index("ix_service_catalog_items_active", "is_active"),
+    )
+
+
+class TicketApproval(UUIDMixin, TimestampMixin, Base):
+    """Multi-stage management approval stage for enterprise service requests."""
+
+    __tablename__ = "ticket_approvals"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    ticket_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("helpdesk_tickets.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    approval_stage: Mapped[str] = mapped_column(String(100), nullable=False)  # Manager, IT_Security, Finance
+    stage_order: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    assigned_approver_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(50), default="Pending", nullable=False
+    )  # Pending, Approved, Rejected, Escalated, Skipped
+    decision_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    decided_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    decided_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    ticket: Mapped["HelpDeskTicket"] = relationship("HelpDeskTicket", back_populates="approvals")
+    assigned_approver: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_approver_id])
+    decided_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[decided_by_id])
+
+    __table_args__ = (
+        Index("ix_ticket_approvals_ticket_id", "ticket_id"),
+        Index("ix_ticket_approvals_status", "status"),
+        Index("ix_ticket_approvals_approver", "assigned_approver_id"),
+    )
+
+
+class ServiceWorkflow(UUIDMixin, TimestampMixin, Base):
+    """Declarative workflow definition for IT Service Desk state machines & BPMN routing."""
+
+    __tablename__ = "service_workflows"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    workflow_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    name_ar: Mapped[str] = mapped_column(String(255), nullable=False)
+    name_en: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default="Published", nullable=False)  # Draft, Published, Archived
+    nodes_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    transitions_json: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+    created_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by_id])
+
+    __table_args__ = (
+        UniqueConstraint("company_id", "workflow_key", "version", name="uq_company_workflow_version"),
+        Index("ix_service_workflows_company_id", "company_id"),
+        Index("ix_service_workflows_key", "workflow_key"),
+    )
+
+
+class SlaPolicy(UUIDMixin, TimestampMixin, Base):
+    """Configurable Service Level Agreement (SLA) policy with business hours & thresholds."""
+
+    __tablename__ = "sla_policies"
+
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    priority: Mapped[str] = mapped_column(String(50), nullable=False)  # Critical, Urgent, High, Medium, Low
+    first_response_minutes: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
+    resolution_minutes: Mapped[int] = mapped_column(Integer, default=1440, nullable=False)
+    escalation_notify_minutes: Mapped[int] = mapped_column(Integer, default=120, nullable=False)
+    business_hours_only: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
+
+    __table_args__ = (
+        Index("ix_sla_policies_company_id", "company_id"),
+        Index("ix_sla_policies_priority", "priority"),
     )
