@@ -1,0 +1,83 @@
+{
+  "framework": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)",
+  "algorithm": "SHA-256",
+  "generated_at": "2026-11-21T15:08:40.662494+00:00",
+  "project": "Investor Gate OS (IGOS)",
+  "file_count": 14,
+  "files": {
+    ".governance/attribution.json": {
+      "sha256": "f0e6ea8c072cf6e4f1ebf14515d27e76be68640a550d22c99aff1f2ebd299b70",
+      "size_bytes": 2303,
+      "description": "Canonical developer attribution registry"
+    },
+    ".governance/policy.json": {
+      "sha256": "7230d06ec5db2eeb0b77c167835cabf5a0bc9e1fdc1b8b8b65cc2ed65776deb9",
+      "size_bytes": 5622,
+      "description": "Governance and header policy configuration"
+    },
+    ".governance/protected-files.json": {
+      "sha256": "0695c0f6975fa165d1049a886fa69b4f81cdbe0a304e8a0eb9eda3c5658d7c81",
+      "size_bytes": 2553,
+      "description": "Registry of protected governance records"
+    },
+    "AUTHORS.md": {
+      "sha256": "f36e9a5797432fd78ddc55c60be967de54d5b2bf5cba010d6f78f8cb31a22518",
+      "size_bytes": 1859,
+      "description": "Official author ledger recognizing original developer"
+    },
+    "CONTRIBUTORS.md": {
+      "sha256": "a749db6db910b1456070cd943a7876e8a0d4b60eea9965890b87a3fdba30d034",
+      "size_bytes": 1861,
+      "description": "Contributor ledger and contribution policy"
+    },
+    "COPYRIGHT.md": {
+      "sha256": "c862ec382110fb3ef442c52f994ae68a9ae1bddd191618ccdbcc8688d5a65c06",
+      "size_bytes": 1987,
+      "description": "Copyright and attribution distinction declaration"
+    },
+    "NOTICE": {
+      "sha256": "b5ab2b26f3bad664e02af00cb5889288f150e49eefb0e5d81c0ca8ff434a9b76",
+      "size_bytes": 759,
+      "description": "Standard software notice of original development"
+    },
+    "PROVENANCE.json": {
+      "sha256": "53491b9f8e52b7f088529cdc1f0bc479e451960cafc06669f2fc81e36ba1503b",
+      "size_bytes": 2080,
+      "description": "Machine-readable software provenance manifest"
+    },
+    "DEVELOPMENT_HISTORY.md": {
+      "sha256": "e0fd4a2a1d3dd6853d13b8c3bc74d08b8732b617497eb643b32c1ff5360c5884",
+      "size_bytes": 2517,
+      "description": "Chronological history of architectural milestones"
+    },
+    "docs/governance/AI_AGENT_GOVERNANCE.md": {
+      "sha256": "5ca723d9b97750b3a14bd0b9829908ba4209750b30666e4ae6a9bc7600e9359e",
+      "size_bytes": 4927,
+      "description": "Canonical AI agent governance directives"
+    },
+    "docs/governance/DEVELOPER_ATTRIBUTION.md": {
+      "sha256": "08d522ce037dc1fa05cec9e4cb4ccd983a84b87be7294aac64fb28bb26078c8b",
+      "size_bytes": 4379,
+      "description": "Detailed developer attribution specifications"
+    },
+    "docs/governance/FRAMEWORK_OVERVIEW.md": {
+      "sha256": "076ac57ebe02b7d3b2304712fbc5cb73f01ed4faf401466b3bc6940f38252cf8",
+      "size_bytes": 2947,
+      "description": "IGOS-DAPF architecture and trust model overview"
+    },
+    ".github/CODEOWNERS": {
+      "sha256": "3cfddb4164ecbb7c000985c0c6864e46bedfb35db149e0365eb03f3808715c98",
+      "size_bytes": 1037,
+      "description": "GitHub review and code ownership enforcement"
+    },
+    ".github/workflows/governance-validation.yml": {
+      "sha256": "2efec453bda288fda2cdb29a8421a5de2b1fd469b518eebd5c0b40e2aa3a7999",
+      "size_bytes": 1384,
+      "description": "CI/CD automated governance validation gate"
+    }
+  },
+  "verification_policy": {
+    "tamper_detection": "STRICT_CRYPTO_HASH",
+    "enforcement": "FAIL_CLOSED_CI_GATE"
+  }
+}

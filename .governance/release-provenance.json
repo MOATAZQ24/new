@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "format": "IGOS-DAPF-RELEASE-PROVENANCE",
+  "version": "1.0.0",
+  "generated_at": "2026-11-21T15:08:40.789380+00:00",
+  "project": {
+    "name": "Investor Gate OS",
+    "short_name": "IGOS",
+    "repository": "https://github.com/investorgate/igos",
+    "original_developer": {
+      "name": "Moataz Qasem",
+      "role": "Original Developer & Software Architect",
+      "initial_development_year": 2026,
+      "status": "Permanent Historical Record"
+    },
+    "framework": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)",
+    "license": "Proprietary - All Rights Reserved"
+  },
+  "build": {
+    "commit_sha": "4b3d04442925d58545ebf1ad172b8dbb5f6cc7c1",
+    "branch": "governance/developer-provenance",
+    "integrity_manifest_sha256": "6184a7c22d92571affefcbec153dce820b4f07e92db1d2429722bb8f974e196f",
+    "verification_status": "CRYPTOGRAPHICALLY_VERIFIED"
+  },
+  "supply_chain": {
+    "sbom_standard": "SPDX-2.3-COMPATIBLE",
+    "components": [
+      {
+        "name": "fastapi-backend",
+        "type": "backend_service",
+        "language": "Python 3.13"
+      },
+      {
+        "name": "nextjs-frontend",
+        "type": "frontend_application",
+        "language": "TypeScript / React 19"
+      },
+      {
+        "name": "postgresql-schema",
+        "type": "relational_store",
+        "engine": "PostgreSQL"
+      },
+      {
+        "name": "telegram-operations-hub",
+        "type": "integration_worker",
+        "language": "Python 3.13"
+      }
+    ]
+  }
+}

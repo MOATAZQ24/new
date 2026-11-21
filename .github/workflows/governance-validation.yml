@@ -1,0 +1,52 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
+name: IGOS-DAPF Governance Validation Gate
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'governance/**'
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  governance-validation:
+    name: Verify Attribution & Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Validation Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema
+
+      - name: Validate Cross-Agent Policies
+        run: |
+          python scripts/governance/validate_agent_policies.py
+
+      - name: Validate Source Code Attribution (100% Coverage)
+        run: |
+          python scripts/governance/validate_attribution.py
+
+      - name: Verify Cryptographic Provenance Integrity
+        run: |
+          python scripts/governance/verify_integrity.py

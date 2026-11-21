@@ -1,0 +1,33 @@
+#!/bin/sh
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+# Git Pre-Push Hook: Validates full governance suite before pushing to remotes
+
+echo "[IGOS-DAPF] Running Pre-Push Full Governance Verification Suite..."
+
+# 1. Validate Cross-Agent Policies
+python scripts/governance/validate_agent_policies.py
+if [ $? -ne 0 ]; then
+    echo "[IGOS-DAPF] Error: AI agent policy inconsistency detected. Push rejected."
+    exit 1
+fi
+
+# 2. Validate Source Code Attribution
+python scripts/governance/validate_attribution.py
+if [ $? -ne 0 ]; then
+    echo "[IGOS-DAPF] Error: Source code attribution validation failed. Push rejected."
+    exit 1
+fi
+
+# 3. Verify Cryptographic Integrity
+python scripts/governance/verify_integrity.py
+if [ $? -ne 0 ]; then
+    echo "[IGOS-DAPF] Error: Protected provenance integrity mismatch. Push rejected."
+    exit 1
+fi
+
+echo "[IGOS-DAPF] All pre-push governance verification checks passed."
+exit 0

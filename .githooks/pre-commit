@@ -9,14 +9,14 @@
 echo "[IGOS-DAPF] Running Pre-Commit Attribution & Provenance Integrity Gate..."
 
 # 1. Verify developer attribution headers
-python scripts/verify_attribution.py
+python scripts/governance/validate_attribution.py
 if [ $? -ne 0 ]; then
     echo "[IGOS-DAPF] Error: Developer attribution validation failed. Aborting commit."
     exit 1
 fi
 
 # 2. Verify protected metadata integrity
-python scripts/verify_provenance_integrity.py
+python scripts/governance/verify_integrity.py
 if [ $? -ne 0 ]; then
     echo "[IGOS-DAPF] Error: Protected provenance manifest mismatch. Aborting commit."
     exit 1

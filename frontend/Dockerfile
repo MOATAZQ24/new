@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 # Stage 1: Install dependencies
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat

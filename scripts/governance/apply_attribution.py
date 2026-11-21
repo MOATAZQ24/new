@@ -35,7 +35,7 @@ def is_already_attributed(content: str) -> bool:
     return ("Moataz Qasem" in content) and ("Original Developer" in content or "IGOS-DAPF" in content)
 
 
-def apply_header_to_content(content: str, ext: str, policy: Dict[str, Any]) -> Tuple[str, bool]:
+def apply_header_to_content(content: str, ext: str, policy: Dict[str, Any], file_path: Path = None) -> Tuple[str, bool]:
     """Applies the appropriate attribution header to the given content if not already attributed."""
     if is_already_attributed(content):
         return content, False
@@ -124,7 +124,7 @@ def apply_header_to_content(content: str, ext: str, policy: Dict[str, Any]) -> T
         return header_block + content, True
 
     # 5. Dockerfile
-    elif ext == "" and Path(content).name.lower().startswith("dockerfile"):
+    elif file_path and file_path.name.lower().startswith("dockerfile"):
         header_template = (
             "# ==============================================================================\n"
             "# Investor Gate OS (IGOS) - Technical Operations Platform\n"
@@ -175,7 +175,7 @@ def scan_and_apply(dry_run: bool = False, verbose: bool = False) -> Dict[str, An
                 failed.append({"file": rel_path, "error": str(e)})
                 continue
 
-            new_content, applied = apply_header_to_content(content, ext, policy)
+            new_content, applied = apply_header_to_content(content, ext, policy, file_path=file_path)
 
             if applied:
                 if not dry_run:

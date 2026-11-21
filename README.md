@@ -209,5 +209,15 @@ node node_modules/typescript/bin/tsc --noEmit
 
 ---
 
+## 🏛️ Developer Attribution & Provenance Governance (IGOS-DAPF)
+Investor Gate OS operates under the **IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)**:
+- **Original Developer & Architect:** **Moataz Qasem** (2026 – Present)
+- **Framework Documentation:** [docs/governance/FRAMEWORK_OVERVIEW.md](file:///c:/Users/Acodet/Desktop/new/docs/governance/FRAMEWORK_OVERVIEW.md)
+- **Authors & Contributors:** [AUTHORS.md](file:///c:/Users/Acodet/Desktop/new/AUTHORS.md) and [CONTRIBUTORS.md](file:///c:/Users/Acodet/Desktop/new/CONTRIBUTORS.md)
+- **Provenance Manifest:** [.governance/attribution.json](file:///c:/Users/Acodet/Desktop/new/.governance/attribution.json)
+- **Governance Audit Command:** `python scripts/governance/audit_governance.py`
+
+---
+
 ## 📄 License
 This project is released under the **MIT License**. Free for commercial and private enterprise use with zero software licensing costs.
