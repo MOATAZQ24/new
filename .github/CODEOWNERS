@@ -1,0 +1,18 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+# Global code ownership & governance file protection
+
+# Core Provenance & Governance Files (Require explicit review)
+/AUTHORS.md                       @moatazqasem
+/CONTRIBUTORS.md                  @moatazqasem
+/COPYRIGHT.md                     @moatazqasem
+/NOTICE                           @moatazqasem
+/PROVENANCE.json                  @moatazqasem
+/DEVELOPMENT_HISTORY.md           @moatazqasem
+/docs/governance/                 @moatazqasem
+/.github/workflows/               @moatazqasem
+/scripts/verify_attribution.py    @moatazqasem
+/scripts/verify_provenance_integrity.py @moatazqasem

@@ -1,0 +1,26 @@
+#!/bin/sh
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+# Git Pre-Commit Hook: Validates developer attribution and provenance integrity
+
+echo "[IGOS-DAPF] Running Pre-Commit Attribution & Provenance Integrity Gate..."
+
+# 1. Verify developer attribution headers
+python scripts/verify_attribution.py
+if [ $? -ne 0 ]; then
+    echo "[IGOS-DAPF] Error: Developer attribution validation failed. Aborting commit."
+    exit 1
+fi
+
+# 2. Verify protected metadata integrity
+python scripts/verify_provenance_integrity.py
+if [ $? -ne 0 ]; then
+    echo "[IGOS-DAPF] Error: Protected provenance manifest mismatch. Aborting commit."
+    exit 1
+fi
+
+echo "[IGOS-DAPF] All pre-commit governance checks passed successfully."
+exit 0

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "policy": {
+    "name": "IGOS Developer Attribution & Provenance Policy",
+    "version": "1.0.0",
+    "framework": "IGOS-DAPF",
+    "original_developer": {
+      "name": "Moataz Qasem",
+      "role": "Original Developer & Software Architect",
+      "year": 2026,
+      "immutable": true
+    },
+    "requirements": {
+      "mandatory_source_headers": true,
+      "required_header_tokens": [
+        "Moataz Qasem",
+        "IGOS-DAPF"
+      ],
+      "eligible_extensions": [
+        ".py",
+        ".ts",
+        ".tsx",
+        ".js",
+        ".ps1",
+        ".sh",
+        ".sql"
+      ],
+      "protected_metadata_files": [
+        "AUTHORS.md",
+        "CONTRIBUTORS.md",
+        "COPYRIGHT.md",
+        "NOTICE",
+        "PROVENANCE.json",
+        "DEVELOPMENT_HISTORY.md",
+        "docs/governance/DEVELOPER_ATTRIBUTION.md",
+        "docs/governance/AI_AGENT_GOVERNANCE.md",
+        "docs/governance/attribution_policy.json",
+        "scripts/verify_attribution.py",
+        "scripts/verify_provenance_integrity.py"
+      ]
+    },
+    "validation": {
+      "pre_commit_hook_enabled": true,
+      "ci_workflow_enabled": true,
+      "sha256_integrity_enforced": true
+    }
+  }
+}

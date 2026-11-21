@@ -1,0 +1,30 @@
+name: IGOS-DAPF Attribution & Provenance Integrity Gate
+
+on:
+  push:
+    branches: [ main, master, feat/*, release/* ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-attribution:
+    name: Verify Developer Attribution & Provenance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 1. Validate Developer Attribution Headers
+        run: python scripts/verify_attribution.py
+
+      - name: 2. Validate Provenance SHA-256 Integrity
+        run: python scripts/verify_provenance_integrity.py
+
+      - name: 3. Run Automated Governance Unit Tests
+        run: python -m unittest backend/tests/test_attribution_governance.py

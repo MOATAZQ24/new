@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "SHA-256 Protected Manifest for IGOS-DAPF Provenance Records",
+  "hash_algorithm": "SHA-256 (LF-normalized)",
+  "original_developer": "Moataz Qasem",
+  "files": {
+    "AUTHORS.md": "2d4a7d701b49f5f8192c0815a0862c0e30b0be4fabc51b37859d0284d8a396e4",
+    "CONTRIBUTORS.md": "700ebf7d21afb672f1284b06fa9243b50ec6cd953c7cf7f5b8bc78cf0ee7e394",
+    "COPYRIGHT.md": "a1f787ceac92a7bd845149e1b15a3c4b780c581dd905b4cafbac0961daae9e9a",
+    "NOTICE": "b5ab2b26f3bad664e02af00cb5889288f150e49eefb0e5d81c0ca8ff434a9b76",
+    "PROVENANCE.json": "53491b9f8e52b7f088529cdc1f0bc479e451960cafc06669f2fc81e36ba1503b",
+    "DEVELOPMENT_HISTORY.md": "e0fd4a2a1d3dd6853d13b8c3bc74d08b8732b617497eb643b32c1ff5360c5884",
+    "docs/governance/DEVELOPER_ATTRIBUTION.md": "08d522ce037dc1fa05cec9e4cb4ccd983a84b87be7294aac64fb28bb26078c8b",
+    "docs/governance/AI_AGENT_GOVERNANCE.md": "44bbd2a74d78cafb1ad6a64ca3b4719fcfe023b8924f0079186b01a0ea575107",
+    "docs/governance/attribution_policy.json": "c13fec1e32a3ac05ab3993928c597ac05fc8f5dd168f9dd2176e69680ad4b46e",
+    "scripts/verify_attribution.py": "be85a363a6fc1d051e86ae4bfe6e72bef053be548faf2cef6a93feace90b286f"
+  }
+}
