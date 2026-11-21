@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CustomizationProvider } from "@/context/CustomizationContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { buildPreHydrationThemeScript } from "@/lib/applyTheme";
+import DevToolkitLoader from "@/components/dev/DevToolkitLoader";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
           <WorkspaceProvider>
             <CustomizationProvider>
               <ToastProvider>{children}</ToastProvider>
+              <DevToolkitLoader />
             </CustomizationProvider>
           </WorkspaceProvider>
         </AuthProvider>
