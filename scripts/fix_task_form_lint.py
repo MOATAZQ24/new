@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 from pathlib import Path
 import re
 p=Path(__file__).resolve().parents[1]/'frontend/src/app/tasks/page.tsx'

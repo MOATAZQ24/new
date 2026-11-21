@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Enterprise 3.0 QA completion: employee_subscriptions M:N table, subscription branch/seats, canonical internal companies hierarchy."""
 
 from alembic import op

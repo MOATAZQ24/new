@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Full P0 Acceptance Verification against the live running application (http://127.0.0.1:3000 & :8000),
 real SQLite database (it_ops.db), and real Telegram Bot handler.
 """

@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Test Suite: n8n Automation Webhook Dispatcher (Phase 7).
 
 Covers:

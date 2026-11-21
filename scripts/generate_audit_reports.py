@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """
 Investor Gate OS 3.0 — UAT Release Audit Report Generator
 Reads uat_audit_results.json and compiles the 6 mandatory audit deliverables:

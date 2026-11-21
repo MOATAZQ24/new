@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Test suite verifying all audit remediations and Telegram enhancements.
 Covers:
 1. P0 Multi-tenant isolation: resolve_company_scope defense against header/query mismatch.

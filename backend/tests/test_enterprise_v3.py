@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Comprehensive Automated QA Suite for Investor Gate OS 3.0.
 
 Verifies all 15 Mandatory Acceptance Criteria:

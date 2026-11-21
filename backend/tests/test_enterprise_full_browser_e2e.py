@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Comprehensive Enterprise 3.0 Live Playwright E2E, Add Employee Edge-Case, AI Agent & 5-Viewport Accessibility Audit."""
 
 import json

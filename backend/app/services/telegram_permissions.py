@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Telegram restrictions are intersected with current, tenant-scoped CRM grants."""
 from app.core.rbac import ROLE_PERMISSION_MATRIX, get_user_effective_roles
 

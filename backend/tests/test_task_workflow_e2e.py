@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """End-to-end workflow regression: Dashboard API functions + Telegram callbacks against the real database.
 
 Covers the P0 defects: Telegram completion must persist and be visible to the Dashboard list, filters,

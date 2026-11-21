@@ -1,4 +1,12 @@
 "use client";
+/**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ */
+
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { api } from "@/lib/api";

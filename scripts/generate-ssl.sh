@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
+# ==============================================================================
 # Investor Gate IT Operations Management System — SSL Certificate Generator
 # Generates self-signed TLS certificates for development/local server use
 # ==============================================================================

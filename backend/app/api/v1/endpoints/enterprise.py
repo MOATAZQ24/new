@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Enterprise HRM, CRM, Projects, Approvals, and Visual Intelligence Analytics API endpoints for Investor Gate OS 3.0."""
 
 import uuid

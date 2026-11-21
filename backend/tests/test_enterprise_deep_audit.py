@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """
 INVESTOR GATE OS 3.0 — Comprehensive Independent Audit, Security, Workflow,
 AI Agent 14-Scenario & Disposable DB Migration Verification Suite.

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": {
+    "name": "Investor Gate OS",
+    "short_name": "IGOS",
+    "description": "Secure, self-hosted, multi-company IT operations and administrative intelligence platform.",
+    "initial_development_year": 2026,
+    "framework": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)",
+    "policy_version": "1.0.0"
+  },
+  "provenance": {
+    "original_developer": {
+      "name": "Moataz Qasem",
+      "role": "Original Developer & Software Architect",
+      "year": 2026,
+      "status": "Permanent Historical Record",
+      "attribution_protection": "MANDATORY"
+    },
+    "governance": {
+      "attribution_headers_required": true,
+      "ai_agent_governance_enforced": true,
+      "integrity_verification_enabled": true,
+      "protected_files": [
+        "AUTHORS.md",
+        "CONTRIBUTORS.md",
+        "COPYRIGHT.md",
+        "NOTICE",
+        "PROVENANCE.json",
+        "DEVELOPMENT_HISTORY.md",
+        "docs/governance/DEVELOPER_ATTRIBUTION.md",
+        "docs/governance/AI_AGENT_GOVERNANCE.md",
+        "docs/governance/FRAMEWORK_OVERVIEW.md"
+      ]
+    },
+    "history": [
+      {
+        "milestone": "Foundation & Core Architecture",
+        "period": "2026-Q1",
+        "lead_architect": "Moataz Qasem",
+        "description": "Initial design of multi-tenant enterprise data model, FastAPI backend, Next.js frontend, and core IT operations modules."
+      },
+      {
+        "milestone": "Operational Intelligence & UI/UX 2.0",
+        "period": "2026-Q2",
+        "lead_architect": "Moataz Qasem",
+        "description": "Split workspace task management, Arabic RTL precision typography, dark theme refinement, and live telemetry integration."
+      },
+      {
+        "milestone": "IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)",
+        "period": "2026-Q4",
+        "lead_architect": "Moataz Qasem",
+        "description": "Standardized source headers, permanent AI governance, automated integrity protection, and CI/CD verification gates."
+      }
+    ]
+  }
+}

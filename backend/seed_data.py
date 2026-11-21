@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Seed script for Multi-Company IT Operations Management System.
 Populates realistic data for 3 companies, branches, departments, employees,
 roles, users, technical assets, custody assignments, IT infrastructure,

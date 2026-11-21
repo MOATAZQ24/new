@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Comprehensive 100-Scenario Autonomous QA Matrix for Investor Gate OS.
 Executes 100 realistic, end-to-end operational scenarios across all 10 engineering areas.
 Generates structured JSON evidence and Markdown audit documentation.

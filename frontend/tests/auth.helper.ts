@@ -1,3 +1,11 @@
+/**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ */
+
 import { Page } from "@playwright/test";
 
 export async function loginAsAdmin(page: Page) {

@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Single authoritative task workflow shared by Telegram, the Dashboard API and workers.
 
 * Stored ``Task.status`` values are never rewritten. Legacy values are mapped onto

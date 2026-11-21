@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Seed comprehensive digital assets: Social Media Accounts, Corporate Domains,
 Enterprise Emails, Cloud Services, with standard recovery emails, recovery phone numbers,
 2FA Authenticator TOTP secret keys, and backup recovery codes.

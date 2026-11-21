@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Chrome integration test against the real UI and an isolated in-memory API.
 
 Run against a Next dev server (ASSIGNMENT_UI_URL defaults to port 3000).

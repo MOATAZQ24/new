@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Role-Based Access Control (RBAC) & Fine-Grained Permission Matrix.
 Enforces multi-company isolation and server-side authorization across all modules.
 """

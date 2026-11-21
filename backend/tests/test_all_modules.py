@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Comprehensive automated test suite for Investor Gate IT Operations Management System.
 Tests Authentication, RBAC, Multi-Company Isolation, Asset Custody Lifecycle,
 Help Desk Workflow, Maintenance Approvals, Dashboard KPIs, and Report Exports.

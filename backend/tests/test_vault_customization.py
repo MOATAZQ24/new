@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """
 Integration Tests for:
 1. Digital Assets & Secrets Vault (Zero-Plaintext Policy, HashiCorp Vault, Re-auth Secret Reveal, Rotation)

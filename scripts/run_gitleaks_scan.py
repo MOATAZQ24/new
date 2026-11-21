@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """
 Investor Gate OS - Gitleaks Secret & Credential Scanner
 Performs deep regex and entropy-based scanning across the repository

@@ -1,4 +1,10 @@
 #!/bin/sh
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 set -e
 
 APP_USER="${APP_DB_USER:-itops_app}"

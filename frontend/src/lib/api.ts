@@ -1,4 +1,12 @@
 /**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ */
+
+/**
  * API client for interacting with the FastAPI backend.
  * Automatically attaches cookies, X-Company-ID header, and handles errors.
  */

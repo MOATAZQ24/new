@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
+# ==============================================================================
 # Investor Gate IT Operations Management System — Database & Files Restore Script
 # Usage: ./scripts/restore.sh /path/to/itops_backup_YYYYMMDD_HHMMSS.tar.gz
 # ==============================================================================

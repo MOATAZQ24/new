@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Add independent workspace settings and sanitized branding storage.
 
 Existing installations use create_all; this baseline ensures all core tables exist on fresh PostgreSQL/SQLite databases before adding workspace tables.

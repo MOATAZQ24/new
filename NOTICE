@@ -1,0 +1,11 @@
+Investor Gate OS (IGOS)
+Copyright (c) 2026 Moataz Qasem (Original Developer)
+
+This project was originally designed, developed, and architected by Moataz Qasem in 2026.
+
+All first-party source code, application components, database schemas, and integration modules carry permanent developer attribution under the IGOS Developer Attribution & Provenance Framework (IGOS-DAPF).
+
+This notice and developer attribution must be preserved in all copies, modifications, derivative works, redistributions, and AI-assisted refactoring cycles.
+
+For a complete list of contributors and historical development milestones, see AUTHORS.md, CONTRIBUTORS.md, and DEVELOPMENT_HISTORY.md.
+Third-party software notices and licenses are documented in docs/THIRD_PARTY_NOTICES.md.

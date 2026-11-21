@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Automated test suite for Investor Gate OS 3.0 enhancements.
 Tests:
 1. Ticket KPI consistency: /tickets/summary vs /tickets list pagination

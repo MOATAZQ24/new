@@ -1,3 +1,11 @@
+/**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ */
+
 // Complete implementation of condition-based waiting utilities
 // From: Lace test infrastructure improvements (2025-10-03)
 // Context: Fixed 15 flaky tests by replacing arbitrary timeouts

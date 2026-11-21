@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """HTTP security regressions. Never connect to an application database.
 Run: backend/.venv/Scripts/python.exe -m unittest discover -s backend/tests -p test_security_regressions.py -v
 """

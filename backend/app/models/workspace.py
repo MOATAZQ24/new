@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Preferences are independent of operational business records."""
 import uuid
 from sqlalchemy import ForeignKey, JSON, LargeBinary, String, UniqueConstraint

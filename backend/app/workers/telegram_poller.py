@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Standalone Telegram Bot Long-Polling Background Worker.
 
 Designed for LAN-hosted private servers with strictly outbound internet connectivity (No Inbound Ports).

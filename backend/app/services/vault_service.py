@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Secure HashiCorp Vault integration service for Digital Asset Secrets.
 Adheres strictly to the Zero-Plaintext Storage security policy.
 """

@@ -1,3 +1,9 @@
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """Administrative & Operational Intelligence Upgrade Migration:
 - Employee multi-position enhancements (manager_id, section, team, start_date, end_date)
 - Fast Task broadcast & duration-based deadline models (TaskParticipant, deadline_type, SLA escalation)

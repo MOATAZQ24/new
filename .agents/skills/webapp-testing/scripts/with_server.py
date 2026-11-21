@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# ==============================================================================
+# Investor Gate OS (IGOS) - Technical Operations Platform
+# Original Developer: Moataz Qasem (2026)
+# Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+# ==============================================================================
+
 """
 Start one or more servers, wait for them to be ready, run a command, then clean up.
 

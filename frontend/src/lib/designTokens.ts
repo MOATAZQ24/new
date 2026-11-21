@@ -1,4 +1,12 @@
 /**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ */
+
+/**
  * Investor Gate OS - Centralized Design Tokens
  * Follows 4px/8px grid, WCAG 2.2 AA contrast, Arabic RTL typography,
  * and unified semantic tokens across light/dark themes.
