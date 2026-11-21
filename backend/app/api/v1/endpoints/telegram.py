@@ -95,6 +95,12 @@ class BotActionSimulationRequest(BaseModel):
     action_str: str = Field(..., description="e.g. act:accept:<task_id>, act:start:<task_id>, act:done:<task_id>, cmd:my_tasks")
 
 
+class DirectMessageRequest(BaseModel):
+    employee_id: Optional[uuid.UUID] = None
+    chat_id: Optional[str] = None
+    message: str = Field(..., min_length=1, description="Direct message text")
+
+
 class TestNotificationRequest(BaseModel):
     chat_id: Optional[str] = None
     employee_id: Optional[uuid.UUID] = None
@@ -460,6 +466,60 @@ def send_test_notification_endpoint(
     return success_response(data=res, message=res.get("message"))
 
 
+@router.post("/direct-message")
+def send_direct_telegram_message(
+    payload: DirectMessageRequest,
+    company_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Send a direct Telegram message to a linked employee without creating any task or polluting metrics."""
+    target_cid = resolve_telegram_company(current_user, active_cid, company_id, db)
+    is_cfg, bot_token, bot_username = get_telegram_config(db, target_cid)
+    if not bot_token:
+        raise HTTPException(status_code=400, detail="يرجى إعداد رمز بوت التليجرام أولاً")
+
+    chat_id = None
+    if payload.chat_id and payload.chat_id.strip():
+        chat_id = payload.chat_id.strip()
+    elif payload.employee_id:
+        link = db.query(TelegramUserLink).filter(
+            TelegramUserLink.employee_id == payload.employee_id,
+            TelegramUserLink.is_verified == True,
+        ).first()
+        if link and link.telegram_chat_id:
+            chat_id = link.telegram_chat_id
+
+    if not chat_id:
+        raise HTTPException(status_code=400, detail="الموظف غير مرتبط بحساب تليجرام نشط أو لم يتم العثور على Chat ID")
+
+    formatted_text = (
+        f"📩 <b>رسالة إدارية مباشرة | Investor Gate OS</b>\n\n"
+        f"{payload.message}\n\n"
+        f"👤 <i>المرسل: {current_user.username}</i>\n"
+        f"📅 <i>{datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC</i>"
+    )
+
+    res = send_telegram_direct_message(bot_token=bot_token, chat_id=chat_id, text=formatted_text)
+
+    log_entry = IntegrationLog(
+        company_id=target_cid,
+        service_name="telegram",
+        event_type="direct.message",
+        payload={"chat_id": chat_id, "sent_by": current_user.username, "employee_id": str(payload.employee_id) if payload.employee_id else None},
+        status="Success" if res.get("success") else "Failed",
+        response_data=res,
+        error_message=None if res.get("success") else res.get("message"),
+    )
+    db.add(log_entry)
+    db.commit()
+
+    if not res.get("success"):
+        return success_response(data=res, message=res.get("message") or "تعذر تسليم الرسالة عبر تليجرام")
+    return success_response(data=res, message="تم إرسال الرسالة المباشرة للموظف بنجاح")
+
+
 # ── Employee Account Linking ──────────────────────────────────────────
 
 @router.get("/links/list")
@@ -474,7 +534,7 @@ def list_employee_telegram_links(
     employees = (
         db.query(Employee)
         .filter(Employee.company_id == target_cid, Employee.employment_status == "Active")
-        .order_by(Employee.full_name.asc())
+        .order_by(Employee.created_at.desc(), Employee.id.desc())
         .all()
     )
 

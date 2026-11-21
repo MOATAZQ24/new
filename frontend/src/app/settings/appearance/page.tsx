@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Icons } from "@/components/ui/Icons";
+import { Layers } from "lucide-react";
 import { useCustomization } from "@/context/CustomizationContext";
 import { useToast } from "@/context/ToastContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
+import { THEME_PRESETS } from "@/lib/themes";
 
 const ARABIC_FONTS = [
   "IBM Plex Sans Arabic",
@@ -38,7 +40,7 @@ const BORDER_RADIUS_OPTIONS = [
 
 export default function AppearancePage() {
   const toast = useToast();
-  const { saved: savedWorkspace } = useWorkspace();
+  const { saved: savedWorkspace, presetId, selectPreset } = useWorkspace();
   const {
     theme, colors, typography, density, borderRadius, sidebarWidth,
     setTheme, setColors, setTypography, setDensity, setBorderRadius, setSidebarWidth,
@@ -205,6 +207,67 @@ export default function AppearancePage() {
             {saveError}
           </div>
         )}
+
+        {/* Theme Templates (Dynamic Templates) */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <Layers size={20} className="text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">قوالب السمات الجاهزة (Theme Templates)</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                تغيير الهوية البصرية للبرنامج كاملاً بنقرة واحدة وفق المعايير المعتمدة كقالب حي
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {THEME_PRESETS.map((p) => {
+              const isSelected = presetId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={async () => {
+                    await selectPreset(p.id, false);
+                    setColors({
+                      primary: p.signature.primary,
+                      secondary: p.signature.secondary,
+                      background: p.signature.background,
+                      surface: p.signature.surface,
+                      accent: p.signature.accent,
+                    });
+                  }}
+                  className={`p-4 rounded-xl border-2 text-right transition flex flex-col justify-between gap-3 cursor-pointer ${
+                    isSelected
+                      ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-sm"
+                      : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm text-slate-900 dark:text-white">
+                      {p.nameAr}
+                    </span>
+                    {isSelected && (
+                      <span className="flex items-center gap-1 text-xs text-primary font-bold">
+                        <Icons.Check size={14} />
+                        <span>نشط</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                    {p.descriptionAr}
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="w-5 h-5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: p.signature.primary }} title="اللون الرئيسي" />
+                    <span className="w-5 h-5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: p.signature.secondary }} title="اللون الثانوي / الشريط" />
+                    <span className="w-5 h-5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: p.signature.accent }} title="لون التأكيد" />
+                    <span className="w-5 h-5 rounded-full border border-black/10 shadow-xs" style={{ backgroundColor: p.signature.background }} title="لون الخلفية" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Theme Mode */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">

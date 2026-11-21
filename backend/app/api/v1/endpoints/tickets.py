@@ -1,23 +1,89 @@
+import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
 from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
 from app.models.company import Company, Branch
-from app.models.ticket import HelpDeskTicket, TicketComment
+from app.models.ticket import HelpDeskTicket, TicketComment, ProblemRecord, KnowledgeArticle
 from app.models.task import Task
 from app.models.user import User, Employee, CompanyMembership
 from app.models.asset import TechnicalAsset
-from app.schemas.ticket import TicketCreate, TicketUpdate, TicketCommentCreate
+from app.schemas.ticket import (
+    TicketCreate,
+    TicketUpdate,
+    TicketCommentCreate,
+    ProblemRecordCreate,
+    ProblemRecordUpdate,
+    ProblemRecordResponse,
+    KnowledgeArticleCreate,
+    KnowledgeArticleUpdate,
+    KnowledgeArticleResponse,
+)
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
 from app.services.task_assignment import validate_assignee
 
 router = APIRouter(prefix="/tickets", tags=["IT Help Desk"])
+
+VOICE_TICKET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "uploads", "voice_tickets"))
+os.makedirs(VOICE_TICKET_DIR, exist_ok=True)
+
+TICKET_SLA_MINUTES = {
+    "Critical": 60,
+    "Urgent": 240,
+    "High": 1440,
+    "Medium": 4320,
+    "Low": 10080,
+}
+
+
+def route_ticket_deterministically(company_id: uuid.UUID, branch_id: Optional[uuid.UUID], db: Session) -> Optional[uuid.UUID]:
+    """ITIL 4 Deterministic Assignment Engine:
+    Selects the least loaded active technician in the company/branch without AI.
+    """
+    tech_users = (
+        db.query(User)
+        .join(CompanyMembership, CompanyMembership.user_id == User.id)
+        .filter(
+            CompanyMembership.company_id == company_id,
+            CompanyMembership.status == "Active",
+            User.account_status == "Active",
+            User.is_deleted == False,
+        )
+        .all()
+    )
+    eligible_techs = []
+    for u in tech_users:
+        roles = get_user_roles(u, db, company_id=company_id)
+        if any(r in ["IT Technician", "IT Manager", "Company Admin"] for r in roles):
+            eligible_techs.append(u)
+
+    if not eligible_techs:
+        return None
+
+    least_loaded_tech = None
+    min_workload = float("inf")
+    for tech in eligible_techs:
+        load = (
+            db.query(HelpDeskTicket)
+            .filter(
+                HelpDeskTicket.company_id == company_id,
+                HelpDeskTicket.assigned_technician_id == tech.id,
+                HelpDeskTicket.status.in_(["Assigned", "In Progress", "Waiting for User"]),
+            )
+            .count()
+        )
+        if load < min_workload:
+            min_workload = load
+            least_loaded_tech = tech
+
+    return least_loaded_tech.id if least_loaded_tech else None
 
 
 def generate_ticket_number(company_id: uuid.UUID, db: Session) -> str:
@@ -156,6 +222,14 @@ def create_ticket(
     # Resolve requester
     requester_id = payload.requester_id or current_user.employee_id
 
+    # Calculate SLA Target
+    sla_mins = TICKET_SLA_MINUTES.get(payload.priority, 4320)
+    sla_target = datetime.utcnow() + timedelta(minutes=sla_mins)
+
+    # ITIL Deterministic Routing
+    assigned_tech_id = route_ticket_deterministically(target_cid, payload.branch_id, db)
+    initial_status = "Assigned" if assigned_tech_id else "Open"
+
     ticket = HelpDeskTicket(
         company_id=target_cid,
         branch_id=payload.branch_id,
@@ -163,9 +237,16 @@ def create_ticket(
         issue_title=payload.issue_title.strip(),
         issue_description=payload.issue_description.strip(),
         requester_id=requester_id,
+        assigned_technician_id=assigned_tech_id,
         priority=payload.priority,
-        status="Open",
+        status=initial_status,
         category=payload.category,
+        ticket_type=payload.ticket_type or "Incident",
+        tier=payload.tier or "L1",
+        sla_target_at=sla_target,
+        sla_status="Within_SLA",
+        voice_note_url=payload.voice_note_url,
+        problem_id=payload.problem_id,
         related_asset_id=payload.related_asset_id,
         notes=payload.notes,
         attachments=payload.attachments,
@@ -334,6 +415,22 @@ def update_ticket_status(
         ticket.assigned_technician_id = current_user.id
 
     now = datetime.utcnow()
+
+    # Reopen tracking
+    if old_status in ("Resolved", "Closed") and new_status in ("Open", "In Progress", "Assigned"):
+        ticket.reopened_count = (ticket.reopened_count or 0) + 1
+
+    # SLA Clock Pause Logic (ITIL standard)
+    if new_status == "Waiting for User":
+        ticket.sla_paused_at = now
+    elif old_status == "Waiting for User" and new_status != "Waiting for User":
+        if ticket.sla_paused_at:
+            paused_secs = int((now - ticket.sla_paused_at).total_seconds())
+            ticket.sla_paused_total_seconds = (ticket.sla_paused_total_seconds or 0) + paused_secs
+            ticket.sla_paused_at = None
+            if ticket.sla_target_at:
+                ticket.sla_target_at = ticket.sla_target_at + timedelta(seconds=paused_secs)
+
     if new_status in ("Open", "Assigned", "In Progress", "Waiting for User"):
         ticket.resolved_at = None
         ticket.closed_at = None
@@ -462,5 +559,186 @@ def convert_ticket_to_task(
         data={"task_id": str(task.id)},
         message=f"تم تحويل التذكرة إلى مهمة بنجاح برقم {task.title}",
     )
+
+
+# ── Multimedia & Voice Notes ─────────────────────────────────────────────
+
+@router.post("/voice/upload")
+async def upload_ticket_voice_note(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    """Upload a voice note recording for Help Desk ticket submission."""
+    filename = f"ticket_voice_{uuid.uuid4().hex[:12]}.webm"
+    file_path = os.path.join(VOICE_TICKET_DIR, filename)
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    url = f"/api/v1/tickets/voice/{filename}"
+    return success_response(data={"voice_note_url": url, "filename": filename}, message="تم رفع التسجيل الصوتي بنجاح")
+
+
+@router.get("/voice/{filename}")
+def get_ticket_voice_file(filename: str):
+    """Serve recorded ticket voice note."""
+    file_path = os.path.join(VOICE_TICKET_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="الملف الصوتي غير موجود")
+    return FileResponse(file_path, media_type="audio/webm")
+
+
+# ── ITIL 4 Problem Management Endpoints (Phase 6) ────────────────────────
+
+@router.get("/problems/list")
+def list_problems(
+    company_id: Optional[uuid.UUID] = None,
+    status_filter: Optional[str] = Query(None, alias="status"),
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List Problem Management records for recurring technical incident analysis."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    query = db.query(ProblemRecord).filter(ProblemRecord.company_id == target_cid)
+    if status_filter:
+        query = query.filter(ProblemRecord.status == status_filter)
+
+    problems = query.order_by(ProblemRecord.created_at.desc()).all()
+    data = []
+    for p in problems:
+        data.append({
+            "id": str(p.id),
+            "company_id": str(p.company_id),
+            "title": p.title,
+            "description": p.description,
+            "root_cause": p.root_cause,
+            "workaround": p.workaround,
+            "status": p.status,
+            "assigned_to_id": str(p.assigned_to_id) if p.assigned_to_id else None,
+            "assigned_to_name": p.assigned_to.username if p.assigned_to else None,
+            "linked_tickets_count": len(p.tickets),
+            "created_at": p.created_at.isoformat(),
+            "updated_at": p.updated_at.isoformat(),
+        })
+    return success_response(data=data)
+
+
+@router.post("/problems")
+def create_problem(
+    payload: ProblemRecordCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new Problem Record for investigating root cause of incidents."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    prob = ProblemRecord(
+        company_id=target_cid,
+        title=payload.title.strip(),
+        description=payload.description.strip(),
+        root_cause=payload.root_cause,
+        workaround=payload.workaround,
+        status=payload.status or "Open",
+        assigned_to_id=payload.assigned_to_id or current_user.id,
+    )
+    db.add(prob)
+    db.commit()
+    db.refresh(prob)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="ProblemRecord",
+        resource_id=str(prob.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"title": prob.title},
+    )
+    return success_response(data={"id": str(prob.id)}, message="تم إنشاء سجل المشكلة الجذرية بنجاح")
+
+
+# ── Knowledge Base Endpoints (Phase 6) ───────────────────────────────────
+
+@router.get("/knowledge/list")
+def list_knowledge_articles(
+    company_id: Optional[uuid.UUID] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Deterministic fast search of verified Knowledge Base articles without AI."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    query = db.query(KnowledgeArticle).filter(KnowledgeArticle.company_id == target_cid)
+
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
+    if not is_staff:
+        query = query.filter(KnowledgeArticle.is_published == True)
+
+    if category:
+        query = query.filter(KnowledgeArticle.category == category)
+    if search and search.strip():
+        s = f"%{search.strip()}%"
+        query = query.filter(
+            (KnowledgeArticle.title.ilike(s))
+            | (KnowledgeArticle.symptom.ilike(s))
+            | (KnowledgeArticle.resolution.ilike(s))
+        )
+
+    articles = query.order_by(KnowledgeArticle.created_at.desc()).all()
+    data = []
+    for a in articles:
+        data.append({
+            "id": str(a.id),
+            "company_id": str(a.company_id),
+            "title": a.title,
+            "category": a.category,
+            "symptom": a.symptom,
+            "diagnostic_steps": a.diagnostic_steps,
+            "resolution": a.resolution,
+            "is_published": a.is_published,
+            "author_id": str(a.author_id) if a.author_id else None,
+            "author_name": a.author.username if a.author else None,
+            "approved_by_id": str(a.approved_by_id) if a.approved_by_id else None,
+            "approved_by_name": a.approved_by.username if a.approved_by else None,
+            "created_at": a.created_at.isoformat(),
+            "updated_at": a.updated_at.isoformat(),
+        })
+    return success_response(data=data)
+
+
+@router.post("/knowledge")
+def create_knowledge_article(
+    payload: KnowledgeArticleCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new operational Knowledge Base article."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    is_approver = any(r in ["Super Admin", "Company Admin", "IT Manager"] for r in user_roles)
+
+    article = KnowledgeArticle(
+        company_id=target_cid,
+        title=payload.title.strip(),
+        category=payload.category,
+        symptom=payload.symptom.strip(),
+        diagnostic_steps=payload.diagnostic_steps,
+        resolution=payload.resolution.strip(),
+        is_published=payload.is_published and is_approver,
+        author_id=current_user.id,
+        approved_by_id=current_user.id if (payload.is_published and is_approver) else None,
+    )
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="KnowledgeArticle",
+        resource_id=str(article.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"title": article.title, "category": article.category, "is_published": article.is_published},
+    )
+    return success_response(data={"id": str(article.id)}, message="تم إنشاء المقال المعرفي بنجاح")
+
 
 

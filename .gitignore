@@ -6,11 +6,12 @@ __pycache__
 
 .tools
 *.db.bak
-.telegram_offset.json
-.telegram_worker_status.json
+*.db*
+*.backup*
+*.bak
 .lan-runtime/
-.telegram_poller.lock
-*.db
+.telegram*
+backend/app/workers/.telegram*
 /backups/
 /backend/backups/
 /nginx/ssl/*.key

@@ -22,9 +22,68 @@ class EmployeeBranchAssignmentInput(BaseModel):
     company_id: Optional[uuid.UUID] = None
     branch_id: uuid.UUID
     department_id: Optional[uuid.UUID] = None
+    manager_id: Optional[uuid.UUID] = None
     role_name: Optional[str] = "Employee"
     job_title: Optional[str] = None
+    section: Optional[str] = None
+    team: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     is_primary: bool = False
+
+
+class EmployeePositionCreate(BaseModel):
+    company_id: uuid.UUID
+    branch_id: uuid.UUID
+    department_id: Optional[uuid.UUID] = None
+    manager_id: Optional[uuid.UUID] = None
+    job_title: str
+    role_name: Optional[str] = "Employee"
+    section: Optional[str] = None
+    team: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    is_primary: bool = False
+
+
+class EmployeePositionUpdate(BaseModel):
+    branch_id: Optional[uuid.UUID] = None
+    department_id: Optional[uuid.UUID] = None
+    manager_id: Optional[uuid.UUID] = None
+    job_title: Optional[str] = None
+    role_name: Optional[str] = None
+    section: Optional[str] = None
+    team: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    is_primary: Optional[bool] = None
+    status: Optional[str] = None
+
+
+class EmployeePositionResponse(BaseModel):
+    id: uuid.UUID
+    employee_id: uuid.UUID
+    company_id: uuid.UUID
+    company_name: Optional[str] = None
+    branch_id: uuid.UUID
+    branch_name: Optional[str] = None
+    department_id: Optional[uuid.UUID] = None
+    department_name: Optional[str] = None
+    manager_id: Optional[uuid.UUID] = None
+    manager_name: Optional[str] = None
+    job_title: Optional[str] = None
+    role_name: Optional[str] = None
+    section: Optional[str] = None
+    team: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    is_primary: bool = False
+    status: str = "Active"
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class EmployeeCreate(EmployeeBase):

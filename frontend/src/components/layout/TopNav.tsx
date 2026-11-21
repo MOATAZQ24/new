@@ -514,60 +514,49 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         </div>
       </div>
 
-      {/* Left Side (Theme Toggle, Help Link, Live Notifications & User Profile) */}
+      {/* Left Side (Fullscreen, Monitor, Telegram, Live Notifications & User Profile) */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {/* Help & Learning Center Link */}
-        <Link
-          href="/help"
-          aria-label="مركز المساعدة والتعلّم"
-          title="مركز المساعدة والتعلّم (Learning Center)"
-          className="motion-control p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-[#187A5A] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <Icons.Info size={18} />
-        </Link>
-
-        {/* Quick Theme Switcher */}
+        {/* Fullscreen Button (Reference 1 & 2) */}
         <button
           type="button"
-          onClick={toggleTheme}
-          aria-label={`تبديل المظهر: ${theme === "light" ? "فاتح" : theme === "dark" ? "داكن" : "تلقائي"}`}
-          title={`المظهر الحالي: ${theme === "light" ? "فاتح" : theme === "dark" ? "داكن" : "تلقائي حسب النظام"}`}
-          className="motion-control p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-[#187A5A] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          onClick={() => {
+            if (typeof document !== "undefined") {
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+              } else {
+                document.exitFullscreen().catch(() => {});
+              }
+            }
+          }}
+          aria-label="ملء الشاشة"
+          title="ملء الشاشة / إلغاء ملء الشاشة"
+          className="hidden md:inline-flex motion-control p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         >
-          {theme === "system" ? (
-            <Icons.Monitor size={18} />
-          ) : resolvedTheme === "dark" ? (
-            <Icons.Sun size={18} className="text-amber-400" />
-          ) : (
-            <Icons.Moon size={18} />
-          )}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
         </button>
 
-        {/* Telegram Live Status Pill (Images 1, 3-7, 10-12) */}
+        {/* Monitor / Screen View Button (Reference 1 & 2) */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("ig:toggle-display-mode"))}
+          aria-label="عرض الشاشة"
+          title="تبديل وضع العرض"
+          className="hidden md:inline-flex motion-control p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+        >
+          <Icons.Monitor size={18} />
+        </button>
+
+        {/* Telegram Live Status Pill (Reference 1 & 2) */}
         <Link
           href="/settings/integrations"
           title={telegramConnected ? "ربط Telegram نشط ومتصل" : "إعداد ربط Telegram"}
-          className="hidden md:inline-flex h-9 items-center gap-2 px-3 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-[#187A5A]/40 transition-colors text-xs shrink-0"
+          className="hidden md:inline-flex h-9 items-center gap-2 px-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-primary/50 transition-colors text-xs shrink-0"
         >
-          <span className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-900/50 text-[#187A5A] dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-700/60 flex items-center justify-center shrink-0">
-            <Icons.Send size={11} />
-          </span>
-          <span className="font-semibold text-slate-700 dark:text-slate-200" dir="ltr">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm animate-pulse" />
+          <span className="font-semibold text-slate-800 dark:text-slate-100" dir="ltr">
             Telegram
-          </span>
-          <span
-            className={`inline-flex items-center gap-1 text-[11px] font-bold ${
-              telegramConnected
-                ? "text-emerald-700 dark:text-emerald-300"
-                : "text-slate-500 dark:text-slate-400"
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                telegramConnected ? "bg-emerald-500" : "bg-slate-400"
-              }`}
-            />
-            {telegramConnected ? "متصل" : "غير متصل"}
           </span>
         </Link>
 

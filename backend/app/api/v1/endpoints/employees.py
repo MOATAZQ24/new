@@ -21,7 +21,15 @@ from app.models.user import Employee, User, Role, UserRole, CompanyMembership
 from app.models.company import Company, Branch, Department
 from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.telegram import TelegramUserLink
-from app.schemas.employee import EmployeeCreate, EmployeeUpdate, UserCreate, UserUpdate
+from app.schemas.employee import (
+    EmployeeCreate,
+    EmployeeUpdate,
+    UserCreate,
+    UserUpdate,
+    EmployeePositionCreate,
+    EmployeePositionUpdate,
+    EmployeePositionResponse,
+)
 from app.services.audit_service import log_audit
 from app.services import enterprise_service
 
@@ -876,3 +884,271 @@ def create_user(
         raise
 
     return success_response(data={"id": str(new_user.id)}, message="تم إنشاء حساب المستخدم بنجاح")
+
+
+# ── Multi-Position & Reporting Hierarchy (Phase 1) ──────────────────────
+
+def check_circular_manager(employee_id: uuid.UUID, manager_id: Optional[uuid.UUID], db: Session, max_depth: int = 50) -> None:
+    """Ensure setting manager_id for employee_id does not create a circular reporting chain."""
+    if not manager_id:
+        return
+    if manager_id == employee_id:
+        raise HTTPException(status_code=400, detail="لا يمكن تعيين الموظف مديراً لنفسه")
+
+    current = manager_id
+    visited = {employee_id}
+    depth = 0
+    while current and depth < max_depth:
+        if current in visited:
+            raise HTTPException(
+                status_code=400,
+                detail="تعيين هذا المدير يؤدي إلى علاقة تبعية دائرية غير مقبولة (Circular Hierarchy Detected)",
+            )
+        visited.add(current)
+        depth += 1
+        mgr_emp = db.query(Employee).filter(Employee.id == current).first()
+        if not mgr_emp or not mgr_emp.manager_id:
+            break
+        current = mgr_emp.manager_id
+
+
+@router.get("/{employee_id}/positions")
+def list_employee_positions(
+    employee_id: uuid.UUID,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.VIEW)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Retrieve all organizational positions held by an employee across all companies and branches."""
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    positions = (
+        db.query(EmployeeBranchAssignment)
+        .filter(EmployeeBranchAssignment.employee_id == employee_id)
+        .order_by(EmployeeBranchAssignment.is_primary.desc(), EmployeeBranchAssignment.created_at.asc())
+        .all()
+    )
+
+    result = []
+    for pos in positions:
+        c_name = pos.company.company_name_ar if pos.company else ""
+        b_name = pos.branch.branch_name if pos.branch else ""
+        d_name = pos.department.department_name if pos.department else None
+        m_name = pos.manager.full_name if pos.manager else None
+
+        result.append({
+            "id": str(pos.id),
+            "employee_id": str(pos.employee_id),
+            "company_id": str(pos.company_id),
+            "company_name": c_name,
+            "branch_id": str(pos.branch_id),
+            "branch_name": b_name,
+            "department_id": str(pos.department_id) if pos.department_id else None,
+            "department_name": d_name,
+            "manager_id": str(pos.manager_id) if pos.manager_id else None,
+            "manager_name": m_name,
+            "job_title": pos.job_title,
+            "role_name": pos.role_name,
+            "section": pos.section,
+            "team": pos.team,
+            "start_date": pos.start_date.isoformat() if pos.start_date else None,
+            "end_date": pos.end_date.isoformat() if pos.end_date else None,
+            "is_primary": pos.is_primary,
+            "status": pos.status,
+            "created_at": pos.created_at.isoformat(),
+            "updated_at": pos.updated_at.isoformat(),
+        })
+
+    return success_response(data=result)
+
+
+@router.post("/{employee_id}/positions")
+def add_employee_position(
+    employee_id: uuid.UUID,
+    payload: EmployeePositionCreate,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.CREATE)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Assign an additional organizational position to an employee in any company/branch."""
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="الموظف غير موجود")
+
+    # Validate target company and branch
+    branch = db.query(Branch).filter(Branch.id == payload.branch_id, Branch.company_id == payload.company_id).first()
+    if not branch:
+        raise HTTPException(status_code=400, detail="الفرع المحدد لا يتبع للشركة المحددة")
+
+    if payload.department_id:
+        dept = db.query(Department).filter(Department.id == payload.department_id, Department.company_id == payload.company_id).first()
+        if not dept:
+            raise HTTPException(status_code=400, detail="القسم المحدد لا يتبع للشركة المحددة")
+
+    # Cycle detection for direct manager
+    if payload.manager_id:
+        check_circular_manager(employee_id, payload.manager_id, db)
+
+    # Check if duplicate position already exists
+    existing = db.query(EmployeeBranchAssignment).filter(
+        EmployeeBranchAssignment.employee_id == employee_id,
+        EmployeeBranchAssignment.company_id == payload.company_id,
+        EmployeeBranchAssignment.branch_id == payload.branch_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="الموظف يشغل منصباً بالفعل في هذا الفرع")
+
+    # If marked as primary, unmark previous primary positions
+    if payload.is_primary:
+        db.query(EmployeeBranchAssignment).filter(
+            EmployeeBranchAssignment.employee_id == employee_id,
+            EmployeeBranchAssignment.is_primary == True,
+        ).update({"is_primary": False})
+
+    new_pos = EmployeeBranchAssignment(
+        employee_id=employee_id,
+        company_id=payload.company_id,
+        branch_id=payload.branch_id,
+        department_id=payload.department_id,
+        manager_id=payload.manager_id,
+        job_title=payload.job_title,
+        role_name=payload.role_name or "Employee",
+        section=payload.section,
+        team=payload.team,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        is_primary=payload.is_primary,
+        status="Active",
+    )
+    db.add(new_pos)
+    db.commit()
+    db.refresh(new_pos)
+
+    log_audit(
+        db=db,
+        action="CREATE",
+        resource_type="EmployeePosition",
+        resource_id=str(new_pos.id),
+        user_id=current_user.id,
+        company_id=payload.company_id,
+        new_values={"job_title": new_pos.job_title, "branch_id": str(new_pos.branch_id), "is_primary": new_pos.is_primary},
+    )
+
+    return success_response(data={"id": str(new_pos.id)}, message="تمت إضافة المنصب الوظيفي بنجاح")
+
+
+@router.put("/{employee_id}/positions/{position_id}")
+def update_employee_position(
+    employee_id: uuid.UUID,
+    position_id: uuid.UUID,
+    payload: EmployeePositionUpdate,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.EDIT)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Update details of an employee's organizational position."""
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    pos = db.query(EmployeeBranchAssignment).filter(
+        EmployeeBranchAssignment.id == position_id,
+        EmployeeBranchAssignment.employee_id == employee_id,
+    ).first()
+    if not pos:
+        raise HTTPException(status_code=404, detail="المنصب الوظيفي غير موجود")
+
+    if payload.manager_id is not None:
+        check_circular_manager(employee_id, payload.manager_id, db)
+        pos.manager_id = payload.manager_id
+
+    if payload.branch_id is not None:
+        pos.branch_id = payload.branch_id
+    if payload.department_id is not None:
+        pos.department_id = payload.department_id
+    if payload.job_title is not None:
+        pos.job_title = payload.job_title
+    if payload.role_name is not None:
+        pos.role_name = payload.role_name
+    if payload.section is not None:
+        pos.section = payload.section
+    if payload.team is not None:
+        pos.team = payload.team
+    if payload.start_date is not None:
+        pos.start_date = payload.start_date
+    if payload.end_date is not None:
+        pos.end_date = payload.end_date
+    if payload.status is not None:
+        pos.status = payload.status
+
+    if payload.is_primary is True:
+        db.query(EmployeeBranchAssignment).filter(
+            EmployeeBranchAssignment.employee_id == employee_id,
+            EmployeeBranchAssignment.id != position_id,
+        ).update({"is_primary": False})
+        pos.is_primary = True
+    elif payload.is_primary is False:
+        pos.is_primary = False
+
+    db.commit()
+    db.refresh(pos)
+
+    log_audit(
+        db=db,
+        action="UPDATE",
+        resource_type="EmployeePosition",
+        resource_id=str(pos.id),
+        user_id=current_user.id,
+        company_id=pos.company_id,
+        new_values={"job_title": pos.job_title, "is_primary": pos.is_primary, "status": pos.status},
+    )
+
+    return success_response(data={"id": str(pos.id)}, message="تم تحديث بيانات المنصب بنجاح")
+
+
+@router.delete("/{employee_id}/positions/{position_id}")
+def delete_employee_position(
+    employee_id: uuid.UUID,
+    position_id: uuid.UUID,
+    current_user: User = Depends(require_permission(Module.EMPLOYEES, Action.DELETE)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Deactivate or remove an employee position."""
+    from app.models.enterprise import EmployeeBranchAssignment
+
+    pos = db.query(EmployeeBranchAssignment).filter(
+        EmployeeBranchAssignment.id == position_id,
+        EmployeeBranchAssignment.employee_id == employee_id,
+    ).first()
+    if not pos:
+        raise HTTPException(status_code=404, detail="المنصب الوظيفي غير موجود")
+
+    if pos.is_primary:
+        # Check if other positions exist
+        other = db.query(EmployeeBranchAssignment).filter(
+            EmployeeBranchAssignment.employee_id == employee_id,
+            EmployeeBranchAssignment.id != position_id,
+            EmployeeBranchAssignment.status == "Active",
+        ).first()
+        if other:
+            other.is_primary = True
+
+    db.delete(pos)
+    db.commit()
+
+    log_audit(
+        db=db,
+        action="DELETE",
+        resource_type="EmployeePosition",
+        resource_id=str(position_id),
+        user_id=current_user.id,
+        company_id=pos.company_id,
+        new_values={"deleted": True},
+    )
+
+    return success_response(message="تم حذف المنصب الوظيفي بنجاح")

@@ -399,8 +399,10 @@ export function CustomizationProvider({ children }: { children: React.ReactNode 
     fontWeight: a.font_weight >= 700 ? "bold" : a.font_weight >= 500 ? "medium" : "normal" };
   const appearance = (patch: Partial<typeof a>) => setDraft(d => ({ ...d, appearance: { ...d.appearance, ...patch } }));
   const nav = (href: string, key: "hidden" | "pinned") => setDraft(d => ({ ...d, navigation: d.navigation.map(n => n.href === href && !(key === "hidden" && href === "/settings") ? { ...n, [key]: !n[key] } : n) }));
+  const isSystemDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDarkActive = a.theme === "dark" || (a.theme === "system" && Boolean(isSystemDark));
   const value: CustomizationContextType = {
-    theme: a.theme as "light" | "dark" | "system", resolvedTheme: a.theme === "dark" ? "dark" : "light", colors, typography,
+    theme: a.theme as "light" | "dark" | "system", resolvedTheme: isDarkActive ? "dark" : "light", colors, typography,
     density: a.density as "compact" | "comfortable" | "spacious", borderRadius: a.radius === 0 ? "none" : a.radius <= 6 ? "sm" : a.radius >= 16 ? "lg" : "rounded",
     sidebarWidth: a.sidebar_width, sidebarCollapsed: draft.collapsed,
     pinnedNav: draft.navigation.filter(n => n.pinned).map(n => n.href), hiddenNav: draft.navigation.filter(n => n.hidden).map(n => n.href), navOrder: draft.navigation.map(n => n.href),

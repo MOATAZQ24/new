@@ -742,6 +742,15 @@ class EmployeeBranchAssignment(UUIDMixin, TimestampMixin, Base):
     )
     role_name: Mapped[Optional[str]] = mapped_column(String(100), default="Employee", nullable=True)
     job_title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    manager_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    section: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    team: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    start_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     is_primary: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="Active", nullable=False)
 
@@ -749,6 +758,7 @@ class EmployeeBranchAssignment(UUIDMixin, TimestampMixin, Base):
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
     branch: Mapped["Branch"] = relationship("Branch", foreign_keys=[branch_id])
     department: Mapped[Optional["Department"]] = relationship("Department", foreign_keys=[department_id])
+    manager: Mapped[Optional["Employee"]] = relationship("Employee", foreign_keys=[manager_id])
 
     __table_args__ = (
         UniqueConstraint("employee_id", "company_id", "branch_id", name="uq_emp_company_branch_assignment"),

@@ -7,8 +7,8 @@ from app.models.asset import TechnicalAsset, AssetCustody
 from app.models.infrastructure import ITInfrastructure
 from app.models.subscription import ThirdPartySubscription, EmployeeSubscription
 from app.models.maintenance import MaintenanceRecord
-from app.models.task import Task, TaskComment
-from app.models.ticket import HelpDeskTicket, TicketComment
+from app.models.task import Task, TaskComment, TaskParticipant
+from app.models.ticket import HelpDeskTicket, TicketComment, ProblemRecord, KnowledgeArticle
 from app.models.notification import Notification
 from app.models.audit import AuditLog
 from app.models.integration import IntegrationConfig, IntegrationLog
@@ -59,8 +59,11 @@ __all__ = [
     "MaintenanceRecord",
     "Task",
     "TaskComment",
+    "TaskParticipant",
     "HelpDeskTicket",
     "TicketComment",
+    "ProblemRecord",
+    "KnowledgeArticle",
     "Notification",
     "AuditLog",
     "IntegrationConfig",

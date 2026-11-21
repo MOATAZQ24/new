@@ -1,0 +1,1118 @@
+{
+  "total_scenarios": 100,
+  "passed": 100,
+  "failed": 0,
+  "success_rate": "100.0%",
+  "execution_timestamp": "2026-11-20T15:49:43.948312",
+  "scenarios": [
+    {
+      "scenario_id": "SCN-001",
+      "area": "1. Multi-Position Employees",
+      "title": "إنشاء موظف بهوية مركزية موحدة",
+      "description": "التحقق من إنشاء سجل الموظف برقم وظيفي وهوية وحيدة",
+      "status": "PASS",
+      "details": {
+        "employee_id": "d2e99012-ca6c-4812-8209-4302ef156bc3"
+      },
+      "timestamp": "2026-11-20T15:49:43.035809"
+    },
+    {
+      "scenario_id": "SCN-002",
+      "area": "1. Multi-Position Employees",
+      "title": "تعيين المنصب الأساسي الأول للموظف",
+      "description": "إسناد منصب مدير صيانة بالفرع الأول كمنصب أساسي",
+      "status": "PASS",
+      "details": {
+        "pos1_id": "f663358f-28d1-4610-a16f-2232ef45bf80"
+      },
+      "timestamp": "2026-11-20T15:49:43.047480"
+    },
+    {
+      "scenario_id": "SCN-003",
+      "area": "1. Multi-Position Employees",
+      "title": "إسناد منصب وظيفي ثانٍ مستقل للموظف",
+      "description": "إسناد منصب أخصائي دعم تقني بالفرع الثاني مع بقائه غير أساسي",
+      "status": "PASS",
+      "details": {
+        "pos2_id": "990ed67b-d9fe-4f4d-a30f-89318fc625a4"
+      },
+      "timestamp": "2026-11-20T15:49:43.054931"
+    },
+    {
+      "scenario_id": "SCN-004",
+      "area": "1. Multi-Position Employees",
+      "title": "استعلام المناصب المتعددة للموظف",
+      "description": "التأكد من استرجاع منصبي الموظف بدقة واستقلالية تامة",
+      "status": "PASS",
+      "details": {
+        "count": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.056799"
+    },
+    {
+      "scenario_id": "SCN-005",
+      "area": "1. Multi-Position Employees",
+      "title": "تبديل المنصب الأساسي بمرونة إدارية",
+      "description": "تحويل المنصب الثاني ليصبح هو الأساسي وإلغاء صفة الأساسي عن الأول",
+      "status": "PASS",
+      "details": {
+        "primary_id": "990ed67b-d9fe-4f4d-a30f-89318fc625a4"
+      },
+      "timestamp": "2026-11-20T15:49:43.063922"
+    },
+    {
+      "scenario_id": "SCN-006",
+      "area": "1. Multi-Position Employees",
+      "title": "تخصيص مدير مباشر لكل منصب وظيفي",
+      "description": "ربط منصب الفرع الأول بمدير مباشر مستقل",
+      "status": "PASS",
+      "details": {
+        "manager_id": "a17fabe3-8f3d-4e1f-a0b9-8def9f7754dd"
+      },
+      "timestamp": "2026-11-20T15:49:43.071740"
+    },
+    {
+      "scenario_id": "SCN-007",
+      "area": "1. Multi-Position Employees",
+      "title": "تحديث بيانات القسم والفريق وتاريخ الانتهاء",
+      "description": "تعديل تفاصيل الهيكل التنظيمي للمنصب الوظيفي",
+      "status": "PASS",
+      "details": {
+        "section": "خدمات البنية التحتية"
+      },
+      "timestamp": "2026-11-20T15:49:43.078658"
+    },
+    {
+      "scenario_id": "SCN-008",
+      "area": "1. Multi-Position Employees",
+      "title": "منع تكرار المنصب لنفس الموظف في نفس الفرع",
+      "description": "ضمان قيد التفرد الفرعي (Employee, Company, Branch)",
+      "status": "PASS",
+      "details": {
+        "blocked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.080665"
+    },
+    {
+      "scenario_id": "SCN-009",
+      "area": "1. Multi-Position Employees",
+      "title": "تعطيل أحد المناصب دون التأثير على المناصب الأخرى",
+      "description": "إيقاف منصب وظيفي مع بقاء المنصب الآخر نشطاً",
+      "status": "PASS",
+      "details": {
+        "pos1_status": "Inactive",
+        "pos2_status": "Active"
+      },
+      "timestamp": "2026-11-20T15:49:43.087109"
+    },
+    {
+      "scenario_id": "SCN-010",
+      "area": "1. Multi-Position Employees",
+      "title": "حذف منصب وظيفي بأمان وضمان بقاء منصب أساسي",
+      "description": "حذف المنصب الملغى والتأكد من بقاء المنصب الأساسي",
+      "status": "PASS",
+      "details": {
+        "remaining_count": 1
+      },
+      "timestamp": "2026-11-20T15:49:43.097188"
+    },
+    {
+      "scenario_id": "SCN-011",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "منع تعيين الموظف مديراً لنفسه",
+      "description": "التحقق من رفض تعيين manager_id = employee_id فورياً",
+      "status": "PASS",
+      "details": {
+        "blocked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.104599"
+    },
+    {
+      "scenario_id": "SCN-012",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "تعيين تبعية إدارية صالحة من المستوى الأول",
+      "description": "الموظف ب يتبع للموظف أ بنجاح دون أخطاء",
+      "status": "PASS",
+      "details": {
+        "mgr": "24ca74ae-9ead-4022-9583-20158a81e378"
+      },
+      "timestamp": "2026-11-20T15:49:43.113149"
+    },
+    {
+      "scenario_id": "SCN-013",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "منع التبعية الدائرية المباشرة (A -> B -> A)",
+      "description": "محاولة جعل أ يتبع لـ ب تؤدي لرفض صارم من الخادم",
+      "status": "PASS",
+      "details": {
+        "blocked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.114634"
+    },
+    {
+      "scenario_id": "SCN-014",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "بناء تسلسل إداري ثلاثي صالح (C -> B -> A)",
+      "description": "التحقق من صحة سلسلة التبعية الثلاثية",
+      "status": "PASS",
+      "details": {
+        "chain": "C -> B -> A"
+      },
+      "timestamp": "2026-11-20T15:49:43.121296"
+    },
+    {
+      "scenario_id": "SCN-015",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "منع التبعية الدائرية غير المباشرة (A -> C -> B -> A)",
+      "description": "منع جعل قمة الهرم تابعاً لأسفل السلسلة",
+      "status": "PASS",
+      "details": {
+        "blocked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.122278"
+    },
+    {
+      "scenario_id": "SCN-016",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "السماح بمدير فارغ لقمة الهيكل التنظيمي",
+      "description": "التحقق من قبول manager_id = null لرؤساء القطاعات",
+      "status": "PASS",
+      "details": {
+        "allowed": true
+      },
+      "timestamp": "2026-11-20T15:49:43.122293"
+    },
+    {
+      "scenario_id": "SCN-017",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "إلحاق موظف جديد بفرع شجري مستقل",
+      "description": "التحقق من إمكانية ربط موظف جديد بأي عقدة شجرية غير دائرية",
+      "status": "PASS",
+      "details": {
+        "valid": true
+      },
+      "timestamp": "2026-11-20T15:49:43.130462"
+    },
+    {
+      "scenario_id": "SCN-018",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "حماية عمق فحص الشجرة من الحلقات اللانهائية",
+      "description": "التحقق من ضبط حد أقصى (Max Depth) لأمان الخادم",
+      "status": "PASS",
+      "details": {
+        "depth_limit": 50
+      },
+      "timestamp": "2026-11-20T15:49:43.131103"
+    },
+    {
+      "scenario_id": "SCN-019",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "تطبيق منع الحلقات على مدراء المناصب المتعددة",
+      "description": "سريان قاعدة كشف الحلقات على جداول المناصب الفرعية",
+      "status": "PASS",
+      "details": {
+        "enforced": true
+      },
+      "timestamp": "2026-11-20T15:49:43.131634"
+    },
+    {
+      "scenario_id": "SCN-020",
+      "area": "2. Hierarchy Cycle Detection",
+      "title": "إعادة الإتاحة بعد فك ارتباط التبعية السابقة",
+      "description": "التأكد من زوال حالة التعارض بعد تصفير المدير السابق",
+      "status": "PASS",
+      "details": {
+        "resolved": true
+      },
+      "timestamp": "2026-11-20T15:49:43.136729"
+    },
+    {
+      "scenario_id": "SCN-021",
+      "area": "3. Fast Task & Normalization",
+      "title": "تطبيع أشكال الهمزات المختلفة (أ، إ، آ -> ا)",
+      "description": "تحويل كافة أشكال الألف المهموزة إلى ألف بسيطة",
+      "status": "PASS",
+      "details": {
+        "result": "احمد ابراهيم امنه"
+      },
+      "timestamp": "2026-11-20T15:49:43.136770"
+    },
+    {
+      "scenario_id": "SCN-022",
+      "area": "3. Fast Task & Normalization",
+      "title": "تطبيع التاء المربوطة والهاء (ة -> ه)",
+      "description": "مطابقة الأسماء المنتهية بتاء مربوطة مع مدخلات الهاء",
+      "status": "PASS",
+      "details": {
+        "result": "فاطمه عائشه"
+      },
+      "timestamp": "2026-11-20T15:49:43.136780"
+    },
+    {
+      "scenario_id": "SCN-023",
+      "area": "3. Fast Task & Normalization",
+      "title": "تطبيع الياء والألف المقصورة (ى -> ي)",
+      "description": "مطابقة الألف المقصورة مع الياء المهملة",
+      "status": "PASS",
+      "details": {
+        "result": "مصطفي يحيي"
+      },
+      "timestamp": "2026-11-20T15:49:43.136789"
+    },
+    {
+      "scenario_id": "SCN-024",
+      "area": "3. Fast Task & Normalization",
+      "title": "تجريد علامات التشكيل والحركات والتنوين",
+      "description": "إزالة الضمة والفتحة والكسرة والشدة والتنوين والمد",
+      "status": "PASS",
+      "details": {
+        "result": "محمد سعود"
+      },
+      "timestamp": "2026-11-20T15:49:43.136798"
+    },
+    {
+      "scenario_id": "SCN-025",
+      "area": "3. Fast Task & Normalization",
+      "title": "البحث السريع بكلمات متعددة (Multi-token match)",
+      "description": "العثور على الموظف عند كتابة مقطعين متباعدين من الاسم",
+      "status": "PASS",
+      "details": {
+        "matches": 5
+      },
+      "timestamp": "2026-11-20T15:49:43.155745"
+    },
+    {
+      "scenario_id": "SCN-026",
+      "area": "3. Fast Task & Normalization",
+      "title": "الالتزام بسقف النتائج السريع (Autocomplete Limit)",
+      "description": "التحقق من عدم تجاوز عدد النتائج للحد المحدد للأداء",
+      "status": "PASS",
+      "details": {
+        "count": 5
+      },
+      "timestamp": "2026-11-20T15:49:43.173348"
+    },
+    {
+      "scenario_id": "SCN-027",
+      "area": "3. Fast Task & Normalization",
+      "title": "استرجاع الموظف المحدد مباشرة بالمعرف الثابت (Hydration)",
+      "description": "جلب بيانات الموظف المختار فوراً دون انتظار استعلام نصي",
+      "status": "PASS",
+      "details": {
+        "found": true
+      },
+      "timestamp": "2026-11-20T15:49:43.177502"
+    },
+    {
+      "scenario_id": "SCN-028",
+      "area": "3. Fast Task & Normalization",
+      "title": "عزل نتائج البحث عن الموظفين بين المنشآت",
+      "description": "عدم ظهور موظفي الشركة أ في نتائج بحث الشركة ب",
+      "status": "PASS",
+      "details": {
+        "leak_free": true
+      },
+      "timestamp": "2026-11-20T15:49:43.185861"
+    },
+    {
+      "scenario_id": "SCN-029",
+      "area": "3. Fast Task & Normalization",
+      "title": "استبعاد الموظفين غير النشطين من الإسناد",
+      "description": "الموظف المفصول أو المنتهي عقده لا يظهر في الإكمال التلقائي",
+      "status": "PASS",
+      "details": {
+        "excluded": true
+      },
+      "timestamp": "2026-11-20T15:49:43.204363"
+    },
+    {
+      "scenario_id": "SCN-030",
+      "area": "3. Fast Task & Normalization",
+      "title": "ترتيب مقترحات الإسناد مع أولوية الربط",
+      "description": "فحص ترتيب واكتمال قائمة الإسناد",
+      "status": "PASS",
+      "details": {
+        "results_count": 15
+      },
+      "timestamp": "2026-11-20T15:49:43.208793"
+    },
+    {
+      "scenario_id": "SCN-031",
+      "area": "4. Task Broadcast Modes",
+      "title": "إنشاء مهام فردية متعددة بالبث (Individual Mode)",
+      "description": "إنشاء مهمة مستقلة لكل موظف ضمن مجموعة بث موحدة",
+      "status": "PASS",
+      "details": {
+        "group_id": "775426b0-fa43-41a2-a976-2c506dc39439"
+      },
+      "timestamp": "2026-11-20T15:49:43.230024"
+    },
+    {
+      "scenario_id": "SCN-032",
+      "area": "4. Task Broadcast Modes",
+      "title": "استقلالية دورة حياة المهام الفردية المنبثقة",
+      "description": "تغيير حالة مهمة الموظف الأول دون التأثير على الثاني",
+      "status": "PASS",
+      "details": {
+        "s1": "In Progress",
+        "s2": "Completed"
+      },
+      "timestamp": "2026-11-20T15:49:43.235647"
+    },
+    {
+      "scenario_id": "SCN-033",
+      "area": "4. Task Broadcast Modes",
+      "title": "إنشاء مهمة عمل مشتركة (Shared Task RACI)",
+      "description": "مهمة وحيدة مع تعيين المالك المسؤول الأول",
+      "status": "PASS",
+      "details": {
+        "shared_id": "bfdab72f-f1da-4162-b391-bc9c5894a75a"
+      },
+      "timestamp": "2026-11-20T15:49:43.244498"
+    },
+    {
+      "scenario_id": "SCN-034",
+      "area": "4. Task Broadcast Modes",
+      "title": "تسجيل أعضاء الفريق ومسؤوليات RACI",
+      "description": "إضافة مسؤول أول ومشارك في جدول المشاركين",
+      "status": "PASS",
+      "details": {
+        "participants": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.253851"
+    },
+    {
+      "scenario_id": "SCN-035",
+      "area": "4. Task Broadcast Modes",
+      "title": "منع تكرار الموظف في فريق عمل المهمة المشتركة",
+      "description": "قيد الفرادة (task_id, employee_id) يمنع التكرار",
+      "status": "PASS",
+      "details": {
+        "blocked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.347325"
+    },
+    {
+      "scenario_id": "SCN-036",
+      "area": "4. Task Broadcast Modes",
+      "title": "نمط التعميم الإداري دون تلويث مؤشرات المهام",
+      "description": "التأكد من عدم زيادة سجلات جدول المهام عند بث تعميم",
+      "status": "PASS",
+      "details": {
+        "count_before": 280,
+        "count_after": 280
+      },
+      "timestamp": "2026-11-20T15:49:43.354869"
+    },
+    {
+      "scenario_id": "SCN-037",
+      "area": "4. Task Broadcast Modes",
+      "title": "تصفية وتطهير مصفوفة المستلمين من التكرار",
+      "description": "دمج المدخلات المكررة وحفظ الترتيب بدقة",
+      "status": "PASS",
+      "details": {
+        "deduped_count": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.355894"
+    },
+    {
+      "scenario_id": "SCN-038",
+      "area": "4. Task Broadcast Modes",
+      "title": "تحديث حالة أعضاء الفريق عند اكتمال المهمة المشتركة",
+      "description": "تحويل حالة المشاركين إلى مكتملة عند اعتماد إغلاق المهمة",
+      "status": "PASS",
+      "details": {
+        "completed_parts": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.369806"
+    },
+    {
+      "scenario_id": "SCN-039",
+      "area": "4. Task Broadcast Modes",
+      "title": "توثيق عمليات البث في سجل التدقيق الإداري",
+      "description": "حفظ بيانات البث وعدد المستلمين ومجموعات الإسناد",
+      "status": "PASS",
+      "details": {
+        "audit_tracked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.372131"
+    },
+    {
+      "scenario_id": "SCN-040",
+      "area": "4. Task Broadcast Modes",
+      "title": "استرجاع حزمة المهام المنبثقة بمعرف المجموعة",
+      "description": "تمكين الإدارة من متابعة إنجاز حزمة البث بالكامل",
+      "status": "PASS",
+      "details": {
+        "group_size": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.381594"
+    },
+    {
+      "scenario_id": "SCN-041",
+      "area": "5. Deadlines & Escalation",
+      "title": "المدة الافتراضية للأولوية الحرجة (60 دقيقة)",
+      "description": "التحقق من سياسة الأولوية الحرجة (Critical = 1 Hour)",
+      "status": "PASS",
+      "details": {
+        "duration": 60
+      },
+      "timestamp": "2026-11-20T15:49:43.381621"
+    },
+    {
+      "scenario_id": "SCN-042",
+      "area": "5. Deadlines & Escalation",
+      "title": "المدة الافتراضية للأولوية العاجلة (240 دقيقة)",
+      "description": "التحقق من سياسة الأولوية العاجلة (Urgent = 4 Hours)",
+      "status": "PASS",
+      "details": {
+        "duration": 240
+      },
+      "timestamp": "2026-11-20T15:49:43.381632"
+    },
+    {
+      "scenario_id": "SCN-043",
+      "area": "5. Deadlines & Escalation",
+      "title": "المدة الافتراضية للأولوية المرتفعة (24 ساعة)",
+      "description": "التحقق من سياسة الأولوية المرتفعة (High = 1 Business Day)",
+      "status": "PASS",
+      "details": {
+        "duration": 1440
+      },
+      "timestamp": "2026-11-20T15:49:43.381644"
+    },
+    {
+      "scenario_id": "SCN-044",
+      "area": "5. Deadlines & Escalation",
+      "title": "المدة الافتراضية للأولوية المتوسطة (3 أيام)",
+      "description": "التحقق من سياسة الأولوية المتوسطة (Medium = 3 Days)",
+      "status": "PASS",
+      "details": {
+        "duration": 4320
+      },
+      "timestamp": "2026-11-20T15:49:43.381660"
+    },
+    {
+      "scenario_id": "SCN-045",
+      "area": "5. Deadlines & Escalation",
+      "title": "المدة الافتراضية للأولوية المنخفضة (7 أيام)",
+      "description": "التحقق من سياسة الأولوية المنخفضة (Low = 7 Days)",
+      "status": "PASS",
+      "details": {
+        "duration": 10080
+      },
+      "timestamp": "2026-11-20T15:49:43.381667"
+    },
+    {
+      "scenario_id": "SCN-046",
+      "area": "5. Deadlines & Escalation",
+      "title": "احتساب الموعد النهائي الدقيق بناءً على المدة",
+      "description": "إضافة 240 دقيقة لتاريخ ولحظة الإنشاء بدقة",
+      "status": "PASS",
+      "details": {
+        "diff_minutes": 240
+      },
+      "timestamp": "2026-11-20T15:49:43.381806"
+    },
+    {
+      "scenario_id": "SCN-047",
+      "area": "5. Deadlines & Escalation",
+      "title": "أسبقية التاريخ المحدد يدوياً على المدة الافتراضية",
+      "description": "اعتماد التاريخ المحدد صراحة عند اختيار fixed_datetime",
+      "status": "PASS",
+      "details": {
+        "explicit": "2026-11-30 15:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.381824"
+    },
+    {
+      "scenario_id": "SCN-048",
+      "area": "5. Deadlines & Escalation",
+      "title": "اكتشاف الاقتراب من خرق الموعد (مؤشر 80% خطر)",
+      "description": "تصنيف المهمة كـ At Risk عند استهلاك 80% من المهلة",
+      "status": "PASS",
+      "details": {
+        "ratio": 0.83
+      },
+      "timestamp": "2026-11-20T15:49:43.383380"
+    },
+    {
+      "scenario_id": "SCN-049",
+      "area": "5. Deadlines & Escalation",
+      "title": "تصعيد المهمة آلياً عند خرق الموعد المستهدف",
+      "description": "تسجيل تاريخ التصعيد ورفع مستوى التصعيد (Escalation Level)",
+      "status": "PASS",
+      "details": {
+        "escalated_at": "2026-11-20 15:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.397756"
+    },
+    {
+      "scenario_id": "SCN-050",
+      "area": "5. Deadlines & Escalation",
+      "title": "حساب الثواني المتبقية للعداد التنازلي الحي",
+      "description": "توفير القيمة اللحظية الدقيقة لعرض العداد في الواجهة",
+      "status": "PASS",
+      "details": {
+        "remaining_seconds": 14400
+      },
+      "timestamp": "2026-11-20T15:49:43.397776"
+    },
+    {
+      "scenario_id": "SCN-051",
+      "area": "6. Telegram Integration",
+      "title": "ظهور الموظف المضاف حديثاً في قمة جدول تليجرام (Defect 4.A)",
+      "description": "التحقق من الفرز بـ created_at DESC لوضع الموظف الجديد في الأعلى",
+      "status": "PASS",
+      "details": {
+        "top_employee_id": "ff755f19-2449-424d-b3cf-59e264ae95f7"
+      },
+      "timestamp": "2026-11-20T15:49:43.405625"
+    },
+    {
+      "scenario_id": "SCN-052",
+      "area": "6. Telegram Integration",
+      "title": "إرسال رسالة مباشرة دون إنشاء مهام فنية (Defect 4.B)",
+      "description": "عدم التأثير على مؤشرات المهام وسجلاتها عند المراسلة المباشرة",
+      "status": "PASS",
+      "details": {
+        "tasks_unchanged": true
+      },
+      "timestamp": "2026-11-20T15:49:43.414919"
+    },
+    {
+      "scenario_id": "SCN-053",
+      "area": "6. Telegram Integration",
+      "title": "حظر التسجيل الذاتي المباشر عبر بوت تليجرام",
+      "description": "التأكد من اشتراط وجود حساب موظف مسبق ورمز ربط معتمد",
+      "status": "PASS",
+      "details": {
+        "strict_rule_enforced": true
+      },
+      "timestamp": "2026-11-20T15:49:43.414945"
+    },
+    {
+      "scenario_id": "SCN-054",
+      "area": "6. Telegram Integration",
+      "title": "اشتمال إشعار التليجرام على كافة البيانات الفنية",
+      "description": "تضمين العنوان والأولوية والموعد المستهدف في نص الإشعار",
+      "status": "PASS",
+      "details": {
+        "template_verified": true
+      },
+      "timestamp": "2026-11-20T15:49:43.414990"
+    },
+    {
+      "scenario_id": "SCN-055",
+      "area": "6. Telegram Integration",
+      "title": "تأكيد حالة ربط حساب تليجرام ومطابقة المعرف",
+      "description": "التحقق من صحة توثيق وتأكيد الحساب (is_verified = True)",
+      "status": "PASS",
+      "details": {
+        "chat_id": "12345678"
+      },
+      "timestamp": "2026-11-20T15:49:43.425611"
+    },
+    {
+      "scenario_id": "SCN-056",
+      "area": "6. Telegram Integration",
+      "title": "تعطيل واستئناف إشعارات الموظف عبر تليجرام",
+      "description": "التحكم في خيار استلام الإشعارات على مستوى حساب الموظف",
+      "status": "PASS",
+      "details": {
+        "notifs_enabled": false
+      },
+      "timestamp": "2026-11-20T15:49:43.433999"
+    },
+    {
+      "scenario_id": "SCN-057",
+      "area": "6. Telegram Integration",
+      "title": "جدولة الإشعارات في صندوق الإرسال الموثوق (Outbox)",
+      "description": "ضمان عدم فقدان أي إشعار عند انقطاع الاتصال الخارجي",
+      "status": "PASS",
+      "details": {
+        "outbox_id": "a90e7b78-a4c4-41de-a0df-7fec814a7fbf"
+      },
+      "timestamp": "2026-11-20T15:49:43.448478"
+    },
+    {
+      "scenario_id": "SCN-058",
+      "area": "6. Telegram Integration",
+      "title": "إعادة المحاولة وتسجيل رسائل الخطأ عند الفشل",
+      "description": "تسجيل سبب التعثر وزيادة عداد المحاولات (Retry Count)",
+      "status": "PASS",
+      "details": {
+        "retries": 1
+      },
+      "timestamp": "2026-11-20T15:49:43.453595"
+    },
+    {
+      "scenario_id": "SCN-059",
+      "area": "6. Telegram Integration",
+      "title": "إلغاء ربط حساب تليجرام فورياً وبأمان",
+      "description": "حذف بيانات الربط مع الحفاظ التام على سجل الموظف",
+      "status": "PASS",
+      "details": {
+        "unlinked": true
+      },
+      "timestamp": "2026-11-20T15:49:43.463001"
+    },
+    {
+      "scenario_id": "SCN-060",
+      "area": "6. Telegram Integration",
+      "title": "عزل إعدادات وحسابات تليجرام بين المنشآت",
+      "description": "عدم تداخل روابط الحسابات التابعة لشركات مختلفة",
+      "status": "PASS",
+      "details": {
+        "isolated": true
+      },
+      "timestamp": "2026-11-20T15:49:43.464318"
+    },
+    {
+      "scenario_id": "SCN-061",
+      "area": "7. Service Desk & Multimedia",
+      "title": "إنشاء تذكرة عطل تقني (Technical Incident)",
+      "description": "تصنيف البلاغ كعطل تشغيلي طارئ وفق ITIL 4",
+      "status": "PASS",
+      "details": {
+        "ticket_number": "TCK-INC-9891"
+      },
+      "timestamp": "2026-11-20T15:49:43.472133"
+    },
+    {
+      "scenario_id": "SCN-062",
+      "area": "7. Service Desk & Multimedia",
+      "title": "إنشاء طلب خدمة وتجهيز (Service Request)",
+      "description": "تصنيف الطلب كإجراء خدمي قياسي مجدول",
+      "status": "PASS",
+      "details": {
+        "ticket_number": "TCK-REQ-4e05"
+      },
+      "timestamp": "2026-11-20T15:49:43.479225"
+    },
+    {
+      "scenario_id": "SCN-063",
+      "area": "7. Service Desk & Multimedia",
+      "title": "إنشاء طلب أصل وعهدة تقنية (Asset Request)",
+      "description": "تصنيف الطلب كطلب أصل تقني يتطلب موافقة العهد",
+      "status": "PASS",
+      "details": {
+        "ticket_number": "TCK-AST-4f8e"
+      },
+      "timestamp": "2026-11-20T15:49:43.484906"
+    },
+    {
+      "scenario_id": "SCN-064",
+      "area": "7. Service Desk & Multimedia",
+      "title": "إرفاق تسجيل صوتي مباشر في تذكرة الدعم الفني",
+      "description": "حفظ مسار التسجيل الصوتي المرفوع ضمن بيانات التذكرة",
+      "status": "PASS",
+      "details": {
+        "voice_url": "/api/v1/tickets/voice/ticket_voice_test.webm"
+      },
+      "timestamp": "2026-11-20T15:49:43.490354"
+    },
+    {
+      "scenario_id": "SCN-065",
+      "area": "7. Service Desk & Multimedia",
+      "title": "إرفاق لقطات الشاشة والصور التوثيقية",
+      "description": "التحقق من تخزين مصفوفة المرفقات بصيغة JSON منظمة",
+      "status": "PASS",
+      "details": {
+        "attachments": [
+          {
+            "filename": "error_screen.png",
+            "url": "/uploads/error_screen.png",
+            "size": 102400
+          }
+        ]
+      },
+      "timestamp": "2026-11-20T15:49:43.497089"
+    },
+    {
+      "scenario_id": "SCN-066",
+      "area": "7. Service Desk & Multimedia",
+      "title": "احتساب موعد اتفاقية مستوى الخدمة للتذكرة (SLA)",
+      "description": "تحديد وقت الاستجابة والحل المستهدف حسب الأولوية",
+      "status": "PASS",
+      "details": {
+        "sla_target": "2026-11-20 19:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.502599"
+    },
+    {
+      "scenario_id": "SCN-067",
+      "area": "7. Service Desk & Multimedia",
+      "title": "فصل الملاحظات الفنية الداخلية عن ردود العميل",
+      "description": "حماية الملاحظات الداخلية ومنع ظهورها لغير الفنيين",
+      "status": "PASS",
+      "details": {
+        "internal_flag": true
+      },
+      "timestamp": "2026-11-20T15:49:43.513753"
+    },
+    {
+      "scenario_id": "SCN-068",
+      "area": "7. Service Desk & Multimedia",
+      "title": "حجب الملاحظات الداخلية عن حسابات الموظفين العاديين",
+      "description": "استرجاع الردود العامة فقط عند تصفح مقدم البلاغ",
+      "status": "PASS",
+      "details": {
+        "visible_count": 1
+      },
+      "timestamp": "2026-11-20T15:49:43.515411"
+    },
+    {
+      "scenario_id": "SCN-069",
+      "area": "7. Service Desk & Multimedia",
+      "title": "تحويل تذكرة الدعم الفني إلى مهمة عمل مرتبطة",
+      "description": "ربط معرف التذكرة الأصلية بمهمة العمل الناتجة",
+      "status": "PASS",
+      "details": {
+        "task_id": "575e29ad-85f8-41bb-bf3e-ff90d94bb08c"
+      },
+      "timestamp": "2026-11-20T15:49:43.527300"
+    },
+    {
+      "scenario_id": "SCN-070",
+      "area": "7. Service Desk & Multimedia",
+      "title": "تحديث مؤشرات أداء الدعم الفني اللحظية",
+      "description": "انعكاس تغير الحالة فورياً في لوحة الإحصائيات",
+      "status": "PASS",
+      "details": {
+        "in_progress_count": 25
+      },
+      "timestamp": "2026-11-20T15:49:43.537191"
+    },
+    {
+      "scenario_id": "SCN-071",
+      "area": "8. Routing & Support Tiers",
+      "title": "تعيين تذكرة في المستوى الأول (L1 Support)",
+      "description": "توجيه التذكرة لمهندسي الدعم المكتبي الأولي",
+      "status": "PASS",
+      "details": {
+        "tier": "L1"
+      },
+      "timestamp": "2026-11-20T15:49:43.537870"
+    },
+    {
+      "scenario_id": "SCN-072",
+      "area": "8. Routing & Support Tiers",
+      "title": "تصعيد التذكرة للمستوى الثاني (L2 Specialist)",
+      "description": "رفع مستوى البلاغ لمهندسي الأنظمة والشبكات",
+      "status": "PASS",
+      "details": {
+        "tier": "L2"
+      },
+      "timestamp": "2026-11-20T15:49:43.546630"
+    },
+    {
+      "scenario_id": "SCN-073",
+      "area": "8. Routing & Support Tiers",
+      "title": "تصعيد التذكرة للمستوى الثالث (L3 Senior/Vendor)",
+      "description": "تحويل المشكلة المعقدة لكبار الاستشاريين والموردين",
+      "status": "PASS",
+      "details": {
+        "tier": "L3"
+      },
+      "timestamp": "2026-11-20T15:49:43.552673"
+    },
+    {
+      "scenario_id": "SCN-074",
+      "area": "8. Routing & Support Tiers",
+      "title": "محرك التوجيه الحتمي غير المعتمد على الذكاء الاصطناعي",
+      "description": "اختيار فني مؤهل حتمياً وفق قواعد النظام دون أي نماذج لغوية",
+      "status": "PASS",
+      "details": {
+        "technician_id": "d64e6d76-31fc-4337-8c33-2af545508385"
+      },
+      "timestamp": "2026-11-20T15:49:43.764437"
+    },
+    {
+      "scenario_id": "SCN-075",
+      "area": "8. Routing & Support Tiers",
+      "title": "توجيه التذكرة للفني الأقل عبئاً تشغيلياً",
+      "description": "تحقيق التوازن في توزيع أعباء العمل بين الفنيين (Workload Balancing)",
+      "status": "PASS",
+      "details": {
+        "verified": true
+      },
+      "timestamp": "2026-11-20T15:49:43.764453"
+    },
+    {
+      "scenario_id": "SCN-076",
+      "area": "8. Routing & Support Tiers",
+      "title": "تحويل حالة التذكرة تلقائياً إلى 'مسندة' فور التوجيه",
+      "description": "تزامن الإسناد وتحديث الحالة في دورة العمل",
+      "status": "PASS",
+      "details": {
+        "status": "Assigned"
+      },
+      "timestamp": "2026-11-20T15:49:43.770069"
+    },
+    {
+      "scenario_id": "SCN-077",
+      "area": "8. Routing & Support Tiers",
+      "title": "تقييد صلاحيات إعادة توجيه التذاكر بالفنيين والإداريين",
+      "description": "منع الموظف العادي من تغيير الفني المسؤول",
+      "status": "PASS",
+      "details": {
+        "privileged": true
+      },
+      "timestamp": "2026-11-20T15:49:43.770483"
+    },
+    {
+      "scenario_id": "SCN-078",
+      "area": "8. Routing & Support Tiers",
+      "title": "المعالجة الآمنة في حال عدم توفر فنيين متاحين (Fallback to Open)",
+      "description": "بقاء التذكرة بحالة Open دون انهيار أو توقف عند غياب الفنيين",
+      "status": "PASS",
+      "details": {
+        "fallback": "None"
+      },
+      "timestamp": "2026-11-20T15:49:43.771100"
+    },
+    {
+      "scenario_id": "SCN-079",
+      "area": "8. Routing & Support Tiers",
+      "title": "توثيق عمليات إعادة توجيه التذاكر بين الفنيين",
+      "description": "حفظ التغييرات في سجل العمليات لمنع ضياع المسؤولية",
+      "status": "PASS",
+      "details": {
+        "new_tech": "e510dd7b-7267-45e9-888a-9d09d7a8ecb5"
+      },
+      "timestamp": "2026-11-20T15:49:43.778756"
+    },
+    {
+      "scenario_id": "SCN-080",
+      "area": "8. Routing & Support Tiers",
+      "title": "عزل احتساب حمل العمل التابع لكل شركة على حدة",
+      "description": "عدم احتساب تذاكر الشركات الشقيقة ضمن حمل الفني بالمنشأة الحالية",
+      "status": "PASS",
+      "details": {
+        "workload": 28
+      },
+      "timestamp": "2026-11-20T15:49:43.781799"
+    },
+    {
+      "scenario_id": "SCN-081",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "إيقاف عداد SLA عند انتظار رد العميل (Waiting for User)",
+      "description": "تجميد العداد التشغيلي لعدم معاقبة الفريق الفني بتأخر العميل",
+      "status": "PASS",
+      "details": {
+        "paused_at": "2026-11-20 15:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.787243"
+    },
+    {
+      "scenario_id": "SCN-082",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "تمديد موعد SLA المستهدف بمقدار مدة الإيقاف المؤقت",
+      "description": "ترحيل موعد الحل للأمام لتعويض فترة انتظار العميل بدقة",
+      "status": "PASS",
+      "details": {
+        "extended_target": "2026-11-20 20:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.791715"
+    },
+    {
+      "scenario_id": "SCN-083",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "استئناف احتساب عداد SLA فور استلام رد العميل",
+      "description": "إعادة تفعيل الساعة وحفظ إجمالي الثواني المجمدة",
+      "status": "PASS",
+      "details": {
+        "total_paused_sec": 3600
+      },
+      "timestamp": "2026-11-20T15:49:43.797563"
+    },
+    {
+      "scenario_id": "SCN-084",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "تسجيل زمن الحل الدقيق عند إغلاق التذكرة بنجاح",
+      "description": "تثبيت resolved_at لاحتساب زمن المعالجة (Mean Time to Resolve)",
+      "status": "PASS",
+      "details": {
+        "resolved_at": "2026-11-20 15:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.802970"
+    },
+    {
+      "scenario_id": "SCN-085",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "الإغلاق الإداري النهائي للتذكرة وتثبيت closed_at",
+      "description": "تأكيد إغلاق البلاغ ومنع التعديل إلا عبر مسار إعادة الفتح",
+      "status": "PASS",
+      "details": {
+        "closed_at": "2026-11-20 15:49:43.381778"
+      },
+      "timestamp": "2026-11-20T15:49:43.811946"
+    },
+    {
+      "scenario_id": "SCN-086",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "إعادة فتح التذكرة وزيادة عداد Reopened Count",
+      "description": "تتبع تكرار إعادة فتح البلاغات لقياس جودة الحل الفني",
+      "status": "PASS",
+      "details": {
+        "reopened_count": 1
+      },
+      "timestamp": "2026-11-20T15:49:43.818088"
+    },
+    {
+      "scenario_id": "SCN-087",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "الرصد التراكمي لإعادة الفتح المتكررة للتذكرة",
+      "description": "توثيق التذاكر غير المستقرة التي أُعيد فتحها مرتين أو أكثر",
+      "status": "PASS",
+      "details": {
+        "reopened_count": 2
+      },
+      "timestamp": "2026-11-20T15:49:43.839273"
+    },
+    {
+      "scenario_id": "SCN-088",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "تصنيف التذكرة كملتزمة بالموعد (Within SLA)",
+      "description": "التأكد من دقة احتساب حالة الالتزام باتفاقية الخدمة",
+      "status": "PASS",
+      "details": {
+        "sla_status": "Within_SLA"
+      },
+      "timestamp": "2026-11-20T15:49:43.841527"
+    },
+    {
+      "scenario_id": "SCN-089",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "تصنيف التذكرة كمتأخرة عن موعدها (Breached SLA)",
+      "description": "رصد حالات خرق اتفاقية مستوى الخدمة لإدراجها في تقارير الإدارة",
+      "status": "PASS",
+      "details": {
+        "sla_status": "Breached"
+      },
+      "timestamp": "2026-11-20T15:49:43.851348"
+    },
+    {
+      "scenario_id": "SCN-090",
+      "area": "9. SLA Pause & Reopen Workflows",
+      "title": "اعتماد الحل النهائي وحفظ السجل الأرشيفي للتذكرة",
+      "description": "إتمام دورة حياة التذكرة بنجاح مع الاحتفاظ بكافة أزمنة الـ SLA",
+      "status": "PASS",
+      "details": {
+        "final_status": "Resolved"
+      },
+      "timestamp": "2026-11-20T15:49:43.860859"
+    },
+    {
+      "scenario_id": "SCN-091",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "إنشاء سجل مشكلة جذرية (ITIL Problem Management)",
+      "description": "توثيق سبب العطل والحل المؤقت لمنع تكرار الحوادث",
+      "status": "PASS",
+      "details": {
+        "problem_id": "9f55ccb5-4f8e-4836-b230-71329eefce21"
+      },
+      "timestamp": "2026-11-20T15:49:43.870935"
+    },
+    {
+      "scenario_id": "SCN-092",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "ربط تذاكر الحوادث بسجل المشكلة الجذرية الموحد",
+      "description": "تجميع التذاكر ذات السبب المشترك تحت سجل مشكلة واحد",
+      "status": "PASS",
+      "details": {
+        "linked_count": 1
+      },
+      "timestamp": "2026-11-20T15:49:43.888596"
+    },
+    {
+      "scenario_id": "SCN-093",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "إنشاء مقال معرفي تشغيلي بقاعدة المعرفة (KB Article)",
+      "description": "توثيق الأعراض، خطوات التشخيص، والحل الجذري المعتمد",
+      "status": "PASS",
+      "details": {
+        "article_id": "ccdf0ea4-7697-43af-89ea-411d7188e268"
+      },
+      "timestamp": "2026-11-20T15:49:43.899700"
+    },
+    {
+      "scenario_id": "SCN-094",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "اعتماد ونشر المقال المعرفي بعد تدقيقه",
+      "description": "إتاحة الحل الفني المعتمد لكافة موظفي وفنيي المنشأة",
+      "status": "PASS",
+      "details": {
+        "published": true
+      },
+      "timestamp": "2026-11-20T15:49:43.907679"
+    },
+    {
+      "scenario_id": "SCN-095",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "البحث الحتمي فائق السرعة في قاعدة المعرفة دون AI",
+      "description": "استرجاع الحل المعتمد عبر المطابقة النصية المباشرة",
+      "status": "PASS",
+      "details": {
+        "found_articles": 3
+      },
+      "timestamp": "2026-11-20T15:49:43.910833"
+    },
+    {
+      "scenario_id": "SCN-096",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "تجميع السجل التاريخي للأعطال بالرقم التسلسلي للأصل",
+      "description": "تمكين الفني من استعراض كافة الحوادث السابقة المرتبطة بالجهاز",
+      "status": "PASS",
+      "details": {
+        "asset_history_count": 4
+      },
+      "timestamp": "2026-11-20T15:49:43.932396"
+    },
+    {
+      "scenario_id": "SCN-097",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "عزل مقالات قاعدة المعرفة الصارم بين الشركات",
+      "description": "عدم تسرب المقالات الإجرائية الخاصة بشركة إلى منشأة أخرى",
+      "status": "PASS",
+      "details": {
+        "tenant_isolated": true
+      },
+      "timestamp": "2026-11-20T15:49:43.933853"
+    },
+    {
+      "scenario_id": "SCN-098",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "عزل سجلات المشاكل الجذرية بين الشركات التابعة",
+      "description": "حظر وصول مستخدمي منشأة إلى سجلات مشاكل المنشآت الأخرى",
+      "status": "PASS",
+      "details": {
+        "tenant_isolated": true
+      },
+      "timestamp": "2026-11-20T15:49:43.935011"
+    },
+    {
+      "scenario_id": "SCN-099",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "الحماية من ثغرات الوصول غير المصرح (IDOR Prevention)",
+      "description": "التحقق من رفض وصول المستخدم لسجلات شركات غير مرتبطة به",
+      "status": "PASS",
+      "details": {
+        "idor_secured": true
+      },
+      "timestamp": "2026-11-20T15:49:43.944012"
+    },
+    {
+      "scenario_id": "SCN-100",
+      "area": "10. Knowledge, Problems & Security",
+      "title": "سلامة وتكامل سجل المراجعة الشامل للنظام (System Integrity)",
+      "description": "التأكد من تسجيل العمليات والقرارات التشغيلية في سجل ثابت",
+      "status": "PASS",
+      "details": {
+        "audit_records": 138
+      },
+      "timestamp": "2026-11-20T15:49:43.947512"
+    }
+  ]
+}

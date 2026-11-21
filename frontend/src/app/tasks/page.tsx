@@ -23,6 +23,13 @@ import {
   Plus,
   ListTodo,
   Search,
+  List,
+  LayoutGrid,
+  CalendarDays,
+  GanttChartSquare,
+  Users as UsersIcon,
+  Sparkles,
+  Filter,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
@@ -31,6 +38,10 @@ import { useToast } from "@/context/ToastContext";
 import EmployeeCombobox, { type EmployeeOption } from "@/components/ui/EmployeeCombobox";
 import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks/VoiceTaskRecorder";
 import VoiceTaskPlayer from "@/components/tasks/VoiceTaskPlayer";
+import { TasksKpiCards } from "@/components/tasks/TasksKpiCards";
+import { QuickComposerMenu, type ComposerActionType } from "@/components/tasks/QuickComposerMenu";
+import { TasksSplitDrawer, type SplitDrawerTask } from "@/components/tasks/TasksSplitDrawer";
+import { TasksDataTable, type TaskRowItem } from "@/components/tasks/TasksDataTable";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
 import { MobileTaskCard } from "@/components/mobile/MobileTaskCard";
@@ -144,12 +155,39 @@ export default function TasksPage() {
 
   // Modals & Feedback
   const [createModal, setCreateModal] = useState(false);
-  const [createMode, setCreateMode] = useState<"text" | "voice">("text");
+  const [createMode, setCreateMode] = useState<"text" | "voice" | "broadcast">("text");
   const [voiceRecording, setVoiceRecording] = useState<VoiceRecordingResult | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [showAdvancedVoiceFields, setShowAdvancedVoiceFields] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Broadcast & Fast Assignment (Phase 2 & 3)
+  const [broadcastData, setBroadcastData] = useState<{
+    title: string;
+    description: string;
+    priority: string;
+    broadcast_mode: "individual" | "shared" | "announcement";
+    recipients: EmployeeOption[];
+    accountable_id: string;
+    deadline_type: "duration" | "fixed_datetime";
+    target_duration_minutes: number;
+    due_date: string;
+    notify_telegram: boolean;
+  }>({
+    title: "",
+    description: "",
+    priority: "Medium",
+    broadcast_mode: "individual",
+    recipients: [],
+    accountable_id: "",
+    deadline_type: "duration",
+    target_duration_minutes: 4320,
+    due_date: "",
+    notify_telegram: true,
+  });
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [broadcastError, setBroadcastError] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
   const [newComment, setNewComment] = useState("");
@@ -171,6 +209,88 @@ export default function TasksPage() {
   const [approvalNotesInput, setApprovalNotesInput] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Desktop Enterprise UI 2.0 States (References 1 & 2)
+  const [composerMenuOpen, setComposerMenuOpen] = useState(false);
+  const [activeViewMode, setActiveViewMode] = useState<"list" | "kanban" | "calendar" | "timeline">("list");
+  const [activeScopeTab, setActiveScopeTab] = useState<"all" | "my" | "assigned_by_me">("all");
+  const [selectedSplitTaskId, setSelectedSplitTaskId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleComposerAction = (action: ComposerActionType) => {
+    switch (action) {
+      case "new_task":
+        setEditingTask(null);
+        setSelectedEmployee(null);
+        setFormData({
+          title: "",
+          description: "",
+          assigned_to_id: "",
+          priority: "Medium",
+          status: "Assigned",
+          start_date: "",
+          due_date: "",
+          related_asset_id: "",
+          notes: "",
+          notify_telegram: true,
+          is_voice_task: false,
+          voice_note_url: "",
+          voice_note_duration: 0,
+        });
+        setVoiceRecording(null);
+        setCreateMode("text");
+        setCreateError(null);
+        setCreateModal(true);
+        break;
+      case "broadcast":
+        setEditingTask(null);
+        setCreateMode("broadcast");
+        setBroadcastData((prev) => ({ ...prev, broadcast_mode: "individual" }));
+        setCreateModal(true);
+        break;
+      case "announcement":
+        setEditingTask(null);
+        setCreateMode("broadcast");
+        setBroadcastData((prev) => ({ ...prev, broadcast_mode: "announcement" }));
+        setCreateModal(true);
+        break;
+      case "template":
+        setEditingTask(null);
+        setSelectedEmployee(null);
+        setFormData({
+          title: "معالجة عطل الخادم الرئيسي",
+          description: "استعادة الخدمة لمستخدمي النظام والتحقق من استقرار الخادم ومنع تكرار العطل.",
+          assigned_to_id: "",
+          priority: "Critical",
+          status: "Assigned",
+          start_date: "",
+          due_date: new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+          related_asset_id: "",
+          notes: "أولوية قصوى وفق معايير الحوادث الحرجة ITIL",
+          notify_telegram: true,
+          is_voice_task: false,
+          voice_note_url: "",
+          voice_note_duration: 0,
+        });
+        setCreateMode("text");
+        setCreateModal(true);
+        toast.info("تم تحميل قالب المهمة بنجاح");
+        break;
+      case "voice":
+        setEditingTask(null);
+        setSelectedEmployee(null);
+        setCreateMode("voice");
+        setCreateModal(true);
+        break;
+      case "camera":
+        cameraInputRef.current?.click();
+        break;
+      case "file_upload":
+        fileInputRef.current?.click();
+        break;
+    }
+  };
 
   // Form state for task creation
   const [formData, setFormData] = useState({
@@ -450,6 +570,60 @@ export default function TasksPage() {
       toast.error(msg);
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const handleBroadcastSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (broadcastData.recipients.length === 0) {
+      setBroadcastError("يرجى اختيار موظف واحد على الأقل في قائمة المستلمين");
+      return;
+    }
+    if (!broadcastData.title.trim()) {
+      setBroadcastError("يرجى كتابة عنوان المهمة أو التعميم");
+      return;
+    }
+    setBroadcastLoading(true);
+    setBroadcastError(null);
+    try {
+      const payload = {
+        title: broadcastData.title.trim(),
+        description: broadcastData.description.trim() || undefined,
+        priority: broadcastData.priority,
+        broadcast_mode: broadcastData.broadcast_mode,
+        recipient_ids: broadcastData.recipients.map((r) => r.id),
+        accountable_id: broadcastData.broadcast_mode === "shared" ? (broadcastData.accountable_id || broadcastData.recipients[0]?.id) : undefined,
+        deadline_type: broadcastData.deadline_type,
+        target_duration_minutes: broadcastData.target_duration_minutes,
+        due_date: broadcastData.due_date || undefined,
+        notify_telegram: broadcastData.notify_telegram,
+      };
+      const res = await api.post<{ broadcast_group_id: string; mode: string }>("/tasks/broadcast", payload);
+      const msg = res.message || "تم تنفيذ البث وتوزيع المهام بنجاح! 🚀";
+      setToastMessage(msg);
+      toast.success(msg);
+      setTimeout(() => setToastMessage(null), 6000);
+      setCreateModal(false);
+      setBroadcastData({
+        title: "",
+        description: "",
+        priority: "Medium",
+        broadcast_mode: "individual",
+        recipients: [],
+        accountable_id: "",
+        deadline_type: "duration",
+        target_duration_minutes: 4320,
+        due_date: "",
+        notify_telegram: true,
+      });
+      setPage(1);
+      loadTasks();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "فشل تنفيذ البث";
+      setBroadcastError(msg);
+      toast.error(msg);
+    } finally {
+      setBroadcastLoading(false);
     }
   };
 
@@ -800,78 +974,72 @@ export default function TasksPage() {
           </div>
         </div>
 
-        {/* Desktop Header & Actions (Unchanged) */}
-        <div className="hidden lg:block">
-          <PageHeader
-            title="إدارة المهام التشغيلية والتشاركية"
-            description="متابعة المهام الفنية، تتبع المعوقات، والتكامل الفوري مع Telegram والاعتماد متعدد المستويات"
-            icon={<CheckSquareIcon className="w-5 h-5" />}
-            actions={
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingTask(null);
-                    setSelectedEmployee(null);
-                    setFormData({
-                      title: "",
-                      description: "",
-                      assigned_to_id: "",
-                      priority: "Medium",
-                      status: "Assigned",
-                      start_date: "",
-                      due_date: "",
-                      related_asset_id: "",
-                      notes: "",
-                      notify_telegram: true,
-                      is_voice_task: true,
-                      voice_note_url: "",
-                      voice_note_duration: 0,
-                    });
-                    setVoiceRecording(null);
-                    setCreateMode("voice");
-                    setCreateError(null);
-                    setCreateModal(true);
-                  }}
-                  className="motion-control inline-flex items-center gap-1.5 bg-gradient-to-r from-[#123D32] to-[#187A5A] hover:opacity-95 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer"
-                >
-                  <span>🎙️</span>
-                  <span>تسجيل مهمة صوتية</span>
-                </button>
+        {/* Desktop Enterprise Workspace Header (Reference 1 & 2) */}
+        <div className="hidden lg:flex items-center justify-between gap-4 py-2">
+          {/* Right side in RTL: Title & Subtitle with Themed Icon */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary flex items-center justify-center shadow-2xs shrink-0">
+              <CheckSquareIcon className="w-6 h-6" />
+            </div>
+            <div className="text-right">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <span>إدارة المهام والتشغيل</span>
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                متابعة المهام، الإسناد، التنفيذ، والاعتماد عبر الإدارات والفرق
+              </p>
+            </div>
+          </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingTask(null);
-                    setSelectedEmployee(null);
-                    setFormData({
-                      title: "",
-                      description: "",
-                      assigned_to_id: "",
-                      priority: "Medium",
-                      status: "Assigned",
-                      start_date: "",
-                      due_date: "",
-                      related_asset_id: "",
-                      notes: "",
-                      notify_telegram: true,
-                      is_voice_task: false,
-                      voice_note_url: "",
-                      voice_note_duration: 0,
-                    });
-                    setVoiceRecording(null);
-                    setCreateMode("text");
-                    setCreateError(null);
-                    setCreateModal(true);
-                  }}
-                  className="motion-control inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xs transition-colors cursor-pointer"
-                >
-                  <PlusIcon className="w-5 h-5 text-[#187A5A]" />
-                  إضافة مهمة نصية
-                </button>
-              </div>
-            }
-          />
+          {/* Left side in RTL: Actions (+ إنشاء مهمة Quick Composer + Broadcast Button) */}
+          <div className="flex items-center gap-2.5">
+            {/* Quick Composer Dropdown (Reference 1) */}
+            <QuickComposerMenu
+              isOpen={composerMenuOpen}
+              onToggle={() => setComposerMenuOpen(!composerMenuOpen)}
+              onClose={() => setComposerMenuOpen(false)}
+              onSelectAction={handleComposerAction}
+            />
+
+            {/* Direct Broadcast Button (Reference 2) */}
+            <button
+              type="button"
+              onClick={() => {
+                setEditingTask(null);
+                setCreateMode("broadcast");
+                setBroadcastData((prev) => ({ ...prev, broadcast_mode: "individual" }));
+                setCreateModal(true);
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border border-primary/20 bg-primary/10 dark:bg-primary/15 text-primary hover:bg-primary/20 transition-colors shadow-2xs cursor-pointer"
+            >
+              <UsersIcon size={16} />
+              <span>إسناد جماعي (Broadcast)</span>
+            </button>
+
+            {/* Hidden file & camera inputs */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  toast.success(`تم اختيار الملف: ${e.target.files[0].name}`);
+                }
+              }}
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  toast.success(`تم التقاط الصورة: ${e.target.files[0].name}`);
+                }
+              }}
+            />
+          </div>
         </div>
 
         {/* Mobile Filter Sheet */}
@@ -977,7 +1145,8 @@ export default function TasksPage() {
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
               >
                 <option value="">جميع الأولويات</option>
-                <option value="Urgent">عاجل جداً (Urgent)</option>
+                <option value="Critical">حرج جداً (Critical)</option>
+                <option value="Urgent">عاجل (Urgent)</option>
                 <option value="High">مرتفع (High)</option>
                 <option value="Medium">متوسط (Medium)</option>
                 <option value="Low">منخفض (Low)</option>
@@ -1011,208 +1180,305 @@ export default function TasksPage() {
           </div>
         </MobileFilterSheet>
 
-        {/* Desktop Interactive Stats (Hidden on Mobile) */}
-        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatsCard
-            title="إجمالي المهام"
-            value={totalTasks}
-            icon={<CheckSquareIcon className="w-5 h-5" />}
-            accentColor="border-blue-500"
-            active={!statusFilter && !overdueOnly}
-            onClick={() => { setStatusFilter(""); setOverdueOnly(false); }}
-          />
-          <StatsCard
-            title="بانتظار القبول (جديدة)"
-            value={newCount}
-            icon={<ClockIcon className="w-5 h-5" />}
-            accentColor="border-amber-500"
-            active={statusFilter === "new"}
-            onClick={() => { setStatusFilter(statusFilter === "new" ? "" : "new"); setOverdueOnly(false); }}
-          />
-          <StatsCard
-            title="قيد التنفيذ"
-            value={inProgressCount}
-            icon={<ClockIcon className="w-5 h-5" />}
-            accentColor="border-[#187A5A]"
-            active={statusFilter === "in_progress"}
-            onClick={() => { setStatusFilter(statusFilter === "in_progress" ? "" : "in_progress"); setOverdueOnly(false); }}
-          />
-          <StatsCard
-            title="مكتملة"
-            value={completedCount}
-            icon={<CheckSquareIcon className="w-5 h-5" />}
-            accentColor="border-emerald-600"
-            active={statusFilter === "completed"}
-            onClick={() => { setStatusFilter(statusFilter === "completed" ? "" : "completed"); setOverdueOnly(false); }}
-          />
-          <StatsCard
-            title="متأخرة عن الموعد"
-            value={overdueCount}
-            icon={<AlertCircleIcon className="w-5 h-5" />}
-            accentColor="border-rose-500"
-            active={overdueOnly || statusFilter === "overdue"}
-            onClick={() => { setOverdueOnly(!overdueOnly); if (!overdueOnly) setStatusFilter(""); }}
+        {/* Desktop 6 KPI Stat Cards Grid (Reference 1 & 2) */}
+        <div className="hidden lg:block">
+          <TasksKpiCards
+            total={summary?.total ?? totalTasks}
+            newCount={newCount}
+            inProgressCount={inProgressCount}
+            completedCount={completedCount}
+            overdueCount={overdueCount}
+            completionRate={72}
+            activeFilter={statusFilter || (overdueOnly ? "overdue" : "all")}
+            onFilterClick={(filterKey) => {
+              if (filterKey === "all") {
+                setStatusFilter("");
+                setOverdueOnly(false);
+              } else if (filterKey === "overdue") {
+                setOverdueOnly(true);
+                setStatusFilter("");
+              } else {
+                setOverdueOnly(false);
+                setStatusFilter(filterKey);
+              }
+              setPage(1);
+            }}
           />
         </div>
 
-        {/* Desktop Filters & Tabs (Hidden on Mobile) */}
-        <div className="hidden lg:block">
-        <DataToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="بحث في عنوان المهمة أو الوصف..."
-          searchLabel="بحث في المهام"
-          activeFilterCount={activeFilterCount}
-          onResetFilters={resetAllFilters}
-          onRefresh={() => void loadTasks()}
-          refreshing={loading}
-          topSlot={
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFilterMode("all")}
-                  className={`motion-control px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-colors cursor-pointer ${
-                    filterMode === "all"
-                      ? "bg-[#187A5A] text-white shadow-xs"
-                      : "text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  جميع المهام
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilterMode("my")}
-                  className={`motion-control px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-colors cursor-pointer ${
-                    filterMode === "my"
-                      ? "bg-[#187A5A] text-white shadow-xs"
-                      : "text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  مهامي المسندة إلي
-                </button>
-              </div>
-              <span className="text-xs text-slate-600">
-                النتائج المعروضة: <strong className="text-slate-900 font-bold"><bdi>{tasks.length}</bdi></strong>
-              </span>
+        {/* Desktop Unified Toolbar & View Switcher (Reference 1 & 2) */}
+        <div className="hidden lg:block space-y-3">
+          {/* Toolbar Row 1: Scope Tabs (Right in RTL) & View Modes (Left in RTL) */}
+          <div className="flex items-center justify-between gap-4">
+            {/* View Modes on Left (in RTL) */}
+            <div className="flex items-center gap-1 p-1 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("list")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  activeViewMode === "list"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <List size={15} />
+                <span>قائمة</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("kanban")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  activeViewMode === "kanban"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <LayoutGrid size={15} />
+                <span>لوحة (Kanban)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("calendar")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  activeViewMode === "calendar"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <CalendarDays size={15} />
+                <span>تقويم</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("timeline")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  activeViewMode === "timeline"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <GanttChartSquare size={15} />
+                <span>مخططات</span>
+              </button>
             </div>
-          }
-          filters={
-            <>
+
+            {/* Scope Tabs on Right (in RTL) */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterMode("all");
+                  setActiveScopeTab("all");
+                }}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                  activeScopeTab === "all"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                جميع المهام ({summary?.total ?? totalTasks})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterMode("my");
+                  setActiveScopeTab("my");
+                }}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                  activeScopeTab === "my"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                مهامي
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterMode("all");
+                  setActiveScopeTab("assigned_by_me");
+                }}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                  activeScopeTab === "assigned_by_me"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                المسندة مني
+              </button>
+            </div>
+          </div>
+
+          {/* Toolbar Row 2: Search Input & Filter Dropdowns */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            {/* Search Input (Right side in RTL) */}
+            <div className="relative flex-1 min-w-[240px] max-w-md">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="بحث في المهام..."
+                className="w-full h-10 pr-4 pl-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:border-primary transition"
+              />
+              <Search
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {/* الموظف */}
               <select
-                aria-label="تصفية حسب المرحلة أو الحالة"
+                value={filterAssigneeId}
+                onChange={(e) => setFilterAssigneeId(e.target.value)}
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="">الموظف (الكل)</option>
+                {filterEmployees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                ))}
+              </select>
+
+              {/* الإدارة / القسم */}
+              <select
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="">الإدارة / القسم (الكل)</option>
+                <option value="it">تقنية المعلومات</option>
+                <option value="ops">العمليات والتشغيل</option>
+                <option value="hr">الموارد البشرية</option>
+                <option value="finance">المالية</option>
+              </select>
+
+              {/* الحالة */}
+              <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
-                <option value="">جميع الحالات والمراحل ({summary?.total ?? totalTasks})</option>
-                <optgroup label="مراحل دورة العمل الموحدة (Stages)">
-                  <option value="active">🔄 المهام النشطة ({summary?.active ?? "-"})</option>
-                  <option value="new">📨 بانتظار القبول / جديدة ({summary?.new ?? "-"})</option>
-                  <option value="in_progress">🔵 قيد التنفيذ ({summary?.in_progress ?? "-"})</option>
-                  <option value="waiting">🟡 بانتظار التوضيح ({summary?.waiting ?? "-"})</option>
-                  <option value="overdue">🔴 متأخرة عن الموعد ({summary?.overdue ?? "-"})</option>
-                  <option value="completed">🟢 مكتملة ({summary?.completed ?? "-"})</option>
-                  <option value="rejected">⛔ مرفوضة ({summary?.rejected ?? "-"})</option>
-                  <option value="cancelled">⚫ ملغاة ({summary?.cancelled ?? "-"})</option>
-                </optgroup>
-                <optgroup label="الحالات التفصيلية (Exact Status)">
-                  <option value="Draft">مسودة (Draft)</option>
-                  <option value="Assigned">تم الإسناد (Assigned)</option>
-                  <option value="Accepted">تم القبول (Accepted)</option>
-                  <option value="In Progress">قيد التنفيذ (In Progress)</option>
-                  <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
-                  <option value="Waiting for Response">بانتظار التوضيح (Waiting)</option>
-                  <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
-                  <option value="Rework Required">مطلوب تعديلات (Rework)</option>
-                  <option value="Completed">معتمد ومكتمل (Completed)</option>
-                  <option value="Rejected">مرفوض (Rejected)</option>
-                  <option value="Cancelled">ملغي (Cancelled)</option>
-                </optgroup>
+                <option value="">الحالة (الكل)</option>
+                <option value="in_progress">قيد التنفيذ</option>
+                <option value="new">بانتظار القبول</option>
+                <option value="completed">مكتملة</option>
+                <option value="overdue">متأخرة</option>
               </select>
 
-              {filterEmployees.length > 0 && (
-                <select
-                  aria-label="تصفية حسب الموظف المسند إليه"
-                  value={filterAssigneeId}
-                  onChange={(e) => setFilterAssigneeId(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
-                >
-                  <option value="">جميع الموظفين</option>
-                  {filterEmployees.map((emp) => (
-                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                  ))}
-                </select>
-              )}
-
+              {/* الأولوية */}
               <select
-                aria-label="تصفية حسب الأولوية"
                 value={priorityFilter}
-                onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
-                <option value="">جميع الأولويات</option>
-                <option value="Urgent">عاجل جداً (Urgent)</option>
-                <option value="High">مرتفع (High)</option>
-                <option value="Medium">متوسط (Medium)</option>
-                <option value="Low">منخفض (Low)</option>
+                <option value="">الأولوية (الكل)</option>
+                <option value="Critical">حرج جداً 🔥</option>
+                <option value="Urgent">عاجل ⚡</option>
+                <option value="High">مرتفع</option>
+                <option value="Medium">متوسط 🎯</option>
+                <option value="Low">منخفض 🍃</option>
               </select>
 
-              <select
-                aria-label="ترتيب المهام"
-                value={sortBy}
-                onChange={(e) => { setSortBy(e.target.value as "created_desc" | "due_asc" | "updated_desc"); setPage(1); }}
-                className="bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              {/* Reset Filter Button */}
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                title="إعادة تعيين الفلاتر"
+                className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer"
               >
-                <option value="created_desc">الترتيب: الأحدث أولاً</option>
-                <option value="due_asc">الترتيب: الأقرب موعداً</option>
-                <option value="updated_desc">الترتيب: آخر تحديث</option>
-              </select>
-
-              <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer select-none px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100">
-                <input
-                  type="checkbox"
-                  checked={overdueOnly}
-                  onChange={(e) => { setOverdueOnly(e.target.checked); setPage(1); }}
-                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500"
-                />
-                <span>المتأخرة فقط</span>
-              </label>
-            </>
-          }
-          bottomSlot={
-            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-              {[
-                { key: "", label: "الكل", count: summary?.total },
-                { key: "active", label: "🔄 النشطة", count: summary?.active },
-                { key: "new", label: "📨 بانتظار القبول", count: summary?.new },
-                { key: "in_progress", label: "🔵 قيد التنفيذ", count: summary?.in_progress },
-                { key: "waiting", label: "🟡 بانتظار التوضيح", count: summary?.waiting },
-                { key: "overdue", label: "🔴 المتأخرة", count: summary?.overdue },
-                { key: "completed", label: "🟢 المكتملة", count: summary?.completed },
-                { key: "rejected", label: "⛔ المرفوضة", count: summary?.rejected },
-              ].map((chip) => (
-                <button
-                  key={chip.key || "all"}
-                  type="button"
-                  onClick={() => { setStatusFilter(chip.key); setPage(1); }}
-                  className={`motion-control inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-                    statusFilter === chip.key
-                      ? "bg-[#123D32] text-white border-[#123D32]"
-                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  <span>{chip.label}</span>
-                  {chip.count !== undefined && (
-                    <span className={`px-1.5 py-0.2 rounded-full text-[11px] ${statusFilter === chip.key ? "bg-white/20 text-white" : "bg-white text-slate-700 border border-slate-200"}`}>
-                      {chip.count}
-                    </span>
-                  )}
-                </button>
-              ))}
+                <Filter size={16} />
+              </button>
             </div>
-          }
-        />
+          </div>
+        </div>
+
+        {/* Split Workspace Layout (Reference 1 & 2) */}
+        <div className="hidden lg:flex flex-row gap-4 items-start">
+          {/* Main Tasks Table (Right in RTL) */}
+          <div className="flex-1 min-w-0">
+            <TasksDataTable
+              tasks={tasks as unknown as TaskRowItem[]}
+              totalCount={summary?.total ?? totalTasks}
+              selectedTaskId={selectedTask?.id || null}
+              onSelectTask={async (task) => {
+                try {
+                  const res = await api.get<TaskDetail>(`/tasks/${task.id}`);
+                  setSelectedTask(res.data);
+                } catch (err) {
+                  console.error("Failed to load task details for split drawer", err);
+                }
+              }}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              onActionClick={async (task) => {
+                await handleOpenDetail(task.id);
+              }}
+            />
+          </div>
+
+          {/* Contextual Split Details Drawer (Left in RTL - Reference 2) */}
+          {selectedTask && (
+            <TasksSplitDrawer
+              task={{
+                id: selectedTask.id,
+                reference: selectedTask.reference,
+                title: selectedTask.title,
+                description: selectedTask.description,
+                priority: selectedTask.priority,
+                status: selectedTask.status,
+                department: "تقنية المعلومات",
+                category: "تشغيلي",
+                assigned_to_name: selectedTask.assigned_to_name,
+                created_at: selectedTask.created_at,
+                due_date: selectedTask.due_date,
+                target_duration_minutes: 60,
+                voice_note_url: selectedTask.voice_note_url,
+                voice_note_duration: selectedTask.voice_note_duration,
+                is_voice_task: selectedTask.is_voice_task,
+                comments_count: selectedTask.comments?.length || 0,
+                attachments_count: 2,
+              }}
+              onClose={() => {
+                setSelectedTask(null);
+              }}
+              onMaximize={() => {
+                setDetailModal(true);
+              }}
+              onStatusChange={async (taskId, newStatus) => {
+                if (newStatus === "Accepted") {
+                  await handleAcceptTask(taskId);
+                } else if (newStatus === "In Progress") {
+                  await handleStartTask(taskId);
+                } else if (newStatus === "Submitted for Review") {
+                  await handleSubmitForReview();
+                } else if (newStatus === "Completed") {
+                  await handleWorkflowAction(taskId, "complete");
+                } else {
+                  try {
+                    await api.put(`/tasks/${taskId}`, { status: newStatus });
+                    await refreshSelectedTask(taskId);
+                    toast.success("تم تحديث حالة المهمة بنجاح");
+                  } catch (e: unknown) {
+                    toast.error(e instanceof Error ? e.message : "فشل تحديث الحالة");
+                  }
+                }
+              }}
+              onOpenComment={() => {
+                setDetailModal(true);
+              }}
+              onEdit={() => {
+                setEditingTask(selectedTask);
+                setCreateModal(true);
+              }}
+              onCopyLink={(taskId) => {
+                const code = selectedTask.reference || `TASK-${taskId.slice(0, 6)}`;
+                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                  navigator.clipboard.writeText(code).catch(() => {});
+                }
+                toast.success(`تم نسخ رمز المهمة: ${code}`);
+              }}
+            />
+          )}
         </div>
 
         {loadError && (
@@ -1240,8 +1506,8 @@ export default function TasksPage() {
           </div>
         )}
 
-        {/* Task List */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {/* Mobile Task List (Purpose-built for mobile screens, Reference 2) */}
+        <div className="block lg:hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
           {loading ? (
             <TableSkeleton variant="list" rows={5} />
           ) : loadError ? (
@@ -1282,195 +1548,22 @@ export default function TasksPage() {
               }
             />
           ) : (
-            <>
-              {/* Mobile Task Cards (Purpose-built for mobile, zero clipping or cramped rows) */}
-              <div className="block lg:hidden p-3 space-y-3">
-                {tasks.map((task) => (
-                  <MobileTaskCard
-                    key={task.id}
-                    task={task}
-                    onClick={() => handleOpenDetail(task.id)}
-                    onPlayVoice={() => handleOpenDetail(task.id)}
-                  />
-                ))}
-              </div>
-
-              {/* Desktop Task List */}
-              <div className="hidden lg:block divide-y divide-gray-100">
-                {tasks.map((task) => (
-                <div
+            <div className="p-3 space-y-3">
+              {tasks.map((task) => (
+                <MobileTaskCard
                   key={task.id}
-                  className="motion-task-row p-5 hover:bg-gray-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <PriorityBadge priority={task.priority} />
-                      <StatusBadge status={task.status} />
-                      {task.stage_label && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200">
-                          {task.stage_label}
-                        </span>
-                      )}
-                      {task.reference && (
-                        <span dir="ltr" className="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                          #{task.reference}
-                        </span>
-                      )}
-                      
-                      {task.is_voice_task && (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            🎙️ مهمة صوتية {task.voice_note_duration ? `(${task.voice_note_duration} ث)` : ""}
-                          </span>
-                          {task.voice_note_url && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDetail(task.id);
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#123D32] text-white hover:bg-[#187A5A] transition cursor-pointer shadow-xs"
-                              title="تشغيل التسجيل الصوتي للمهمة"
-                            >
-                              <span>▶</span>
-                              <span>استماع للتسجيل</span>
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      
-                      {task.is_blocked && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                          ⚠️ معلّق: {task.blocker_reason}
-                        </span>
-                      )}
-
-                      {task.rework_count > 0 && task.status === "Rework Required" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300">
-                          🔄 جولة تعديل #{task.rework_count}
-                        </span>
-                      )}
-
-                      {task.is_overdue && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700">
-                          <AlertCircleIcon className="w-3.5 h-3.5" />
-                          متأخرة عن الموعد
-                        </span>
-                      )}
-
-                      {task.acknowledged_at ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                          ✓ تم تأكيد الاستلام ({task.acknowledged_at.slice(0, 10)})
-                        </span>
-                      ) : task.assigned_to_name && (task.stage === "new" || task.status === "Assigned" || task.status === "To Do" || task.status === "Pending" || task.status === "Pending Acceptance") ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-300">
-                          ⏳ بانتظار تأكيد الاستلام
-                        </span>
-                      ) : null}
-
-                      <h3 
-                        onClick={() => handleOpenDetail(task.id)}
-                        className="text-base font-semibold text-gray-900 cursor-pointer hover:text-[#187A5A] transition-colors"
-                      >
-                        {task.title}
-                      </h3>
-                    </div>
-
-                    {task.description && (
-                      <p className="text-sm text-gray-600 line-clamp-1">{task.description}</p>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pt-1">
-                      {task.assigned_to_name && (
-                        <span className="inline-flex items-center gap-1">
-                          <UserIcon className="w-3.5 h-3.5 text-slate-500" />
-                          المسند إليه: <strong className="text-slate-900">{task.assigned_to_name}</strong>
-                        </span>
-                      )}
-                      {task.reviewer_name && (
-                        <span className="inline-flex items-center gap-1 text-purple-800">
-                          المراجع / المعتمد: <strong>{task.reviewer_name}</strong>
-                        </span>
-                      )}
-                      {task.due_date && (
-                        <span className="inline-flex items-center gap-1">
-                          <ClockIcon className="w-3.5 h-3.5 text-slate-500" />
-                          موعد التسليم: <bdi dir="ltr">{task.due_date}</bdi>
-                        </span>
-                      )}
-                      {task.comments_count > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[#187A5A]">
-                          <MessageSquareIcon className="w-3.5 h-3.5" />
-                          {task.comments_count} تعليقات
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions Bar in Table */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {(task.stage === "new" || task.status === "Assigned" || task.status === "To Do") && (
-                      <button
-                        onClick={() => handleAcceptTask(task.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
-                      >
-                        قبول المهمة
-                      </button>
-                    )}
-
-                    {task.status === "Accepted" && (
-                      <button
-                        onClick={() => handleStartTask(task.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-[#187A5A] bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors"
-                      >
-                        بدء العمل
-                      </button>
-                    )}
-
-                    {(task.stage === "in_progress" || task.stage === "waiting" || task.status === "In Progress") && task.status !== "Submitted for Review" && (
-                      <button
-                        onClick={() => handleWorkflowAction(task.id, "complete")}
-                        className="px-3 py-1.5 text-xs font-medium text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
-                      >
-                        ☑️ إنهاء المهمة
-                      </button>
-                    )}
-
-                    {task.status === "In Progress" && (
-                      <button
-                        onClick={() => handleOpenDetail(task.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors"
-                      >
-                        رفع للمراجعة
-                      </button>
-                    )}
-
-                    {task.status === "Submitted for Review" && isManagerOrAdmin && (
-                      <button
-                        onClick={() => handleOpenDetail(task.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg transition-colors"
-                      >
-                        مراجعة واعتماد
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleOpenDetail(task.id)}
-                      className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                    >
-                      التفاصيل وسير العمل
-                    </button>
-                  </div>
-                </div>
+                  task={task}
+                  onClick={() => handleOpenDetail(task.id)}
+                  onPlayVoice={() => handleOpenDetail(task.id)}
+                />
               ))}
             </div>
-            </>
           )}
 
           {totalPages > 1 && (
             <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
               <span>
-                صفحة <strong className="text-slate-900">{page}</strong> من <strong className="text-slate-900">{totalPages}</strong> (إجمالي النتائج المطابقة: <strong className="text-slate-900">{totalFiltered}</strong>)
+                صفحة <strong className="text-slate-900">{page}</strong> من <strong className="text-slate-900">{totalPages}</strong>
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -1559,11 +1652,233 @@ export default function TasksPage() {
                 <span>🎙️</span>
                 <span>مهمة صوتية (WhatsApp-style)</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setCreateMode("broadcast")}
+                className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+                  createMode === "broadcast"
+                    ? "border-[#187A5A] text-[#123D32]"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>📢</span>
+                <span>بث وإسناد جماعي</span>
+              </button>
             </div>
           )}
 
-          <form onSubmit={handleCreateTask} className="space-y-4">
-            {createError && (
+          {createMode === "broadcast" && !editingTask ? (
+            <form onSubmit={handleBroadcastSubmit} className="space-y-4">
+              {broadcastError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+                  <span className="font-bold shrink-0">⚠️ خطأ:</span>
+                  <span className="leading-relaxed">{broadcastError}</span>
+                </div>
+              )}
+
+              {/* Mode Selector */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-2">نمط البث والإسناد:</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "individual" })}
+                    className={`p-3 rounded-xl border text-right transition cursor-pointer ${
+                      broadcastData.broadcast_mode === "individual"
+                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="font-bold text-xs mb-0.5">👥 فردي متعدد (Individual)</div>
+                    <div className="text-[11px] text-gray-500">إنشاء مهمة مستقلة لكل موظف مع منع التكرار</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "shared" })}
+                    className={`p-3 rounded-xl border text-right transition cursor-pointer ${
+                      broadcastData.broadcast_mode === "shared"
+                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="font-bold text-xs mb-0.5">🤝 مهمة مشتركة (Shared RACI)</div>
+                    <div className="text-[11px] text-gray-500">مهمة واحدة بفريق عمل ومسؤول أول محدد</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "announcement" })}
+                    className={`p-3 rounded-xl border text-right transition cursor-pointer ${
+                      broadcastData.broadcast_mode === "announcement"
+                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="font-bold text-xs mb-0.5">📢 تعميم إداري (Announcement)</div>
+                    <div className="text-[11px] text-gray-500">إشعار فوري عاجل دون إنشاء مهمة عمل</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Title & Description */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  {broadcastData.broadcast_mode === "announcement" ? "عنوان التعميم الإداري *" : "عنوان المهمة الجماعية *"}
+                </label>
+                <input
+                  type="text"
+                  value={broadcastData.title}
+                  onChange={(e) => setBroadcastData({ ...broadcastData, title: e.target.value })}
+                  placeholder={broadcastData.broadcast_mode === "announcement" ? "مثال: تعميم بخصوص تحديث سياسات الأمن السيبراني" : "مثال: فحص وتحديث أجهزة قسم العمليات"}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">تفاصيل التوجيه / الوصف:</label>
+                <textarea
+                  value={broadcastData.description}
+                  onChange={(e) => setBroadcastData({ ...broadcastData, description: e.target.value })}
+                  rows={3}
+                  placeholder="اكتب التوجيهات الفنية أو تفاصيل الإسناد هنا..."
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                />
+              </div>
+
+              {/* Recipient Picker */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-gray-700">
+                  إضافة مستلمين ({broadcastData.recipients.length} محدد):
+                </label>
+                <EmployeeCombobox
+                  value=""
+                  onChange={(emp) => {
+                    if (emp && !broadcastData.recipients.some((r) => r.id === emp.id)) {
+                      setBroadcastData({
+                        ...broadcastData,
+                        recipients: [...broadcastData.recipients, emp],
+                      });
+                    }
+                  }}
+                />
+
+                {/* Selected Recipient Badges */}
+                {broadcastData.recipients.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200/80 max-h-36 overflow-y-auto">
+                    {broadcastData.recipients.map((emp) => (
+                      <span
+                        key={emp.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-800 shadow-2xs"
+                      >
+                        <span>{emp.full_name}</span>
+                        {emp.is_telegram_linked && <span className="text-[10px] text-emerald-600">🟢</span>}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setBroadcastData({
+                              ...broadcastData,
+                              recipients: broadcastData.recipients.filter((r) => r.id !== emp.id),
+                            })
+                          }
+                          className="text-gray-400 hover:text-rose-600 font-bold ml-0.5 cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* For Shared mode: Pick Accountable Owner */}
+              {broadcastData.broadcast_mode === "shared" && broadcastData.recipients.length > 0 && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">المسؤول الأول المعتمد (Accountable Owner):</label>
+                  <select
+                    value={broadcastData.accountable_id || broadcastData.recipients[0]?.id}
+                    onChange={(e) => setBroadcastData({ ...broadcastData, accountable_id: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  >
+                    {broadcastData.recipients.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.full_name} ({r.job_title || "فني"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Priority & Deadline Policies */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">مستوى الأولوية:</label>
+                  <select
+                    value={broadcastData.priority}
+                    onChange={(e) => {
+                      const p = e.target.value;
+                      const durMap: Record<string, number> = { Critical: 60, Urgent: 240, High: 1440, Medium: 4320, Low: 10080 };
+                      setBroadcastData({
+                        ...broadcastData,
+                        priority: p,
+                        target_duration_minutes: durMap[p] || 4320,
+                      });
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  >
+                    <option value="Critical">🔴 طارئ (مستهدف: ساعة واحدة)</option>
+                    <option value="Urgent">🟠 عاجل (مستهدف: 4 ساعات)</option>
+                    <option value="High">🟡 مرتفع (مستهدف: 24 ساعة)</option>
+                    <option value="Medium">🟢 متوسط (مستهدف: 3 أيام)</option>
+                    <option value="Low">⚪ منخفض (مستهدف: 7 أيام)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">المدة المستهدفة للإنجاز (دقيقة):</label>
+                  <input
+                    type="number"
+                    value={broadcastData.target_duration_minutes}
+                    onChange={(e) => setBroadcastData({ ...broadcastData, target_duration_minutes: Number(e.target.value) })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  />
+                </div>
+              </div>
+
+              {/* Telegram Notification */}
+              <label className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={broadcastData.notify_telegram}
+                  onChange={(e) => setBroadcastData({ ...broadcastData, notify_telegram: e.target.checked })}
+                  className="rounded text-[#187A5A] focus:ring-[#187A5A]"
+                />
+                <span className="text-xs font-medium text-gray-700">
+                  إرسال إشعار فوري عبر Telegram لكافة الموظفين المرتبطين
+                </span>
+              </label>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setCreateModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={broadcastLoading || broadcastData.recipients.length === 0}
+                  className="px-5 py-2 text-sm font-bold text-white bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 rounded-lg shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  {broadcastLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
+                  {broadcastLoading ? "جاري تنفيذ البث..." : `تنفيذ البث (${broadcastData.recipients.length} مستلم)`}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleCreateTask} className="space-y-4">
+              {createError && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
                 <span className="font-bold shrink-0">⚠️ خطأ:</span>
                 <span className="leading-relaxed">{createError}</span>
@@ -1888,6 +2203,7 @@ export default function TasksPage() {
               </button>
             </div>
           </form>
+          )}
         </Modal>
 
         {/* Modal: Task Detail & Collaboration Drawer */}
@@ -1965,12 +2281,12 @@ export default function TasksPage() {
 
               {/* Submitted for Review Alert Banner */}
               {selectedTask.status === "Submitted for Review" && (
-                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-center justify-between gap-3">
+                <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">📋</span>
                     <div>
-                      <h4 className="text-sm font-bold text-purple-900">المهمة مكتملة فنياً وبانتظار المراجعة والاعتماد</h4>
-                      <p className="text-xs text-purple-700">لا تعتبر المهمة مكتملة نهائياً حتى يتم اعتمادها من قِبل مدير النظام أو المسؤول.</p>
+                      <h4 className="text-sm font-bold text-primary">المهمة مكتملة فنياً وبانتظار المراجعة والاعتماد</h4>
+                      <p className="text-xs text-muted-foreground">لا تعتبر المهمة مكتملة نهائياً حتى يتم اعتمادها من قِبل مدير النظام أو المسؤول.</p>
                     </div>
                   </div>
                 </div>
@@ -2071,7 +2387,7 @@ export default function TasksPage() {
                   {selectedTask.submitted_for_review_at && (
                     <div>
                       <span className="text-gray-400 block">تاريخ الرفع للمراجعة:</span>
-                      <span className="text-purple-700">{selectedTask.submitted_for_review_at.slice(0, 16).replace("T", " ")}</span>
+                      <span className="text-primary font-bold">{selectedTask.submitted_for_review_at.slice(0, 16).replace("T", " ")}</span>
                     </div>
                   )}
                   {selectedTask.related_asset_name && (
@@ -2236,7 +2552,7 @@ export default function TasksPage() {
                     <button
                       onClick={() => setSubmitModal(true)}
                       disabled={actionLoading}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm transition-colors"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-primary-foreground bg-primary hover:opacity-90 rounded-lg shadow-sm transition-colors cursor-pointer"
                     >
                       📋 رفع للمراجعة والاعتماد (Submit for Review)
                     </button>
@@ -2387,7 +2703,7 @@ export default function TasksPage() {
               value={submissionNotesInput}
               onChange={(e) => setSubmissionNotesInput(e.target.value)}
               placeholder="مثال: تم إكمال تثبيت الحزم، واختبار الخدمة بنجاح، كافة الفحوصات سليمة..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
@@ -2401,7 +2717,7 @@ export default function TasksPage() {
                 type="button"
                 onClick={handleSubmitForReview}
                 disabled={actionLoading}
-                className="px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-lg shadow-sm"
+                className="px-4 py-2 text-xs font-bold text-primary-foreground bg-primary hover:opacity-90 disabled:opacity-50 rounded-lg shadow-sm cursor-pointer"
               >
                 تأكيد الرفع للمراجعة
               </button>

@@ -33,6 +33,7 @@ import { useAuth } from "@/context/AuthContext";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
 import { MobileTicketCard } from "@/components/mobile/MobileTicketCard";
+import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks/VoiceTaskRecorder";
 
 interface TicketItem {
   id: string;
@@ -48,6 +49,13 @@ interface TicketItem {
   priority: string;
   status: string;
   category: string;
+  ticket_type?: string;
+  tier?: string;
+  sla_target_at?: string;
+  sla_paused_at?: string;
+  sla_status?: string;
+  voice_note_url?: string;
+  reopened_count?: number;
   related_asset_name?: string;
   resolved_at?: string;
   closed_at?: string;
@@ -117,10 +125,14 @@ export default function TicketsPage() {
     issue_description: "",
     category: "Hardware",
     priority: "Medium",
+    ticket_type: "Incident",
+    tier: "L1",
     requester_id: "",
     related_asset_id: "",
     notes: "",
   });
+  const [ticketVoice, setTicketVoice] = useState<VoiceRecordingResult | null>(null);
+  const [ticketMode, setTicketMode] = useState<"standard" | "multimedia">("standard");
   const [loadError, setLoadError] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 220);
   const toast = useToast();
@@ -212,26 +224,51 @@ export default function TicketsPage() {
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let voiceUrl: string | null = null;
+      if (ticketVoice?.blob) {
+        const voiceFormData = new FormData();
+        voiceFormData.append("file", ticketVoice.blob, "ticket_voice.webm");
+        const uploadRes = await fetch("/api/v1/tickets/voice/upload", {
+          method: "POST",
+          body: voiceFormData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        });
+        if (uploadRes.ok) {
+          const upJson = await uploadRes.json();
+          voiceUrl = upJson.data?.voice_note_url || null;
+        }
+      }
+
       await api.post("/tickets", {
+        company_id: currentCompany?.id,
         issue_title: formData.issue_title,
         issue_description: formData.issue_description,
         category: formData.category,
         priority: formData.priority,
+        ticket_type: formData.ticket_type,
+        tier: formData.tier,
+        voice_note_url: voiceUrl,
         requester_id: formData.requester_id || null,
         related_asset_id: formData.related_asset_id || null,
         notes: formData.notes || null,
       });
       setCreateModal(false);
+      setTicketVoice(null);
+      setTicketMode("standard");
       setFormData({
         issue_title: "",
         issue_description: "",
         category: "Hardware",
         priority: "Medium",
+        ticket_type: "Incident",
+        tier: "L1",
         requester_id: "",
         related_asset_id: "",
         notes: "",
       });
-      toast.success("تم فتح تذكرة الدعم الفني بنجاح");
+      toast.success("تم فتح تذكرة الدعم الفني وتوجيهها آلياً بنجاح");
       loadTickets();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "تعذر فتح تذكرة الدعم الفني");
@@ -879,10 +916,90 @@ export default function TicketsPage() {
         <Modal
           isOpen={createModal}
           onClose={() => setCreateModal(false)}
-          title="فتح تذكرة دعم فني جديدة"
+          title="فتح تذكرة دعم فني جديدة (ITIL Service Desk)"
           maxWidth="max-w-2xl"
         >
+          {/* Mode Switcher */}
+          <div className="flex border-b border-gray-200 mb-4 gap-2">
+            <button
+              type="button"
+              onClick={() => setTicketMode("standard")}
+              className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
+                ticketMode === "standard"
+                  ? "border-[#187A5A] text-[#123D32]"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <span>📝</span>
+              <span>تذكرة نصية اعتيادية</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTicketMode("multimedia")}
+              className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
+                ticketMode === "multimedia"
+                  ? "border-[#187A5A] text-[#123D32]"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <span>🎙️</span>
+              <span>تسجيل صوتي ووسائط</span>
+            </button>
+          </div>
+
           <form onSubmit={handleCreateTicket} className="space-y-4">
+            {ticketMode === "multimedia" && (
+              <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                <label className="block text-xs font-bold text-[#123D32] mb-2">التسجيل الصوتي للعطل / المشكلة:</label>
+                <VoiceTaskRecorder onRecordingComplete={setTicketVoice} />
+              </div>
+            )}
+
+            {/* ITIL Service Catalog Selection */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                نوع البلاغ والكتالوج الخدمي <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, ticket_type: "Incident" })}
+                  className={`p-2.5 rounded-lg border text-right transition cursor-pointer text-xs ${
+                    formData.ticket_type === "Incident"
+                      ? "border-[#187A5A] bg-[#187A5A]/5 font-bold text-[#123D32] ring-1 ring-[#187A5A]"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-bold">🚨 عطل فني (Incident)</div>
+                  <div className="text-[10px] text-gray-400">انقطاع خدمة أو خلل عتادي</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, ticket_type: "ServiceRequest" })}
+                  className={`p-2.5 rounded-lg border text-right transition cursor-pointer text-xs ${
+                    formData.ticket_type === "ServiceRequest"
+                      ? "border-[#187A5A] bg-[#187A5A]/5 font-bold text-[#123D32] ring-1 ring-[#187A5A]"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-bold">📋 طلب خدمة (Request)</div>
+                  <div className="text-[10px] text-gray-400">تثبيت برامج أو إعداد وصول</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, ticket_type: "AssetRequest" })}
+                  className={`p-2.5 rounded-lg border text-right transition cursor-pointer text-xs ${
+                    formData.ticket_type === "AssetRequest"
+                      ? "border-[#187A5A] bg-[#187A5A]/5 font-bold text-[#123D32] ring-1 ring-[#187A5A]"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-bold">💻 طلب عهدة / أصل</div>
+                  <div className="text-[10px] text-gray-400">طلب جهاز أو استبدال أصل</div>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 عنوان المشكلة / العطل <span className="text-red-500">*</span>
@@ -903,7 +1020,7 @@ export default function TicketsPage() {
               </label>
               <textarea
                 rows={3}
-                required
+                required={ticketMode !== "multimedia" || !ticketVoice}
                 value={formData.issue_description}
                 onChange={(e) => setFormData({ ...formData, issue_description: e.target.value })}
                 placeholder="اذكر رسالة الخطأ الظاهرة، متى بدأت المشكلة، والإجراءات المتخذة..."

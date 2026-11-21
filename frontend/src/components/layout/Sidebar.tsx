@@ -7,6 +7,7 @@ import { Icons } from "@/components/ui/Icons";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
+import { useCustomization } from "@/context/CustomizationContext";
 
 interface NavItem {
   name: string;
@@ -15,15 +16,15 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "لوحة المتابعة", href: "/", icon: "Dashboard" },
-  { name: "الشركات والفروع", href: "/companies", icon: "Companies" },
+  { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
+  { name: "إدارة المهام", href: "/tasks", icon: "Tasks" },
+  { name: "مركز الخدمات", href: "/tickets", icon: "HelpDesk" },
+  { name: "الموافقات", href: "/approvals", icon: "ShieldCheck" },
+  { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
   { name: "الموظفون", href: "/employees", icon: "Users" },
-  { name: "الأصول والعهد", href: "/assets", icon: "Assets" },
-  { name: "الاشتراكات", href: "/subscriptions", icon: "Subscriptions" },
-  { name: "مركز الاعتمادات", href: "/approvals", icon: "ShieldCheck" },
-  { name: "Help Desk", href: "/tickets", icon: "HelpDesk" },
-  { name: "المهام", href: "/tasks", icon: "Tasks" },
-  { name: "التقارير", href: "/reports", icon: "Reports" },
+  { name: "الهيكل التنظيمي", href: "/companies", icon: "Companies" },
+  { name: "التقارير والتحليلات", href: "/reports", icon: "Reports" },
+  { name: "قاعدة المعرفة", href: "/help", icon: "Audit" },
   { name: "الإعدادات", href: "/settings", icon: "Settings" },
 ];
 
@@ -36,6 +37,18 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { activeCompany } = useAuth();
   const { draft, setDraft, save } = useWorkspace();
+  const { theme, setTheme, resolvedTheme } = useCustomization();
+
+  const toggleTheme = () => {
+    const nextMode = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(nextMode);
+    const nextConfig = {
+      ...draft,
+      appearance: { ...draft.appearance, theme: nextMode },
+    };
+    setDraft(nextConfig);
+    void save(nextConfig);
+  };
 
   // Strictly enforce the 9 canonical screenshot navigation items; never allow old saved preferences
   // to hide core screenshot items or inject removed routes.
@@ -178,9 +191,43 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
         })}
       </nav>
 
-      {/* System Footer info */}
-      <div className="workspace-footer-text p-3 border-t border-white/10 text-[10px] text-white/65 text-center">
-        Investor Gate OS • نظام ذاتي الاستضافة
+      {/* System Footer & Quick Actions (Reference 1 & 2) */}
+      <div className="workspace-sidebar-footer p-3 border-t border-white/10 space-y-2">
+        <div className="flex items-center justify-between gap-1 text-white/80">
+          <Link
+            href="/help"
+            title="المساعدة"
+            onClick={() => onCloseMobile?.()}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs hover:bg-white/10 text-white/85 hover:text-white transition-colors"
+          >
+            <span className="w-5 h-5 rounded-full border border-white/40 flex items-center justify-center text-[11px] font-bold">?</span>
+            <span className="workspace-nav-label font-medium">المساعدة</span>
+          </Link>
+
+          <div className="flex items-center gap-1">
+            {/* Quick theme pill toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="تبديل المظهر"
+              title={resolvedTheme === "dark" ? "التحويل للوضع الفاتح" : "التحويل للوضع الداكن"}
+              className="p-1.5 rounded-lg bg-black/30 hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
+            >
+              {resolvedTheme === "dark" ? <Icons.Sun size={15} className="text-amber-300" /> : <Icons.Moon size={15} />}
+            </button>
+
+            {/* Collapse button */}
+            <button
+              type="button"
+              onClick={handleToggleCollapse}
+              aria-label="طي القائمة"
+              title={draft.collapsed ? "توسيع" : "طي"}
+              className="hidden lg:inline-flex p-1.5 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
+            >
+              <Icons.ChevronRight size={15} className={`transition-transform ${draft.collapsed ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   );

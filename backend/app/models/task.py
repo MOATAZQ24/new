@@ -14,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     JSON,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -97,6 +98,19 @@ class Task(UUIDMixin, TimestampMixin, Base):
     voice_note_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     voice_note_duration: Mapped[Optional[int]] = mapped_column(Integer, default=0, nullable=True)
 
+    # Deadlines & Escalation
+    deadline_type: Mapped[str] = mapped_column(String(50), default="fixed_datetime", nullable=False)  # fixed_datetime, duration
+    target_duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    escalated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    escalation_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Broadcast & Multi-Assignment
+    is_broadcast: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    broadcast_mode: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # individual, shared, announcement
+    broadcast_group_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    is_accountable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
     branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])
@@ -108,6 +122,9 @@ class Task(UUIDMixin, TimestampMixin, Base):
     comments: Mapped[List["TaskComment"]] = relationship(
         "TaskComment", back_populates="task", cascade="all, delete-orphan"
     )
+    participants: Mapped[List["TaskParticipant"]] = relationship(
+        "TaskParticipant", back_populates="task", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("ix_tasks_company_id", "company_id"),
@@ -115,6 +132,37 @@ class Task(UUIDMixin, TimestampMixin, Base):
         Index("ix_tasks_priority", "priority"),
         Index("ix_tasks_assigned_to", "assigned_to_id"),
         Index("ix_tasks_due_date", "due_date"),
+        Index("ix_tasks_deadline_at", "deadline_at"),
+    )
+
+
+class TaskParticipant(UUIDMixin, TimestampMixin, Base):
+    """Team members collaborating on a shared task with specific RACI roles."""
+
+    __tablename__ = "task_participants"
+
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("tasks.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    employee_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("employees.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    role_type: Mapped[str] = mapped_column(
+        String(50), default="collaborator", nullable=False
+    )  # accountable, collaborator, reviewer, consulted
+    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)
+
+    task: Mapped["Task"] = relationship("Task", back_populates="participants")
+    employee: Mapped["Employee"] = relationship("Employee", foreign_keys=[employee_id])
+
+    __table_args__ = (
+        UniqueConstraint("task_id", "employee_id", name="uq_task_participant"),
+        Index("ix_task_participants_task_id", "task_id"),
+        Index("ix_task_participants_employee_id", "employee_id"),
     )
 
 

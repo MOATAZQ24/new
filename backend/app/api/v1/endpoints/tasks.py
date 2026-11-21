@@ -12,7 +12,7 @@ from app.core.security import get_current_user, get_user_company_id, require_rol
 from app.core.response import success_response, paginate
 from app.models.company import Branch
 from app.models.enterprise import Project
-from app.models.task import Task, TaskComment
+from app.models.task import Task, TaskComment, TaskParticipant
 from app.models.ticket import HelpDeskTicket
 from app.models.user import User, Employee
 from app.models.asset import TechnicalAsset
@@ -24,6 +24,8 @@ from app.schemas.task import (
     TaskBlockRequest,
     TaskSubmitReviewRequest,
     TaskReviewRequest,
+    TaskBroadcastCreate,
+    TaskParticipantResponse,
 )
 from app.services.audit_service import log_audit
 from app.services.notification_service import create_notification
@@ -376,6 +378,21 @@ def task_summary(
     })
 
 
+DEFAULT_TARGET_DURATIONS = {
+    "Critical": 60,      # 1 hour
+    "Urgent": 240,       # 4 hours
+    "High": 1440,        # 24 hours (1 business day)
+    "Medium": 4320,      # 3 days
+    "Low": 10080,        # 7 days
+}
+
+def resolve_task_deadline(priority: str, deadline_type: str = "duration", duration_minutes: Optional[int] = None, explicit_deadline: Optional[datetime] = None) -> datetime:
+    if deadline_type == "fixed_datetime" and explicit_deadline:
+        return explicit_deadline
+    minutes = duration_minutes or DEFAULT_TARGET_DURATIONS.get(priority, 4320)
+    return datetime.utcnow() + timedelta(minutes=minutes)
+
+
 @router.post("")
 def create_task(
     payload: TaskCreate,
@@ -408,6 +425,9 @@ def create_task(
         return success_response(data={"id": str(recent.id), "delivery_status": None, "duplicate": True},
                                 message="تم إنشاء هذه المهمة للتو")
 
+    target_dur = payload.target_duration_minutes or DEFAULT_TARGET_DURATIONS.get(payload.priority, 4320)
+    calc_deadline = payload.deadline_at or resolve_task_deadline(payload.priority, payload.deadline_type or "duration", target_dur, payload.deadline_at)
+
     task = Task(
         company_id=target_cid,
         branch_id=payload.branch_id,
@@ -417,8 +437,14 @@ def create_task(
         assigned_by_id=current_user.id,
         priority=payload.priority,
         status=payload.status,
-        start_date=payload.start_date,
-        due_date=payload.due_date,
+        start_date=payload.start_date or date.today(),
+        due_date=payload.due_date or calc_deadline.date(),
+        deadline_type=payload.deadline_type or "duration",
+        target_duration_minutes=target_dur,
+        deadline_at=calc_deadline,
+        is_broadcast=bool(payload.is_broadcast),
+        broadcast_mode=payload.broadcast_mode,
+        is_accountable=payload.is_accountable if payload.is_accountable is not None else True,
         related_asset_id=payload.related_asset_id,
         related_ticket_id=payload.related_ticket_id,
         project_id=payload.project_id,
@@ -1040,3 +1066,251 @@ def _workflow_endpoint(action: str):
 
 for _action in ("complete", "clarify", "reopen", "cancel"):
     router.add_api_route(f"/{{task_id}}/{_action}", _workflow_endpoint(_action), methods=["POST"])
+
+
+# ── Broadcast & Deadline Intelligence (Phase 2 & 3) ──────────────────────
+
+@router.post("/broadcast")
+def broadcast_tasks(
+    payload: TaskBroadcastCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Fast broadcast task assignment supporting:
+    - Individual: Generates distinct tasks for each selected recipient with duplicate prevention.
+    - Shared: Generates a single task with an accountable owner and collaborating participants.
+    - Announcement: Broadcasts a bulletin without creating task records.
+    """
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    if not payload.recipient_ids:
+        raise HTTPException(status_code=400, detail="يرجى تحديد مستلم واحد على الأقل للبث")
+
+    # Deduplicate recipient_ids preserving order
+    unique_recipients = list(dict.fromkeys(payload.recipient_ids))
+    target_duration = payload.target_duration_minutes or DEFAULT_TARGET_DURATIONS.get(payload.priority, 4320)
+    deadline_at = payload.deadline_at or resolve_task_deadline(payload.priority, payload.deadline_type, target_duration, payload.deadline_at)
+    broadcast_group_id = uuid.uuid4()
+
+    if payload.broadcast_mode == "announcement":
+        notified_count = 0
+        for emp_id in unique_recipients:
+            emp = db.query(Employee).filter(Employee.id == emp_id, Employee.company_id == target_cid).first()
+            if emp and emp.user:
+                create_notification(
+                    db=db,
+                    recipient_user_id=emp.user.id,
+                    company_id=target_cid,
+                    event_type="announcement",
+                    title=f"📢 تعميم إداري: {payload.title}",
+                    message=payload.description or payload.title,
+                    related_record_type="announcement",
+                    related_record_id=broadcast_group_id,
+                )
+                notified_count += 1
+            if payload.notify_telegram:
+                link = db.query(TelegramUserLink).filter(TelegramUserLink.employee_id == emp_id, TelegramUserLink.is_verified == True).first()
+                if link and link.telegram_chat_id:
+                    from app.services.telegram_service import get_telegram_config, send_telegram_direct_message
+                    _, bot_token, _ = get_telegram_config(db, target_cid)
+                    if bot_token:
+                        send_telegram_direct_message(
+                            bot_token=bot_token,
+                            chat_id=link.telegram_chat_id,
+                            text=f"📢 <b>تعميم إداري عاجل</b>\n\n<b>{payload.title}</b>\n\n{payload.description or ''}\n\n<i>المرسل: {current_user.username}</i>",
+                        )
+        log_audit(
+            db=db, action="BROADCAST_ANNOUNCEMENT", resource_type="Announcement",
+            resource_id=str(broadcast_group_id), user_id=current_user.id, company_id=target_cid,
+            new_values={"title": payload.title, "recipients_count": len(unique_recipients)},
+        )
+        return success_response(
+            data={"broadcast_group_id": str(broadcast_group_id), "notified_count": notified_count, "mode": "announcement"},
+            message=f"تم بث التعميم بنجاح إلى {len(unique_recipients)} موظف",
+        )
+
+    elif payload.broadcast_mode == "shared":
+        accountable_emp_id = payload.accountable_id or unique_recipients[0]
+        validate_assignee(db, target_cid, accountable_emp_id)
+
+        shared_task = Task(
+            company_id=target_cid,
+            branch_id=payload.branch_id,
+            title=payload.title.strip(),
+            description=payload.description,
+            assigned_to_id=accountable_emp_id,
+            assigned_by_id=current_user.id,
+            priority=payload.priority,
+            status="To Do",
+            start_date=date.today(),
+            due_date=payload.due_date or deadline_at.date(),
+            deadline_type=payload.deadline_type,
+            target_duration_minutes=target_duration,
+            deadline_at=deadline_at,
+            is_broadcast=True,
+            broadcast_mode="shared",
+            broadcast_group_id=broadcast_group_id,
+            is_accountable=True,
+        )
+        db.add(shared_task)
+        db.flush()
+
+        for emp_id in unique_recipients:
+            role_type = "accountable" if emp_id == accountable_emp_id else "collaborator"
+            participant = TaskParticipant(
+                task_id=shared_task.id,
+                employee_id=emp_id,
+                role_type=role_type,
+                status="active",
+            )
+            db.add(participant)
+
+            emp = db.query(Employee).filter(Employee.id == emp_id).first()
+            if emp and emp.user:
+                create_notification(
+                    db=db, recipient_user_id=emp.user.id, company_id=target_cid,
+                    event_type="task_assigned",
+                    title=f"تم إشراكك في مهمة جماعية ({'المسؤول الأول' if role_type == 'accountable' else 'فريق العمل'})",
+                    message=f"المهمة: {shared_task.title}",
+                    related_record_type="task",
+                    related_record_id=shared_task.id,
+                )
+
+        db.commit()
+        db.refresh(shared_task)
+        if payload.notify_telegram:
+            try:
+                enqueue_task_notification(db=db, task=shared_task, event_type="task.assigned")
+                db.commit()
+            except Exception:
+                pass
+
+        log_audit(
+            db=db, action="CREATE_SHARED_TASK", resource_type="Task",
+            resource_id=str(shared_task.id), user_id=current_user.id, company_id=target_cid,
+            new_values={"title": shared_task.title, "participants_count": len(unique_recipients)},
+        )
+        return success_response(
+            data={"id": str(shared_task.id), "broadcast_group_id": str(broadcast_group_id), "mode": "shared", "participants_count": len(unique_recipients)},
+            message="تم إنشاء وتوزيع المهمة المشتركة بنجاح",
+        )
+
+    else:
+        # Individual mode
+        created_tasks = []
+        for emp_id in unique_recipients:
+            try:
+                validate_assignee(db, target_cid, emp_id)
+            except Exception:
+                continue
+
+            ind_task = Task(
+                company_id=target_cid,
+                branch_id=payload.branch_id,
+                title=payload.title.strip(),
+                description=payload.description,
+                assigned_to_id=emp_id,
+                assigned_by_id=current_user.id,
+                priority=payload.priority,
+                status="To Do",
+                start_date=date.today(),
+                due_date=payload.due_date or deadline_at.date(),
+                deadline_type=payload.deadline_type,
+                target_duration_minutes=target_duration,
+                deadline_at=deadline_at,
+                is_broadcast=True,
+                broadcast_mode="individual",
+                broadcast_group_id=broadcast_group_id,
+                is_accountable=True,
+            )
+            db.add(ind_task)
+            db.flush()
+            created_tasks.append(ind_task)
+
+            emp = db.query(Employee).filter(Employee.id == emp_id).first()
+            if emp and emp.user:
+                create_notification(
+                    db=db, recipient_user_id=emp.user.id, company_id=target_cid,
+                    event_type="task_assigned",
+                    title="تم إسناد مهمة جديدة إليك (إسناد فردي متعدد)",
+                    message=f"المهمة: {ind_task.title}",
+                    related_record_type="task",
+                    related_record_id=ind_task.id,
+                )
+            if payload.notify_telegram:
+                try:
+                    enqueue_task_notification(db=db, task=ind_task, event_type="task.assigned")
+                except Exception:
+                    pass
+
+        db.commit()
+        log_audit(
+            db=db, action="CREATE_BROADCAST_TASKS", resource_type="Task",
+            resource_id=str(broadcast_group_id), user_id=current_user.id, company_id=target_cid,
+            new_values={"title": payload.title, "tasks_created": len(created_tasks)},
+        )
+        return success_response(
+            data={"broadcast_group_id": str(broadcast_group_id), "tasks_created": len(created_tasks), "mode": "individual"},
+            message=f"تم إنشاء وتوزيع {len(created_tasks)} مهمة فردية بنجاح",
+        )
+
+
+@router.get("/metrics/deadlines")
+def get_deadline_metrics(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Retrieve live countdown and deadline compliance metrics."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    now = datetime.utcnow()
+
+    active_tasks = db.query(Task).filter(
+        Task.company_id == target_cid,
+        Task.status.notin_(["Completed", "Cancelled", "Closed"]),
+    ).all()
+
+    on_schedule = 0
+    at_risk = 0
+    breached = 0
+
+    for t in active_tasks:
+        target_deadline = t.deadline_at or (
+            datetime.combine(t.due_date, datetime.min.time()) if t.due_date else None
+        )
+        if not target_deadline:
+            on_schedule += 1
+            continue
+
+        if now > target_deadline:
+            breached += 1
+            if not t.escalated_at:
+                t.escalated_at = now
+                t.escalation_level = max(t.escalation_level, 1)
+        else:
+            total_duration = (target_deadline - t.created_at).total_seconds()
+            elapsed = (now - t.created_at).total_seconds()
+            if total_duration > 0 and (elapsed / total_duration) >= 0.8:
+                at_risk += 1
+                if not t.escalated_at:
+                    t.escalated_at = now
+                    t.escalation_level = 1
+            else:
+                on_schedule += 1
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    total = len(active_tasks)
+    rate = round((on_schedule / total * 100) if total else 100.0, 1)
+
+    return success_response(data={
+        "total_active": total,
+        "on_schedule": on_schedule,
+        "at_risk": at_risk,
+        "breached": breached,
+        "compliance_rate": rate,
+    })

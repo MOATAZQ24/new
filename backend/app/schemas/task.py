@@ -26,7 +26,7 @@ class TaskCommentResponse(TaskCommentBase):
 class TaskBase(BaseModel):
     title: Optional[str] = "مهمة جديدة"
     description: Optional[str] = None
-    priority: str = "Medium"  # Low, Medium, High, Urgent
+    priority: str = "Medium"  # Low, Medium, High, Urgent, Critical
     status: str = "To Do"  # To Do, In Progress, On Hold, Completed, Cancelled
     start_date: Optional[date] = None
     due_date: Optional[date] = None
@@ -34,6 +34,10 @@ class TaskBase(BaseModel):
     is_voice_task: bool = False
     voice_note_url: Optional[str] = None
     voice_note_duration: Optional[int] = 0
+    # Flexible Deadlines & Escalation
+    deadline_type: Optional[str] = "duration"  # duration, fixed_datetime
+    target_duration_minutes: Optional[int] = None
+    deadline_at: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):
@@ -45,6 +49,38 @@ class TaskCreate(TaskBase):
     project_id: Optional[uuid.UUID] = None
     attachments: Optional[Any] = None
     notify_telegram: Optional[bool] = True
+    is_broadcast: Optional[bool] = False
+    broadcast_mode: Optional[str] = None
+    is_accountable: Optional[bool] = True
+
+
+class TaskBroadcastCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    priority: str = "Medium"
+    broadcast_mode: str = "individual"  # individual, shared, announcement
+    recipient_ids: List[uuid.UUID]
+    accountable_id: Optional[uuid.UUID] = None  # for shared mode
+    deadline_type: str = "duration"
+    target_duration_minutes: Optional[int] = None
+    due_date: Optional[date] = None
+    deadline_at: Optional[datetime] = None
+    company_id: Optional[uuid.UUID] = None
+    branch_id: Optional[uuid.UUID] = None
+    notify_telegram: bool = True
+
+
+class TaskParticipantResponse(BaseModel):
+    id: uuid.UUID
+    task_id: uuid.UUID
+    employee_id: uuid.UUID
+    employee_name: Optional[str] = None
+    role_type: str  # accountable, collaborator, reviewer, consulted
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class TaskUpdate(BaseModel):
@@ -56,6 +92,9 @@ class TaskUpdate(BaseModel):
     status: Optional[str] = None
     start_date: Optional[date] = None
     due_date: Optional[date] = None
+    deadline_type: Optional[str] = None
+    target_duration_minutes: Optional[int] = None
+    deadline_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None

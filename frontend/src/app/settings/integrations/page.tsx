@@ -182,6 +182,12 @@ export default function IntegrationsCenterPage() {
     notify_on_reassigned: true,
   });
 
+  // Direct Message Modal State (Defect 4.B Fix)
+  const [directMsgTarget, setDirectMsgTarget] = useState<{ id?: string; name: string; chat_id?: string } | null>(null);
+  const [directMsgText, setDirectMsgText] = useState("");
+  const [sendingDirectMsg, setSendingDirectMsg] = useState(false);
+  const [directMsgFeedback, setDirectMsgFeedback] = useState<{ success: boolean; message: string } | null>(null);
+
   // Telegram Linking State
   const [linkModalEmployee, setLinkModalEmployee] = useState<{ id: string; name: string } | null>(null);
   const [tokenModalOpen, setTokenModalOpen] = useState(false);
@@ -458,6 +464,39 @@ export default function IntegrationsCenterPage() {
       });
     } finally {
       setSendingTgTestNotification(false);
+    }
+  };
+
+  const handleSendDirectMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directMsgTarget || !directMsgText.trim()) return;
+    setSendingDirectMsg(true);
+    setDirectMsgFeedback(null);
+    try {
+      const cidParam = activeCompanyId ? `?company_id=${activeCompanyId}` : "";
+      const res = await api.post<{ success: boolean; message: string }>(`/telegram/direct-message${cidParam}`, {
+        employee_id: directMsgTarget.id,
+        chat_id: directMsgTarget.chat_id,
+        message: directMsgText.trim(),
+      });
+      setDirectMsgFeedback({
+        success: true,
+        message: res.message || "تم إرسال الرسالة المباشرة للموظف بنجاح!",
+      });
+      setDirectMsgText("");
+      setTimeout(() => {
+        setDirectMsgTarget(null);
+        setDirectMsgFeedback(null);
+      }, 2500);
+      fetchTelegramData();
+      fetchLogs();
+    } catch (err: unknown) {
+      setDirectMsgFeedback({
+        success: false,
+        message: getIntegrationErr(err, "فشل إرسال الرسالة المباشرة"),
+      });
+    } finally {
+      setSendingDirectMsg(false);
     }
   };
 
@@ -1394,6 +1433,17 @@ export default function IntegrationsCenterPage() {
                               ) : (
                                 <>
                                   <button
+                                    onClick={() => {
+                                      setDirectMsgTarget({ id: emp.employee_id, name: emp.full_name, chat_id: emp.telegram_chat_id });
+                                      setDirectMsgText("");
+                                      setDirectMsgFeedback(null);
+                                    }}
+                                    title="إرسال رسالة مباشرة للموظف عبر Telegram دون إنشاء مهمة"
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#187A5A] rounded-lg text-xs font-bold cursor-pointer"
+                                  >
+                                    <Icons.MessageSquare size={12} />
+                                  </button>
+                                  <button
                                     onClick={() => handleSendTgTestNotification(emp.telegram_chat_id)}
                                     title="إرسال إشعار تجريبي لهذا الموظف"
                                     className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold cursor-pointer"
@@ -1992,6 +2042,63 @@ export default function IntegrationsCenterPage() {
                   className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold"
                 >
                   {simulating ? "جاري المحاكاة..." : "تنفيذ الإجراء"}
+                </button>
+              </div>
+            </form>
+          </Modal>
+        )}
+
+        {/* MODAL: Direct Telegram Message Modal (Defect 4.B Fix) */}
+        {directMsgTarget && (
+          <Modal
+            isOpen={Boolean(directMsgTarget)}
+            onClose={() => setDirectMsgTarget(null)}
+            title={`إرسال رسالة مباشرة للموظف: ${directMsgTarget.name}`}
+          >
+            <form onSubmit={handleSendDirectMessage} className="space-y-4">
+              <div className="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
+                <Icons.CheckCircle size={16} className="text-[#187A5A] shrink-0" />
+                <span>
+                  هذه الرسالة تُرسل فوراً عبر بوت Telegram للموظف دون إنشاء مهمة عمل ودون التأثير على إحصائيات المهام الفنية.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">نص الرسالة المباشرة:</label>
+                <textarea
+                  value={directMsgText}
+                  onChange={(e) => setDirectMsgText(e.target.value)}
+                  placeholder="اكتب التوجيه أو الرسالة الإدارية هنا..."
+                  rows={4}
+                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#187A5A] outline-none"
+                  required
+                />
+              </div>
+
+              {directMsgFeedback && (
+                <div
+                  className={`p-3 rounded-xl text-xs font-medium ${
+                    directMsgFeedback.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"
+                  }`}
+                >
+                  {directMsgFeedback.message}
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDirectMsgTarget(null)}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={sendingDirectMsg || !directMsgText.trim()}
+                  className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs"
+                >
+                  {sendingDirectMsg ? "جاري الإرسال..." : "إرسال الرسالة الآن"}
                 </button>
               </div>
             </form>
