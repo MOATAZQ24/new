@@ -11,6 +11,7 @@ Help Desk Workflow, Maintenance Approvals, Dashboard KPIs, and Report Exports.
 
 import sys
 import os
+import uuid
 import unittest
 from starlette.testclient import TestClient
 
@@ -102,9 +103,10 @@ class TestITOperationsSystem(unittest.TestCase):
         admin_token = login_res.cookies.get("session_token")
 
         # 1. Create a new asset
+        test_code = f"AST-TEST-{uuid.uuid4().hex[:6].upper()}"
         asset_payload = {
             "company_id": str(self.company_igt.id),
-            "asset_code": "AST-TEST-999",
+            "asset_code": test_code,
             "asset_name": "Test Lenovo P16 Workstation",
             "asset_type": "Laptop",
             "brand": "Lenovo",

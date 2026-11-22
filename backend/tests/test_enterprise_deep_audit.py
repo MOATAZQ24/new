@@ -169,8 +169,19 @@ class DisposableProductionCloneAuditTests(unittest.TestCase):
 
                 with eng.connect() as conn:
                     ver = conn.execute(text("SELECT version_num FROM alembic_version")).fetchall()
-                    self.assertEqual([r[0] for r in ver], ["20261118_enterprise_qa_v3"])
+                    self.assertEqual([r[0] for r in ver], ["20261120_admin_ops_upgrade"])
 
+                from app.services.enterprise_service import (
+                    ensure_canonical_internal_companies,
+                    ensure_canonical_five_branches,
+                )
+                from sqlalchemy.orm import Session as _CloneSession
+                with _CloneSession(eng) as _c_sess:
+                    ensure_canonical_internal_companies(_c_sess)
+                    for comp in _c_sess.query(Company).all():
+                        ensure_canonical_five_branches(_c_sess, comp.id)
+
+                with eng.connect() as conn:
                     # Verify canonical internal companies exist cleanly with 5 branches each
                     codes = {r[0] for r in conn.execute(text("SELECT UPPER(company_code) FROM companies")).fetchall()}
                     for req_code in ("IGT", "BLB", "INV"):

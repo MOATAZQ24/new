@@ -6,7 +6,10 @@
 
 import time
 import os
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from typing import Dict, Any
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -36,11 +39,12 @@ class MetricsCollector:
 
         # Memory usage
         mem_mb = 0.0
-        try:
-            process = psutil.Process(os.getpid())
-            mem_mb = round(process.memory_info().rss / (1024 * 1024), 2)
-        except Exception:
-            pass
+        if psutil is not None:
+            try:
+                process = psutil.Process(os.getpid())
+                mem_mb = round(process.memory_info().rss / (1024 * 1024), 2)
+            except Exception:
+                pass
 
         return {
             "status": "healthy",

@@ -4,7 +4,7 @@
 # Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
 # ==============================================================================
 
-﻿"""End-to-End QA Test Suite for Telegram Task Actions Integration.
+"""End-to-End QA Test Suite for Telegram Task Actions Integration.
 
 Tests all 12 scenarios:
 1. Employee accepts an assigned task.
@@ -473,3 +473,11 @@ def run_telegram_task_actions_tests():
 
 if __name__ == "__main__":
     run_telegram_task_actions_tests()
+
+
+import unittest
+
+
+class TestTelegramTaskActions(unittest.TestCase):
+    def test_run_all_telegram_task_action_scenarios(self):
+        run_telegram_task_actions_tests()

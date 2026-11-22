@@ -123,9 +123,11 @@ class MigrationRegressions(unittest.TestCase):
         connection.execute.side_effect = RuntimeError("database unavailable")
         engine.connect.return_value = MagicMock()
         engine.connect.return_value.__enter__.return_value = connection
-        with patch.object(database, "engine", engine):
-            with self.assertRaisesRegex(RuntimeError, "users.must_change_password; startup aborted"):
-                database._migrate_columns()
+        with patch("sqlalchemy.inspect") as mock_inspect:
+            mock_inspect.return_value.get_table_names.return_value = ["users"]
+            with patch.object(database, "engine", engine):
+                with self.assertRaisesRegex(RuntimeError, "users.must_change_password; startup aborted"):
+                    database._migrate_columns()
         connection.rollback.assert_called_once()
 
 
