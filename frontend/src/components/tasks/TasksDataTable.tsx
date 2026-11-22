@@ -66,12 +66,16 @@ export function TasksDataTable({
   onActionClick,
 }: TasksDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(0);
 
   // Timer tick for live countdown badges
   useEffect(() => {
+    const animId = requestAnimationFrame(() => setNow(Date.now()));
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
+    return () => {
+      cancelAnimationFrame(animId);
+      clearInterval(timer);
+    };
   }, []);
 
   const toggleSelectAll = () => {

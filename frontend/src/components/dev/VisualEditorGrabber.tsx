@@ -31,6 +31,15 @@ export function VisualEditorGrabber() {
   const [editedText, setEditedText] = useState("");
   const [copied, setCopied] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const selectedDomRef = useRef<HTMLElement | null>(null);
+
+  const [prevActive, setPrevActive] = useState(active);
+  if (active !== prevActive) {
+    setPrevActive(active);
+    if (!active) {
+      setHoveredEl(null);
+    }
+  }
 
   // Shortcut Ctrl + Shift + E to toggle inspector
   useEffect(() => {
@@ -53,10 +62,7 @@ export function VisualEditorGrabber() {
 
   // Mouse hover listener while inspector is active
   useEffect(() => {
-    if (!active) {
-      setHoveredEl(null);
-      return;
-    }
+    if (!active) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       // Don't inspect inspector's own UI
@@ -88,6 +94,7 @@ export function VisualEditorGrabber() {
         domNode: target,
       };
 
+      selectedDomRef.current = target;
       setSelectedEl(info);
       setEditedClasses(typeof target.className === "string" ? target.className : "");
       setEditedText(info.text);
@@ -201,7 +208,7 @@ export function VisualEditorGrabber() {
               value={editedClasses}
               onChange={(e) => {
                 setEditedClasses(e.target.value);
-                if (selectedEl.domNode) selectedEl.domNode.className = e.target.value;
+                if (selectedDomRef.current) selectedDomRef.current.className = e.target.value;
               }}
               rows={3}
               className="w-full text-xs font-mono bg-slate-900 border border-slate-700 rounded-md p-2 text-purple-200 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
@@ -217,7 +224,7 @@ export function VisualEditorGrabber() {
                 value={editedText}
                 onChange={(e) => {
                   setEditedText(e.target.value);
-                  if (selectedEl.domNode) selectedEl.domNode.textContent = e.target.value;
+                  if (selectedDomRef.current) selectedDomRef.current.textContent = e.target.value;
                 }}
                 className="w-full text-xs bg-slate-900 border border-slate-700 rounded-md px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-purple-400"
               />

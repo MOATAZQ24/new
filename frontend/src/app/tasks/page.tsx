@@ -235,7 +235,24 @@ export default function TasksPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const handleComposerAction = (action: ComposerActionType) => {
+  // Form state for task creation
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    assigned_to_id: "",
+    priority: "Medium",
+    status: "Assigned",
+    start_date: "",
+    due_date: "",
+    related_asset_id: "",
+    notes: "",
+    notify_telegram: true,
+    is_voice_task: false,
+    voice_note_url: "",
+    voice_note_duration: 0,
+  });
+
+  const handleComposerAction = useCallback((action: ComposerActionType) => {
     switch (action) {
       case "new_task":
         setEditingTask(null);
@@ -307,24 +324,7 @@ export default function TasksPage() {
         fileInputRef.current?.click();
         break;
     }
-  };
-
-  // Form state for task creation
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    assigned_to_id: "",
-    priority: "Medium",
-    status: "Assigned",
-    start_date: "",
-    due_date: "",
-    related_asset_id: "",
-    notes: "",
-    notify_telegram: true,
-    is_voice_task: false,
-    voice_note_url: "",
-    voice_note_duration: 0,
-  });
+  }, [toast]);
 
   const buildBaseParams = useCallback(() => {
     const params: Record<string, string> = {};

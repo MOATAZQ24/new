@@ -12,7 +12,7 @@ import React, { useState, useRef, useEffect, useId } from "react";
 
 interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactElement<any>;
+  children: React.ReactElement<Record<string, unknown>>;
   position?: "top" | "bottom" | "right" | "left";
   delayMs?: number;
   className?: string;

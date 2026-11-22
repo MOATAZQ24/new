@@ -25,13 +25,15 @@ export function InlineEdit({
   className = "",
 }: InlineEditProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [prevValue, setPrevValue] = useState(value);
   const [currentValue, setCurrentValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  if (value !== prevValue) {
+    setPrevValue(value);
     setCurrentValue(value);
-  }, [value]);
+  }
 
   useEffect(() => {
     if (isEditing) {

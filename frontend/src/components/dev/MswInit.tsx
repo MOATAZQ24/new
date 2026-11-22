@@ -20,7 +20,7 @@ export function MswInit() {
     import("@/mocks/browser")
       .then(({ worker }) => {
         if (worker) {
-          (worker as any).start?.();
+          (worker as { start?: () => void }).start?.();
           console.info("[DevToolkit] MSW Mock Service Worker started.");
         }
       })

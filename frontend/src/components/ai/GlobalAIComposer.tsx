@@ -273,9 +273,11 @@ export function GlobalAIComposer() {
   }, [query, commands]);
 
   // Reset selected index when query changes
-  useEffect(() => {
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setSelectedIndex(0);
-  }, [query]);
+  }
 
   // Execute command
   const executeCommand = (cmd: NavigationCommand) => {

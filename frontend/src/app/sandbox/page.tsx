@@ -8,10 +8,23 @@
  */
 
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { designTokens } from "@/lib/designTokens";
 import { useFeatureFlags } from "@/lib/featureFlags";
+
+interface SystemMetrics {
+  status?: string;
+  error?: string;
+  uptime_seconds?: number;
+  requests_total?: number;
+  requests_per_second?: number;
+  avg_latency_ms?: number;
+  memory_usage_mb?: number;
+  active_requests?: number;
+  metrics?: { requests_total?: number; [key: string]: unknown };
+  [key: string]: unknown;
+}
 import {
   Sparkles,
   Layers,
@@ -39,16 +52,10 @@ export default function SandboxPage() {
   const [direction, setDirection] = useState<"rtl" | "ltr">("rtl");
   const [density, setDensity] = useState<"compact" | "comfortable" | "spacious">("comfortable");
   const [btnLoading, setBtnLoading] = useState(false);
-  const [metricsData, setMetricsData] = useState<any>(null);
+  const [metricsData, setMetricsData] = useState<SystemMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
 
-  useEffect(() => {
-    if (activeTab === "observability") {
-      fetchMetrics();
-    }
-  }, [activeTab]);
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     setMetricsLoading(true);
     try {
       const res = await fetch("/api/v1/metrics");
@@ -58,12 +65,21 @@ export default function SandboxPage() {
       } else {
         setMetricsData({ status: "mock_fallback", error: "Endpoint returned status " + res.status });
       }
-    } catch (err: any) {
-      setMetricsData({ status: "offline", error: err.message });
+    } catch (err: unknown) {
+      setMetricsData({ status: "offline", error: err instanceof Error ? err.message : String(err) });
     } finally {
       setMetricsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "observability") {
+      const timer = setTimeout(() => {
+        void fetchMetrics();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, fetchMetrics]);
 
   return (
     <div dir={direction} className="min-h-screen bg-[var(--background)] text-[var(--foreground)] p-6 lg:p-10 font-sans">
@@ -133,7 +149,7 @@ export default function SandboxPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   isCurrent
                     ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
@@ -509,7 +525,7 @@ export default function SandboxPage() {
                 </div>
               ) : (
                 <div className="text-center py-10 text-slate-400 text-xs">
-                  اضغط على "تحديث القياسات" لقراءة المؤشرات المباشرة.
+                  اضغط على &quot;تحديث القياسات&quot; لقراءة المؤشرات المباشرة.
                 </div>
               )}
             </div>

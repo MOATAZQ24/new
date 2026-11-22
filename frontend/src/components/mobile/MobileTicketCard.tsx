@@ -39,21 +39,18 @@ interface MobileTicketCardProps {
   onClick: () => void;
 }
 
+function getCategoryIcon(ticket: { issue_title: string; category?: string }) {
+  const text = (ticket.issue_title + " " + (ticket.category || "")).toLowerCase();
+  if (text.includes("طابع") || text.includes("print")) return Printer;
+  if (text.includes("برنامج") || text.includes("شاش") || text.includes("monitor") || text.includes("محاسب"))
+    return Monitor;
+  if (text.includes("جهاز") || text.includes("حاسب") || text.includes("لابتوب") || text.includes("laptop"))
+    return Laptop;
+  if (text.includes("صيان") || text.includes("maint")) return Wrench;
+  return HelpCircle;
+}
+
 export function MobileTicketCard({ ticket, onClick }: MobileTicketCardProps) {
-  // Category icon matching Reference Image 6
-  const getCategoryIcon = () => {
-    const text = (ticket.issue_title + " " + (ticket.category || "")).toLowerCase();
-    if (text.includes("طابع") || text.includes("print")) return Printer;
-    if (text.includes("برنامج") || text.includes("شاش") || text.includes("monitor") || text.includes("محاسب"))
-      return Monitor;
-    if (text.includes("جهاز") || text.includes("حاسب") || text.includes("لابتوب") || text.includes("laptop"))
-      return Laptop;
-    if (text.includes("صيان") || text.includes("maint")) return Wrench;
-    return HelpCircle;
-  };
-
-  const Icon = getCategoryIcon();
-
   // Status pill matching Reference Image 6 (قيد المعالجة, مفتوحة, مغلقة)
   const getStatusMeta = () => {
     const s = (ticket.status || "").toLowerCase();
@@ -114,7 +111,7 @@ export function MobileTicketCard({ ticket, onClick }: MobileTicketCardProps) {
         {/* Right side (RTL): Category Icon + Title + Meta */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
-            <Icon size={20} strokeWidth={2.2} />
+            {React.createElement(getCategoryIcon(ticket), { size: 20, strokeWidth: 2.2 })}
           </div>
 
           <div className="min-w-0 text-right">

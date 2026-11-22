@@ -56,7 +56,7 @@ import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks
 import AdaptiveTicketWizard from "@/components/service-desk/AdaptiveTicketWizard";
 import QuickTicketModal from "@/components/service-desk/QuickTicketModal";
 import ServiceDeskCommandCenter from "@/components/service-desk/ServiceDeskCommandCenter";
-import TicketWorkspace from "@/components/service-desk/TicketWorkspace";
+import TicketWorkspace, { type ApprovalItem, type TicketWorkspaceDetail } from "@/components/service-desk/TicketWorkspace";
 import TicketKanban from "@/components/service-desk/TicketKanban";
 import ApprovalCenter from "@/components/service-desk/ApprovalCenter";
 import {
@@ -101,19 +101,7 @@ interface TicketCommentItem {
   created_at: string;
 }
 
-interface TicketDetail extends TicketItem {
-  requester_email?: string;
-  notes?: string;
-  comments: TicketCommentItem[];
-  linked_task_id?: string | null;
-  linked_task_title?: string | null;
-  linked_task_status?: string | null;
-  custom_fields_data?: Record<string, any>;
-  catalog_item_name?: string;
-  first_response_at?: string;
-  approvals_data?: any[];
-  related_asset_info?: any;
-}
+type TicketDetail = TicketWorkspaceDetail;
 
 export default function TicketsPage() {
   const { currentCompany } = useAuth();
@@ -129,13 +117,7 @@ export default function TicketsPage() {
   const { isEmployee } = useUserRole();
   const [currentView, setCurrentView] = useState<
     "operations" | "kanban" | "self_service" | "approvals"
-  >("operations");
-
-  useEffect(() => {
-    if (isEmployee) {
-      setCurrentView("self_service");
-    }
-  }, [isEmployee]);
+  >(() => (isEmployee ? "self_service" : "operations"));
 
   // Enterprise Modals
   const [wizardModalOpen, setWizardModalOpen] = useState(false);
@@ -162,7 +144,7 @@ export default function TicketsPage() {
   const [createModal, setCreateModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
-  const [workspaceDetail, setWorkspaceDetail] = useState<any | null>(null);
+  const [workspaceDetail, setWorkspaceDetail] = useState<TicketWorkspaceDetail | null>(null);
   
   // Comment & Convert
   const [newComment, setNewComment] = useState("");
@@ -245,9 +227,12 @@ export default function TicketsPage() {
     }
   }, []);
 
-  useEffect(() => {
+  const filterKey = `${debouncedSearch}-${statusFilter}-${priorityFilter}-${categoryFilter}-${currentCompany?.id}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setPage(1);
-  }, [debouncedSearch, statusFilter, priorityFilter, categoryFilter, currentCompany]);
+  }
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -431,7 +416,7 @@ export default function TicketsPage() {
                 <button
                   key={v.id}
                   type="button"
-                  onClick={() => setCurrentView(v.id as any)}
+                  onClick={() => setCurrentView(v.id as typeof currentView)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-xs"

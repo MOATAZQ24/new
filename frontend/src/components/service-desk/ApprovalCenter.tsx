@@ -8,7 +8,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -62,9 +62,8 @@ export default function ApprovalCenter({ onRefreshParent }: ApprovalCenterProps)
   const [decisionNotes, setDecisionNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const loadApprovals = async () => {
+  const loadApprovals = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await api.get<ApprovalRecord[]>("/tickets/approvals");
       setApprovals(res.data || []);
     } catch (err) {
@@ -72,11 +71,18 @@ export default function ApprovalCenter({ onRefreshParent }: ApprovalCenterProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadApprovals();
-  }, [currentCompany]);
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) void loadApprovals();
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [loadApprovals, currentCompany]);
 
   const handleOpenDecision = (appr: ApprovalRecord, type: "Approved" | "Rejected") => {
     setSelectedApproval(appr);

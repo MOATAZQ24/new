@@ -46,7 +46,7 @@ interface CommentItem {
   created_at: string;
 }
 
-interface ApprovalItem {
+export interface ApprovalItem {
   id: string;
   stage_name: string;
   stage_order: number;
@@ -66,7 +66,7 @@ interface AssetHistoryTicket {
   created_at: string;
 }
 
-interface TicketWorkspaceDetail {
+export interface TicketWorkspaceDetail {
   id: string;
   company_id: string;
   ticket_number: string;
@@ -83,7 +83,7 @@ interface TicketWorkspaceDetail {
   sla_paused_at?: string;
   first_response_at?: string;
   voice_note_url?: string;
-  custom_fields_data?: Record<string, any>;
+  custom_fields_data?: Record<string, unknown>;
   comments: CommentItem[];
   approvals_data?: ApprovalItem[];
   related_asset_info?: {
@@ -238,7 +238,7 @@ export default function TicketWorkspace({
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => setActiveTab(t.id as any)}
+                  onClick={() => setActiveTab(t.id as typeof activeTab)}
                   className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                     isActive
                       ? "border-primary text-primary bg-background rounded-t-lg"

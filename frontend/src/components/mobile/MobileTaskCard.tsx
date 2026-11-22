@@ -45,30 +45,27 @@ interface MobileTaskCardProps {
   onPlayVoice?: () => void;
 }
 
+function getCategoryIcon(task: { title: string; description?: string }) {
+  const t = (task.title + " " + (task.description || "")).toLowerCase();
+  if (t.includes("طابع") || t.includes("print")) return Printer;
+  if (t.includes("صيان") || t.includes("طلب") || t.includes("maint")) return Wrench;
+  if (
+    t.includes("جهاز") ||
+    t.includes("حاسب") ||
+    t.includes("لابتوب") ||
+    t.includes("برامج") ||
+    t.includes("software") ||
+    t.includes("تحديث")
+  )
+    return Laptop;
+  return CheckSquare;
+}
+
 export function MobileTaskCard({
   task,
   onClick,
   onPlayVoice,
 }: MobileTaskCardProps) {
-  // Determine Category Icon based on task title and keywords
-  const getCategoryIcon = () => {
-    const t = (task.title + " " + (task.description || "")).toLowerCase();
-    if (t.includes("طابع") || t.includes("print")) return Printer;
-    if (t.includes("صيان") || t.includes("طلب") || t.includes("maint")) return Wrench;
-    if (
-      t.includes("جهاز") ||
-      t.includes("حاسب") ||
-      t.includes("لابتوب") ||
-      t.includes("برامج") ||
-      t.includes("software") ||
-      t.includes("تحديث")
-    )
-      return Laptop;
-    return CheckSquare;
-  };
-
-  const Icon = getCategoryIcon();
-
   // Status Meta matching Reference Images (قيد التنفيذ, بانتظار القبول, مكتملة)
   const getStatusMeta = () => {
     const s = (task.status || "").toLowerCase();
@@ -138,7 +135,7 @@ export function MobileTaskCard({
         {/* Right side (RTL): Category Icon + Title + Meta */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
-            <Icon size={20} strokeWidth={2.2} />
+            {React.createElement(getCategoryIcon(task), { size: 20, strokeWidth: 2.2 })}
           </div>
 
           <div className="min-w-0 text-right">

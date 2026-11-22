@@ -8,7 +8,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   GitMerge,
   Play,
@@ -64,9 +64,8 @@ export default function WorkflowBuilder() {
   const [simCurrentStatus, setSimCurrentStatus] = useState<string>("Open");
   const [simHistory, setSimHistory] = useState<string[]>(["Open"]);
 
-  const loadWorkflow = async () => {
+  const loadWorkflow = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await api.get<WorkflowData[]>("/tickets/workflows");
       if (res.data && res.data.length > 0) {
         setWorkflow(res.data[0]);
@@ -76,11 +75,18 @@ export default function WorkflowBuilder() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadWorkflow();
-  }, [currentCompany]);
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) void loadWorkflow();
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [loadWorkflow, currentCompany]);
 
   const handleSave = async () => {
     if (!workflow) return;

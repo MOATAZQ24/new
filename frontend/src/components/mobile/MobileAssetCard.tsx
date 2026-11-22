@@ -44,25 +44,22 @@ interface MobileAssetCardProps {
   onCustodyAction?: () => void;
 }
 
+function getDeviceIcon(asset: { asset_type?: string; asset_name?: string; model?: string }) {
+  const t = ((asset.asset_type || "") + " " + (asset.asset_name || "") + " " + (asset.model || "")).toLowerCase();
+  if (t.includes("print") || t.includes("طابع")) return Printer;
+  if (t.includes("شبك") || t.includes("راوتر") || t.includes("unifi") || t.includes("switch") || t.includes("router"))
+    return Wifi;
+  if (t.includes("مكتب") || t.includes("desktop") || t.includes("optiplex") || t.includes("شاش") || t.includes("pc"))
+    return Monitor;
+  if (t.includes("لابتوب") || t.includes("laptop") || t.includes("thinkpad") || t.includes("كمبيوتر"))
+    return Laptop;
+  return Layers;
+}
+
 export function MobileAssetCard({
   asset,
   onClick,
 }: MobileAssetCardProps) {
-  // Determine hardware visual icon
-  const getDeviceIcon = () => {
-    const t = (asset.asset_type + " " + asset.asset_name + " " + (asset.model || "")).toLowerCase();
-    if (t.includes("print") || t.includes("طابع")) return Printer;
-    if (t.includes("شبك") || t.includes("راوتر") || t.includes("unifi") || t.includes("switch") || t.includes("router"))
-      return Wifi;
-    if (t.includes("مكتب") || t.includes("desktop") || t.includes("optiplex") || t.includes("شاش") || t.includes("pc"))
-      return Monitor;
-    if (t.includes("لابتوب") || t.includes("laptop") || t.includes("thinkpad") || t.includes("كمبيوتر"))
-      return Laptop;
-    return Layers;
-  };
-
-  const Icon = getDeviceIcon();
-
   // Status Meta matching Reference Image 5 (فعالة, قيد الصيانة, معطلة, منقولة)
   const getStatusMeta = () => {
     const s = (asset.status || "").toLowerCase();
@@ -121,7 +118,7 @@ export function MobileAssetCard({
         {/* Right side (RTL): Device Icon/Visual + Title + Type + Location */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center shrink-0">
-            <Icon size={24} strokeWidth={1.8} />
+            {React.createElement(getDeviceIcon(asset), { size: 24, strokeWidth: 1.8 })}
           </div>
 
           <div className="min-w-0 text-right">
@@ -131,7 +128,7 @@ export function MobileAssetCard({
 
             {/* Type with icon */}
             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <Icon size={12} className="text-slate-400 shrink-0" />
+              {React.createElement(getDeviceIcon(asset), { size: 12, className: "text-slate-400 shrink-0" })}
               <span>{asset.asset_type || "جهاز تقني"}</span>
             </div>
 

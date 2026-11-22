@@ -117,8 +117,18 @@ export default function AdaptiveTicketWizard({
   const { currentCompany, user } = useAuth();
   const toast = useToast();
 
+  const [savedDraft] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [activeStep, setActiveStep] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>("Hardware");
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => savedDraft?.selectedCategory || "Hardware");
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [selectedCatalogItem, setSelectedCatalogItem] = useState<CatalogItem | null>(null);
@@ -129,13 +139,13 @@ export default function AdaptiveTicketWizard({
 
   // Form Fields
   const [requesterId, setRequesterId] = useState<string>("");
-  const [priority, setPriority] = useState<string>("Medium");
-  const [selectedAssetId, setSelectedAssetId] = useState<string>("");
-  const [issueTitle, setIssueTitle] = useState<string>("");
-  const [issueDescription, setIssueDescription] = useState<string>("");
+  const [priority, setPriority] = useState<string>(() => savedDraft?.priority || "Medium");
+  const [selectedAssetId, setSelectedAssetId] = useState<string>(() => savedDraft?.selectedAssetId || "");
+  const [issueTitle, setIssueTitle] = useState<string>(() => savedDraft?.issueTitle || "");
+  const [issueDescription, setIssueDescription] = useState<string>(() => savedDraft?.issueDescription || "");
   const [voiceResult, setVoiceResult] = useState<VoiceRecordingResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
+  const [hasDraft, setHasDraft] = useState(() => Boolean(savedDraft?.issueTitle || savedDraft?.issueDescription));
 
   // Load catalog items and dependencies
   useEffect(() => {
@@ -176,25 +186,7 @@ export default function AdaptiveTicketWizard({
     };
   }, [initialCatalogItemId]);
 
-  // Draft recovery from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.issueTitle || parsed.issueDescription) {
-          setHasDraft(true);
-          if (parsed.issueTitle) setIssueTitle(parsed.issueTitle);
-          if (parsed.issueDescription) setIssueDescription(parsed.issueDescription);
-          if (parsed.selectedCategory) setSelectedCategory(parsed.selectedCategory);
-          if (parsed.priority) setPriority(parsed.priority);
-          if (parsed.selectedAssetId) setSelectedAssetId(parsed.selectedAssetId);
-        }
-      }
-    } catch {
-      // ignore draft parse error
-    }
-  }, []);
+
 
   // Auto-save draft
   useEffect(() => {

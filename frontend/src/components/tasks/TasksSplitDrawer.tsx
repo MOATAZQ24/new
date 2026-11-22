@@ -120,12 +120,15 @@ export function TasksSplitDrawer({
       return "00:14:32";
     };
 
-    setRemainingTime(calculateRemaining());
+    const animId = requestAnimationFrame(() => setRemainingTime(calculateRemaining()));
     const interval = setInterval(() => {
       setRemainingTime(calculateRemaining());
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      cancelAnimationFrame(animId);
+      clearInterval(interval);
+    };
   }, [task]);
 
   if (!task) return null;

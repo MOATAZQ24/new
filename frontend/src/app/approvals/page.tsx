@@ -75,14 +75,10 @@ export default function ApprovalsPage() {
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ApprovalsData | null>(null);
-  const [tab, setTab] = useState<"approvals" | "purchases" | "create">("approvals");
+  const [tab, setTab] = useState<"approvals" | "purchases" | "create">(() =>
+    isEmployee ? "purchases" : "approvals"
+  );
   const [statusFilter, setStatusFilter] = useState("");
-
-  useEffect(() => {
-    if (isEmployee) {
-      setTab("purchases");
-    }
-  }, [isEmployee]);
 
   // Decision Modal
   const [decisionModal, setDecisionModal] = useState(false);
@@ -94,8 +90,8 @@ export default function ApprovalsPage() {
   // New Purchase Request Form
   const [branches, setBranches] = useState<{ id: string; branch_name: string }[]>([]);
   const [departments, setDepartments] = useState<{ id: string; department_name: string }[]>([]);
-  const [formData, setFormData] = useState({
-    request_number: `PR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+  const [formData, setFormData] = useState(() => ({
+    request_number: `PR-${new Date().getFullYear()}-0001`,
     item_name: "",
     category: "Hardware",
     vendor_name: "",
@@ -104,12 +100,11 @@ export default function ApprovalsPage() {
     quantity: 1,
     unit_cost_sar: 0,
     justification: "",
-  });
+  }));
   const [submittingForm, setSubmittingForm] = useState(false);
 
   const loadApprovals = useCallback(async () => {
     try {
-      setLoading(true);
       const params: Record<string, string> = {};
       if (statusFilter) params.state = statusFilter;
       const res = await api.get<ApprovalsData>("/approvals", { params });
@@ -137,14 +132,28 @@ export default function ApprovalsPage() {
     } catch (err) {
       console.error("Failed to load branches/departments", err);
     }
-  }, [currentCompany?.id]);
+  }, [currentCompany]);
 
   useEffect(() => {
-    void loadApprovals();
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) void loadApprovals();
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [loadApprovals, currentCompany]);
 
   useEffect(() => {
-    void loadDependencies();
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) void loadDependencies();
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [loadDependencies]);
 
   const handleOpenDecision = (item: WorkflowItem, decision: "Approved" | "Rejected") => {

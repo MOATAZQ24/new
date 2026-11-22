@@ -91,21 +91,25 @@ export function AddEmployeeModal({
   const [copied, setCopied] = useState(false);
 
   // Sync activeCompanyId when modal opens
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setCompanyId(activeCompanyId || "");
       setFormError(null);
       setCreatedCredentials(null);
       setCopied(false);
     }
-  }, [isOpen, activeCompanyId]);
+  }
 
   // Load branches & departments dynamically when selected company changes
   useEffect(() => {
     if (!companyId || !isOpen) return;
 
     let isCancelled = false;
-    setLoadingStructure(true);
+    const animId = requestAnimationFrame(() => {
+      if (!isCancelled) setLoadingStructure(true);
+    });
 
     Promise.all([
       api.get<BranchOption[]>(`/companies/${companyId}/branches`),
@@ -146,6 +150,7 @@ export function AddEmployeeModal({
 
     return () => {
       isCancelled = true;
+      cancelAnimationFrame(animId);
     };
   }, [companyId, isOpen, toast]);
 

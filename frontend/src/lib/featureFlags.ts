@@ -53,11 +53,11 @@ export function setStoredFeatureFlag<K extends keyof FeatureFlags>(key: K, value
 }
 
 export function useFeatureFlags() {
-  const [flags, setFlags] = useState<FeatureFlags>(DEFAULT_FLAGS);
+  const [flags, setFlags] = useState<FeatureFlags>(() =>
+    typeof window !== "undefined" ? getStoredFeatureFlags() : DEFAULT_FLAGS
+  );
 
   useEffect(() => {
-    setFlags(getStoredFeatureFlags());
-
     const handleUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<FeatureFlags>;
       if (customEvent.detail) {
