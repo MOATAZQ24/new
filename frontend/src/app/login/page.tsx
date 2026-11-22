@@ -105,12 +105,6 @@ function LoginForm() {
               <label htmlFor="login-password" className="block text-xs font-bold text-slate-700">
                 كلمة المرور
               </label>
-              <Link
-                href="/forgot-password"
-                className="text-[11px] font-semibold text-[#187A5A] hover:text-[#123D32] transition-colors"
-              >
-                نسيت كلمة المرور؟
-              </Link>
             </div>
             <input
               id="login-password"

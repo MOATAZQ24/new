@@ -256,7 +256,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 self-start sm:self-center">
             <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs">
               <Icons.Calendar size={15} className="text-slate-500" />
-              <span>{todayArabic}</span>
+              <span suppressHydrationWarning>{todayArabic}</span>
             </div>
             <button
               type="button"

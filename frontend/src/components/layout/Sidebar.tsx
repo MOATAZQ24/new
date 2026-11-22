@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
   { name: "مركز الخدمات", href: "/tickets", icon: "HelpDesk" },
   { name: "الموافقات", href: "/approvals", icon: "ShieldCheck" },
   { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
+  { name: "الاشتراكات والتراخيص", href: "/subscriptions", icon: "Subscriptions" },
   { name: "الموظفون", href: "/employees", icon: "Users" },
   { name: "الهيكل التنظيمي", href: "/companies", icon: "Companies" },
   { name: "التقارير والتحليلات", href: "/reports", icon: "Reports" },

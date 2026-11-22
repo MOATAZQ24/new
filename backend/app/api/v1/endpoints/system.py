@@ -119,6 +119,7 @@ def get_release_info():
             with open(meta_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, dict):
+                data["version"] = settings.APP_VERSION
                 dev = data.get("developer") or {}
                 if os.getenv("DEVELOPER_LINKEDIN_URL"):
                     dev["linkedin_url"] = os.getenv("DEVELOPER_LINKEDIN_URL")

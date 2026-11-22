@@ -50,7 +50,7 @@ const THIRD_PARTY_COMPONENTS = [
 export default function AboutPage() {
   const [meta, setMeta] = useState<ReleaseMetadata>({
     product: "Investor Gate OS",
-    version: "1.0.0",
+    version: "3.0.0",
     copyright_year: 2026,
     developer: {
       name_en: "Moataz Qasem",

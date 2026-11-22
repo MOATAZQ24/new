@@ -591,7 +591,7 @@ export default function SettingsPage() {
                     <span>إصدار النظام</span>
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#123D32] border border-emerald-200/70 font-mono font-bold text-[11px]">
-                    v2.0 (MVP)
+                    v3.0.0 (Enterprise)
                   </span>
                 </div>
 
