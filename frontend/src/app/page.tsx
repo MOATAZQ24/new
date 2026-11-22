@@ -17,6 +17,7 @@ import { EnterpriseDonutChart } from "@/components/ui/EnterpriseCharts";
 import { Icons } from "@/components/ui/Icons";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 
 interface RecentTicketItem {
   id: string;
@@ -112,6 +113,7 @@ function formatShortArabicDate(value?: string | null) {
 
 export default function DashboardPage() {
   const { activeCompany } = useAuth();
+  const { primaryRoleTitleAr } = useUserRole();
   const [data, setData] = useState<DashboardData | null>(null);
   const [failure, setFailure] = useState("");
   const [loading, setLoading] = useState(true);
@@ -237,9 +239,14 @@ export default function DashboardPage() {
               <Icons.Dashboard size={20} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                لوحة المتابعة
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  لوحة المتابعة
+                </h1>
+                <span className="px-2 py-0.5 rounded-md bg-[#078363]/10 dark:bg-emerald-950/50 text-[#078363] dark:text-emerald-400 text-xs font-bold border border-[#078363]/20">
+                  {primaryRoleTitleAr}
+                </span>
+              </div>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 نظرة عامة على الأصول، التذاكر، المهام، والموظفين
               </p>

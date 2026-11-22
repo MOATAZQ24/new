@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/Icons";
 import { api, exportReportDownload } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { MobileReportSummary } from "@/components/mobile/MobileReportSummary";
 
@@ -145,7 +146,8 @@ export default function ReportsPage() {
     errors?: Array<{ row?: number; error?: string } | string>;
   } | null>(null);
 
-  const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
+  const { canViewFinancials } = useUserRole();
+  const canManage = canViewFinancials;
 
   const handleExport = async (reportType: string, format: "excel" | "html") => {
     setDownloading(`${reportType}-${format}`);
