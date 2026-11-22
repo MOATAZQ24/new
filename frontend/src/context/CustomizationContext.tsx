@@ -113,11 +113,11 @@ interface CustomizationContextType {
 }
 
 const DEFAULT_COLORS: ColorPalette = {
-  primary: "#123D32",
-  secondary: "#187A5A",
-  background: "#F5F7F8",
+  primary: "#131127",
+  secondary: "#7C3AED",
+  background: "#F7F8FC",
   surface: "#FFFFFF",
-  accent: "#C5A46D",
+  accent: "#8B5CF6",
 };
 
 const DEFAULT_TYPOGRAPHY: TypographySettings = {
@@ -175,18 +175,44 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
     const root = document.documentElement;
     if (resolvedTheme === "dark") {
       root.classList.add("dark");
-      root.style.setProperty("--bg-main", "#0F172A");
-      root.style.setProperty("--surface", "#1E293B");
-      root.style.setProperty("--text-main", "#F8FAFC");
+      root.setAttribute("data-theme", "dark");
+      root.style.setProperty("--bg-main", "#0B0E17");
+      root.style.setProperty("--background", "#0B0E17");
+      root.style.setProperty("--surface", "#131A29");
+      root.style.setProperty("--card", "#131A29");
+      root.style.setProperty("--text-main", "#F1F5F9");
+      root.style.setProperty("--foreground", "#F1F5F9");
       root.style.setProperty("--text-muted", "#94A3B8");
-      root.style.setProperty("--border-color", "#334155");
+      root.style.setProperty("--muted-foreground", "#94A3B8");
+      root.style.setProperty("--border-color", "#232E42");
+      root.style.setProperty("--border", "#232E42");
+      root.style.setProperty("--primary", "#8B5CF6");
+      root.style.setProperty("--primary-foreground", "#FFFFFF");
+      root.style.setProperty("--secondary", "#6D28D9");
+      root.style.setProperty("--accent", "#A78BFA");
+      root.style.setProperty("--sidebar-background", "#090B14");
+      root.style.setProperty("--sidebar-active", "#7C3AED");
+      root.style.setProperty("--ring", "#8B5CF6");
     } else {
       root.classList.remove("dark");
-      root.style.setProperty("--bg-main", colors.background);
-      root.style.setProperty("--surface", colors.surface);
-      root.style.setProperty("--text-main", "#0F172A");
+      root.setAttribute("data-theme", "light");
+      root.style.setProperty("--bg-main", colors.background || "#F7F8FC");
+      root.style.setProperty("--background", colors.background || "#F7F8FC");
+      root.style.setProperty("--surface", colors.surface || "#FFFFFF");
+      root.style.setProperty("--card", colors.surface || "#FFFFFF");
+      root.style.setProperty("--text-main", "#131127");
+      root.style.setProperty("--foreground", "#131127");
       root.style.setProperty("--text-muted", "#64748B");
-      root.style.setProperty("--border-color", "#E2E8F0");
+      root.style.setProperty("--muted-foreground", "#64748B");
+      root.style.setProperty("--border-color", "#E5E7EB");
+      root.style.setProperty("--border", "#E5E7EB");
+      root.style.setProperty("--primary", colors.secondary || "#7C3AED");
+      root.style.setProperty("--primary-foreground", "#FFFFFF");
+      root.style.setProperty("--secondary", colors.primary || "#131127");
+      root.style.setProperty("--accent", colors.accent || "#8B5CF6");
+      root.style.setProperty("--sidebar-background", colors.primary || "#131127");
+      root.style.setProperty("--sidebar-active", colors.secondary || "#7C3AED");
+      root.style.setProperty("--ring", colors.secondary || "#7C3AED");
     }
 
     root.style.setProperty("--primary-dark", colors.primary);

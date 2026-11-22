@@ -8,6 +8,8 @@
  */
 
 
+import { MasterDetailLayout } from "@/components/ui/MasterDetailLayout";
+import { AssetsSplitDrawer, type SplitDrawerAsset } from "@/components/assets/AssetsSplitDrawer";
 import { TablePreferences, PreferenceRow, useTablePreference } from "@/components/workspace/TablePreferences";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import React, { useEffect, useState } from "react";
@@ -338,7 +340,6 @@ export default function AssetsPage() {
     try {
       const res = await api.get<AssetRow>(`/assets/${ast.id}`);
       setSelectedAsset(res.data);
-      setShowHistoryModal(true);
     } catch (e) {
       console.error(e);
     }
@@ -856,8 +857,13 @@ export default function AssetsPage() {
 
       <TablePreferences tableId="/assets" columns={assetColumns} filters={{ search, asset_type: typeFilter, status: statusFilter, asset_category: categoryFilter }} onApplyFilters={filters => { setSearch(filters.search || ""); setTypeFilter(filters.asset_type || ""); setStatusFilter(filters.status || ""); setCategoryFilter(filters.asset_category || ""); setPage(1); }} />
       </div>
-      {/* Assets Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      {/* Assets Table in Split Workspace */}
+      <MasterDetailLayout
+        hasSelection={Boolean(selectedAsset)}
+        onCloseDetail={() => setSelectedAsset(null)}
+        masterWidthPercentage={selectedAsset ? 62 : 100}
+        masterContent={
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={7} />
         ) : assets.length === 0 ? (
@@ -896,7 +902,7 @@ export default function AssetsPage() {
                     assigned_employee_name: ast.assigned_employee_name || undefined,
                     branch_name: ast.branch_name || undefined,
                   }}
-                  onClick={() => setSelectedAsset(ast)}
+                  onClick={() => openAssetDetails(ast)}
                   onCopySerial={(sn) => copyToClipboard(sn)}
                   copiedSerial={copiedSerial}
                   onShowQr={() => {
@@ -941,7 +947,7 @@ export default function AssetsPage() {
                   tableId="/assets"
                   columns={assetColumns}
                   key={ast.id}
-                  onClick={() => setSelectedAsset(ast)}
+                  onClick={() => openAssetDetails(ast)}
                   className={`cursor-pointer transition-colors ${selectedAsset?.id === ast.id ? "bg-emerald-50/60" : "hover:bg-slate-50/60"}`}
                 >
                   <td className="p-3.5 font-mono font-bold text-[#187A5A]">
@@ -1081,7 +1087,28 @@ export default function AssetsPage() {
             <Plus size={26} strokeWidth={2.5} />
           </button>
         )}
-      </div>
+          </div>
+        }
+        detailContent={
+          selectedAsset ? (
+            <AssetsSplitDrawer
+              asset={selectedAsset as unknown as SplitDrawerAsset}
+              onClose={() => setSelectedAsset(null)}
+              onOpenHandover={(ast) => openHandover(ast as unknown as AssetRow)}
+              onOpenReturn={(ast) => openReturn(ast as unknown as AssetRow)}
+              onOpenTransfer={(ast) => openTransferBranch(ast as unknown as AssetRow)}
+              onOpenEdit={(ast) => openEditAsset(ast as unknown as AssetRow)}
+              onOpenQR={(ast) => {
+                setSelectedAsset(ast as unknown as AssetRow);
+                setShowQRModal(true);
+              }}
+              onOpenReceipt={(custodyId) => openReceipt(custodyId)}
+              onDelete={(id, code) => handleDeleteAsset(id, code)}
+              canManage={canManage}
+            />
+          ) : null
+        }
+      />
       </div>
 
       {/* Add Asset Modal */}

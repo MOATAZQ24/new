@@ -27,40 +27,40 @@
 }
 
 :root {
-  /* Investor Gate OS Design System (IGDS) - Light Palette */
-  --background: #F7F8FA;
-  --foreground: #202124;
+  /* Investor Gate OS Design System (IGDS) - Approved Royal Purple Palette */
+  --background: #F7F8FC;
+  --foreground: #131127;
   --surface: #FFFFFF;
-  --surface-muted: #F1F3F5;
+  --surface-muted: #F3F4F9;
   --surface-elevated: #FFFFFF;
   --card: #FFFFFF;
-  --card-foreground: #202124;
-  --sidebar-background: #0F172A;
+  --card-foreground: #131127;
+  --sidebar-background: #131127;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-active: #078363;
+  --sidebar-active: #7C3AED;
   --header-background: #FFFFFF;
-  --primary: #078363;
+  --primary: #7C3AED;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E293B;
-  --accent: #4285F4;
+  --secondary: #131127;
+  --accent: #8B5CF6;
   --accent-foreground: #FFFFFF;
-  --muted: #F1F3F5;
+  --muted: #F3F4F9;
   --muted-foreground: #64748B;
-  --border: #E2E8E5;
+  --border: #E5E7EB;
   --input: #F8FAFC;
-  --ring: #078363;
+  --ring: #7C3AED;
   --hover: #F1F5F9;
-  --selected: #E6F4EA;
+  --selected: #EDE9FE;
   --popover: #FFFFFF;
-  --chart-1: #078363;
-  --chart-2: #4285F4;
-  --chart-3: #D97706;
-  --chart-4: #64748B;
-  --chart-5: #0F172A;
-  --success: #078363;
+  --chart-1: #7C3AED;
+  --chart-2: #131127;
+  --chart-3: #8B5CF6;
+  --chart-4: #6366F1;
+  --chart-5: #64748B;
+  --success: #059669;
   --warning: #D97706;
   --destructive: #DC2626;
-  --info: #4285F4;
+  --info: #0284C7;
 
   /* Compatibility aliases */
   --primary-dark: var(--sidebar-background);
@@ -276,36 +276,36 @@ html.dark {
   color-scheme: dark;
 }
 :is(html[data-theme="dark"], html.dark) {
-  /* Investor Gate OS Design System (IGDS) - Dark Palette */
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --surface: #1E293B;
-  --surface-muted: #162032;
-  --surface-elevated: #1E293B;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --sidebar-background: #090E17;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-active: #10B981;
-  --header-background: #1E293B;
-  --primary: #10B981;
-  --primary-foreground: #090E17;
-  --secondary: #334155;
-  --accent: #60A5FA;
-  --accent-foreground: #090E17;
-  --muted: #1E293B;
+  /* Investor Gate OS Design System (IGDS) - Elevated Obsidian Purple Dark Palette */
+  --background: #0B0E17;
+  --foreground: #F1F5F9;
+  --surface: #131A29;
+  --surface-muted: #1A2234;
+  --surface-elevated: #1F293D;
+  --card: #131A29;
+  --card-foreground: #F1F5F9;
+  --sidebar-background: #090B14;
+  --sidebar-foreground: #F1F5F9;
+  --sidebar-active: #7C3AED;
+  --header-background: #131A29;
+  --primary: #8B5CF6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #6D28D9;
+  --accent: #A78BFA;
+  --accent-foreground: #0B0E17;
+  --muted: #1A2234;
   --muted-foreground: #94A3B8;
-  --border: #334155;
-  --input: #162032;
-  --ring: #10B981;
-  --hover: #26354A;
-  --selected: #132E27;
-  --popover: #1E293B;
-  --chart-1: #10B981;
-  --chart-2: #60A5FA;
-  --chart-3: #F59E0B;
-  --chart-4: #94A3B8;
-  --chart-5: #38BDF8;
+  --border: #232E42;
+  --input: #182132;
+  --ring: #8B5CF6;
+  --hover: #1F293D;
+  --selected: #2B2152;
+  --popover: #131A29;
+  --chart-1: #A78BFA;
+  --chart-2: #8B5CF6;
+  --chart-3: #7C3AED;
+  --chart-4: #6366F1;
+  --chart-5: #94A3B8;
   --text-main: var(--foreground);
   --text-muted: var(--muted-foreground);
   --bg-main: var(--background);

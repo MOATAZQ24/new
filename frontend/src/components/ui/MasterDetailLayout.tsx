@@ -56,54 +56,25 @@ export function MasterDetailLayout({
         {/* 1. MASTER LIST CONTAINER (Independent Scrollable) */}
         <div
           ref={masterContainerRef}
-          className={`h-full overflow-y-auto overscroll-contain rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-200 ${
+          className={`h-full overflow-y-auto overscroll-contain transition-all duration-200 min-w-0 ${
             hasSelection
-              ? `w-full lg:w-[${masterWidthPercentage}%]`
+              ? "w-full lg:w-[62%] shrink-0"
               : "w-full"
           }`}
-          style={{
-            width: hasSelection && typeof window !== "undefined" && window.innerWidth >= 1024
-              ? `${masterWidthPercentage}%`
-              : "100%",
-          }}
         >
           {masterContent}
         </div>
 
         {/* 2. DETAIL PANEL CONTAINER (Independent Scrollable) - DESKTOP */}
         <div
-          className={`hidden lg:flex flex-col h-full overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-200 ${
+          ref={detailContainerRef}
+          className={`hidden lg:flex flex-col h-full overflow-hidden transition-all duration-200 min-w-0 ${
             hasSelection
-              ? "flex-1 opacity-100"
+              ? "flex-1 min-w-[350px] opacity-100"
               : "hidden opacity-0"
           }`}
         >
-          {hasSelection && detailContent ? (
-            <div className="flex flex-col h-full overflow-hidden">
-              {/* Detail Header Toolbar */}
-              <div className="px-4 py-3 border-b border-border/60 bg-muted/20 flex items-center justify-between shrink-0">
-                <button
-                  type="button"
-                  onClick={onCloseDetail}
-                  title="إغلاق لوحة التفاصيل (Esc)"
-                  className="p-1.5 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <span className="text-xs font-bold text-muted-foreground">تفاصيل العنصر المحدد</span>
-              </div>
-
-              {/* Independent Scroll Container for Detail Content */}
-              <div
-                ref={detailContainerRef}
-                className="flex-1 overflow-y-auto overscroll-contain p-4 text-right"
-              >
-                {detailContent}
-              </div>
-            </div>
-          ) : (
-            emptyDetailPlaceholder || null
-          )}
+          {hasSelection && detailContent ? detailContent : (emptyDetailPlaceholder || null)}
         </div>
 
         {/* 3. DETAIL PANEL CONTAINER - MOBILE OVERLAY / SLIDE-OVER (< lg) */}

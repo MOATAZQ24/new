@@ -76,7 +76,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         tabIndex={-1}
         className="workspace-main pt-16 lg:pt-16 pb-[calc(76px+env(safe-area-inset-bottom))] lg:pb-8 min-h-screen px-3 sm:px-4 lg:p-6 transition-all duration-200 focus:outline-none max-w-full"
       >
-        <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">{children}</div>
+        <div className="w-full max-w-[1680px] mx-auto space-y-4 lg:space-y-6">{children}</div>
       </main>
     </div>
   );

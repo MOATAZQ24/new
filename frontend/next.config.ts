@@ -38,6 +38,12 @@ const nextConfig: NextConfig = {
       { source: "/api/:path*", destination: `${backendOrigin}/api/:path*` },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/forgot-password", destination: "/login", permanent: false },
+      { source: "/reset-password", destination: "/login", permanent: false },
+    ];
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

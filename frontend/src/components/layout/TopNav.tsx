@@ -325,7 +325,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
       className="workspace-topnav h-16 bg-[var(--header-background)] border-b border-[var(--border)] fixed top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-xs select-none transition-all duration-200 gap-2"
     >
       {/* Right Side (Mobile Menu, Company Switcher & Command Search) */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {onOpenMobileMenu && (
           <button
             type="button"
@@ -405,7 +405,7 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         </div>
 
         {/* Live Global Search */}
-        <div className="relative hidden lg:block flex-1 max-w-sm">
+        <div className="relative hidden lg:block flex-1 max-w-[220px] xl:max-w-xs">
           <div className="h-9 flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus-within:border-[#187A5A] focus-within:bg-white dark:focus-within:bg-slate-900 px-3 rounded-xl transition-all">
             <Icons.Search
               size={15}

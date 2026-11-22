@@ -288,11 +288,11 @@ export function TasksDataTable({
       </div>
 
       {/* Main Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs text-right border-collapse min-w-[760px]">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-xs text-right border-collapse">
           <thead>
             <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 font-bold">
-              <th className="p-3 w-10 text-center">
+              <th className="py-2.5 px-2 w-8 text-center">
                 <input
                   type="checkbox"
                   aria-label="تحديد جميع المهام"
@@ -301,14 +301,14 @@ export function TasksDataTable({
                   className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
                 />
               </th>
-              <th className="p-3 w-28">#</th>
-              <th className="p-3">عنوان المهمة</th>
-              <th className="p-3 w-28">الأولوية</th>
-              <th className="p-3 w-28">الحالة</th>
-              <th className="p-3 w-36">المسند إليه</th>
-              <th className="p-3 w-32">الموعد النهائي</th>
-              <th className="p-3 w-32">الوقت المتبقي</th>
-              <th className="p-3 w-12 text-center">الإجراءات</th>
+              <th className="py-2.5 px-2 w-24 whitespace-nowrap">#</th>
+              <th className="py-2.5 px-2 min-w-[130px]">عنوان المهمة</th>
+              <th className="py-2.5 px-2 w-24 whitespace-nowrap">الأولوية</th>
+              <th className="py-2.5 px-2 w-24 whitespace-nowrap">الحالة</th>
+              <th className="py-2.5 px-2 w-28 whitespace-nowrap">المسند إليه</th>
+              <th className="py-2.5 px-2 w-24 whitespace-nowrap">الموعد النهائي</th>
+              <th className="py-2.5 px-2 w-24 whitespace-nowrap">الوقت المتبقي</th>
+              <th className="py-2.5 px-2 w-10 text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
