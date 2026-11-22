@@ -4,14 +4,14 @@
   "hash_algorithm": "SHA-256 (LF-normalized)",
   "original_developer": "Moataz Qasem",
   "files": {
-    "AUTHORS.md": "2d4a7d701b49f5f8192c0815a0862c0e30b0be4fabc51b37859d0284d8a396e4",
-    "CONTRIBUTORS.md": "700ebf7d21afb672f1284b06fa9243b50ec6cd953c7cf7f5b8bc78cf0ee7e394",
-    "COPYRIGHT.md": "a1f787ceac92a7bd845149e1b15a3c4b780c581dd905b4cafbac0961daae9e9a",
+    "AUTHORS.md": "f36e9a5797432fd78ddc55c60be967de54d5b2bf5cba010d6f78f8cb31a22518",
+    "CONTRIBUTORS.md": "a749db6db910b1456070cd943a7876e8a0d4b60eea9965890b87a3fdba30d034",
+    "COPYRIGHT.md": "c862ec382110fb3ef442c52f994ae68a9ae1bddd191618ccdbcc8688d5a65c06",
     "NOTICE": "b5ab2b26f3bad664e02af00cb5889288f150e49eefb0e5d81c0ca8ff434a9b76",
     "PROVENANCE.json": "53491b9f8e52b7f088529cdc1f0bc479e451960cafc06669f2fc81e36ba1503b",
     "DEVELOPMENT_HISTORY.md": "e0fd4a2a1d3dd6853d13b8c3bc74d08b8732b617497eb643b32c1ff5360c5884",
     "docs/governance/DEVELOPER_ATTRIBUTION.md": "08d522ce037dc1fa05cec9e4cb4ccd983a84b87be7294aac64fb28bb26078c8b",
-    "docs/governance/AI_AGENT_GOVERNANCE.md": "44bbd2a74d78cafb1ad6a64ca3b4719fcfe023b8924f0079186b01a0ea575107",
+    "docs/governance/AI_AGENT_GOVERNANCE.md": "5ca723d9b97750b3a14bd0b9829908ba4209750b30666e4ae6a9bc7600e9359e",
     "docs/governance/attribution_policy.json": "c13fec1e32a3ac05ab3993928c597ac05fc8f5dd168f9dd2176e69680ad4b46e",
     "scripts/verify_attribution.py": "90d4f0dc9a6969ea89a06fb741905bb98735d96ea441db3551ffb8c437ffe2b0"
   }
