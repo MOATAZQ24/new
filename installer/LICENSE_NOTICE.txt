@@ -1,7 +1,7 @@
 INVESTOR GATE OS — SOFTWARE LICENSE & ATTRIBUTION NOTICE
 ========================================================================
 
-Product: Investor Gate OS (v1.0.0)
+Product: Investor Gate OS (v3.0.0)
 Copyright Year: 2026
 Developer & Security Architect: Moataz Qasem / معتز قاسم
 Role: Cybersecurity & Networks Specialist

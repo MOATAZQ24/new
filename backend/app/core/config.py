@@ -46,9 +46,22 @@ _INSECURE_SECRET_SHA256 = {
 }
 
 
+def _get_version() -> str:
+    v_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "VERSION"))
+    if os.path.isfile(v_path):
+        try:
+            with open(v_path, "r", encoding="utf-8") as f:
+                v = f.read().strip()
+                if v:
+                    return v
+        except Exception:
+            pass
+    return "3.0.0"
+
+
 class Settings(BaseSettings):
     APP_NAME: str = "Investor Gate IT Operations Management System"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = _get_version()
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", os.getenv("ENV", "development"))
     DEBUG: bool = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
 

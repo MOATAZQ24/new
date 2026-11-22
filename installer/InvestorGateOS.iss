@@ -2,7 +2,7 @@
 ; Safe Upgrade, Clean First-Run Initialization, Offline Docs & Developer Attribution
 
 #define MyAppName "Investor Gate OS"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "3.0.0"
 #define MyAppDeveloper "Moataz Qasem / معتز قاسم (Cybersecurity & Networks Specialist)"
 #define MyAppPublisher "Investor Gate OS (Publisher Legal Identity Pending Confirmation)"
 
