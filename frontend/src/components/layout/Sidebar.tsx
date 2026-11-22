@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/ui/Icons";
 import { Star } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
@@ -94,7 +95,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       data-collapsed={draft.collapsed}
       data-mobile-open={mobileOpen}
       aria-label="القائمة الرئيسية للنظام"
-      className="workspace-sidebar w-64 bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-white/10 select-none shadow-xl"
+      className="workspace-sidebar bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-white/10 select-none shadow-xl transition-all duration-200"
     >
       {/* Brand & Collapse Header */}
       <div className="workspace-sidebar-header p-4 border-b border-white/10 flex items-center justify-between gap-2">
@@ -171,17 +172,17 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const IconComp = Icons[item.icon as keyof typeof Icons];
 
-          return (
+          const linkEl = (
             <Link
               key={item.href}
               href={item.href}
-              title={item.name}
+              title={draft.collapsed ? undefined : item.name}
               aria-current={isActive ? "page" : undefined}
               onClick={() => onCloseMobile?.()}
-              className={`motion-nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+              className={`motion-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 ${
                 isActive
-                  ? "bg-[var(--sidebar-active)] text-white font-bold shadow-sm"
-                  : "text-white/85 hover:bg-white/10 hover:text-white"
+                  ? "bg-[var(--sidebar-active)] text-white font-bold shadow-xs"
+                  : "text-white/80 hover:bg-white/10 hover:text-white"
               }`}
             >
               <span
@@ -197,6 +198,16 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               </span>
             </Link>
           );
+
+          if (draft.collapsed) {
+            return (
+              <Tooltip key={item.href} content={item.name} position="left" delayMs={100}>
+                {linkEl}
+              </Tooltip>
+            );
+          }
+
+          return linkEl;
         })}
       </nav>
 

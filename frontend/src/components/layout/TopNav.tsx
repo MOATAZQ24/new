@@ -13,10 +13,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
-import { mediaUrl } from "@/context/WorkspaceContext";
+import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCustomization } from "@/context/CustomizationContext";
 import { Icons } from "@/components/ui/Icons";
+import { Sparkles, Maximize2, Minimize2 } from "lucide-react";
 
 interface SearchResultItem {
   id: string;
@@ -86,6 +87,21 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
   const router = useRouter();
   const { user, activeCompany, activeCompanyId, setActiveCompanyId, logout } = useAuth();
   const { theme, setTheme, resolvedTheme, companyBranding } = useCustomization();
+  const { draft, setDraft, save } = useWorkspace();
+  const currentDensity = draft?.appearance?.density || "comfortable";
+
+  const handleToggleDensity = () => {
+    const nextDensity = currentDensity === "compact" ? "comfortable" : "compact";
+    const nextDraft = {
+      ...draft,
+      appearance: {
+        ...draft.appearance,
+        density: nextDensity,
+      },
+    };
+    setDraft(nextDraft);
+    void save(nextDraft);
+  };
 
   const [openPopover, setOpenPopover] = useState<PopoverType>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -522,8 +538,36 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         </div>
       </div>
 
-      {/* Left Side (Fullscreen, Monitor, Telegram, Live Notifications & User Profile) */}
+      {/* Left Side (AI Launcher, Density, Fullscreen, Monitor, Telegram, Live Notifications & User Profile) */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        {/* Instant Density Mode Toggle (Comfortable vs Compact) */}
+        <button
+          type="button"
+          onClick={handleToggleDensity}
+          aria-label="تبديل كثافة العرض"
+          title={
+            currentDensity === "compact"
+              ? "الوضع الحالي: مضغوط (انقر للتبديل إلى المريح)"
+              : "الوضع الحالي: مريح (انقر للتبديل إلى المضغوط)"
+          }
+          className="hidden md:inline-flex motion-control items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-border/70 cursor-pointer"
+        >
+          {currentDensity === "compact" ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+          <span className="text-[11px]">{currentDensity === "compact" ? "مضغوط" : "مريح"}</span>
+        </button>
+
+        {/* AI Quick Assistant Trigger */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("ig:open-command-palette"))}
+          aria-label="المساعد الذكي للعمليات"
+          title="المساعد الذكي للعمليات (Cmd+K)"
+          className="hidden sm:inline-flex motion-control items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 transition-all cursor-pointer shadow-2xs"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>المساعد الذكي</span>
+        </button>
+
         {/* Fullscreen Button (Reference 1 & 2) */}
         <button
           type="button"

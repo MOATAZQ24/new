@@ -103,7 +103,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         "workspace-font-size": `${a.font_size}px`,
         "workspace-font-weight": `${a.font_weight}`,
         "workspace-font": `'${a.english_font}', '${a.arabic_font}', sans-serif`,
-        "sidebar-width": draft.collapsed ? "76px" : `${a.sidebar_width}px`,
+        "sidebar-width": draft.collapsed ? "68px" : `${a.sidebar_width}px`,
         "workspace-spacing": a.density === "compact" ? ".5rem" : a.density === "spacious" ? "1.5rem" : "1rem",
       };
       Object.entries(values).forEach(([key, value]) => root.style.setProperty(`--${key}`, value));

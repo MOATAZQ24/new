@@ -247,11 +247,14 @@ body { font-family: var(--workspace-font, 'IBM Plex Sans Arabic', 'Inter', sans-
 .overflow-x-auto table tbody tr {
   transition: background-color var(--motion-fast) var(--motion-easing);
 }
+.workspace-sidebar[data-collapsed="true"] {
+  width: var(--sidebar-width, 68px) !important;
+}
 .workspace-sidebar[data-collapsed="true"] .workspace-nav-label,
 .workspace-sidebar[data-collapsed="true"] .workspace-brand-text,
 .workspace-sidebar[data-collapsed="true"] .workspace-company-pill,
 .workspace-sidebar[data-collapsed="true"] .workspace-footer-text {
-  display: none;
+  display: none !important;
 }
 .workspace-sidebar[data-collapsed="true"] .workspace-sidebar-header {
   justify-content: center;

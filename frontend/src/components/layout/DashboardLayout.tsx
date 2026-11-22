@@ -8,16 +8,31 @@
  */
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { MobileHeader } from "./MobileHeader";
 import { MobileTabBar } from "./MobileTabBar";
 import { MustChangePasswordModal } from "@/components/auth/MustChangePasswordModal";
 import { CommandPalette } from "@/components/ui/CommandPalette";
+import { useWorkspace } from "@/context/WorkspaceContext";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { draft, setDraft, save } = useWorkspace();
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        const next = { ...draft, collapsed: !draft.collapsed };
+        setDraft(next);
+        void save(next).catch(() => setDraft(draft));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [draft, setDraft, save]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 overflow-x-hidden">
