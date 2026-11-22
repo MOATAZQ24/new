@@ -45,6 +45,7 @@ import {
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import EmployeeCombobox, { type EmployeeOption } from "@/components/ui/EmployeeCombobox";
 import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks/VoiceTaskRecorder";
@@ -776,8 +777,9 @@ export default function TasksPage() {
     }
   };
 
-  // User role check
-  const isManagerOrAdmin = user?.is_superadmin || user?.roles?.some(r => ["Super Admin", "Company Admin", "IT Manager"].includes(r));
+  // User role check & adaptive behavior
+  const { roleCategory, isEmployee, isTechnician, isManager, isAdmin, canAssignTasks } = useUserRole();
+  const isManagerOrAdmin = !isEmployee && (isManager || isAdmin || user?.is_superadmin || user?.roles?.some(r => ["Super Admin", "Company Admin", "IT Manager"].includes(r)));
 
   // Authoritative KPIs from database summary endpoint (falls back to list counts before first response)
   const totalTasks = summary ? summary.total : tasks.length;

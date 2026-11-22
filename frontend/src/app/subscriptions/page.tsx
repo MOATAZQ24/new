@@ -19,6 +19,7 @@ import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/Enterp
 import { api, exportReportDownload } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
@@ -122,7 +123,8 @@ export default function SubscriptionsPage() {
   const [autoRenewal, setAutoRenewal] = useState(true);
   const [notes, setNotes] = useState("");
 
-  const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
+  const { canViewFinancials } = useUserRole();
+  const canManage = canViewFinancials;
 
   const fetchData = async () => {
     setLoading(true);

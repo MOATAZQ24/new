@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
 import { MobileTicketCard } from "@/components/mobile/MobileTicketCard";
@@ -125,9 +126,16 @@ export default function TicketsPage() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Enterprise Service Desk Navigation View
+  const { isEmployee } = useUserRole();
   const [currentView, setCurrentView] = useState<
     "operations" | "kanban" | "self_service" | "approvals"
   >("operations");
+
+  useEffect(() => {
+    if (isEmployee) {
+      setCurrentView("self_service");
+    }
+  }, [isEmployee]);
 
   // Enterprise Modals
   const [wizardModalOpen, setWizardModalOpen] = useState(false);

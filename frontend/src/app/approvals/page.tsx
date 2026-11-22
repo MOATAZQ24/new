@@ -19,6 +19,7 @@ import { Icons, ShieldCheckIcon } from "@/components/ui/Icons";
 import { Check, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { MobileApprovalCard } from "@/components/mobile/MobileApprovalCard";
 
@@ -70,11 +71,18 @@ interface ApprovalsData {
 
 export default function ApprovalsPage() {
   const { currentCompany } = useAuth();
+  const { isEmployee, canApprove } = useUserRole();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ApprovalsData | null>(null);
   const [tab, setTab] = useState<"approvals" | "purchases" | "create">("approvals");
   const [statusFilter, setStatusFilter] = useState("");
+
+  useEffect(() => {
+    if (isEmployee) {
+      setTab("purchases");
+    }
+  }, [isEmployee]);
 
   // Decision Modal
   const [decisionModal, setDecisionModal] = useState(false);

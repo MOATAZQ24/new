@@ -21,6 +21,7 @@ import TelegramLinkingModal from "@/components/telegram/TelegramLinkingModal";
 import { api, exportReportDownload } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { AddEmployeeModal } from "./AddEmployeeModal";
 import { Send, Settings, Bell, Star, Check } from "lucide-react";
@@ -198,7 +199,8 @@ export default function EmployeesPage() {
   const [taskPriority, setTaskPriority] = useState("Medium");
   const [taskDueDate, setTaskDueDate] = useState("");
 
-  const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
+  const { canManageUsers } = useUserRole();
+  const canManage = canManageUsers;
 
   const fetchEmployees = async () => {
     setLoading(true);

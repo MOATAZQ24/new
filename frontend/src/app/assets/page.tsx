@@ -25,6 +25,7 @@ import { EnterpriseBarChart, EnterpriseDonutChart } from "@/components/ui/Enterp
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
@@ -187,7 +188,8 @@ export default function AssetsPage() {
   const [editStatus, setEditStatus] = useState("Available");
   const [editNotes, setEditNotes] = useState("");
 
-  const canManage = user?.is_superadmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager") || user?.roles?.includes("IT Technician");
+  const { canManageAssets } = useUserRole();
+  const canManage = canManageAssets;
 
   const fetchAssets = async () => {
     setLoading(true);

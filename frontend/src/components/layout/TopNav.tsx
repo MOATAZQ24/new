@@ -559,9 +559,9 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
         {/* AI Quick Assistant Trigger */}
         <button
           type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent("ig:open-command-palette"))}
+          onClick={() => window.dispatchEvent(new CustomEvent("ig:open-ai-composer"))}
           aria-label="المساعد الذكي للعمليات"
-          title="المساعد الذكي للعمليات (Cmd+K)"
+          title="المساعد الذكي للعمليات (Ctrl+J)"
           className="hidden sm:inline-flex motion-control items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 transition-all cursor-pointer shadow-2xs"
         >
           <Sparkles className="w-3.5 h-3.5" />

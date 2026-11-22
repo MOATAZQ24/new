@@ -15,6 +15,7 @@ import { Icons } from "@/components/ui/Icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -148,8 +149,8 @@ export default function CompaniesPage() {
   const [restoringCompany, setRestoringCompany] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
-  const isSuperAdmin = user?.is_superadmin;
-  const canManage = isSuperAdmin || user?.roles?.includes("Company Admin") || user?.roles?.includes("IT Manager");
+  const { isSuperAdmin, canConfigureSystem } = useUserRole();
+  const canManage = canConfigureSystem;
 
   const refreshBranchesAndDepts = async (cid: string) => {
     try {
