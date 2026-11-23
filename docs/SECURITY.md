@@ -53,3 +53,33 @@ Every data mutation (Create, Update, Delete, Custody Transfer, Status Change, Co
 - Complete JSON diff of `old_values` and `new_values`
 - Client IP address and UTC timestamp
 The audit logs cannot be edited or deleted through any API endpoint.
+
+---
+
+## 6. Granular Work-Management RBAC Matrix
+
+Mapped onto the 6 existing roles in `backend/app/core/rbac.py` without altering default access for existing modules:
+
+| Granular Permission | Super Admin | Company Admin | IT Manager | IT Technician | Employee | Auditor |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `ticket:view`, `task:view` | Yes | Yes | Yes | Yes | Own / Watched | Yes (RO) |
+| `ticket:create`, `task:create` | Yes | Yes | Yes | Yes | Yes | No |
+| `ticket:assign`, `task:assign` | Yes | Yes | Yes | Yes | No | No |
+| `ticket:transition`, `ticket:close` | Yes | Yes | Yes | Yes | No | No |
+| `ticket:merge`, `ticket:bulk`, `task:bulk` | Yes | Yes | Yes | Yes | No | No |
+| `task:transition` | Yes | Yes | Yes | Yes | Own Tasks | No |
+| `workload:view` | Yes | Yes | Yes | Yes | No | Yes (RO) |
+| `team:manage`, `rule:manage`, `sla:manage`, `workflow:manage`, `macro:manage` | Yes | Yes | Yes | No (private macros only) | No | No |
+
+---
+
+## 7. STRIDE Threat Model — Help Desk & Assignment Surface
+
+| Threat (STRIDE) | Attack Vector | Implemented Mitigation | Verification |
+| :--- | :--- | :--- | :--- |
+| **Spoofing** | Replaying or forging service escalation calls or cross-tenant headers | `X-Service-Token` validated with constant-time `hmac.compare_digest` (min 16 chars); `X-Company-ID` verified against active `CompanyMembership`; HttpOnly cookies + Argon2id unchanged | `test_work_management_api.py`, `test_work_management_security.py` |
+| **Tampering** | Mass assignment of `company_id` or illegal status jumps; bypassing linked-task close gate | Pydantic v2 `extra="forbid"` rejects client-supplied `company_id` (`422`); `WorkflowTransition` matrix enforced server-side (`409`); `require_tasks_done_to_close` checked atomically | `test_work_management_api.py`, `test_work_management_security.py` |
+| **Repudiation** | Disputed reassignments, merges, or SLA escalations | Append-only `ticket_events` timeline + immutable `audit_logs` with actor, IP, UTC timestamp, old/new JSON diffs, and assignment `reason` | `test_assignment_engine.py`, `test_sla_escalation.py` |
+| **Information Disclosure** | Cross-company BOLA/IDOR on tickets, teams, rules, voice notes, internal notes, or `/me/work` | Every query filtered by `company_id`; `GET /tickets/voice/{filename}` requires auth + regex filename validation + path containment + tenant check; `visibility="internal"` events stripped for non-staff | `test_work_management_security.py` |
+| **Denial of Service** | Craft excessive rules, oversized bulk payloads, or duplicate retry storms | Max 100 active rules/company; strict condition key allowlist; bulk capped at 100 IDs; `Idempotency-Key` deduplication (24h TTL); bounded business-hours calendar loop | `test_assignment_engine.py`, `test_work_management_api.py` |
+| **Elevation of Privilege** | Technician or Employee mutating routing rules, SLA policies, shared macros, or viewing other employees' tickets | Granular RBAC dependencies (`require_granular_permission`) enforced server-side; Employees restricted to own/watched tickets; Auditors strictly read-only | `test_work_management_security.py` |

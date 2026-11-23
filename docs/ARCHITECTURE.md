@@ -60,3 +60,38 @@ Physical branch locations are normalized into `physical_branch_locations` (`5` a
 5. `BR-JEDDAH` — `جدة`
 
 Each internal company (`IGT`, `BLB`, `INV`) maintains exactly 5 active operational `branches` rows linked via `physical_branch_id` to the 5 master `physical_branch_locations`, preventing duplicate or unaligned branch definitions across tenants.
+
+---
+
+## 4. Rule-Driven Work Management, Assignment Engine & SLA Architecture
+
+Added in migration `20261124_helpdesk_assignment` (portable across SQLite 3 and PostgreSQL 16):
+
+- **Data Model (`backend/app/models/work_management.py`):**
+  - `teams` & `team_members` (skills JSON, `max_open_items`, `is_available`, `weight`, `last_assigned_at`)
+  - `assignment_rules` (company-scoped, `entity_type` in `ticket|task`, ordered `position`, allowlisted JSON `conditions`, `stop_on_match`, max 100 active rules/company)
+  - `round_robin_cursors` (atomic per-team cursor; never derived from ticket IDs)
+  - `ticket_categories`, `sla_policies` (business hours schedule, `Asia/Riyadh` Sun–Thu 08:00–17:00), `workflow_transitions`, `ticket_events` (append-only timeline), `ticket_watchers`, `task_watchers`, `task_checklist_items`, `macros`, `saved_views`, `idempotency_keys` (24h TTL)
+  - Additive columns on `helpdesk_tickets` and `tasks` (`team_id`, `assignee_id` dual-synced with `assigned_to_id`, `sla_policy_id`, `first_response_due_at`, `resolution_due_at`, `sla_state`, `merged_into_ticket_id`, `require_tasks_done_to_close`, `parent_task_id`).
+
+```mermaid
+flowchart TD
+    IN["Ticket or Task Created / Reassigned"] --> SLA["Apply SLA Policy (Asia/Riyadh Business Hours)"]
+    SLA --> RULES["Evaluate Active AssignmentRules (ordered by position)"]
+    RULES -->|"Matched Team (or Category Default)"| LOCK["Acquire Concurrency Lock (PG pg_advisory_xact_lock / SQLite Mutex)"]
+    RULES -->|"No Match"| QUEUE["Leave Unassigned in Company Queue"]
+    LOCK --> ELIG["Filter Eligible TeamMembers (Active, Company, Available, Under Capacity, Not on Approved Leave)"]
+    ELIG --> STRAT{"Strategy"}
+    STRAT -->|round_robin| RR["Atomic RoundRobinCursor Wraparound"]
+    STRAT -->|least_loaded| LL["Fewest Open Tickets+Tasks, Weight, Oldest Assignment"]
+    STRAT -->|skill_based| SK["Match Required Skills -> Least Loaded (or Team Queue Fallback)"]
+    STRAT -->|manual| MAN["Team Queue (Unassigned)"]
+    RR --> SIDE["Commit + TicketEvent + AuditLog + Notifications"]
+    LL --> SIDE
+    SK --> SIDE
+    MAN --> SIDE
+    JOB["Idempotent SLA Escalation Worker (CLI / Service-Token Endpoint)"] -->|"at_risk >= 80%"| WARN["Emit sla_warning Event + Notify Assignee & Team Lead"]
+    JOB -->|"breached"| ESC["Emit sla_breach + Optional Priority Bump + Reassign to Lead"]
+```
+
+- **Backward Compatibility:** `ticket_comments` are preserved and mirrored into `ticket_events` on write and backfilled idempotently via `legacy_comment_id` during migration. `Task.assigned_to_id` (`employees.id`) is preserved and dual-synced with `Task.assignee_id` (`users.id`).

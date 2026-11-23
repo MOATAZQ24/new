@@ -88,3 +88,33 @@
 - Navigate to **التقارير والتصدير** (`/reports`).
 - Export all 8 system datasets into **Excel-compatible CSV with UTF-8 BOM** (proper Arabic text rendering in Microsoft Excel).
 - View and print standardized HTML reports ready for PDF printing.
+
+---
+
+## 12. Work Management, Rule-Driven Assignment & SLA Configuration (إدارة التوزيع و SLA)
+
+### العربية (Arabic Guide)
+1. **الوصول للإعدادات:** انتقل إلى **التوزيع و SLA** (`/settings/work-management`) من القائمة الجانبية أو صفحة الإعدادات (متاح لمدير النظام ومدير الشركة ومدير تقنية المعلومات).
+2. **الفرق والأعضاء (Teams & Members):**
+   - أنشئ فرق العمل (مثل: فريق الدعم الفني L1، فريق الشبكات، فريق الصلاحيات) واختر الاستراتيجية الافتراضية لكل فريق (`least_loaded`، `round_robin`، `skill_based`، `manual`) وقائد الفريق.
+   - أضف الفنيين وحدد المهارات (مثل `network, vpn, firewall`)، الحد الأقصى للعناصر المفتوحة (`max_open_items`)، الوزن (`weight`)، وحالة التوفر. يراعي المحرك تلقائياً طلبات الإجازة المعتمدة (`LeaveRequest`).
+3. **قواعد التوزيع ومحاكاة الاختبار (Assignment Rules & Dry-Run):**
+   - أنشئ قواعد مرتبة بالأولوية لتوجيه التذاكر أو المهام حسب التصنيف، الأولوية، الفرع، أو الكلمات المفتاحية.
+   - استخدم أزرار التحريك لإعادة ترتيب القواعد، ثم اختبر النتيجة فورياً عبر لوحة **محاكي اختبار القواعد (Dry-Run)** دون تعديل أي سجلات.
+4. **سياسات SLA والتصعيد الآلي:**
+   - حدد أوقات الاستجابة الأولى والحل بالدقائق وفق ساعات العمل الرسمية (`Asia/Riyadh`، الأحد–الخميس، 08:00–17:00).
+   - فعّل التصعيد لقائد الفريق أو رفع الأولوية تلقائياً عند تجاوز المهلة، ويمكن جدولة المهمة الآلية عبر Cron:
+     ```bash
+     python -m app.workers.sla_escalation
+     ```
+     أو عبر `POST /api/v1/system/run-sla-escalation` مع ترويسة `X-Service-Token`.
+5. **مصفوفة الحالات والردود الجاهزة:**
+   - عدّل الانتقالات المسموحة وإلزامية التعليق لكل انتقال من تبويب **مصفوفة الحالات**، وأضف الردود الجاهزة (العامة والداخلية) لاستخدامها عبر `/` داخل صندوق التذاكر (`/tickets`).
+
+### English Quick Guide
+1. Open **Work Management Settings** (`/settings/work-management`) as `Super Admin`, `Company Admin`, or `IT Manager`.
+2. **Teams & Members:** Define teams, default strategy (`round_robin`, `least_loaded`, `skill_based`, `manual`), team lead, per-member skills, capacity (`max_open_items`), weight, and availability. Active approved `LeaveRequest`s automatically pause routing to that member.
+3. **Assignment Rules:** Order rules by `position`, configure conditions (`category`, `priority`, `branch_id`, `department_id`, `asset_type`, `keywords`, `requester_role`), and verify routing using the read-only **Dry-Run** panel before going live.
+4. **SLA Policies & Escalation:** Configure business-hours policies (`Asia/Riyadh`, Sun–Thu `08:00–17:00`) and run `python -m app.workers.sla_escalation` (safe and idempotent to run on a 5-minute cron or via `POST /api/v1/system/run-sla-escalation` with `IGOS_SERVICE_TOKEN`).
+5. **Workflows, Categories & Macros:** Customize allowed status transitions, comment requirements, ticket categories, and shared `/` canned replies.
+6. **My Work & Split Inbox:** Technicians land on `/my-work` for a unified overdue/today/week feed and process queues in `/tickets` (split-pane inbox with `J`/`K`/`A`/`S`/`R`/`N`/`?` shortcuts, bulk actions, merge, and linked tasks).

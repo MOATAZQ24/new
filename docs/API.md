@@ -121,3 +121,41 @@ All successful API responses return a standardized JSON structure:
 
 ### Audit Logs (`/api/v1/audit`)
 - `GET /`: Search immutable security audit trail.
+
+---
+
+## 5. Work Management, Rule-Driven Assignment & SLA Endpoints
+
+### Idempotency & Cursor Pagination
+- Optional `Idempotency-Key` header (max 128 chars, 24h TTL per `(company_id, user_id, key)`) supported on `POST /tickets`, `POST /tickets/{id}/assign`, `/transition`, `/events`, `/tasks`, `/tickets/bulk`, and corresponding `/tasks/*` mutation routes.
+- `GET /tickets` and `GET /tasks` support both legacy `page`/`per_page` and keyset `cursor` pagination (`pagination.next_cursor`).
+
+### Unified My Work & Workload
+- `GET /api/v1/me/work`: Paginated unified feed across tickets, tasks, and pending approvals assigned to or watched by the current user, grouped into `overdue`, `today`, `this_week`, `later` with counts and granular permissions.
+- `GET /api/v1/workload`: Per-team and per-technician open tickets/tasks, overdue counts, capacity utilization %, leave status, and 30-day avg resolution hours (`workload:view`).
+
+### Help Desk Extensions (`/api/v1/tickets`)
+- `GET /`: Filters by `status`, `priority`, `team_id`, `assignee_id` (`me`, `unassigned`, or UUID), `branch_id`, `category_id`, `sla_state`, `created_from/to`, `due_from/to`, `q`, `saved_view_id`, `sort`, `cursor`.
+- `POST /{id}/assign`: Manual assignment (`team_id`, `assignee_id`, `clear_assignee`) or rule-driven re-assignment (`auto_assign: true`).
+- `POST /{id}/transition`: Validates against company `WorkflowTransition` matrix (`409 INVALID_WORKFLOW_TRANSITION` / `409 OPEN_LINKED_TASKS`).
+- `GET/POST /{id}/events`: Unified chronological timeline (`comment_public`, `comment_internal`, `assignment`, `status_change`, `sla_warning`, `sla_breach`, `merge`, `task_linked`) with optional `macro_id` expansion; internal events hidden from non-staff.
+- `POST /bulk`: Up to 100 ticket IDs (`assign`, `team`, `transition`, `priority`, `close`) with partial per-item reporting, RBAC, and audit logs.
+- `POST /{id}/merge`: Merge duplicate ticket into target ticket in same company (moves tasks & watchers, closes source, writes `merge` events on both).
+- `POST /{id}/tasks`: Create linked task with optional `require_tasks_done_to_close` gate.
+- `POST /{id}/watchers` & `DELETE /{id}/watchers/{user_id}`.
+
+### Task Extensions (`/api/v1/tasks`)
+- `POST /{id}/assign`, `POST /{id}/transition`, `POST /bulk` (max 100 IDs), `GET/POST/PATCH/DELETE /{id}/checklist`, `GET /{id}/subtasks`, `POST/DELETE /{id}/watchers`.
+
+### Work Management Configuration CRUD
+- `/api/v1/teams` & `/api/v1/teams/{id}/members` (`team:manage`)
+- `/api/v1/assignment-rules`, `POST /assignment-rules/reorder`, `POST /assignment-rules/dry-run` (`rule:manage`)
+- `/api/v1/sla-policies` (`sla:manage`)
+- `/api/v1/workflows/transitions` (`workflow:manage`)
+- `/api/v1/ticket-categories` (`team:manage`)
+- `/api/v1/macros` (shared requires `macro:manage`) & `/api/v1/saved-views`
+
+### SLA Reports & Escalation Worker
+- `GET /api/v1/reports/helpdesk-sla?days=30`: SLA compliance %, avg first response & resolution times, backlog aging, priority breakdown, team workload.
+- `GET /api/v1/reports/export?report_type=sla_compliance|workload&format_type=excel|html`: UTF-8 BOM CSV or printable Arabic HTML.
+- `POST /api/v1/system/run-sla-escalation`: Idempotent SLA escalation trigger protected by `X-Service-Token` (`IGOS_SERVICE_TOKEN` >= 16 chars) or authenticated manager session (`sla:manage`). Also runnable via `python -m app.workers.sla_escalation`.
