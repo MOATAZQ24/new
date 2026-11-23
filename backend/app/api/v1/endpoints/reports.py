@@ -164,9 +164,123 @@ def generate_html_printable_report(title: str, headers: list, rows: list, compan
     return html
 
 
+@router.get("/helpdesk-sla")
+def get_helpdesk_sla_report(
+    company_id: Optional[uuid.UUID] = None,
+    days: int = Query(30, ge=1, le=365),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "Auditor"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """SLA compliance, first-response/resolution times, backlog aging, and team workload metrics."""
+    from datetime import timedelta, timezone
+    from app.api.v1.endpoints.workspace import authorize_company
+    from app.models.work_management import Team, TeamMember
+    from app.services.assignment import CLOSED_TASK_STATUSES, CLOSED_TICKET_STATUSES
+
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    authorize_company(db, current_user, target_cid)
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    cutoff = now - timedelta(days=days)
+
+    tickets = (
+        db.query(HelpDeskTicket)
+        .filter(HelpDeskTicket.company_id == target_cid, HelpDeskTicket.created_at >= cutoff)
+        .all()
+    )
+    all_open_tickets = (
+        db.query(HelpDeskTicket)
+        .filter(
+            HelpDeskTicket.company_id == target_cid,
+            ~HelpDeskTicket.status.in_(CLOSED_TICKET_STATUSES),
+        )
+        .all()
+    )
+    all_open_tasks = (
+        db.query(Task)
+        .filter(Task.company_id == target_cid, ~Task.status.in_(CLOSED_TASK_STATUSES))
+        .all()
+    )
+
+    total_period = len(tickets)
+    breached_period = sum(1 for t in tickets if t.sla_state == "breached" or t.sla_status == "Breached")
+    at_risk_period = sum(1 for t in tickets if t.sla_state == "at_risk" or t.sla_status == "At_Risk")
+    compliance_pct = round(((total_period - breached_period) / total_period) * 100.0, 1) if total_period else 100.0
+
+    fr_minutes: List[float] = []
+    res_hours: List[float] = []
+    for t in tickets:
+        if t.first_response_at and t.created_at:
+            fr_minutes.append(max(0.0, (t.first_response_at - t.created_at).total_seconds() / 60.0))
+        if t.resolved_at and t.created_at:
+            res_hours.append(max(0.0, (t.resolved_at - t.created_at).total_seconds() / 3600.0))
+
+    avg_first_response_min = round(sum(fr_minutes) / len(fr_minutes), 1) if fr_minutes else None
+    avg_resolution_hours = round(sum(res_hours) / len(res_hours), 2) if res_hours else None
+
+    # Backlog aging buckets
+    aging = {"lt_24h": 0, "d1_3": 0, "d3_7": 0, "gt_7d": 0}
+    for t in all_open_tickets:
+        age_hours = max(0.0, (now - (t.created_at or now)).total_seconds() / 3600.0)
+        if age_hours < 24:
+            aging["lt_24h"] += 1
+        elif age_hours < 72:
+            aging["d1_3"] += 1
+        elif age_hours < 168:
+            aging["d3_7"] += 1
+        else:
+            aging["gt_7d"] += 1
+
+    # By priority breakdown
+    by_priority: Dict[str, Dict[str, int]] = {}
+    for t in tickets:
+        p = t.priority or "Medium"
+        row = by_priority.setdefault(p, {"total": 0, "breached": 0, "resolved": 0})
+        row["total"] += 1
+        if t.sla_state == "breached" or t.sla_status == "Breached":
+            row["breached"] += 1
+        if t.status in ("Resolved", "Closed"):
+            row["resolved"] += 1
+
+    # Workload distribution by team
+    teams = db.query(Team).filter(Team.company_id == target_cid, Team.is_active == True).all()
+    team_dist = []
+    for tm in teams:
+        tm_open_t = sum(1 for t in all_open_tickets if t.team_id == tm.id)
+        tm_open_tk = sum(1 for tk in all_open_tasks if tk.team_id == tm.id)
+        tm_breached = sum(1 for t in all_open_tickets if t.team_id == tm.id and (t.sla_state == "breached" or t.sla_status == "Breached"))
+        team_dist.append({
+            "team_id": str(tm.id),
+            "team_name": tm.name,
+            "open_tickets": tm_open_t,
+            "open_tasks": tm_open_tk,
+            "breached_tickets": tm_breached,
+        })
+
+    return success_response(
+        data={
+            "window_days": days,
+            "summary": {
+                "total_tickets": total_period,
+                "open_tickets": len(all_open_tickets),
+                "open_tasks": len(all_open_tasks),
+                "breached_tickets": breached_period,
+                "at_risk_tickets": at_risk_period,
+                "sla_compliance_pct": compliance_pct,
+                "avg_first_response_minutes": avg_first_response_min,
+                "avg_resolution_hours": avg_resolution_hours,
+            },
+            "backlog_aging": aging,
+            "by_priority": by_priority,
+            "team_workload": team_dist,
+        }
+    )
+
+
 @router.get("/export")
 def export_report(
-    report_type: str = Query(..., pattern="^(assets|custody|infrastructure|subscriptions|maintenance|tasks|helpdesk|audit|employees|companies)$"),
+    report_type: str = Query(..., pattern="^(assets|custody|infrastructure|subscriptions|maintenance|tasks|helpdesk|audit|employees|companies|sla_compliance|workload)$"),
     format_type: str = Query("excel", pattern="^(excel|csv|html|pdf)$"),
     company_id: Optional[uuid.UUID] = None,
     current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "Auditor"])),
@@ -346,6 +460,61 @@ def export_report(
             [comp.company_code, comp.company_name_ar, br.branch_name, br.location or "", br.status]
             for br, comp in br_rows
         ]
+
+    elif report_type == "sla_compliance":
+        title = "تقرير التزام اتفاقيات مستوى الخدمة (Help Desk SLA Compliance Report)"
+        headers = ["رقم التذكرة", "العنوان", "التصنيف", "الأولوية", "الحالة", "حالة SLA", "الفني المكلف", "الاستجابة الأولى", "موعد الحل المستحق", "تاريخ الحل"]
+        tcks = (
+            db.query(HelpDeskTicket)
+            .filter(HelpDeskTicket.company_id == target_cid)
+            .order_by(HelpDeskTicket.created_at.desc())
+            .limit(1000)
+            .all()
+        )
+        rows = [
+            [
+                t.ticket_number,
+                t.issue_title,
+                t.category,
+                t.priority,
+                t.status,
+                t.sla_state or "ok",
+                t.assigned_technician.username if t.assigned_technician else "غير معين",
+                t.first_response_at.strftime("%Y-%m-%d %H:%M") if t.first_response_at else "-",
+                t.resolution_due_at.strftime("%Y-%m-%d %H:%M") if t.resolution_due_at else "-",
+                t.resolved_at.strftime("%Y-%m-%d %H:%M") if t.resolved_at else "-",
+            ]
+            for t in tcks
+        ]
+
+    elif report_type == "workload":
+        from app.models.work_management import TeamMember
+        from app.services.assignment import CLOSED_TASK_STATUSES, CLOSED_TICKET_STATUSES
+        title = "تقرير توزيع أحمال العمل للفرق والفنيين (Workload Distribution Report)"
+        headers = ["المستخدم", "الاسم الكامل", "الفريق", "تذاكر مفتوحة", "مهام مفتوحة", "إجمالي المفتوح", "السعة القصوى", "نسبة الاستخدام %", "متاح"]
+        members = db.query(TeamMember).filter(TeamMember.company_id == target_cid).all()
+        open_tcks = db.query(HelpDeskTicket).filter(HelpDeskTicket.company_id == target_cid, ~HelpDeskTicket.status.in_(CLOSED_TICKET_STATUSES)).all()
+        open_tks = db.query(Task).filter(Task.company_id == target_cid, ~Task.status.in_(CLOSED_TASK_STATUSES)).all()
+        rows = []
+        for m in members:
+            u = m.user
+            if not u or u.is_deleted:
+                continue
+            ot = sum(1 for t in open_tcks if t.assigned_technician_id == u.id)
+            ok = sum(1 for tk in open_tks if tk.assignee_id == u.id or (u.employee_id and tk.assigned_to_id == u.employee_id))
+            tot = ot + ok
+            cap = max(1, m.max_open_items)
+            rows.append([
+                u.username,
+                u.employee.full_name if u.employee else u.username,
+                m.team.name if m.team else "-",
+                ot,
+                ok,
+                tot,
+                cap,
+                f"{round((tot / cap) * 100.0, 1)}%",
+                "نعم" if m.is_available else "لا",
+            ])
 
     else:  # audit
         title = "تقرير سجل العمليات والمراجعة (Audit Log Report)"
