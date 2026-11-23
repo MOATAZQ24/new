@@ -1454,7 +1454,7 @@ def get_my_work(
         )
         watched_set = set(watched_t_ids)
         for t in tickets:
-            due_dt = t.resolution_due_at or t.sla_resolution_due_at or t.sla_target_at
+            due_dt = t.resolution_due_at or t.sla_target_at
             bkt = "overdue" if t.sla_state == "breached" else _classify_due_bucket(due_dt, now)
             rel = "assigned" if t.assigned_technician_id == current_user.id else (
                 "watching" if t.id in watched_set else "requester"

@@ -237,10 +237,34 @@ def test_full_work_management_api_flow():
         r_list = client.get(f"/api/v1/tickets?per_page=1&saved_view_id={sv_id}", headers=t1_h)
         assert r_list.status_code == 200 and len(r_list.json()["data"]) == 1
 
-        # 8. Unified /me/work, /workload, SLA report & exports
+        # 8. Unified /me/work (including legacy ticket with resolution_due_at=None), static ticket routes, /workload, SLA report & exports
+        from app.models.ticket import HelpDeskTicket
+        db_sess = sessionmaker(bind=ctx["engine"])()
+        try:
+            legacy_t = HelpDeskTicket(
+                company_id=uuid.UUID(ctx["co_id"]),
+                ticket_number="TCK-LEGACY-0001",
+                issue_title="Legacy ticket without resolution_due_at",
+                issue_description="Pre-migration row",
+                requester_id=uuid.UUID(ctx["emp_id"]),
+                assigned_technician_id=uuid.UUID(ctx["t1_id"]),
+                priority="Medium",
+                status="In Progress",
+                resolution_due_at=None,
+            )
+            db_sess.add(legacy_t)
+            db_sess.commit()
+        finally:
+            db_sess.close()
+
         r_work = client.get("/api/v1/me/work", headers=t1_h)
         assert r_work.status_code == 200
         assert "grouped" in r_work.json()["data"] and "counts" in r_work.json()["data"]
+
+        # Static GET routes must never be shadowed by /{ticket_id}
+        for static_ep in ("/api/v1/tickets/catalog", "/api/v1/tickets/approvals", "/api/v1/tickets/workflows", "/api/v1/tickets/slas", "/api/v1/tickets/problems/list", "/api/v1/tickets/knowledge/list"):
+            r_st = client.get(static_ep, headers=t1_h)
+            assert r_st.status_code == 200, f"{static_ep} returned {r_st.status_code}: {r_st.text}"
 
         r_wl = client.get("/api/v1/workload", headers=mgr_h)
         assert r_wl.status_code == 200 and len(r_wl.json()["data"]["technicians"]) >= 2

@@ -913,6 +913,714 @@ def get_tickets_summary(
     })
 
 
+# ── Multimedia & Voice Notes ─────────────────────────────────────────────
+
+@router.post("/voice/upload")
+async def upload_ticket_voice_note(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+):
+    """Upload a voice note recording for Help Desk ticket submission with size limit and tenant isolation."""
+    content = await file.read()
+    max_bytes = 10 * 1024 * 1024
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="الملف الصوتي المرفوع فارغ")
+    if len(content) > max_bytes:
+        raise HTTPException(status_code=413, detail="حجم الملف الصوتي يتجاوز الحد المسموح به (10 ميجابايت)")
+
+    content_type = (file.content_type or "audio/webm").lower()
+    ext = ".webm"
+    if "mp4" in content_type or "m4a" in content_type:
+        ext = ".m4a"
+    elif "ogg" in content_type:
+        ext = ".ogg"
+    elif "wav" in content_type:
+        ext = ".wav"
+    elif "mp3" in content_type or "mpeg" in content_type:
+        ext = ".mp3"
+
+    filename = f"ticket_voice_{uuid.uuid4().hex[:16]}{ext}"
+    company_dir = os.path.join(VOICE_TICKET_DIR, str(active_cid))
+    os.makedirs(company_dir, exist_ok=True)
+    file_path = os.path.join(company_dir, filename)
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    url = f"/api/v1/tickets/voice/{filename}"
+    return success_response(data={"voice_note_url": url, "filename": filename}, message="تم رفع التسجيل الصوتي بنجاح")
+
+
+@router.get("/voice/{filename}")
+def get_ticket_voice_file(
+    filename: str,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Serve recorded ticket voice note with strict authentication, filename validation, and tenant isolation."""
+    clean_name = os.path.basename(filename)
+    if clean_name != filename or not re.match(r"^ticket_voice_[a-fA-F0-9]+\.(webm|ogg|m4a|mp4|wav|mp3)$", clean_name):
+        raise HTTPException(status_code=400, detail="اسم الملف الصوتي غير صالح")
+
+    base_dir = os.path.abspath(VOICE_TICKET_DIR)
+    company_dir = os.path.abspath(os.path.join(base_dir, str(active_cid)))
+    candidate = os.path.abspath(os.path.join(company_dir, clean_name))
+
+    target_path = None
+    if candidate.startswith(company_dir + os.sep) and os.path.isfile(candidate):
+        target_path = candidate
+    else:
+        # Backward compatibility for pre-folder legacy files ONLY if a ticket in active_cid owns it (or superadmin)
+        legacy_path = os.path.abspath(os.path.join(base_dir, clean_name))
+        if legacy_path.startswith(base_dir + os.sep) and os.path.isfile(legacy_path):
+            owner_ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.voice_note_url.like(f"%{clean_name}%")).first()
+            if current_user.is_superadmin or (owner_ticket and owner_ticket.company_id == active_cid):
+                target_path = legacy_path
+            else:
+                raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذا التسجيل الصوتي")
+        elif current_user.is_superadmin and os.path.isdir(base_dir):
+            for entry in os.listdir(base_dir):
+                alt = os.path.abspath(os.path.join(base_dir, entry, clean_name))
+                if alt.startswith(base_dir + os.sep) and os.path.isfile(alt):
+                    target_path = alt
+                    break
+
+    if not target_path:
+        raise HTTPException(status_code=404, detail="الملف الصوتي غير موجود")
+
+    media_type = "audio/webm"
+    if clean_name.endswith((".m4a", ".mp4")):
+        media_type = "audio/mp4"
+    elif clean_name.endswith(".ogg"):
+        media_type = "audio/ogg"
+    elif clean_name.endswith(".wav"):
+        media_type = "audio/wav"
+    elif clean_name.endswith(".mp3"):
+        media_type = "audio/mpeg"
+
+    return FileResponse(target_path, media_type=media_type, headers={"Cache-Control": "private, max-age=3600"})
+
+
+# ── ITIL 4 Problem Management Endpoints (Phase 6) ────────────────────────
+
+@router.get("/problems/list")
+def list_problems(
+    company_id: Optional[uuid.UUID] = None,
+    status_filter: Optional[str] = Query(None, alias="status"),
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List Problem Management records for recurring technical incident analysis."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    query = db.query(ProblemRecord).filter(ProblemRecord.company_id == target_cid)
+    if status_filter:
+        query = query.filter(ProblemRecord.status == status_filter)
+
+    problems = query.order_by(ProblemRecord.created_at.desc()).all()
+    data = []
+    for p in problems:
+        data.append({
+            "id": str(p.id),
+            "company_id": str(p.company_id),
+            "title": p.title,
+            "description": p.description,
+            "root_cause": p.root_cause,
+            "workaround": p.workaround,
+            "status": p.status,
+            "assigned_to_id": str(p.assigned_to_id) if p.assigned_to_id else None,
+            "assigned_to_name": p.assigned_to.username if p.assigned_to else None,
+            "linked_tickets_count": len(p.tickets),
+            "created_at": p.created_at.isoformat(),
+            "updated_at": p.updated_at.isoformat(),
+        })
+    return success_response(data=data)
+
+
+@router.post("/problems")
+def create_problem(
+    payload: ProblemRecordCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new Problem Record for investigating root cause of incidents."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    prob = ProblemRecord(
+        company_id=target_cid,
+        title=payload.title.strip(),
+        description=payload.description.strip(),
+        root_cause=payload.root_cause,
+        workaround=payload.workaround,
+        status=payload.status or "Open",
+        assigned_to_id=payload.assigned_to_id or current_user.id,
+    )
+    db.add(prob)
+    db.commit()
+    db.refresh(prob)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="ProblemRecord",
+        resource_id=str(prob.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"title": prob.title},
+    )
+    return success_response(data={"id": str(prob.id)}, message="تم إنشاء سجل المشكلة الجذرية بنجاح")
+
+
+# ── Knowledge Base Endpoints (Phase 6) ───────────────────────────────────
+
+@router.get("/knowledge/list")
+def list_knowledge_articles(
+    company_id: Optional[uuid.UUID] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Deterministic fast search of verified Knowledge Base articles without AI."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    query = db.query(KnowledgeArticle).filter(KnowledgeArticle.company_id == target_cid)
+
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
+    if not is_staff:
+        query = query.filter(KnowledgeArticle.is_published == True)
+
+    if category:
+        query = query.filter(KnowledgeArticle.category == category)
+    if search and search.strip():
+        s = f"%{search.strip()}%"
+        query = query.filter(
+            (KnowledgeArticle.title.ilike(s))
+            | (KnowledgeArticle.symptom.ilike(s))
+            | (KnowledgeArticle.resolution.ilike(s))
+        )
+
+    articles = query.order_by(KnowledgeArticle.created_at.desc()).all()
+    data = []
+    for a in articles:
+        data.append({
+            "id": str(a.id),
+            "company_id": str(a.company_id),
+            "title": a.title,
+            "category": a.category,
+            "symptom": a.symptom,
+            "diagnostic_steps": a.diagnostic_steps,
+            "resolution": a.resolution,
+            "is_published": a.is_published,
+            "author_id": str(a.author_id) if a.author_id else None,
+            "author_name": a.author.username if a.author else None,
+            "approved_by_id": str(a.approved_by_id) if a.approved_by_id else None,
+            "approved_by_name": a.approved_by.username if a.approved_by else None,
+            "created_at": a.created_at.isoformat(),
+            "updated_at": a.updated_at.isoformat(),
+        })
+    return success_response(data=data)
+
+
+@router.post("/knowledge")
+def create_knowledge_article(
+    payload: KnowledgeArticleCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new operational Knowledge Base article."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    is_approver = any(r in ["Super Admin", "Company Admin", "IT Manager"] for r in user_roles)
+
+    article = KnowledgeArticle(
+        company_id=target_cid,
+        title=payload.title.strip(),
+        category=payload.category,
+        symptom=payload.symptom.strip(),
+        diagnostic_steps=payload.diagnostic_steps,
+        resolution=payload.resolution.strip(),
+        is_published=payload.is_published and is_approver,
+        author_id=current_user.id,
+        approved_by_id=current_user.id if (payload.is_published and is_approver) else None,
+    )
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="KnowledgeArticle",
+        resource_id=str(article.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"title": article.title, "category": article.category, "is_published": article.is_published},
+    )
+    return success_response(data={"id": str(article.id)}, message="تم إنشاء المقال المعرفي بنجاح")
+
+
+# ── Enterprise Service Catalog Endpoints ─────────────────────────────────
+
+@router.get("/catalog")
+def list_service_catalog_items(
+    company_id: Optional[uuid.UUID] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    include_inactive: bool = False,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List service catalog items with automatic enterprise seeding if empty."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+
+    # Automatic idempotent seeding if catalog is empty for this company
+    existing_count = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.company_id == target_cid).count()
+    if existing_count == 0:
+        seed_service_desk_defaults(db, target_cid)
+
+    query = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.company_id == target_cid)
+    if not include_inactive:
+        query = query.filter(ServiceCatalogItem.is_active == True)
+    if category:
+        query = query.filter(ServiceCatalogItem.category == category)
+    if search and search.strip():
+        s = f"%{search.strip()}%"
+        query = query.filter(
+            (ServiceCatalogItem.name_ar.ilike(s))
+            | (ServiceCatalogItem.name_en.ilike(s))
+            | (ServiceCatalogItem.description_ar.ilike(s))
+        )
+
+    items = query.order_by(ServiceCatalogItem.display_order.asc(), ServiceCatalogItem.created_at.asc()).all()
+    data = []
+    for it in items:
+        data.append({
+            "id": str(it.id),
+            "company_id": str(it.company_id),
+            "category": it.category,
+            "name_ar": it.name_ar,
+            "name_en": it.name_en,
+            "description_ar": it.description_ar,
+            "icon": it.icon,
+            "default_priority": it.default_priority,
+            "estimated_duration_hours": it.estimated_duration_hours,
+            "requires_approval": it.requires_approval,
+            "approval_type": it.approval_type,
+            "workflow_template": it.workflow_template,
+            "dynamic_form_schema": it.dynamic_form_schema,
+            "sla_policy_id": str(getattr(it, "sla_policy_id", None)) if getattr(it, "sla_policy_id", None) else None,
+            "is_active": it.is_active,
+            "display_order": it.display_order,
+            "created_at": it.created_at.isoformat() if it.created_at else None,
+        })
+    return success_response(data=data)
+
+
+@router.post("/catalog")
+def create_service_catalog_item(
+    payload: ServiceCatalogItemCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new service catalog item."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    item = ServiceCatalogItem(
+        company_id=target_cid,
+        category=payload.category,
+        name_ar=payload.name_ar.strip(),
+        name_en=payload.name_en.strip() if payload.name_en else None,
+        description_ar=payload.description_ar.strip() if payload.description_ar else None,
+        icon=payload.icon or "HelpCircle",
+        default_priority=payload.default_priority,
+        estimated_duration_hours=payload.estimated_duration_hours,
+        requires_approval=payload.requires_approval,
+        approval_type=payload.approval_type,
+        workflow_template=payload.workflow_template,
+        dynamic_form_schema=payload.dynamic_form_schema,
+        sla_policy_id=payload.sla_policy_id,
+        is_active=payload.is_active,
+        display_order=payload.display_order,
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="ServiceCatalogItem",
+        resource_id=str(item.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"name_ar": item.name_ar, "category": item.category},
+    )
+    return success_response(data={"id": str(item.id)}, message="تم إضافة خدمة جديدة إلى دليل الخدمات بنجاح")
+
+
+@router.put("/catalog/{item_id}")
+def update_service_catalog_item(
+    item_id: uuid.UUID,
+    payload: ServiceCatalogItemUpdate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Update an existing service catalog item."""
+    item = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="عنصر دليل الخدمات غير موجود")
+
+    if not current_user.is_superadmin and item.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذا العنصر")
+
+    update_data = payload.dict(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(item, field, val)
+
+    db.commit()
+    db.refresh(item)
+
+    log_audit(
+        db=db, action="UPDATE", resource_type="ServiceCatalogItem",
+        resource_id=str(item.id), user_id=current_user.id, company_id=item.company_id,
+        new_values=update_data,
+    )
+    return success_response(data={"id": str(item.id)}, message="تم تحديث عنصر دليل الخدمات بنجاح")
+
+
+@router.delete("/catalog/{item_id}")
+def delete_service_catalog_item(
+    item_id: uuid.UUID,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Soft delete a service catalog item."""
+    item = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="عنصر دليل الخدمات غير موجود")
+
+    if not current_user.is_superadmin and item.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية حذف هذا العنصر")
+
+    item.is_active = False
+    db.commit()
+
+    log_audit(
+        db=db, action="DEACTIVATE", resource_type="ServiceCatalogItem",
+        resource_id=str(item.id), user_id=current_user.id, company_id=item.company_id,
+    )
+    return success_response(data={"id": str(item.id)}, message="تم إلغاء تفعيل عنصر الخدمة بنجاح")
+
+
+# ── Ticket Approvals Endpoints ───────────────────────────────────────────
+
+@router.get("/approvals")
+def list_ticket_approvals(
+    company_id: Optional[uuid.UUID] = None,
+    status_filter: Optional[str] = Query(None, alias="status"),
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List service desk approvals for current user or company."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    user_roles = get_user_roles(current_user, db, company_id=target_cid)
+    is_mgmt = any(r in ["Super Admin", "Company Admin", "IT Manager", "Finance Manager"] for r in user_roles)
+
+    query = (
+        db.query(TicketApproval)
+        .join(HelpDeskTicket, TicketApproval.ticket_id == HelpDeskTicket.id)
+        .filter(TicketApproval.company_id == target_cid)
+    )
+
+    if not is_mgmt:
+        query = query.filter(TicketApproval.assigned_approver_id == current_user.id)
+
+    if status_filter:
+        query = query.filter(TicketApproval.status == status_filter)
+
+    approvals = query.order_by(TicketApproval.created_at.desc()).all()
+    data = []
+    for a in approvals:
+        t = a.ticket
+        data.append({
+            "id": str(a.id),
+            "ticket_id": str(a.ticket_id),
+            "ticket_number": t.ticket_number if t else None,
+            "ticket_title": t.issue_title if t else None,
+            "ticket_priority": t.priority if t else None,
+            "ticket_creator_name": t.requester.full_name if (t and t.requester) else None,
+            "stage_name": a.approval_stage,
+            "stage_order": a.stage_order,
+            "status": a.status,
+            "approver_id": str(a.assigned_approver_id) if a.assigned_approver_id else None,
+            "approver_name": a.assigned_approver.username if a.assigned_approver else None,
+            "decided_by_id": str(a.decided_by_id) if a.decided_by_id else None,
+            "decided_by_name": a.decided_by.username if a.decided_by else None,
+            "decision_notes": a.decision_notes,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "decided_at": a.decided_at.isoformat() if a.decided_at else None,
+        })
+    return success_response(data=data)
+
+
+@router.post("/approvals/{approval_id}/decision")
+def decide_ticket_approval(
+    approval_id: uuid.UUID,
+    payload: TicketApprovalDecision,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Record an approve or reject decision on a service request."""
+    appr = db.query(TicketApproval).filter(TicketApproval.id == approval_id).first()
+    if not appr:
+        raise HTTPException(status_code=404, detail="طلب الاعتماد غير موجود")
+
+    if not current_user.is_superadmin and appr.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذا الاعتماد")
+
+    user_roles = get_user_roles(current_user, db, company_id=appr.company_id)
+    is_approver = any(r in ["Super Admin", "Company Admin", "IT Manager", "Finance Manager"] for r in user_roles)
+    if not is_approver and appr.assigned_approver_id != current_user.id:
+        raise HTTPException(status_code=403, detail="غير مصرح لك باتخاذ قرار بشأن هذا الاعتماد")
+
+    ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.id == appr.ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="التذكرة المرتبطة غير موجودة")
+
+    try:
+        updated_appr = process_ticket_approval(
+            db=db,
+            ticket=ticket,
+            approval_id=approval_id,
+            decision=payload.decision,
+            decider_user=current_user,
+            notes=payload.decision_notes,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    log_audit(
+        db=db,
+        action="APPROVAL_DECISION",
+        resource_type="TicketApproval",
+        resource_id=str(appr.id),
+        user_id=current_user.id,
+        company_id=appr.company_id,
+        new_values={"decision": payload.decision, "ticket_id": str(ticket.id), "notes": payload.decision_notes},
+    )
+
+    return success_response(
+        data={"approval_id": str(appr.id), "ticket_id": str(ticket.id), "decision": payload.decision},
+        message=f"تم تسجيل قرار الاعتماد ({payload.decision}) بنجاح"
+    )
+
+
+# ── Service Workflows Endpoints ──────────────────────────────────────────
+
+@router.get("/workflows")
+def list_service_workflows(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List service workflows for the company."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+
+    # Check if empty, seed defaults
+    existing_count = db.query(ServiceWorkflow).filter(ServiceWorkflow.company_id == target_cid).count()
+    if existing_count == 0:
+        seed_service_desk_defaults(db, target_cid)
+
+    workflows = (
+        db.query(ServiceWorkflow)
+        .filter(ServiceWorkflow.company_id == target_cid, ServiceWorkflow.is_active == True)
+        .order_by(ServiceWorkflow.created_at.desc())
+        .all()
+    )
+    data = []
+    for wf in workflows:
+        data.append({
+            "id": str(wf.id),
+            "company_id": str(wf.company_id),
+            "workflow_key": wf.workflow_key,
+            "name_ar": wf.name_ar,
+            "name_en": wf.name_en,
+            "description": wf.description,
+            "version": wf.version,
+            "status": wf.status,
+            "nodes_json": wf.nodes_json,
+            "transitions_json": wf.transitions_json,
+            "is_active": wf.is_active,
+            "created_at": wf.created_at.isoformat() if wf.created_at else None,
+        })
+    return success_response(data=data)
+
+
+@router.post("/workflows")
+def create_or_update_workflow(
+    payload: ServiceWorkflowCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Save or publish a service workflow definition."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+
+    wf = (
+        db.query(ServiceWorkflow)
+        .filter(ServiceWorkflow.company_id == target_cid, ServiceWorkflow.workflow_key == payload.workflow_key)
+        .first()
+    )
+
+    if wf:
+        wf.name_ar = payload.name_ar.strip()
+        wf.name_en = payload.name_en.strip() if payload.name_en else None
+        wf.description = payload.description.strip() if payload.description else None
+        wf.nodes_json = payload.nodes_json
+        wf.transitions_json = payload.transitions_json
+        wf.status = payload.status
+        wf.version = wf.version + 1
+        db.commit()
+        db.refresh(wf)
+        msg = "تم تحديث مسار العمل بنجاح"
+    else:
+        wf = ServiceWorkflow(
+            company_id=target_cid,
+            workflow_key=payload.workflow_key.strip(),
+            name_ar=payload.name_ar.strip(),
+            name_en=payload.name_en.strip() if payload.name_en else None,
+            description=payload.description.strip() if payload.description else None,
+            nodes_json=payload.nodes_json,
+            transitions_json=payload.transitions_json,
+            status=payload.status,
+            version=1,
+            is_active=True,
+        )
+        db.add(wf)
+        db.commit()
+        db.refresh(wf)
+        msg = "تم إنشاء مسار العمل الجديد بنجاح"
+
+    log_audit(
+        db=db, action="SAVE_WORKFLOW", resource_type="ServiceWorkflow",
+        resource_id=str(wf.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"workflow_key": wf.workflow_key, "version": wf.version},
+    )
+    return success_response(data={"id": str(wf.id), "version": wf.version}, message=msg)
+
+
+# ── SLA Policies Endpoints ───────────────────────────────────────────────
+
+@router.get("/slas")
+def list_sla_policies(
+    company_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """List SLA Policies for the company."""
+    target_cid = resolve_company_scope(current_user, active_cid, company_id)
+
+    # Check if empty, seed defaults
+    existing_count = db.query(SlaPolicy).filter(SlaPolicy.company_id == target_cid).count()
+    if existing_count == 0:
+        seed_service_desk_defaults(db, target_cid)
+
+    slas = (
+        db.query(SlaPolicy)
+        .filter(SlaPolicy.company_id == target_cid, SlaPolicy.is_active == True)
+        .order_by(SlaPolicy.first_response_minutes.asc())
+        .all()
+    )
+    data = []
+    for s in slas:
+        data.append({
+            "id": str(s.id),
+            "company_id": str(s.company_id),
+            "name": s.name,
+            "name_ar": s.name,
+            "name_en": s.name,
+            "priority": s.priority,
+            "first_response_minutes": s.first_response_minutes,
+            "resolution_minutes": s.resolution_minutes,
+            "response_time_minutes": s.first_response_minutes,
+            "resolution_time_minutes": s.resolution_minutes,
+            "escalation_notify_minutes": s.escalation_notify_minutes,
+            "business_hours_only": s.business_hours_only,
+            "business_hours": s.business_hours,
+            "is_default": bool(s.is_default),
+            "escalate_on_breach": bool(s.escalate_on_breach),
+            "bump_priority_on_breach": bool(s.bump_priority_on_breach),
+            "is_active": s.is_active,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        })
+    return success_response(data=data)
+
+
+@router.post("/slas")
+def create_sla_policy(
+    payload: SlaPolicyCreate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Create a new SLA Policy."""
+    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
+    sla = SlaPolicy(
+        company_id=target_cid,
+        name=payload.name.strip(),
+        priority=payload.priority,
+        first_response_minutes=payload.first_response_minutes,
+        resolution_minutes=payload.resolution_minutes,
+        escalation_notify_minutes=payload.escalation_notify_minutes,
+        business_hours_only=payload.business_hours_only,
+        is_active=payload.is_active,
+    )
+    db.add(sla)
+    db.commit()
+    db.refresh(sla)
+
+    log_audit(
+        db=db, action="CREATE", resource_type="SlaPolicy",
+        resource_id=str(sla.id), user_id=current_user.id, company_id=target_cid,
+        new_values={"name": sla.name, "priority": sla.priority},
+    )
+    return success_response(data={"id": str(sla.id)}, message="تم إنشاء سياسة مستوى الخدمة بنجاح")
+
+
+@router.put("/slas/{sla_id}")
+def update_sla_policy(
+    sla_id: uuid.UUID,
+    payload: SlaPolicyUpdate,
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Update an SLA Policy."""
+    sla = db.query(SlaPolicy).filter(SlaPolicy.id == sla_id).first()
+    if not sla:
+        raise HTTPException(status_code=404, detail="سياسة مستوى الخدمة غير موجودة")
+
+    if not current_user.is_superadmin and sla.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذه السياسة")
+
+    update_data = payload.dict(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(sla, field, val)
+
+    db.commit()
+    db.refresh(sla)
+
+    log_audit(
+        db=db, action="UPDATE", resource_type="SlaPolicy",
+        resource_id=str(sla.id), user_id=current_user.id, company_id=sla.company_id,
+        new_values=update_data,
+    )
+    return success_response(data={"id": str(sla.id)}, message="تم تحديث سياسة مستوى الخدمة بنجاح")
+
+
+
+
+
+
 @router.get("/{ticket_id}")
 def get_ticket(
     ticket_id: uuid.UUID,
@@ -1861,711 +2569,5 @@ def convert_ticket_to_task(
         data={"task_id": str(task.id)},
         message=f"تم تحويل التذكرة إلى مهمة بنجاح برقم {task.title}",
     )
-
-
-# ── Multimedia & Voice Notes ─────────────────────────────────────────────
-
-@router.post("/voice/upload")
-async def upload_ticket_voice_note(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-):
-    """Upload a voice note recording for Help Desk ticket submission with size limit and tenant isolation."""
-    content = await file.read()
-    max_bytes = 10 * 1024 * 1024
-    if len(content) == 0:
-        raise HTTPException(status_code=400, detail="الملف الصوتي المرفوع فارغ")
-    if len(content) > max_bytes:
-        raise HTTPException(status_code=413, detail="حجم الملف الصوتي يتجاوز الحد المسموح به (10 ميجابايت)")
-
-    content_type = (file.content_type or "audio/webm").lower()
-    ext = ".webm"
-    if "mp4" in content_type or "m4a" in content_type:
-        ext = ".m4a"
-    elif "ogg" in content_type:
-        ext = ".ogg"
-    elif "wav" in content_type:
-        ext = ".wav"
-    elif "mp3" in content_type or "mpeg" in content_type:
-        ext = ".mp3"
-
-    filename = f"ticket_voice_{uuid.uuid4().hex[:16]}{ext}"
-    company_dir = os.path.join(VOICE_TICKET_DIR, str(active_cid))
-    os.makedirs(company_dir, exist_ok=True)
-    file_path = os.path.join(company_dir, filename)
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    url = f"/api/v1/tickets/voice/{filename}"
-    return success_response(data={"voice_note_url": url, "filename": filename}, message="تم رفع التسجيل الصوتي بنجاح")
-
-
-@router.get("/voice/{filename}")
-def get_ticket_voice_file(
-    filename: str,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Serve recorded ticket voice note with strict authentication, filename validation, and tenant isolation."""
-    clean_name = os.path.basename(filename)
-    if clean_name != filename or not re.match(r"^ticket_voice_[a-fA-F0-9]+\.(webm|ogg|m4a|mp4|wav|mp3)$", clean_name):
-        raise HTTPException(status_code=400, detail="اسم الملف الصوتي غير صالح")
-
-    base_dir = os.path.abspath(VOICE_TICKET_DIR)
-    company_dir = os.path.abspath(os.path.join(base_dir, str(active_cid)))
-    candidate = os.path.abspath(os.path.join(company_dir, clean_name))
-
-    target_path = None
-    if candidate.startswith(company_dir + os.sep) and os.path.isfile(candidate):
-        target_path = candidate
-    else:
-        # Backward compatibility for pre-folder legacy files ONLY if a ticket in active_cid owns it (or superadmin)
-        legacy_path = os.path.abspath(os.path.join(base_dir, clean_name))
-        if legacy_path.startswith(base_dir + os.sep) and os.path.isfile(legacy_path):
-            owner_ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.voice_note_url.like(f"%{clean_name}%")).first()
-            if current_user.is_superadmin or (owner_ticket and owner_ticket.company_id == active_cid):
-                target_path = legacy_path
-            else:
-                raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذا التسجيل الصوتي")
-        elif current_user.is_superadmin and os.path.isdir(base_dir):
-            for entry in os.listdir(base_dir):
-                alt = os.path.abspath(os.path.join(base_dir, entry, clean_name))
-                if alt.startswith(base_dir + os.sep) and os.path.isfile(alt):
-                    target_path = alt
-                    break
-
-    if not target_path:
-        raise HTTPException(status_code=404, detail="الملف الصوتي غير موجود")
-
-    media_type = "audio/webm"
-    if clean_name.endswith((".m4a", ".mp4")):
-        media_type = "audio/mp4"
-    elif clean_name.endswith(".ogg"):
-        media_type = "audio/ogg"
-    elif clean_name.endswith(".wav"):
-        media_type = "audio/wav"
-    elif clean_name.endswith(".mp3"):
-        media_type = "audio/mpeg"
-
-    return FileResponse(target_path, media_type=media_type, headers={"Cache-Control": "private, max-age=3600"})
-
-
-# ── ITIL 4 Problem Management Endpoints (Phase 6) ────────────────────────
-
-@router.get("/problems/list")
-def list_problems(
-    company_id: Optional[uuid.UUID] = None,
-    status_filter: Optional[str] = Query(None, alias="status"),
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """List Problem Management records for recurring technical incident analysis."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-    query = db.query(ProblemRecord).filter(ProblemRecord.company_id == target_cid)
-    if status_filter:
-        query = query.filter(ProblemRecord.status == status_filter)
-
-    problems = query.order_by(ProblemRecord.created_at.desc()).all()
-    data = []
-    for p in problems:
-        data.append({
-            "id": str(p.id),
-            "company_id": str(p.company_id),
-            "title": p.title,
-            "description": p.description,
-            "root_cause": p.root_cause,
-            "workaround": p.workaround,
-            "status": p.status,
-            "assigned_to_id": str(p.assigned_to_id) if p.assigned_to_id else None,
-            "assigned_to_name": p.assigned_to.username if p.assigned_to else None,
-            "linked_tickets_count": len(p.tickets),
-            "created_at": p.created_at.isoformat(),
-            "updated_at": p.updated_at.isoformat(),
-        })
-    return success_response(data=data)
-
-
-@router.post("/problems")
-def create_problem(
-    payload: ProblemRecordCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Create a new Problem Record for investigating root cause of incidents."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-    prob = ProblemRecord(
-        company_id=target_cid,
-        title=payload.title.strip(),
-        description=payload.description.strip(),
-        root_cause=payload.root_cause,
-        workaround=payload.workaround,
-        status=payload.status or "Open",
-        assigned_to_id=payload.assigned_to_id or current_user.id,
-    )
-    db.add(prob)
-    db.commit()
-    db.refresh(prob)
-
-    log_audit(
-        db=db, action="CREATE", resource_type="ProblemRecord",
-        resource_id=str(prob.id), user_id=current_user.id, company_id=target_cid,
-        new_values={"title": prob.title},
-    )
-    return success_response(data={"id": str(prob.id)}, message="تم إنشاء سجل المشكلة الجذرية بنجاح")
-
-
-# ── Knowledge Base Endpoints (Phase 6) ───────────────────────────────────
-
-@router.get("/knowledge/list")
-def list_knowledge_articles(
-    company_id: Optional[uuid.UUID] = None,
-    category: Optional[str] = None,
-    search: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Deterministic fast search of verified Knowledge Base articles without AI."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-    query = db.query(KnowledgeArticle).filter(KnowledgeArticle.company_id == target_cid)
-
-    user_roles = get_user_roles(current_user, db, company_id=target_cid)
-    is_staff = any(r in ["Super Admin", "Company Admin", "IT Manager", "IT Technician"] for r in user_roles)
-    if not is_staff:
-        query = query.filter(KnowledgeArticle.is_published == True)
-
-    if category:
-        query = query.filter(KnowledgeArticle.category == category)
-    if search and search.strip():
-        s = f"%{search.strip()}%"
-        query = query.filter(
-            (KnowledgeArticle.title.ilike(s))
-            | (KnowledgeArticle.symptom.ilike(s))
-            | (KnowledgeArticle.resolution.ilike(s))
-        )
-
-    articles = query.order_by(KnowledgeArticle.created_at.desc()).all()
-    data = []
-    for a in articles:
-        data.append({
-            "id": str(a.id),
-            "company_id": str(a.company_id),
-            "title": a.title,
-            "category": a.category,
-            "symptom": a.symptom,
-            "diagnostic_steps": a.diagnostic_steps,
-            "resolution": a.resolution,
-            "is_published": a.is_published,
-            "author_id": str(a.author_id) if a.author_id else None,
-            "author_name": a.author.username if a.author else None,
-            "approved_by_id": str(a.approved_by_id) if a.approved_by_id else None,
-            "approved_by_name": a.approved_by.username if a.approved_by else None,
-            "created_at": a.created_at.isoformat(),
-            "updated_at": a.updated_at.isoformat(),
-        })
-    return success_response(data=data)
-
-
-@router.post("/knowledge")
-def create_knowledge_article(
-    payload: KnowledgeArticleCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Create a new operational Knowledge Base article."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-    user_roles = get_user_roles(current_user, db, company_id=target_cid)
-    is_approver = any(r in ["Super Admin", "Company Admin", "IT Manager"] for r in user_roles)
-
-    article = KnowledgeArticle(
-        company_id=target_cid,
-        title=payload.title.strip(),
-        category=payload.category,
-        symptom=payload.symptom.strip(),
-        diagnostic_steps=payload.diagnostic_steps,
-        resolution=payload.resolution.strip(),
-        is_published=payload.is_published and is_approver,
-        author_id=current_user.id,
-        approved_by_id=current_user.id if (payload.is_published and is_approver) else None,
-    )
-    db.add(article)
-    db.commit()
-    db.refresh(article)
-
-    log_audit(
-        db=db, action="CREATE", resource_type="KnowledgeArticle",
-        resource_id=str(article.id), user_id=current_user.id, company_id=target_cid,
-        new_values={"title": article.title, "category": article.category, "is_published": article.is_published},
-    )
-    return success_response(data={"id": str(article.id)}, message="تم إنشاء المقال المعرفي بنجاح")
-
-
-# ── Enterprise Service Catalog Endpoints ─────────────────────────────────
-
-@router.get("/catalog")
-def list_service_catalog_items(
-    company_id: Optional[uuid.UUID] = None,
-    category: Optional[str] = None,
-    search: Optional[str] = None,
-    include_inactive: bool = False,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """List service catalog items with automatic enterprise seeding if empty."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-
-    # Automatic idempotent seeding if catalog is empty for this company
-    existing_count = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.company_id == target_cid).count()
-    if existing_count == 0:
-        seed_service_desk_defaults(db, target_cid)
-
-    query = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.company_id == target_cid)
-    if not include_inactive:
-        query = query.filter(ServiceCatalogItem.is_active == True)
-    if category:
-        query = query.filter(ServiceCatalogItem.category == category)
-    if search and search.strip():
-        s = f"%{search.strip()}%"
-        query = query.filter(
-            (ServiceCatalogItem.name_ar.ilike(s))
-            | (ServiceCatalogItem.name_en.ilike(s))
-            | (ServiceCatalogItem.description_ar.ilike(s))
-        )
-
-    items = query.order_by(ServiceCatalogItem.display_order.asc(), ServiceCatalogItem.created_at.asc()).all()
-    data = []
-    for it in items:
-        data.append({
-            "id": str(it.id),
-            "company_id": str(it.company_id),
-            "category": it.category,
-            "name_ar": it.name_ar,
-            "name_en": it.name_en,
-            "description_ar": it.description_ar,
-            "icon": it.icon,
-            "default_priority": it.default_priority,
-            "estimated_duration_hours": it.estimated_duration_hours,
-            "requires_approval": it.requires_approval,
-            "approval_type": it.approval_type,
-            "workflow_template": it.workflow_template,
-            "dynamic_form_schema": it.dynamic_form_schema,
-            "sla_policy_id": str(getattr(it, "sla_policy_id", None)) if getattr(it, "sla_policy_id", None) else None,
-            "is_active": it.is_active,
-            "display_order": it.display_order,
-            "created_at": it.created_at.isoformat() if it.created_at else None,
-        })
-    return success_response(data=data)
-
-
-@router.post("/catalog")
-def create_service_catalog_item(
-    payload: ServiceCatalogItemCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Create a new service catalog item."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-    item = ServiceCatalogItem(
-        company_id=target_cid,
-        category=payload.category,
-        name_ar=payload.name_ar.strip(),
-        name_en=payload.name_en.strip() if payload.name_en else None,
-        description_ar=payload.description_ar.strip() if payload.description_ar else None,
-        icon=payload.icon or "HelpCircle",
-        default_priority=payload.default_priority,
-        estimated_duration_hours=payload.estimated_duration_hours,
-        requires_approval=payload.requires_approval,
-        approval_type=payload.approval_type,
-        workflow_template=payload.workflow_template,
-        dynamic_form_schema=payload.dynamic_form_schema,
-        sla_policy_id=payload.sla_policy_id,
-        is_active=payload.is_active,
-        display_order=payload.display_order,
-    )
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-
-    log_audit(
-        db=db, action="CREATE", resource_type="ServiceCatalogItem",
-        resource_id=str(item.id), user_id=current_user.id, company_id=target_cid,
-        new_values={"name_ar": item.name_ar, "category": item.category},
-    )
-    return success_response(data={"id": str(item.id)}, message="تم إضافة خدمة جديدة إلى دليل الخدمات بنجاح")
-
-
-@router.put("/catalog/{item_id}")
-def update_service_catalog_item(
-    item_id: uuid.UUID,
-    payload: ServiceCatalogItemUpdate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Update an existing service catalog item."""
-    item = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="عنصر دليل الخدمات غير موجود")
-
-    if not current_user.is_superadmin and item.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذا العنصر")
-
-    update_data = payload.dict(exclude_unset=True)
-    for field, val in update_data.items():
-        setattr(item, field, val)
-
-    db.commit()
-    db.refresh(item)
-
-    log_audit(
-        db=db, action="UPDATE", resource_type="ServiceCatalogItem",
-        resource_id=str(item.id), user_id=current_user.id, company_id=item.company_id,
-        new_values=update_data,
-    )
-    return success_response(data={"id": str(item.id)}, message="تم تحديث عنصر دليل الخدمات بنجاح")
-
-
-@router.delete("/catalog/{item_id}")
-def delete_service_catalog_item(
-    item_id: uuid.UUID,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Soft delete a service catalog item."""
-    item = db.query(ServiceCatalogItem).filter(ServiceCatalogItem.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="عنصر دليل الخدمات غير موجود")
-
-    if not current_user.is_superadmin and item.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية حذف هذا العنصر")
-
-    item.is_active = False
-    db.commit()
-
-    log_audit(
-        db=db, action="DEACTIVATE", resource_type="ServiceCatalogItem",
-        resource_id=str(item.id), user_id=current_user.id, company_id=item.company_id,
-    )
-    return success_response(data={"id": str(item.id)}, message="تم إلغاء تفعيل عنصر الخدمة بنجاح")
-
-
-# ── Ticket Approvals Endpoints ───────────────────────────────────────────
-
-@router.get("/approvals")
-def list_ticket_approvals(
-    company_id: Optional[uuid.UUID] = None,
-    status_filter: Optional[str] = Query(None, alias="status"),
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """List service desk approvals for current user or company."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-    user_roles = get_user_roles(current_user, db, company_id=target_cid)
-    is_mgmt = any(r in ["Super Admin", "Company Admin", "IT Manager", "Finance Manager"] for r in user_roles)
-
-    query = (
-        db.query(TicketApproval)
-        .join(HelpDeskTicket, TicketApproval.ticket_id == HelpDeskTicket.id)
-        .filter(TicketApproval.company_id == target_cid)
-    )
-
-    if not is_mgmt:
-        query = query.filter(TicketApproval.assigned_approver_id == current_user.id)
-
-    if status_filter:
-        query = query.filter(TicketApproval.status == status_filter)
-
-    approvals = query.order_by(TicketApproval.created_at.desc()).all()
-    data = []
-    for a in approvals:
-        t = a.ticket
-        data.append({
-            "id": str(a.id),
-            "ticket_id": str(a.ticket_id),
-            "ticket_number": t.ticket_number if t else None,
-            "ticket_title": t.issue_title if t else None,
-            "ticket_priority": t.priority if t else None,
-            "ticket_creator_name": t.requester.full_name if (t and t.requester) else None,
-            "stage_name": a.approval_stage,
-            "stage_order": a.stage_order,
-            "status": a.status,
-            "approver_id": str(a.assigned_approver_id) if a.assigned_approver_id else None,
-            "approver_name": a.assigned_approver.username if a.assigned_approver else None,
-            "decided_by_id": str(a.decided_by_id) if a.decided_by_id else None,
-            "decided_by_name": a.decided_by.username if a.decided_by else None,
-            "decision_notes": a.decision_notes,
-            "created_at": a.created_at.isoformat() if a.created_at else None,
-            "decided_at": a.decided_at.isoformat() if a.decided_at else None,
-        })
-    return success_response(data=data)
-
-
-@router.post("/approvals/{approval_id}/decision")
-def decide_ticket_approval(
-    approval_id: uuid.UUID,
-    payload: TicketApprovalDecision,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Record an approve or reject decision on a service request."""
-    appr = db.query(TicketApproval).filter(TicketApproval.id == approval_id).first()
-    if not appr:
-        raise HTTPException(status_code=404, detail="طلب الاعتماد غير موجود")
-
-    if not current_user.is_superadmin and appr.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذا الاعتماد")
-
-    user_roles = get_user_roles(current_user, db, company_id=appr.company_id)
-    is_approver = any(r in ["Super Admin", "Company Admin", "IT Manager", "Finance Manager"] for r in user_roles)
-    if not is_approver and appr.assigned_approver_id != current_user.id:
-        raise HTTPException(status_code=403, detail="غير مصرح لك باتخاذ قرار بشأن هذا الاعتماد")
-
-    ticket = db.query(HelpDeskTicket).filter(HelpDeskTicket.id == appr.ticket_id).first()
-    if not ticket:
-        raise HTTPException(status_code=404, detail="التذكرة المرتبطة غير موجودة")
-
-    try:
-        updated_appr = process_ticket_approval(
-            db=db,
-            ticket=ticket,
-            approval_id=approval_id,
-            decision=payload.decision,
-            decider_user=current_user,
-            notes=payload.decision_notes,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    log_audit(
-        db=db,
-        action="APPROVAL_DECISION",
-        resource_type="TicketApproval",
-        resource_id=str(appr.id),
-        user_id=current_user.id,
-        company_id=appr.company_id,
-        new_values={"decision": payload.decision, "ticket_id": str(ticket.id), "notes": payload.decision_notes},
-    )
-
-    return success_response(
-        data={"approval_id": str(appr.id), "ticket_id": str(ticket.id), "decision": payload.decision},
-        message=f"تم تسجيل قرار الاعتماد ({payload.decision}) بنجاح"
-    )
-
-
-# ── Service Workflows Endpoints ──────────────────────────────────────────
-
-@router.get("/workflows")
-def list_service_workflows(
-    company_id: Optional[uuid.UUID] = None,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """List service workflows for the company."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-
-    # Check if empty, seed defaults
-    existing_count = db.query(ServiceWorkflow).filter(ServiceWorkflow.company_id == target_cid).count()
-    if existing_count == 0:
-        seed_service_desk_defaults(db, target_cid)
-
-    workflows = (
-        db.query(ServiceWorkflow)
-        .filter(ServiceWorkflow.company_id == target_cid, ServiceWorkflow.is_active == True)
-        .order_by(ServiceWorkflow.created_at.desc())
-        .all()
-    )
-    data = []
-    for wf in workflows:
-        data.append({
-            "id": str(wf.id),
-            "company_id": str(wf.company_id),
-            "workflow_key": wf.workflow_key,
-            "name_ar": wf.name_ar,
-            "name_en": wf.name_en,
-            "description": wf.description,
-            "version": wf.version,
-            "status": wf.status,
-            "nodes_json": wf.nodes_json,
-            "transitions_json": wf.transitions_json,
-            "is_active": wf.is_active,
-            "created_at": wf.created_at.isoformat() if wf.created_at else None,
-        })
-    return success_response(data=data)
-
-
-@router.post("/workflows")
-def create_or_update_workflow(
-    payload: ServiceWorkflowCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Save or publish a service workflow definition."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-
-    wf = (
-        db.query(ServiceWorkflow)
-        .filter(ServiceWorkflow.company_id == target_cid, ServiceWorkflow.workflow_key == payload.workflow_key)
-        .first()
-    )
-
-    if wf:
-        wf.name_ar = payload.name_ar.strip()
-        wf.name_en = payload.name_en.strip() if payload.name_en else None
-        wf.description = payload.description.strip() if payload.description else None
-        wf.nodes_json = payload.nodes_json
-        wf.transitions_json = payload.transitions_json
-        wf.status = payload.status
-        wf.version = wf.version + 1
-        db.commit()
-        db.refresh(wf)
-        msg = "تم تحديث مسار العمل بنجاح"
-    else:
-        wf = ServiceWorkflow(
-            company_id=target_cid,
-            workflow_key=payload.workflow_key.strip(),
-            name_ar=payload.name_ar.strip(),
-            name_en=payload.name_en.strip() if payload.name_en else None,
-            description=payload.description.strip() if payload.description else None,
-            nodes_json=payload.nodes_json,
-            transitions_json=payload.transitions_json,
-            status=payload.status,
-            version=1,
-            is_active=True,
-        )
-        db.add(wf)
-        db.commit()
-        db.refresh(wf)
-        msg = "تم إنشاء مسار العمل الجديد بنجاح"
-
-    log_audit(
-        db=db, action="SAVE_WORKFLOW", resource_type="ServiceWorkflow",
-        resource_id=str(wf.id), user_id=current_user.id, company_id=target_cid,
-        new_values={"workflow_key": wf.workflow_key, "version": wf.version},
-    )
-    return success_response(data={"id": str(wf.id), "version": wf.version}, message=msg)
-
-
-# ── SLA Policies Endpoints ───────────────────────────────────────────────
-
-@router.get("/slas")
-def list_sla_policies(
-    company_id: Optional[uuid.UUID] = None,
-    current_user: User = Depends(get_current_user),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """List SLA Policies for the company."""
-    target_cid = resolve_company_scope(current_user, active_cid, company_id)
-
-    # Check if empty, seed defaults
-    existing_count = db.query(SlaPolicy).filter(SlaPolicy.company_id == target_cid).count()
-    if existing_count == 0:
-        seed_service_desk_defaults(db, target_cid)
-
-    slas = (
-        db.query(SlaPolicy)
-        .filter(SlaPolicy.company_id == target_cid, SlaPolicy.is_active == True)
-        .order_by(SlaPolicy.first_response_minutes.asc())
-        .all()
-    )
-    data = []
-    for s in slas:
-        data.append({
-            "id": str(s.id),
-            "company_id": str(s.company_id),
-            "name": s.name,
-            "name_ar": s.name,
-            "name_en": s.name,
-            "priority": s.priority,
-            "first_response_minutes": s.first_response_minutes,
-            "resolution_minutes": s.resolution_minutes,
-            "response_time_minutes": s.first_response_minutes,
-            "resolution_time_minutes": s.resolution_minutes,
-            "escalation_notify_minutes": s.escalation_notify_minutes,
-            "business_hours_only": s.business_hours_only,
-            "business_hours": s.business_hours,
-            "is_default": bool(s.is_default),
-            "escalate_on_breach": bool(s.escalate_on_breach),
-            "bump_priority_on_breach": bool(s.bump_priority_on_breach),
-            "is_active": s.is_active,
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-        })
-    return success_response(data=data)
-
-
-@router.post("/slas")
-def create_sla_policy(
-    payload: SlaPolicyCreate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Create a new SLA Policy."""
-    target_cid = resolve_company_scope(current_user, active_cid, payload.company_id)
-    sla = SlaPolicy(
-        company_id=target_cid,
-        name=payload.name.strip(),
-        priority=payload.priority,
-        first_response_minutes=payload.first_response_minutes,
-        resolution_minutes=payload.resolution_minutes,
-        escalation_notify_minutes=payload.escalation_notify_minutes,
-        business_hours_only=payload.business_hours_only,
-        is_active=payload.is_active,
-    )
-    db.add(sla)
-    db.commit()
-    db.refresh(sla)
-
-    log_audit(
-        db=db, action="CREATE", resource_type="SlaPolicy",
-        resource_id=str(sla.id), user_id=current_user.id, company_id=target_cid,
-        new_values={"name": sla.name, "priority": sla.priority},
-    )
-    return success_response(data={"id": str(sla.id)}, message="تم إنشاء سياسة مستوى الخدمة بنجاح")
-
-
-@router.put("/slas/{sla_id}")
-def update_sla_policy(
-    sla_id: uuid.UUID,
-    payload: SlaPolicyUpdate,
-    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager"])),
-    active_cid: uuid.UUID = Depends(get_user_company_id),
-    db: Session = Depends(get_db),
-):
-    """Update an SLA Policy."""
-    sla = db.query(SlaPolicy).filter(SlaPolicy.id == sla_id).first()
-    if not sla:
-        raise HTTPException(status_code=404, detail="سياسة مستوى الخدمة غير موجودة")
-
-    if not current_user.is_superadmin and sla.company_id != active_cid:
-        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذه السياسة")
-
-    update_data = payload.dict(exclude_unset=True)
-    for field, val in update_data.items():
-        setattr(sla, field, val)
-
-    db.commit()
-    db.refresh(sla)
-
-    log_audit(
-        db=db, action="UPDATE", resource_type="SlaPolicy",
-        resource_id=str(sla.id), user_id=current_user.id, company_id=sla.company_id,
-        new_values=update_data,
-    )
-    return success_response(data={"id": str(sla.id)}, message="تم تحديث سياسة مستوى الخدمة بنجاح")
-
-
 
 

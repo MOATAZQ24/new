@@ -198,7 +198,7 @@ def test_escalation_worker_idempotency():
         db.refresh(t_breach)
         assert t_risk.sla_state == "at_risk"
         assert t_breach.sla_state == "breached"
-        assert t_breach.sla_breached is True
+        assert t_breach.sla_status == "Breached"
         assert t_breach.priority == "High"  # Bumped Medium -> High
         assert t_breach.assigned_technician_id == u_lead.id  # Reassigned to team lead
 

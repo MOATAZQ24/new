@@ -109,8 +109,8 @@ def run_sla_escalation(
         new_state = compute_sla_state(
             now_utc=now,
             created_at=ticket.created_at or now,
-            first_response_due_at=ticket.first_response_due_at or ticket.sla_response_due_at,
-            resolution_due_at=ticket.resolution_due_at or ticket.sla_resolution_due_at,
+            first_response_due_at=ticket.first_response_due_at,
+            resolution_due_at=ticket.resolution_due_at or ticket.sla_target_at,
             first_response_at=ticket.first_response_at,
             resolved_at=ticket.resolved_at,
             is_paused=is_paused,
@@ -120,8 +120,8 @@ def run_sla_escalation(
             summary["states_updated"] += 1
 
         due_anchor = (
-            (ticket.resolution_due_at or ticket.sla_resolution_due_at)
-            or (ticket.first_response_due_at or ticket.sla_response_due_at)
+            (ticket.resolution_due_at or ticket.sla_target_at)
+            or ticket.first_response_due_at
         )
         milestone_key = due_anchor.isoformat() if due_anchor else "default"
 
@@ -157,7 +157,7 @@ def run_sla_escalation(
                     )
 
         elif new_state == "breached":
-            ticket.sla_breached = True
+            ticket.sla_status = "Breached"
             if not _has_existing_sla_event(db, ticket.id, "sla_breach", milestone_key):
                 policy = (
                     db.query(SlaPolicy).filter(SlaPolicy.id == ticket.sla_policy_id).first()

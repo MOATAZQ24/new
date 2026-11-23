@@ -364,8 +364,6 @@ def apply_sla_to_ticket(
         ) + pause_shift
         ticket.first_response_due_at = fr_due
         ticket.resolution_due_at = res_due
-        ticket.sla_response_due_at = fr_due
-        ticket.sla_resolution_due_at = res_due
 
     is_paused = bool(ticket.sla_paused_at) or (ticket.status in SLA_PAUSE_TICKET_STATUSES)
     ticket.sla_state = compute_sla_state(
@@ -378,7 +376,6 @@ def apply_sla_to_ticket(
         is_paused=is_paused,
     )
     if ticket.sla_state == "breached":
-        ticket.sla_breached = True
         ticket.sla_status = "Breached"
     elif ticket.sla_state == "at_risk":
         ticket.sla_status = "At_Risk"
@@ -454,10 +451,8 @@ def handle_ticket_sla_pause_resume(
             shift = timedelta(seconds=paused_delta)
             if ticket.first_response_due_at:
                 ticket.first_response_due_at = ticket.first_response_due_at + shift
-                ticket.sla_response_due_at = ticket.first_response_due_at
             if ticket.resolution_due_at:
                 ticket.resolution_due_at = ticket.resolution_due_at + shift
-                ticket.sla_resolution_due_at = ticket.resolution_due_at
         ticket.sla_paused_at = None
         ticket.sla_state = compute_sla_state(
             now_utc=now,
