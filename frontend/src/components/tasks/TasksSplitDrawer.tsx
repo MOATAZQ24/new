@@ -9,6 +9,7 @@
 
 
 import React, { useState, useEffect, useRef } from "react";
+import { TaskChecklistPanel } from "@/components/work-management/TaskChecklistPanel";
 import {
   X,
   Maximize2,
@@ -236,6 +237,9 @@ export function TasksSplitDrawer({
             </span>
           </div>
         </div>
+
+        {/* Interactive Task Checklist */}
+        <TaskChecklistPanel taskId={task.id} />
 
         {/* 3. Live Countdown & Priority Box (Reference 2) */}
         <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200/70 dark:border-rose-900/40 rounded-2xl p-3.5 space-y-2">

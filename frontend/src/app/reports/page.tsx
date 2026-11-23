@@ -18,6 +18,7 @@ import {
   CheckSquareIcon, LifeBuoyIcon, ShieldAlertIcon, PlusIcon, Icons
 } from "@/components/ui/Icons";
 import { api, exportReportDownload } from "@/lib/api";
+import { workApi, type HelpDeskSlaReport } from "@/lib/workApi";
 import { useAuth } from "@/context/AuthContext";
 import { useUserRole } from "@/lib/useUserRole";
 import { useToast } from "@/context/ToastContext";
@@ -102,6 +103,20 @@ const reportsList: ReportItem[] = [
     color: "rose",
   },
   {
+    type: "sla_compliance",
+    title: "تقرير التزام SLA ومؤشرات الاستجابة (SLA Compliance)",
+    description: "تقرير تفصيلي بالتذاكر المتجاوزة والقريبة من الانتهاء ومواعيد الاستجابة الأولى والحل المستحق.",
+    icon: ShieldCheckIcon,
+    color: "teal",
+  },
+  {
+    type: "workload",
+    title: "تقرير توزيع أحمال العمل للفرق والفنيين (Workload)",
+    description: "حجم التذاكر والمهام المفتوحة لكل فني وفريق مقارنة بالسعة القصوى ونسبة الاستخدام.",
+    icon: CheckSquareIcon,
+    color: "indigo",
+  },
+  {
     type: "audit",
     title: "تقرير سجل الرقابة والعمليات (Audit Logs)",
     description: "سجل كامل للعمليات والتغييرات المنفذة في النظام، هوية المستخدمين، عناوين IP، والتوقيت الزمني.",
@@ -115,6 +130,7 @@ export default function ReportsPage() {
   const toast = useToast();
   const [downloading, setDownloading] = useState<string | null>(null);
   const [overview, setOverview] = useState<ReportsOverviewData | null>(null);
+  const [slaReport, setSlaReport] = useState<HelpDeskSlaReport | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -122,6 +138,12 @@ export default function ReportsPage() {
       .get<ReportsOverviewData>("/reports/overview")
       .then((res) => {
         if (mounted) setOverview(res.data || null);
+      })
+      .catch(() => {});
+    workApi
+      .getHelpDeskSlaReport(30)
+      .then((res) => {
+        if (mounted) setSlaReport(res.data || null);
       })
       .catch(() => {});
     return () => {
@@ -277,6 +299,88 @@ export default function ReportsPage() {
             )}
           </div>
         </div>
+
+        {/* Help Desk SLA & Workload Analytics Panel */}
+        {slaReport && (
+          <div className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-4 sm:p-5 space-y-4 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-bold text-[var(--foreground)]">
+                  تحليلات SLA ومكتب المساعدة (آخر {slaReport.window_days} يوماً)
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  نسبة الالتزام، متوسط زمن الاستجابة الأولى والحل، وتقادم التذاكر المفتوحة
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleExport("sla_compliance", "excel")}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border)] hover:bg-[var(--muted)] cursor-pointer"
+                >
+                  تصدير SLA (CSV)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleExport("workload", "html")}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border)] hover:bg-[var(--muted)] cursor-pointer"
+                >
+                  تقرير الأحمال (طباعة)
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)]">
+                <div className="text-[11px] text-[var(--muted-foreground)]">نسبة الالتزام بـ SLA</div>
+                <div className="text-xl font-black mt-1 text-emerald-700 dark:text-emerald-300">
+                  {slaReport.summary.sla_compliance_pct}%
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)]">
+                <div className="text-[11px] text-[var(--muted-foreground)]">متوسط الاستجابة الأولى</div>
+                <div className="text-xl font-black mt-1">
+                  {slaReport.summary.avg_first_response_minutes != null
+                    ? `${slaReport.summary.avg_first_response_minutes} د`
+                    : "—"}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)]">
+                <div className="text-[11px] text-[var(--muted-foreground)]">متوسط زمن الحل</div>
+                <div className="text-xl font-black mt-1">
+                  {slaReport.summary.avg_resolution_hours != null
+                    ? `${slaReport.summary.avg_resolution_hours} س`
+                    : "—"}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)]">
+                <div className="text-[11px] text-[var(--muted-foreground)]">تذاكر متجاوزة SLA</div>
+                <div className="text-xl font-black mt-1 text-red-600">
+                  {slaReport.summary.breached_tickets}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2.5 rounded-lg border border-[var(--border)] flex items-center justify-between">
+                <span className="text-[var(--muted-foreground)]">أقل من 24 ساعة</span>
+                <span className="font-bold">{slaReport.backlog_aging.lt_24h}</span>
+              </div>
+              <div className="p-2.5 rounded-lg border border-[var(--border)] flex items-center justify-between">
+                <span className="text-[var(--muted-foreground)]">1 – 3 أيام</span>
+                <span className="font-bold">{slaReport.backlog_aging.d1_3}</span>
+              </div>
+              <div className="p-2.5 rounded-lg border border-[var(--border)] flex items-center justify-between">
+                <span className="text-[var(--muted-foreground)]">3 – 7 أيام</span>
+                <span className="font-bold">{slaReport.backlog_aging.d3_7}</span>
+              </div>
+              <div className="p-2.5 rounded-lg border border-[var(--border)] flex items-center justify-between">
+                <span className="text-[var(--muted-foreground)]">أكثر من 7 أيام</span>
+                <span className="font-bold text-red-600">{slaReport.backlog_aging.gt_7d}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Row 1: 4 Pastel KPIs matching Images 11 & 12 */}
         {overview && (

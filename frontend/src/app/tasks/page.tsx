@@ -58,6 +58,8 @@ import MasterDetailLayout from "@/components/ui/MasterDetailLayout";
 import TaskKanbanView from "@/components/tasks/TaskKanbanView";
 import TaskCalendarView from "@/components/tasks/TaskCalendarView";
 import TaskAnalyticsView from "@/components/tasks/TaskAnalyticsView";
+import { TaskWorkloadView } from "@/components/work-management/TaskWorkloadView";
+import { workApi } from "@/lib/workApi";
 import RelativeScheduler from "@/components/tasks/RelativeScheduler";
 import { MobileToolbar } from "@/components/mobile/MobileToolbar";
 import { MobileFilterSheet } from "@/components/mobile/MobileFilterSheet";
@@ -229,7 +231,7 @@ export default function TasksPage() {
 
   // Desktop Enterprise UI 2.0 States (References 1 & 2)
   const [composerMenuOpen, setComposerMenuOpen] = useState(false);
-  const [activeViewMode, setActiveViewMode] = useState<"list" | "kanban" | "calendar" | "timeline">("list");
+  const [activeViewMode, setActiveViewMode] = useState<"list" | "kanban" | "calendar" | "timeline" | "workload">("list");
   const [activeScopeTab, setActiveScopeTab] = useState<"all" | "my" | "assigned_by_me">("all");
   const [selectedSplitTaskId, setSelectedSplitTaskId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1278,6 +1280,18 @@ export default function TasksPage() {
                 <GanttChartSquare size={15} />
                 <span>مخططات</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("workload")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  activeViewMode === "workload"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <UsersIcon size={15} />
+                <span>أحمال العمل</span>
+              </button>
             </div>
 
             {/* Scope Tabs on Right (in RTL) */}
@@ -1533,12 +1547,16 @@ export default function TasksPage() {
               }
             }}
             onStatusChange={async (taskId, newStatus) => {
+              // Optimistic Kanban transition with automatic rollback on server rejection
+              const prevTasks = tasks;
+              setTasks((cur) => cur.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
               try {
-                await api.put(`/tasks/${taskId}`, { status: newStatus });
+                await workApi.transitionTask(taskId, { to_status: newStatus });
                 toast.success("تم تحديث حالة المهمة بنجاح");
                 loadTasks();
               } catch (e: unknown) {
-                toast.error(e instanceof Error ? e.message : "فشل تحديث الحالة");
+                setTasks(prevTasks);
+                toast.error(e instanceof Error ? e.message : "فشل تحديث الحالة — تم التراجع عن التغيير");
               }
             }}
           />
@@ -1570,6 +1588,9 @@ export default function TasksPage() {
             }}
           />
         )}
+
+        {/* WORKLOAD & CAPACITY VIEW */}
+        {activeViewMode === "workload" && <TaskWorkloadView />}
 
         {/* ANALYTICS & TIMELINE VIEW */}
         {activeViewMode === "timeline" && (

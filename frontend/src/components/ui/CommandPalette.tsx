@@ -38,15 +38,17 @@ interface CommandItem {
 }
 
 const CORE_MODULES = [
+  { label: "أعمالي (My Work)", sub: "Unified Tickets, Tasks & Approvals", href: "/my-work", kw: "my work inbox أعمالي مهامي تذاكري" },
   { label: "لوحة المتابعة", sub: "Dashboard", href: "/", kw: "dashboard home رئيسية" },
-  { label: "إدارة المهام والمواعيد", sub: "Tasks & Deadlines", href: "/tasks", kw: "tasks deadlines مهام" },
+  { label: "إدارة المهام والمواعيد", sub: "Tasks, Kanban & Workload", href: "/tasks", kw: "tasks deadlines workload kanban مهام" },
   { label: "الأصول والعهد التقنية", sub: "Assets & Custody", href: "/assets", kw: "assets custody أصول عهد عهدة" },
   { label: "الاشتراكات والتراخيص", sub: "Subscriptions", href: "/subscriptions", kw: "subscriptions saas اشتراكات تراخيص" },
-  { label: "مكتب المساعدة (Help Desk)", sub: "Tickets & Support", href: "/tickets", kw: "tickets helpdesk تذاكر دعم بلاغ" },
+  { label: "مكتب المساعدة (Help Desk)", sub: "Split Inbox & Support", href: "/tickets", kw: "tickets helpdesk inbox تذاكر دعم بلاغ" },
   { label: "الموظفون وملفات 360°", sub: "Employees & Profiles", href: "/employees", kw: "employees staff موظفين 360" },
   { label: "الشركات والفروع", sub: "Companies & Branches", href: "/companies", kw: "companies branches شركات فروع" },
   { label: "مركز الاعتمادات والطلبات", sub: "Approvals & Requests", href: "/approvals", kw: "approvals requests موافقات طلبات" },
-  { label: "التقارير والتحليلات", sub: "Reports & Analytics", href: "/reports", kw: "reports export pdf csv تقارير" },
+  { label: "التقارير والتحليلات", sub: "SLA, Workload & Exports", href: "/reports", kw: "reports sla workload export pdf csv تقارير" },
+  { label: "إعدادات التوزيع و SLA والفرق", sub: "Teams, Rules, SLA & Workflows", href: "/settings/work-management", kw: "teams rules sla workflow macros فرق توزيع قواعد" },
   { label: "الإعدادات وتخصيص المظهر", sub: "Settings & Themes", href: "/settings/appearance", kw: "settings themes مظهر إعدادات" },
   { label: "مركز المعرفة والمساعدة", sub: "Knowledge & Tour", href: "/help", kw: "help guide مساعدة" },
   { label: "حول المنظومة والمطور", sub: "About & IGOS-DAPF", href: "/about", kw: "about developer licenses مطور معتز" },

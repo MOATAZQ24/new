@@ -23,12 +23,14 @@ interface NavItem {
   name: string;
   href: string;
   icon: keyof typeof Icons;
+  managerOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
   { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
-  { name: "إدارة المهام", href: "/tasks", icon: "Tasks" },
+  { name: "أعمالي", href: "/my-work", icon: "Tasks" },
   { name: "مركز الخدمات", href: "/tickets", icon: "HelpDesk" },
+  { name: "إدارة المهام", href: "/tasks", icon: "Tasks" },
   { name: "الموافقات", href: "/approvals", icon: "ShieldCheck" },
   { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
   { name: "الاشتراكات والتراخيص", href: "/subscriptions", icon: "Subscriptions" },
@@ -36,6 +38,7 @@ const navItems: NavItem[] = [
   { name: "الهيكل التنظيمي", href: "/companies", icon: "Companies" },
   { name: "التقارير والتحليلات", href: "/reports", icon: "Reports" },
   { name: "قاعدة المعرفة", href: "/help", icon: "Audit" },
+  { name: "التوزيع و SLA", href: "/settings/work-management", icon: "Settings", managerOnly: true },
   { name: "الإعدادات", href: "/settings", icon: "Settings" },
 ];
 
@@ -46,9 +49,14 @@ interface SidebarProps {
 
 export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
-  const { activeCompany } = useAuth();
+  const { activeCompany, user } = useAuth();
   const { draft, setDraft, save } = useWorkspace();
   const { theme, setTheme, resolvedTheme } = useCustomization();
+
+  const isManagerOrAdmin = Boolean(
+    user?.is_superadmin ||
+      user?.roles?.some((r) => ["Super Admin", "Company Admin", "IT Manager"].includes(r))
+  );
 
   const toggleTheme = () => {
     const nextMode = resolvedTheme === "dark" ? "light" : "dark";
@@ -61,9 +69,9 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     void save(nextConfig);
   };
 
-  // Strictly enforce the 9 canonical screenshot navigation items; never allow old saved preferences
-  // to hide core screenshot items or inject removed routes.
-  const configured = navItems.map((item) => {
+  const configured = navItems
+    .filter((item) => !item.managerOnly || isManagerOrAdmin)
+    .map((item) => {
     const pref = draft.navigation.find((p) => p.href === item.href);
     return {
       ...item,

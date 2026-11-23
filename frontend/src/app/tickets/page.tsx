@@ -7,9 +7,10 @@
  * ==============================================================================
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { HelpDeskInboxView } from "@/components/work-management/HelpDeskInboxView";
 import StatsCard from "@/components/ui/StatsCard";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
@@ -116,8 +117,8 @@ export default function TicketsPage() {
   // Enterprise Service Desk Navigation View
   const { isEmployee } = useUserRole();
   const [currentView, setCurrentView] = useState<
-    "operations" | "kanban" | "self_service" | "approvals"
-  >(() => (isEmployee ? "self_service" : "operations"));
+    "inbox" | "operations" | "kanban" | "self_service" | "approvals"
+  >(() => (isEmployee ? "self_service" : "inbox"));
 
   // Enterprise Modals
   const [wizardModalOpen, setWizardModalOpen] = useState(false);
@@ -405,6 +406,7 @@ export default function TicketsPage() {
         <div className="bg-card border border-border/80 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             {[
+              { id: "inbox", label: "صندوق التذاكر الموحد", icon: Headphones },
               { id: "operations", label: "سجل تذاكر العمليات", icon: LayoutGrid },
               { id: "kanban", label: "لوحة كانبان", icon: Kanban },
               { id: "self_service", label: "بوابة البلاغات (3 خطوات)", icon: LifeBuoy },
@@ -451,6 +453,13 @@ export default function TicketsPage() {
             </button>
           </div>
         </div>
+
+        {/* VIEW 0: UNIFIED SPLIT-PANE HELPDESK INBOX */}
+        {currentView === "inbox" && (
+          <Suspense fallback={<div className="h-96 rounded-xl bg-[var(--muted)] animate-pulse" />}>
+            <HelpDeskInboxView onCreateNew={() => setQuickModalOpen(true)} />
+          </Suspense>
+        )}
 
         {/* VIEW 1 & 2: OPERATIONS & KANBAN COCKPIT */}
         {(currentView === "operations" || currentView === "kanban") && (

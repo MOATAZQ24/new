@@ -260,6 +260,13 @@ export default function SettingsPage() {
 
   const quickTiles = [
     {
+      href: "/settings/work-management",
+      title: "إدارة التوزيع و SLA",
+      desc: "الفرق والمهارات، قواعد التوزيع الآلي، سياسات SLA، ومصفوفة الحالات",
+      badge: "جديد",
+      icon: <Icons.Sliders size={20} className="text-[#187A5A]" />,
+    },
+    {
       href: "/settings/branding",
       title: "إعدادات عامة",
       desc: "بيانات النظام، الشعار، والمظهر",
