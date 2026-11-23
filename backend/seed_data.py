@@ -30,6 +30,12 @@ from app.models.task import Task, TaskComment
 from app.models.ticket import HelpDeskTicket, TicketComment
 from app.models.notification import Notification
 from app.models.audit import AuditLog
+from app.services.work_management_defaults import (
+    ensure_default_categories,
+    ensure_default_sla_policies,
+    ensure_workflow_transitions,
+    seed_company_work_management_demo,
+)
 
 
 def seed(include_demo: bool | None = None, clean_init: bool | None = None):
@@ -238,6 +244,10 @@ def seed(include_demo: bool | None = None, clean_init: bool | None = None):
                 depts.append(d)
 
             if not include_demo:
+                ensure_workflow_transitions(db, company.id)
+                ensure_default_categories(db, company.id)
+                ensure_default_sla_policies(db, company.id)
+                db.commit()
                 if superadmin:
                     db.add(AuditLog(
                         user_id=superadmin.id,
@@ -323,6 +333,16 @@ def seed(include_demo: bool | None = None, clean_init: bool | None = None):
                 db.commit()
 
             print(f"   Created 10 employees & users for {c_info['code']}")
+
+            # ── Work Management Demo Defaults (Teams, Skills, Rules, SLA, Workflows, Macros) ──
+            seed_company_work_management_demo(
+                db=db,
+                company_id=company.id,
+                lead_user_id=users[2].id,
+                member_user_ids=[users[1].id, users[2].id, users[3].id],
+                branch_id=branches[0].id,
+            )
+            db.commit()
 
             # ── Technical Assets (8-10 assets per company) ───────────────────
             asset_specs = [
@@ -526,7 +546,9 @@ def seed(include_demo: bool | None = None, clean_init: bool | None = None):
                     title=t_title,
                     description=t_desc,
                     assigned_to_id=employees[3].id,
+                    assignee_id=users[3].id,
                     assigned_by_id=users[0].id,
+                    requester_id=users[0].id,
                     priority=prio,
                     status=t_stat,
                     start_date=today - timedelta(days=2),
