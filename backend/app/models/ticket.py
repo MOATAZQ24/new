@@ -96,6 +96,34 @@ class HelpDeskTicket(UUIDMixin, TimestampMixin, Base):
     first_response_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     escalated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    # Rule-Driven Assignment, SLA Policy & Merge Extensions
+    team_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("teams.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("ticket_categories.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    sla_policy_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sla_policies.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    first_response_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    resolution_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    sla_state: Mapped[str] = mapped_column(
+        String(20), default="ok", nullable=False
+    )  # ok, at_risk, breached, paused
+    merged_into_ticket_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("helpdesk_tickets.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    require_tasks_done_to_close: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -109,8 +137,20 @@ class HelpDeskTicket(UUIDMixin, TimestampMixin, Base):
     related_asset: Mapped[Optional["TechnicalAsset"]] = relationship("TechnicalAsset", foreign_keys=[related_asset_id])
     problem_record: Mapped[Optional["ProblemRecord"]] = relationship("ProblemRecord", foreign_keys=[problem_id])
     catalog_item: Mapped[Optional["ServiceCatalogItem"]] = relationship("ServiceCatalogItem", foreign_keys=[catalog_item_id])
+    team: Mapped[Optional["Team"]] = relationship("Team", foreign_keys=[team_id])
+    category_record: Mapped[Optional["TicketCategory"]] = relationship("TicketCategory", foreign_keys=[category_id])
+    sla_policy: Mapped[Optional["SlaPolicy"]] = relationship("SlaPolicy", foreign_keys=[sla_policy_id])
+    merged_into_ticket: Mapped[Optional["HelpDeskTicket"]] = relationship(
+        "HelpDeskTicket", remote_side="[HelpDeskTicket.id]", foreign_keys=[merged_into_ticket_id]
+    )
     comments: Mapped[List["TicketComment"]] = relationship(
         "TicketComment", back_populates="ticket", cascade="all, delete-orphan"
+    )
+    events: Mapped[List["TicketEvent"]] = relationship(
+        "TicketEvent", back_populates="ticket", cascade="all, delete-orphan"
+    )
+    watchers: Mapped[List["TicketWatcher"]] = relationship(
+        "TicketWatcher", back_populates="ticket", cascade="all, delete-orphan"
     )
     approvals: Mapped[List["TicketApproval"]] = relationship(
         "TicketApproval", back_populates="ticket", cascade="all, delete-orphan"
@@ -125,6 +165,12 @@ class HelpDeskTicket(UUIDMixin, TimestampMixin, Base):
         Index("ix_helpdesk_tickets_ticket_type", "ticket_type"),
         Index("ix_helpdesk_tickets_tier", "tier"),
         Index("ix_helpdesk_tickets_assigned_tech", "assigned_technician_id"),
+        Index("ix_helpdesk_tickets_company_status", "company_id", "status"),
+        Index("ix_helpdesk_tickets_company_assignee", "company_id", "assigned_technician_id"),
+        Index("ix_helpdesk_tickets_company_team", "company_id", "team_id"),
+        Index("ix_helpdesk_tickets_company_sla_state", "company_id", "sla_state"),
+        Index("ix_helpdesk_tickets_sla_policy_id", "sla_policy_id"),
+        Index("ix_helpdesk_tickets_category_id", "category_id"),
     )
 
 
@@ -356,6 +402,10 @@ class SlaPolicy(UUIDMixin, TimestampMixin, Base):
     resolution_minutes: Mapped[int] = mapped_column(Integer, default=1440, nullable=False)
     escalation_notify_minutes: Mapped[int] = mapped_column(Integer, default=120, nullable=False)
     business_hours_only: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    business_hours: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    escalate_on_breach: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    bump_priority_on_breach: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])

@@ -117,12 +117,52 @@ class Task(UUIDMixin, TimestampMixin, Base):
     broadcast_group_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
     is_accountable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
+    # Rule-Driven Team Assignment, Subtasks & SLA Extensions
+    team_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("teams.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    assignee_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    requester_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    sla_policy_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sla_policies.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    parent_task_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("tasks.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    first_response_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    resolution_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    sla_state: Mapped[str] = mapped_column(String(20), default="ok", nullable=False)
+
     # Relationships
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
     branch: Mapped[Optional["Branch"]] = relationship("Branch", foreign_keys=[branch_id])
     assigned_to: Mapped[Optional["Employee"]] = relationship("Employee", foreign_keys=[assigned_to_id])
     assigned_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_by_id])
+    assignee_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assignee_id])
+    requester_user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[requester_id])
     reviewer: Mapped[Optional["User"]] = relationship("User", foreign_keys=[reviewer_id])
+    team: Mapped[Optional["Team"]] = relationship("Team", foreign_keys=[team_id])
+    sla_policy: Mapped[Optional["SlaPolicy"]] = relationship("SlaPolicy", foreign_keys=[sla_policy_id])
+    parent_task: Mapped[Optional["Task"]] = relationship(
+        "Task", remote_side="[Task.id]", foreign_keys=[parent_task_id], back_populates="subtasks"
+    )
+    subtasks: Mapped[List["Task"]] = relationship(
+        "Task", back_populates="parent_task", foreign_keys="[Task.parent_task_id]"
+    )
     related_asset: Mapped[Optional["TechnicalAsset"]] = relationship("TechnicalAsset", foreign_keys=[related_asset_id])
     related_ticket: Mapped[Optional["HelpDeskTicket"]] = relationship("HelpDeskTicket", foreign_keys=[related_ticket_id])
     comments: Mapped[List["TaskComment"]] = relationship(
@@ -130,6 +170,12 @@ class Task(UUIDMixin, TimestampMixin, Base):
     )
     participants: Mapped[List["TaskParticipant"]] = relationship(
         "TaskParticipant", back_populates="task", cascade="all, delete-orphan"
+    )
+    checklist_items: Mapped[List["TaskChecklistItem"]] = relationship(
+        "TaskChecklistItem", back_populates="task", cascade="all, delete-orphan"
+    )
+    watchers: Mapped[List["TaskWatcher"]] = relationship(
+        "TaskWatcher", back_populates="task", cascade="all, delete-orphan"
     )
 
     __table_args__ = (
@@ -139,6 +185,11 @@ class Task(UUIDMixin, TimestampMixin, Base):
         Index("ix_tasks_assigned_to", "assigned_to_id"),
         Index("ix_tasks_due_date", "due_date"),
         Index("ix_tasks_deadline_at", "deadline_at"),
+        Index("ix_tasks_company_status", "company_id", "status"),
+        Index("ix_tasks_company_assignee", "company_id", "assignee_id"),
+        Index("ix_tasks_company_team", "company_id", "team_id"),
+        Index("ix_tasks_parent_task_id", "parent_task_id"),
+        Index("ix_tasks_related_ticket_id", "related_ticket_id"),
     )
 
 

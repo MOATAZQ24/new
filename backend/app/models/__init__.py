@@ -114,3 +114,18 @@ __all__ = [
 ]
 
 from app.models.workspace import WorkspacePreference, CompanyWorkspace
+from app.models.work_management import (
+    Team,
+    TeamMember,
+    AssignmentRule,
+    RoundRobinCursor,
+    TicketCategory,
+    TicketEvent,
+    WorkflowTransition,
+    TicketWatcher,
+    TaskWatcher,
+    TaskChecklistItem,
+    Macro,
+    SavedView,
+    IdempotencyKey,
+)
