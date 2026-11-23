@@ -231,9 +231,10 @@ body { font-family: var(--workspace-font, 'IBM Plex Sans Arabic', 'Inter', sans-
 .workspace-topnav {
   inset-inline-start: var(--sidebar-width, 256px);
   inset-inline-end: 0;
-  background-color: color-mix(in srgb, var(--header-background) 88%, transparent) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: color-mix(in srgb, var(--header-background) 96%, transparent) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 30;
 }
 .font-mono {
   font-variant-numeric: tabular-nums;

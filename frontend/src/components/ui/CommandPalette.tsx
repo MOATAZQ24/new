@@ -26,6 +26,7 @@ import {
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { useWorkspace } from "@/context/WorkspaceContext";
+import { useCustomization } from "@/context/CustomizationContext";
 
 interface CommandItem {
   id: string;
@@ -53,6 +54,7 @@ const CORE_MODULES = [
 
 export function CommandPalette() {
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useCustomization();
   const { draft, setDraft, save } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -200,10 +202,7 @@ export function CommandPalette() {
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const isDark =
-      typeof document !== "undefined" &&
-      (document.documentElement.dataset.theme === "dark" ||
-        document.documentElement.classList.contains("dark"));
+    const isDark = resolvedTheme === "dark";
 
     const quickActions: CommandItem[] = [
       {
@@ -213,10 +212,7 @@ export function CommandPalette() {
         group: "إجراءات سريعة",
         icon: isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-primary" />,
         action: () => {
-          const nextMode = isDark ? "light" : "dark";
-          const next = { ...draft, appearance: { ...draft.appearance, theme: nextMode } };
-          setDraft(next);
-          void save(next).catch(() => {});
+          setTheme(isDark ? "light" : "dark");
           setOpen(false);
         },
       },
