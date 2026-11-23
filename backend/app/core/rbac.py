@@ -276,3 +276,161 @@ def get_permission_matrix_serializable() -> Dict[str, Dict[str, List[str]]]:
     for role, mods in ROLE_PERMISSION_MATRIX.items():
         result[role] = {m: sorted(list(actions)) for m, actions in mods.items()}
     return result
+
+
+# ==============================================================================
+# Granular Work-Management RBAC Permissions (Help Desk, Tasks, Routing, SLA)
+# ==============================================================================
+
+class GranularPermission:
+    TICKET_VIEW = "ticket:view"
+    TICKET_CREATE = "ticket:create"
+    TICKET_ASSIGN = "ticket:assign"
+    TICKET_TRANSITION = "ticket:transition"
+    TICKET_CLOSE = "ticket:close"
+    TICKET_MERGE = "ticket:merge"
+    TICKET_BULK = "ticket:bulk"
+
+    TASK_VIEW = "task:view"
+    TASK_CREATE = "task:create"
+    TASK_ASSIGN = "task:assign"
+    TASK_TRANSITION = "task:transition"
+    TASK_BULK = "task:bulk"
+
+    TEAM_MANAGE = "team:manage"
+    RULE_MANAGE = "rule:manage"
+    SLA_MANAGE = "sla:manage"
+    WORKFLOW_MANAGE = "workflow:manage"
+    MACRO_MANAGE = "macro:manage"
+    WORKLOAD_VIEW = "workload:view"
+
+
+ALL_GRANULAR_PERMISSIONS: Set[str] = {
+    GranularPermission.TICKET_VIEW,
+    GranularPermission.TICKET_CREATE,
+    GranularPermission.TICKET_ASSIGN,
+    GranularPermission.TICKET_TRANSITION,
+    GranularPermission.TICKET_CLOSE,
+    GranularPermission.TICKET_MERGE,
+    GranularPermission.TICKET_BULK,
+    GranularPermission.TASK_VIEW,
+    GranularPermission.TASK_CREATE,
+    GranularPermission.TASK_ASSIGN,
+    GranularPermission.TASK_TRANSITION,
+    GranularPermission.TASK_BULK,
+    GranularPermission.TEAM_MANAGE,
+    GranularPermission.RULE_MANAGE,
+    GranularPermission.SLA_MANAGE,
+    GranularPermission.WORKFLOW_MANAGE,
+    GranularPermission.MACRO_MANAGE,
+    GranularPermission.WORKLOAD_VIEW,
+}
+
+GRANULAR_ROLE_PERMISSIONS: Dict[str, Set[str]] = {
+    "Super Admin": set(ALL_GRANULAR_PERMISSIONS),
+    "Company Admin": set(ALL_GRANULAR_PERMISSIONS),
+    "IT Manager": set(ALL_GRANULAR_PERMISSIONS),
+    "IT Technician": {
+        GranularPermission.TICKET_VIEW,
+        GranularPermission.TICKET_CREATE,
+        GranularPermission.TICKET_ASSIGN,
+        GranularPermission.TICKET_TRANSITION,
+        GranularPermission.TICKET_CLOSE,
+        GranularPermission.TICKET_MERGE,
+        GranularPermission.TICKET_BULK,
+        GranularPermission.TASK_VIEW,
+        GranularPermission.TASK_CREATE,
+        GranularPermission.TASK_ASSIGN,
+        GranularPermission.TASK_TRANSITION,
+        GranularPermission.TASK_BULK,
+        GranularPermission.WORKLOAD_VIEW,
+    },
+    "Employee": {
+        GranularPermission.TICKET_VIEW,
+        GranularPermission.TICKET_CREATE,
+        GranularPermission.TASK_VIEW,
+        GranularPermission.TASK_CREATE,
+        GranularPermission.TASK_TRANSITION,
+    },
+    "Auditor": {
+        GranularPermission.TICKET_VIEW,
+        GranularPermission.TASK_VIEW,
+        GranularPermission.WORKLOAD_VIEW,
+    },
+}
+
+
+def get_effective_roles_for_granular(user: User, company_id: Optional[uuid.UUID], db: Session) -> List[str]:
+    """Resolve effective roles for granular checks, honoring per-company role first
+    and falling back to UserRole when membership exists without a per-company role_id."""
+    if user.is_superadmin:
+        return ["Super Admin"]
+
+    if company_id:
+        membership = (
+            db.query(CompanyMembership)
+            .filter(
+                CompanyMembership.user_id == user.id,
+                CompanyMembership.company_id == company_id,
+                CompanyMembership.status == "Active",
+            )
+            .first()
+        )
+        if not membership:
+            return []
+        if membership.role:
+            return [membership.role.name]
+
+    user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+    roles = [ur.role.name for ur in user_roles if ur.role]
+    return roles if roles else ["Employee"]
+
+
+def has_granular_permission(
+    user: User,
+    permission: str,
+    company_id: Optional[uuid.UUID],
+    db: Session,
+) -> bool:
+    """Check whether `user` holds a granular permission within `company_id`."""
+    if user.is_superadmin:
+        return True
+    roles = get_effective_roles_for_granular(user, company_id, db)
+    for role_name in roles:
+        if permission in GRANULAR_ROLE_PERMISSIONS.get(role_name, set()):
+            return True
+    return False
+
+
+def get_user_granular_permissions(
+    user: User,
+    company_id: Optional[uuid.UUID],
+    db: Session,
+) -> List[str]:
+    """Return sorted list of granular permissions for UI feature-gating."""
+    if user.is_superadmin:
+        return sorted(ALL_GRANULAR_PERMISSIONS)
+    roles = get_effective_roles_for_granular(user, company_id, db)
+    perms: Set[str] = set()
+    for role_name in roles:
+        perms.update(GRANULAR_ROLE_PERMISSIONS.get(role_name, set()))
+    return sorted(perms)
+
+
+def require_granular_permission(permission: str):
+    """FastAPI dependency enforcing a granular work-management permission."""
+    from app.core.security import get_current_user, get_user_company_id
+
+    def checker(
+        current_user: User = Depends(get_current_user),
+        active_cid: uuid.UUID = Depends(get_user_company_id),
+        db: Session = Depends(get_db),
+    ) -> User:
+        if not has_granular_permission(current_user, permission, active_cid, db):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"ليس لديك صلاحية ({permission}) لتنفيذ هذا الإجراء في هذه الشركة",
+            )
+        return current_user
+
+    return checker

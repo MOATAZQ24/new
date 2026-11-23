@@ -15,6 +15,7 @@ class PaginationMeta(BaseModel):
     page: int
     per_page: int
     total_pages: int
+    next_cursor: Optional[str] = None
 
 
 class APIResponse(BaseModel):
@@ -35,11 +36,17 @@ def success_response(
     }
 
 
-def paginate(total: int, page: int, per_page: int) -> PaginationMeta:
+def paginate(
+    total: int,
+    page: int,
+    per_page: int,
+    next_cursor: Optional[str] = None,
+) -> PaginationMeta:
     total_pages = max(1, (total + per_page - 1) // per_page)
     return PaginationMeta(
         total=total,
         page=page,
         per_page=per_page,
         total_pages=total_pages,
+        next_cursor=next_cursor,
     )

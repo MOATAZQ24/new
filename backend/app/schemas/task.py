@@ -50,6 +50,11 @@ class TaskCreate(TaskBase):
     company_id: Optional[uuid.UUID] = None
     branch_id: Optional[uuid.UUID] = None
     assigned_to_id: Optional[uuid.UUID] = None
+    assignee_id: Optional[uuid.UUID] = None
+    team_id: Optional[uuid.UUID] = None
+    parent_task_id: Optional[uuid.UUID] = None
+    sla_policy_id: Optional[uuid.UUID] = None
+    auto_assign: Optional[bool] = False
     related_asset_id: Optional[uuid.UUID] = None
     related_ticket_id: Optional[uuid.UUID] = None
     project_id: Optional[uuid.UUID] = None

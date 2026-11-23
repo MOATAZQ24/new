@@ -42,7 +42,7 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(TicketBase):
-    company_id: uuid.UUID
+    company_id: Optional[uuid.UUID] = None
     branch_id: Optional[uuid.UUID] = None
     requester_id: Optional[uuid.UUID] = None
     related_asset_id: Optional[uuid.UUID] = None
@@ -50,6 +50,10 @@ class TicketCreate(TicketBase):
     problem_id: Optional[uuid.UUID] = None
     catalog_item_id: Optional[uuid.UUID] = None
     custom_fields_data: Optional[Any] = None
+    category_id: Optional[uuid.UUID] = None
+    team_id: Optional[uuid.UUID] = None
+    sla_policy_id: Optional[uuid.UUID] = None
+    require_tasks_done_to_close: bool = False
 
 
 class TicketUpdate(BaseModel):
