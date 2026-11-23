@@ -7,22 +7,33 @@
 import os
 import re
 import uuid
-from datetime import date, datetime, timedelta
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
+from datetime import date, datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
+from app.core.rbac import (
+    GranularPermission,
+    has_granular_permission,
+    require_granular_permission,
+)
 from app.core.security import get_current_user, get_user_company_id, require_role, get_user_roles, resolve_company_scope, validate_company_fk
 from app.core.response import success_response, paginate
 from app.models.company import Branch
 from app.models.enterprise import Project
 from app.models.task import Task, TaskComment, TaskParticipant
-from app.models.ticket import HelpDeskTicket
-from app.models.user import User, Employee
+from app.models.ticket import HelpDeskTicket, SlaPolicy
+from app.models.user import CompanyMembership, User, Employee
 from app.models.asset import TechnicalAsset
 from app.models.telegram import TelegramUserLink, NotificationOutbox
+from app.models.work_management import (
+    TaskChecklistItem,
+    TaskWatcher,
+    Team,
+    WorkflowTransition,
+)
 from app.schemas.task import (
     TaskCreate,
     TaskUpdate,
@@ -33,13 +44,35 @@ from app.schemas.task import (
     TaskBroadcastCreate,
     TaskParticipantResponse,
 )
+from app.schemas.work_management import (
+    TaskAssignRequest,
+    TaskBulkRequest,
+    TaskChecklistCreate,
+    TaskChecklistUpdate,
+    TaskTransitionRequest,
+    WatcherAddRequest,
+)
+from app.services.assignment import (
+    auto_assign_task,
+    manual_assign_task,
+    sync_task_assignee_fields,
+)
 from app.services.audit_service import log_audit
+from app.services.idempotency_service import (
+    decode_cursor,
+    encode_cursor,
+    extract_idempotency_key,
+    lookup_idempotent_response,
+    store_idempotent_response,
+)
 from app.services.notification_service import create_notification
+from app.services.sla_service import apply_sla_to_task
 from app.services.telegram_service import enqueue_task_notification
 from app.services import task_service
 from app.services.task_assignment import search_assignees, validate_assignee, eligible_expression
 from app.services import task_workflow as wf
-from sqlalchemy import func, and_
+from app.services.work_management_defaults import ensure_workflow_transitions
+from sqlalchemy import func, and_, or_
 
 router = APIRouter(prefix="/tasks", tags=["Task Management"])
 
@@ -240,15 +273,22 @@ def list_tasks(
     company_id: Optional[uuid.UUID] = None,
     branch_id: Optional[uuid.UUID] = None,
     project_id: Optional[uuid.UUID] = None,
+    team_id: Optional[uuid.UUID] = None,
     assigned_to_id: Optional[uuid.UUID] = None,
+    assignee_id: Optional[str] = None,  # supports "me", "unassigned", or UUID
     created_by_id: Optional[uuid.UUID] = None,
+    parent_task_id: Optional[uuid.UUID] = None,
+    related_ticket_id: Optional[uuid.UUID] = None,
     filter_mode: Optional[str] = Query(None, pattern="^(my|team|all)$"),
     priority: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
+    sla_state: Optional[str] = Query(None, pattern="^(ok|at_risk|breached|paused)$"),
     overdue: Optional[bool] = None,
     due_from: Optional[date] = None,
     due_to: Optional[date] = None,
     search: Optional[str] = Query(None, max_length=160),
+    q: Optional[str] = Query(None, max_length=160),
+    cursor: Optional[str] = None,
     sort_by: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     active_cid: uuid.UUID = Depends(get_user_company_id),
@@ -257,9 +297,33 @@ def list_tasks(
     """status accepts a stage key (new, in_progress, waiting, completed, rejected, cancelled, active, overdue)
     or an exact stored status. Overdue is derived from due_date and is independent of the stored status."""
     target_cid = resolve_company_scope(current_user, active_cid, company_id)
+    effective_search = q if (isinstance(q, str) and q.strip()) else search
     query = _filtered_task_query(
         db, current_user, target_cid, branch_id=branch_id, project_id=project_id, assigned_to_id=assigned_to_id, filter_mode=filter_mode,
-        priority=priority, search=search, created_by_id=created_by_id, due_from=due_from, due_to=due_to)
+        priority=priority, search=effective_search, created_by_id=created_by_id, due_from=due_from, due_to=due_to)
+    if team_id and isinstance(team_id, uuid.UUID):
+        query = query.filter(Task.team_id == team_id)
+    if parent_task_id and isinstance(parent_task_id, uuid.UUID):
+        query = query.filter(Task.parent_task_id == parent_task_id)
+    if related_ticket_id and isinstance(related_ticket_id, uuid.UUID):
+        query = query.filter(Task.related_ticket_id == related_ticket_id)
+    if sla_state and isinstance(sla_state, str):
+        query = query.filter(Task.sla_state == sla_state)
+    if assignee_id and isinstance(assignee_id, str):
+        val = assignee_id.strip().lower()
+        if val == "me":
+            if current_user.employee_id:
+                query = query.filter(or_(Task.assignee_id == current_user.id, Task.assigned_to_id == current_user.employee_id))
+            else:
+                query = query.filter(Task.assignee_id == current_user.id)
+        elif val == "unassigned":
+            query = query.filter(Task.assignee_id.is_(None), Task.assigned_to_id.is_(None))
+        else:
+            try:
+                auid = uuid.UUID(assignee_id.strip())
+                query = query.filter(Task.assignee_id == auid)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="معرف المكلف غير صالح")
     if status_filter and status_filter.strip():
         query = query.filter(wf.status_condition(status_filter))
     if overdue is True:
@@ -269,6 +333,13 @@ def list_tasks(
 
     total = query.count()
     sort_key = sort_by.strip().lower() if isinstance(sort_by, str) and sort_by.strip() else "created_desc"
+    if cursor and isinstance(cursor, str) and sort_key == "created_desc":
+        c_ts, c_id = decode_cursor(cursor)
+        if c_ts is not None:
+            query = query.filter(
+                or_(Task.created_at < c_ts, and_(Task.created_at == c_ts, Task.id < c_id))
+            )
+
     if sort_key == "due_asc":
         order_clauses = (Task.due_date.is_(None), Task.due_date.asc(), Task.created_at.desc(), Task.id)
     elif sort_key == "due_desc":
@@ -276,39 +347,56 @@ def list_tasks(
     elif sort_key == "updated_desc":
         order_clauses = (Task.updated_at.desc(), Task.created_at.desc(), Task.id)
     else:
-        order_clauses = (Task.created_at.desc(), Task.due_date.is_(None), Task.due_date.asc(), Task.id)
+        order_clauses = (Task.created_at.desc(), Task.id.desc())
 
-    items = (
+    items_q = (
         query.options(
             joinedload(Task.assigned_to),
+            joinedload(Task.assignee_user),
             joinedload(Task.assigned_by),
             joinedload(Task.reviewer),
             joinedload(Task.related_asset),
+            joinedload(Task.team),
             selectinload(Task.comments),
+            selectinload(Task.checklist_items),
+            selectinload(Task.subtasks),
         )
         .order_by(*order_clauses)
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-        .all()
     )
+    if cursor and isinstance(cursor, str) and sort_key == "created_desc":
+        fetched = items_q.limit(per_page + 1).all()
+    else:
+        fetched = items_q.offset((page - 1) * per_page).limit(per_page + 1).all()
+    has_more = len(fetched) > per_page
+    items = fetched[:per_page]
+    next_cursor = encode_cursor(items[-1].created_at, items[-1].id) if (has_more and items) else None
 
     today = date.today()
     data = []
     for t in items:
-        assignee_name = t.assigned_to.full_name if t.assigned_to else None
+        assignee_name = t.assigned_to.full_name if t.assigned_to else (
+            t.assignee_user.employee.full_name if (t.assignee_user and t.assignee_user.employee) else (
+                t.assignee_user.username if t.assignee_user else None
+            )
+        )
         assigner_name = t.assigned_by.username if t.assigned_by else None
         reviewer_name = t.reviewer.username if t.reviewer else None
         asset_name = t.related_asset.asset_name if t.related_asset else None
         stage = wf.stage_of(t.status)
+        chk_items = t.checklist_items or []
         data.append({
             "id": str(t.id),
             "reference": wf.task_ref(t),
             "company_id": str(t.company_id),
             "branch_id": str(t.branch_id) if t.branch_id else None,
+            "team_id": str(t.team_id) if t.team_id else None,
+            "team_name": t.team.name if t.team else None,
+            "parent_task_id": str(t.parent_task_id) if t.parent_task_id else None,
             "title": t.title,
             "description": t.description,
             "assigned_to_id": str(t.assigned_to_id) if t.assigned_to_id else None,
             "assigned_to_name": assignee_name,
+            "assignee_id": str(t.assignee_id) if t.assignee_id else None,
             "assigned_by_id": str(t.assigned_by_id) if t.assigned_by_id else None,
             "assigned_by_name": assigner_name,
             "reviewer_id": str(t.reviewer_id) if t.reviewer_id else None,
@@ -317,6 +405,8 @@ def list_tasks(
             "status": t.status,
             "stage": stage,
             "stage_label": wf.STAGE_LABELS_AR.get(stage, t.status),
+            "sla_state": t.sla_state or "ok",
+            "resolution_due_at": t.resolution_due_at.isoformat() if t.resolution_due_at else None,
             "start_date": t.start_date,
             "due_date": t.due_date,
             "acknowledged_at": t.acknowledged_at,
@@ -341,11 +431,14 @@ def list_tasks(
             "voice_note_duration": t.voice_note_duration,
             "is_overdue": wf.is_overdue(t, today),
             "comments_count": len(t.comments),
+            "checklist_total": len(chk_items),
+            "checklist_completed": sum(1 for ci in chk_items if ci.is_completed),
+            "subtasks_count": len(t.subtasks or []),
             "created_at": t.created_at,
             "updated_at": t.updated_at,
         })
 
-    pagination = paginate(total=total, page=page, per_page=per_page)
+    pagination = paginate(total=total, page=page, per_page=per_page, next_cursor=next_cursor)
     return success_response(data=data, pagination=pagination)
 
 
@@ -434,13 +527,32 @@ def create_task(
     target_dur = payload.target_duration_minutes or DEFAULT_TARGET_DURATIONS.get(payload.priority, 4320)
     calc_deadline = payload.deadline_at or resolve_task_deadline(payload.priority, payload.deadline_type or "duration", target_dur, payload.deadline_at)
 
+    if getattr(payload, "team_id", None):
+        validate_company_fk(db, Team, payload.team_id, target_cid, "الفريق")
+    if getattr(payload, "parent_task_id", None):
+        validate_company_fk(db, Task, payload.parent_task_id, target_cid, "المهمة الرئيسية")
+    if getattr(payload, "sla_policy_id", None):
+        validate_company_fk(db, SlaPolicy, payload.sla_policy_id, target_cid, "سياسة SLA")
+
+    synced_uid, synced_eid = sync_task_assignee_fields(
+        db,
+        target_cid,
+        user_id=getattr(payload, "assignee_id", None),
+        employee_id=payload.assigned_to_id,
+    )
+
     task = Task(
         company_id=target_cid,
         branch_id=payload.branch_id,
+        team_id=getattr(payload, "team_id", None),
+        parent_task_id=getattr(payload, "parent_task_id", None),
+        sla_policy_id=getattr(payload, "sla_policy_id", None),
         title=clean_title,
         description=payload.description,
-        assigned_to_id=payload.assigned_to_id,
+        assigned_to_id=synced_eid,
+        assignee_id=synced_uid,
         assigned_by_id=current_user.id,
+        requester_id=current_user.id,
         priority=payload.priority,
         status=payload.status,
         start_date=payload.start_date or date.today(),
@@ -461,7 +573,12 @@ def create_task(
         voice_note_duration=payload.voice_note_duration or 0,
     )
     db.add(task)
-    db.commit()
+    db.flush()
+    apply_sla_to_task(db, task, explicit_policy_id=getattr(payload, "sla_policy_id", None))
+    if getattr(payload, "auto_assign", False) and not (synced_uid or synced_eid):
+        auto_assign_task(db, task, actor_id=current_user.id, force=True, commit=True)
+    else:
+        db.commit()
     db.refresh(task)
 
     # Notify assignee if employee has user account
@@ -522,6 +639,216 @@ def create_task(
         },
         message="تم إنشاء المهمة بنجاح"
     )
+
+
+def _validate_and_apply_task_transition(
+    db: Session,
+    task: Task,
+    to_status: str,
+    actor: User,
+    comment: Optional[str] = None,
+    ip_address: Optional[str] = None,
+) -> Task:
+    """Validate task transition via WorkflowTransition matrix and enforce comment / permission rules."""
+    ensure_workflow_transitions(db, task.company_id, entity_type="task")
+    old_status = task.status
+    target_status = to_status.strip()
+    if old_status == target_status:
+        return task
+
+    edge = (
+        db.query(WorkflowTransition)
+        .filter(
+            WorkflowTransition.company_id == task.company_id,
+            WorkflowTransition.entity_type == "task",
+            WorkflowTransition.from_status == old_status,
+            WorkflowTransition.to_status == target_status,
+            WorkflowTransition.is_active == True,
+        )
+        .first()
+    )
+    if not edge:
+        allowed_rows = (
+            db.query(WorkflowTransition.to_status)
+            .filter(
+                WorkflowTransition.company_id == task.company_id,
+                WorkflowTransition.entity_type == "task",
+                WorkflowTransition.from_status == old_status,
+                WorkflowTransition.is_active == True,
+            )
+            .all()
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "INVALID_WORKFLOW_TRANSITION",
+                "message_en": f"Task transition from '{old_status}' to '{target_status}' is not allowed.",
+                "message_ar": f"لا يمكن نقل حالة المهمة من ({old_status}) إلى ({target_status}).",
+                "from_status": old_status,
+                "to_status": target_status,
+                "allowed_next": [r[0] for r in allowed_rows],
+            },
+        )
+
+    req_perm = edge.required_permission or GranularPermission.TASK_TRANSITION
+    if not has_granular_permission(actor, req_perm, task.company_id, db):
+        raise HTTPException(status_code=403, detail=f"ليس لديك صلاحية ({req_perm}) لنقل حالة المهمة")
+
+    if edge.requires_comment and (not comment or not comment.strip()):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "TRANSITION_COMMENT_REQUIRED",
+                "message_en": f"A comment is required to transition to '{target_status}'.",
+                "message_ar": f"يجب إدخال سبب أو ملاحظة عند الانتقال إلى حالة ({target_status}).",
+            },
+        )
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    task.status = target_status
+    if target_status == "Accepted" and not task.accepted_at:
+        task.accepted_at = now
+        task.acknowledged_at = task.acknowledged_at or now
+    elif target_status == "Blocked":
+        task.is_blocked = True
+        task.blocked_at = now
+        if comment and comment.strip():
+            task.blocker_reason = comment.strip()
+    elif old_status == "Blocked" and target_status != "Blocked":
+        task.is_blocked = False
+        task.unblocked_at = now
+    elif target_status == "Submitted for Review":
+        task.submitted_for_review_at = now
+    elif target_status == "Completed":
+        task.completed_at = now
+        task.is_blocked = False
+    elif target_status in ("In Progress", "Assigned", "To Do"):
+        task.completed_at = None
+
+    if comment and comment.strip():
+        db.add(TaskComment(task_id=task.id, user_id=actor.id, content=f"[{target_status}] {comment.strip()}"))
+
+    log_audit(
+        db=db,
+        action="TASK_TRANSITION",
+        resource_type="Task",
+        resource_id=str(task.id),
+        user_id=actor.id,
+        company_id=task.company_id,
+        old_values={"status": old_status},
+        new_values={"status": target_status, "comment": comment},
+        ip_address=ip_address,
+        commit=False,
+    )
+    return task
+
+
+@router.post("/bulk")
+def bulk_update_tasks(
+    payload: TaskBulkRequest,
+    request: Request,
+    current_user: User = Depends(require_granular_permission(GranularPermission.TASK_BULK)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Apply a bulk action across up to 100 tasks with per-item tenant/RBAC checks and partial results."""
+    idem_key = extract_idempotency_key(request)
+    if idem_key:
+        cached = lookup_idempotent_response(db, active_cid, current_user.id, idem_key, "POST", "/api/v1/tasks/bulk")
+        if cached is not None:
+            return cached
+
+    ip_addr = request.client.host if request.client else None
+    succeeded: List[str] = []
+    failed: List[Dict[str, Any]] = []
+
+    for tid in payload.task_ids:
+        task = db.query(Task).filter(Task.id == tid).first()
+        if not task:
+            failed.append({"id": str(tid), "error": "Task not found"})
+            continue
+        if not current_user.is_superadmin and task.company_id != active_cid:
+            failed.append({"id": str(tid), "error": "Forbidden: cross-company access denied"})
+            continue
+
+        try:
+            if payload.action == "assign":
+                if not has_granular_permission(current_user, GranularPermission.TASK_ASSIGN, task.company_id, db):
+                    raise HTTPException(status_code=403, detail="Missing task:assign permission")
+                manual_assign_task(
+                    db=db,
+                    task=task,
+                    team_id=payload.team_id,
+                    assignee_id=payload.assignee_id,
+                    employee_id=payload.employee_id,
+                    actor_id=current_user.id,
+                    reason="bulk_assign",
+                    commit=True,
+                    ip_address=ip_addr,
+                )
+            elif payload.action == "team":
+                if not payload.team_id:
+                    raise HTTPException(status_code=400, detail="team_id is required for action='team'")
+                manual_assign_task(
+                    db=db,
+                    task=task,
+                    team_id=payload.team_id,
+                    actor_id=current_user.id,
+                    reason="bulk_team",
+                    commit=True,
+                    ip_address=ip_addr,
+                )
+            elif payload.action == "transition":
+                if not payload.to_status:
+                    raise HTTPException(status_code=400, detail="to_status is required for action='transition'")
+                _validate_and_apply_task_transition(
+                    db=db,
+                    task=task,
+                    to_status=payload.to_status,
+                    actor=current_user,
+                    comment=payload.comment,
+                    ip_address=ip_addr,
+                )
+                db.commit()
+            elif payload.action == "priority":
+                if not payload.priority:
+                    raise HTTPException(status_code=400, detail="priority is required for action='priority'")
+                old_p = task.priority
+                task.priority = payload.priority.strip()
+                log_audit(
+                    db=db,
+                    action="BULK_TASK_PRIORITY",
+                    resource_type="Task",
+                    resource_id=str(task.id),
+                    user_id=current_user.id,
+                    company_id=task.company_id,
+                    old_values={"priority": old_p},
+                    new_values={"priority": task.priority},
+                    ip_address=ip_addr,
+                    commit=False,
+                )
+                db.commit()
+            succeeded.append(str(tid))
+        except HTTPException as exc:
+            db.rollback()
+            failed.append({"id": str(tid), "error": exc.detail})
+        except ValueError as exc:
+            db.rollback()
+            failed.append({"id": str(tid), "error": str(exc)})
+
+    resp = success_response(
+        data={
+            "action": payload.action,
+            "succeeded": succeeded,
+            "failed": failed,
+            "succeeded_count": len(succeeded),
+            "failed_count": len(failed),
+        },
+        message=f"تم تنفيذ الإجراء الجماعي على {len(succeeded)} مهمة",
+    )
+    if idem_key:
+        store_idempotent_response(db, active_cid, current_user.id, idem_key, "POST", "/api/v1/tasks/bulk", resp)
+    return resp
 
 
 @router.get("/{task_id}")
@@ -591,10 +918,52 @@ def get_task(
         "reference": wf.task_ref(task),
         "company_id": str(task.company_id),
         "branch_id": str(task.branch_id) if task.branch_id else None,
+        "team_id": str(task.team_id) if task.team_id else None,
+        "team_name": task.team.name if task.team else None,
+        "parent_task_id": str(task.parent_task_id) if task.parent_task_id else None,
+        "sla_policy_id": str(task.sla_policy_id) if task.sla_policy_id else None,
+        "sla_state": task.sla_state or "ok",
+        "resolution_due_at": task.resolution_due_at.isoformat() if task.resolution_due_at else None,
         "title": task.title,
         "description": task.description,
         "assigned_to_id": str(task.assigned_to_id) if task.assigned_to_id else None,
         "assigned_to_name": task.assigned_to.full_name if task.assigned_to else None,
+        "assignee_id": str(task.assignee_id) if task.assignee_id else None,
+        "checklist_items": [
+            {
+                "id": str(ci.id),
+                "title": ci.title,
+                "is_completed": bool(ci.is_completed),
+                "position": ci.position,
+                "completed_at": ci.completed_at.isoformat() if ci.completed_at else None,
+            }
+            for ci in db.query(TaskChecklistItem)
+            .filter(TaskChecklistItem.task_id == task.id)
+            .order_by(TaskChecklistItem.position.asc(), TaskChecklistItem.created_at.asc())
+            .all()
+        ],
+        "subtasks": [
+            {
+                "id": str(st.id),
+                "title": st.title,
+                "status": st.status,
+                "priority": st.priority,
+                "assignee_id": str(st.assignee_id) if st.assignee_id else None,
+                "due_date": st.due_date.isoformat() if st.due_date else None,
+            }
+            for st in db.query(Task)
+            .filter(Task.parent_task_id == task.id, Task.company_id == task.company_id)
+            .order_by(Task.created_at.asc())
+            .all()
+        ],
+        "watchers": [
+            {
+                "user_id": str(w.user_id),
+                "username": w.user.username if w.user else None,
+                "full_name": w.user.employee.full_name if (w.user and w.user.employee) else (w.user.username if w.user else None),
+            }
+            for w in db.query(TaskWatcher).filter(TaskWatcher.task_id == task.id).all()
+        ],
         "assigned_by_id": str(task.assigned_by_id) if task.assigned_by_id else None,
         "assigned_by_name": task.assigned_by.username if task.assigned_by else None,
         "reviewer_id": str(task.reviewer_id) if task.reviewer_id else None,
@@ -1320,3 +1689,380 @@ def get_deadline_metrics(
         "breached": breached,
         "compliance_rate": rate,
     })
+
+
+# ==============================================================================
+# Work-Management Task Extensions: Assign, Transition, Checklists, Subtasks, Watchers
+# ==============================================================================
+
+@router.post("/{task_id}/assign")
+def assign_task_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskAssignRequest,
+    request: Request,
+    current_user: User = Depends(require_granular_permission(GranularPermission.TASK_ASSIGN)),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Assign/reassign task manually or via rule-driven auto-assignment (dual-syncs User & Employee)."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية إسناد هذه المهمة")
+
+    idem_key = extract_idempotency_key(request)
+    req_path = f"/api/v1/tasks/{task_id}/assign"
+    if idem_key:
+        cached = lookup_idempotent_response(db, task.company_id, current_user.id, idem_key, "POST", req_path)
+        if cached is not None:
+            return cached
+
+    ip_addr = request.client.host if request.client else None
+    try:
+        if payload.auto_assign:
+            if payload.team_id:
+                validate_company_fk(db, Team, payload.team_id, task.company_id, "الفريق")
+                task.team_id = payload.team_id
+            decision = auto_assign_task(
+                db=db,
+                task=task,
+                actor_id=current_user.id,
+                force=True,
+                commit=True,
+                ip_address=ip_addr,
+            )
+            db.refresh(task)
+            resp = success_response(
+                data={
+                    "task_id": str(task.id),
+                    "team_id": str(task.team_id) if task.team_id else None,
+                    "assignee_id": str(task.assignee_id) if task.assignee_id else None,
+                    "assigned_to_id": str(task.assigned_to_id) if task.assigned_to_id else None,
+                    "strategy_used": decision.strategy_used,
+                    "reason": decision.reason,
+                },
+                message="تم تنفيذ التوزيع التلقائي للمهمة",
+            )
+        else:
+            manual_assign_task(
+                db=db,
+                task=task,
+                team_id=payload.team_id,
+                assignee_id=payload.assignee_id,
+                employee_id=payload.employee_id,
+                clear_assignee=payload.clear_assignee,
+                actor_id=current_user.id,
+                reason=payload.reason or "manual",
+                commit=True,
+                ip_address=ip_addr,
+            )
+            resp = success_response(
+                data={
+                    "task_id": str(task.id),
+                    "team_id": str(task.team_id) if task.team_id else None,
+                    "assignee_id": str(task.assignee_id) if task.assignee_id else None,
+                    "assigned_to_id": str(task.assigned_to_id) if task.assigned_to_id else None,
+                },
+                message="تم إسناد المهمة بنجاح",
+            )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if idem_key:
+        store_idempotent_response(db, task.company_id, current_user.id, idem_key, "POST", req_path, resp)
+    return resp
+
+
+@router.post("/{task_id}/transition")
+def transition_task_endpoint(
+    task_id: uuid.UUID,
+    payload: TaskTransitionRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Transition a task status validated against WorkflowTransition matrix."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل حالة هذه المهمة")
+
+    idem_key = extract_idempotency_key(request)
+    req_path = f"/api/v1/tasks/{task_id}/transition"
+    if idem_key:
+        cached = lookup_idempotent_response(db, task.company_id, current_user.id, idem_key, "POST", req_path)
+        if cached is not None:
+            return cached
+
+    _validate_and_apply_task_transition(
+        db=db,
+        task=task,
+        to_status=payload.to_status,
+        actor=current_user,
+        comment=payload.comment,
+        ip_address=request.client.host if request.client else None,
+    )
+    db.commit()
+    db.refresh(task)
+
+    resp = success_response(
+        data={
+            "task_id": str(task.id),
+            "status": task.status,
+            "stage": wf.stage_of(task.status),
+            "is_blocked": bool(task.is_blocked),
+            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+        },
+        message=f"تم تحديث حالة المهمة إلى {task.status}",
+    )
+    if idem_key:
+        store_idempotent_response(db, task.company_id, current_user.id, idem_key, "POST", req_path, resp)
+    return resp
+
+
+@router.get("/{task_id}/checklist")
+def list_task_checklist(
+    task_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه المهمة")
+    rows = (
+        db.query(TaskChecklistItem)
+        .filter(TaskChecklistItem.task_id == task.id, TaskChecklistItem.company_id == task.company_id)
+        .order_by(TaskChecklistItem.position.asc(), TaskChecklistItem.created_at.asc())
+        .all()
+    )
+    return success_response(
+        data=[
+            {
+                "id": str(r.id),
+                "task_id": str(r.task_id),
+                "title": r.title,
+                "is_completed": bool(r.is_completed),
+                "position": r.position,
+                "completed_by_id": str(r.completed_by_id) if r.completed_by_id else None,
+                "completed_at": r.completed_at.isoformat() if r.completed_at else None,
+            }
+            for r in rows
+        ]
+    )
+
+
+@router.post("/{task_id}/checklist")
+def add_task_checklist_item(
+    task_id: uuid.UUID,
+    payload: TaskChecklistCreate,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذه المهمة")
+    if not has_granular_permission(current_user, GranularPermission.TASK_TRANSITION, task.company_id, db):
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية إضافة عنصر تحقق")
+
+    pos = payload.position
+    if pos is None:
+        pos = db.query(TaskChecklistItem).filter(TaskChecklistItem.task_id == task.id).count()
+    item = TaskChecklistItem(
+        company_id=task.company_id,
+        task_id=task.id,
+        title=payload.title.strip(),
+        position=pos,
+        is_completed=False,
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return success_response(
+        data={
+            "id": str(item.id),
+            "task_id": str(item.task_id),
+            "title": item.title,
+            "is_completed": False,
+            "position": item.position,
+        },
+        message="تمت إضافة عنصر قائمة التحقق بنجاح",
+    )
+
+
+@router.patch("/{task_id}/checklist/{item_id}")
+def update_task_checklist_item(
+    task_id: uuid.UUID,
+    item_id: uuid.UUID,
+    payload: TaskChecklistUpdate,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    item = (
+        db.query(TaskChecklistItem)
+        .filter(TaskChecklistItem.id == item_id, TaskChecklistItem.task_id == task_id)
+        .first()
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="عنصر قائمة التحقق غير موجود")
+    if not current_user.is_superadmin and item.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل هذا العنصر")
+    if not has_granular_permission(current_user, GranularPermission.TASK_TRANSITION, item.company_id, db):
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية تعديل قائمة التحقق")
+
+    updates = payload.model_dump(exclude_unset=True)
+    if "title" in updates and updates["title"]:
+        item.title = updates["title"].strip()
+    if "position" in updates and updates["position"] is not None:
+        item.position = updates["position"]
+    if "is_completed" in updates and updates["is_completed"] is not None:
+        item.is_completed = updates["is_completed"]
+        if item.is_completed:
+            item.completed_by_id = current_user.id
+            item.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        else:
+            item.completed_by_id = None
+            item.completed_at = None
+
+    db.commit()
+    db.refresh(item)
+    return success_response(
+        data={
+            "id": str(item.id),
+            "title": item.title,
+            "is_completed": bool(item.is_completed),
+            "position": item.position,
+            "completed_at": item.completed_at.isoformat() if item.completed_at else None,
+        },
+        message="تم تحديث عنصر قائمة التحقق",
+    )
+
+
+@router.delete("/{task_id}/checklist/{item_id}")
+def delete_task_checklist_item(
+    task_id: uuid.UUID,
+    item_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    item = (
+        db.query(TaskChecklistItem)
+        .filter(TaskChecklistItem.id == item_id, TaskChecklistItem.task_id == task_id)
+        .first()
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="عنصر قائمة التحقق غير موجود")
+    if not current_user.is_superadmin and item.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية حذف هذا العنصر")
+    if not has_granular_permission(current_user, GranularPermission.TASK_TRANSITION, item.company_id, db):
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية حذف عنصر قائمة التحقق")
+    db.delete(item)
+    db.commit()
+    return success_response(message="تم حذف عنصر قائمة التحقق")
+
+
+@router.get("/{task_id}/subtasks")
+def list_task_subtasks(
+    task_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    parent = db.query(Task).filter(Task.id == task_id).first()
+    if not parent:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and parent.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه المهمة")
+    subs = (
+        db.query(Task)
+        .filter(Task.parent_task_id == parent.id, Task.company_id == parent.company_id)
+        .order_by(Task.created_at.asc())
+        .all()
+    )
+    return success_response(
+        data=[
+            {
+                "id": str(s.id),
+                "title": s.title,
+                "status": s.status,
+                "priority": s.priority,
+                "assignee_id": str(s.assignee_id) if s.assignee_id else None,
+                "assigned_to_id": str(s.assigned_to_id) if s.assigned_to_id else None,
+                "assigned_to_name": s.assigned_to.full_name if s.assigned_to else None,
+                "due_date": s.due_date.isoformat() if s.due_date else None,
+            }
+            for s in subs
+        ]
+    )
+
+
+@router.post("/{task_id}/watchers")
+def add_task_watcher(
+    task_id: uuid.UUID,
+    payload: WatcherAddRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه المهمة")
+
+    target_uid = payload.user_id or current_user.id
+    target_user = db.query(User).filter(User.id == target_uid, User.is_deleted == False).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    if not target_user.is_superadmin:
+        mem = (
+            db.query(CompanyMembership)
+            .filter(
+                CompanyMembership.user_id == target_uid,
+                CompanyMembership.company_id == task.company_id,
+                CompanyMembership.status == "Active",
+            )
+            .first()
+        )
+        if not mem:
+            raise HTTPException(status_code=400, detail="المستخدم المحدد غير تابع لهذه الشركة")
+
+    existing = (
+        db.query(TaskWatcher)
+        .filter(TaskWatcher.task_id == task.id, TaskWatcher.user_id == target_uid)
+        .first()
+    )
+    if not existing:
+        db.add(TaskWatcher(company_id=task.company_id, task_id=task.id, user_id=target_uid))
+        db.commit()
+    return success_response(data={"task_id": str(task.id), "user_id": str(target_uid)}, message="تمت إضافة المتابع بنجاح")
+
+
+@router.delete("/{task_id}/watchers/{user_id}")
+def remove_task_watcher(
+    task_id: uuid.UUID,
+    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    if not current_user.is_superadmin and task.company_id != active_cid:
+        raise HTTPException(status_code=403, detail="ليس لديك صلاحية الوصول لهذه المهمة")
+    w = db.query(TaskWatcher).filter(TaskWatcher.task_id == task.id, TaskWatcher.user_id == user_id).first()
+    if w:
+        db.delete(w)
+        db.commit()
+    return success_response(message="تم إزالة المتابع بنجاح")
