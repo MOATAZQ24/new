@@ -23,7 +23,7 @@ class Appearance(StrictModel):
     accent: str = Field(default="#C5A46D", pattern=r"^#[0-9a-fA-F]{6}$")
     surface: str = Field(default="#FFFFFF", pattern=r"^#[0-9a-fA-F]{6}$")
     arabic_font: Literal["IBM Plex Sans Arabic", "Tahoma", "Arial"] = "IBM Plex Sans Arabic"
-    english_font: Literal["Inter", "Arial", "Segoe UI"] = "Inter"
+    english_font: Literal["Inter", "Arial", "Segoe UI", "IBM Plex Sans"] = "Inter"
     font_size: int = Field(default=16, ge=14, le=20)
     font_weight: Literal[400, 500, 600, 700] = 400
     density: Literal["compact", "comfortable", "spacious"] = "comfortable"

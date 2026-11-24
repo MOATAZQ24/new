@@ -24,6 +24,7 @@ import {
   Flame,
   Zap,
   ArrowDown,
+  ArrowUp,
   Target,
   Paperclip,
   Hourglass,
@@ -169,27 +170,28 @@ export function TasksDataTable({
     switch (priority) {
       case "Critical":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
             <Flame className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             <span>حرج جداً</span>
           </span>
         );
       case "Urgent":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800">
             <Zap className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
             <span>عاجل</span>
           </span>
         );
       case "High":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+            <ArrowUp className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             <span>مرتفع</span>
           </span>
         );
       case "Low":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
             <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>منخفض</span>
           </span>
@@ -197,7 +199,7 @@ export function TasksDataTable({
       case "Medium":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
             <Target className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
             <span>متوسط</span>
           </span>
@@ -211,7 +213,7 @@ export function TasksDataTable({
       case "In Progress":
       case "Accepted":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
             <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>قيد التنفيذ</span>
           </span>
@@ -221,7 +223,7 @@ export function TasksDataTable({
       case "Pending":
       case "Pending Acceptance":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
             <Hourglass size={12} className="text-amber-700 dark:text-amber-400" />
             <span>بانتظار القبول</span>
           </span>
@@ -230,14 +232,28 @@ export function TasksDataTable({
       case "Done":
       case "Approved / Completed":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
             <CheckCircle2 size={13} className="text-emerald-700 dark:text-emerald-400" />
             <span>مكتملة</span>
           </span>
         );
+      case "Draft":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+            <span className="w-2 h-2 rounded-full bg-slate-400" />
+            <span>مسودة</span>
+          </span>
+        );
+      case "Blocked":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
+            <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400" />
+            <span>معلق / محظور</span>
+          </span>
+        );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             <span className="w-2 h-2 rounded-full bg-slate-400" />
             <span>{status}</span>
           </span>
@@ -289,7 +305,7 @@ export function TasksDataTable({
 
       {/* Main Table */}
       <div className="overflow-x-auto w-full">
-        <table className="w-full text-xs text-right border-collapse">
+        <table className="w-full min-w-[760px] text-xs text-right border-collapse">
           <thead>
             <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 font-bold">
               <th className="py-2.5 px-2 w-8 text-center">
@@ -344,7 +360,7 @@ export function TasksDataTable({
                   <td className="p-3">
                     <span
                       dir="ltr"
-                      className="font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"
+                      className="font-mono text-[11px] font-bold whitespace-nowrap text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"
                     >
                       {task.reference || `TASK-${task.id.slice(0, 6)}`}
                     </span>
