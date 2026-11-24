@@ -25,9 +25,9 @@ import {
 } from "@/lib/applyTheme";
 
 export const defaultAppearance = {
-  theme: "system", primary: "#131127", secondary: "#7C3AED", background: "#F7F8FC",
-  accent: "#8B5CF6", surface: "#FFFFFF", arabic_font: "IBM Plex Sans Arabic", english_font: "Inter",
-  font_size: 16, font_weight: 400, density: "comfortable", radius: 12, sidebar_width: 256,
+  theme: "light", primary: "#0E5A63", secondary: "#083C43", background: "#FAF9F6",
+  accent: "#B68F4A", surface: "#FFFFFF", arabic_font: "IBM Plex Sans Arabic", english_font: "IBM Plex Sans",
+  font_size: 14, font_weight: 400, density: "comfortable", radius: 10, sidebar_width: 248,
 };
 export type Appearance = typeof defaultAppearance;
 export const widgetLabels: Record<string, string> = {
@@ -89,6 +89,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id, activeCompanyId, reload]); // eslint-disable-line react-hooks/exhaustive-deps
   const presetId = resolveThemePresetId(draft.appearance, DEFAULT_THEME_PRESET_ID);
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/design")) {
+      return;
+    }
     const root = document.documentElement;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const a = { ...draft.appearance };

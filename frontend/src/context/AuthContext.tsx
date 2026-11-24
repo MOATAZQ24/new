@@ -86,6 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const t = window.setTimeout(() => {
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/design")) {
+        setIsLoading(false);
+        return;
+      }
       void fetchProfile();
     }, 0);
     return () => window.clearTimeout(t);

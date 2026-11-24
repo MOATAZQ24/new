@@ -184,7 +184,8 @@ export async function apiRequest<T = unknown>(
 
   if (response.status === 401) {
     const isLoginEndpoint = endpoint.includes("/auth/login");
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login") && !isLoginEndpoint) {
+    const isDesignLab = typeof window !== "undefined" && window.location.pathname.startsWith("/design");
+    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login") && !isDesignLab && !isLoginEndpoint) {
       window.location.href = "/login";
     }
     const errorMsg = parseApiErrorMessage(jsonResult, 401) || "جلسة العمل منتهية أو غير صالحة";

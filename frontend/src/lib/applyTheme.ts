@@ -15,8 +15,8 @@ import {
   THEME_PRESETS,
 } from "./themes";
 
-export const THEME_PRESET_STORAGE_KEY = "ig_theme_preset";
-export const THEME_MODE_STORAGE_KEY = "ig_theme_mode";
+export const THEME_PRESET_STORAGE_KEY = "ig_theme_preset_v2";
+export const THEME_MODE_STORAGE_KEY = "ig_theme_mode_v2";
 
 export function readStoredPresetId(): ThemePresetId {
   if (typeof window === "undefined") return DEFAULT_THEME_PRESET_ID;
@@ -49,12 +49,27 @@ export function persistThemeLocally(presetId: ThemePresetId, mode: ThemeMode) {
 export function applyThemeToDocument(presetId: ThemePresetId, isDark: boolean) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  const tokens = getThemeTokens(presetId, isDark);
 
   root.dataset.theme = isDark ? "dark" : "light";
   root.dataset.themePreset = presetId;
   root.classList.toggle("dark", isDark);
 
+  if (presetId === "petrol") {
+    const legacyProps = [
+      "--background", "--foreground", "--surface", "--surface-muted", "--surface-elevated",
+      "--card", "--card-foreground", "--sidebar-background", "--sidebar-foreground",
+      "--sidebar-active", "--header-background", "--primary", "--primary-foreground",
+      "--secondary", "--accent", "--accent-foreground", "--muted", "--muted-foreground",
+      "--border", "--input", "--ring", "--hover", "--selected", "--popover",
+      "--bg-main", "--text-main", "--text-muted", "--border-color", "--primary-dark",
+      "--primary-green", "--gold-accent", "--on-primary", "--on-secondary", "--on-background",
+      "--surface-subtle", "--surface-hover",
+    ];
+    legacyProps.forEach((prop) => root.style.removeProperty(prop));
+    return;
+  }
+
+  const tokens = getThemeTokens(presetId, isDark);
   Object.entries(tokens).forEach(([key, value]) => {
     root.style.setProperty(`--${key}`, value);
   });

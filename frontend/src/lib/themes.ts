@@ -7,6 +7,7 @@
  */
 
 export type ThemePresetId =
+  | "petrol"
   | "emerald"
   | "electric-blue"
   | "royal-purple"
@@ -71,9 +72,94 @@ export interface ThemePreset {
   dark: ThemeTokenSet;
 }
 
-export const DEFAULT_THEME_PRESET_ID: ThemePresetId = "royal-purple";
+export const DEFAULT_THEME_PRESET_ID: ThemePresetId = "petrol";
 
 export const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: "petrol",
+    nameAr: "بوابة المستثمر — بترولي وورق دافئ (المعتمد)",
+    nameEn: "Investor Gate — Petrol & Warm Paper (Default)",
+    lightName: "Warm Paper",
+    darkName: "Deep Slate Ink",
+    descriptionAr: "الهوية البصرية الهادئة المعتمدة لـ Investor Gate OS: ورق دافئ وأخضر بترولي عميق بتباين WCAG 2.2 AA",
+    signature: {
+      primary: "#0E5A63",
+      secondary: "#083C43",
+      accent: "#B68F4A",
+      background: "#FAF9F6",
+      surface: "#FFFFFF",
+    },
+    light: {
+      background: "#FAF9F6",
+      foreground: "#1B1A17",
+      surface: "#FFFFFF",
+      "surface-muted": "#F4F2EE",
+      "surface-elevated": "#FFFFFF",
+      card: "#FFFFFF",
+      "card-foreground": "#1B1A17",
+      "sidebar-background": "#FFFFFF",
+      "sidebar-foreground": "#1B1A17",
+      "sidebar-active": "#0E5A63",
+      "header-background": "#FFFFFF",
+      primary: "#0E5A63",
+      "primary-foreground": "#FFFFFF",
+      secondary: "#083C43",
+      accent: "#B68F4A",
+      "accent-foreground": "#1B1A17",
+      muted: "#F4F2EE",
+      "muted-foreground": "#5E5A52",
+      border: "#E7E3DC",
+      input: "#FFFFFF",
+      ring: "#0E5A63",
+      hover: "#F4F2EE",
+      selected: "#E3F1F2",
+      popover: "#FFFFFF",
+      "chart-1": "#0E5A63",
+      "chart-2": "#B68F4A",
+      "chart-3": "#2F6FA3",
+      "chart-4": "#2E7D4F",
+      "chart-5": "#5E5A52",
+      success: "#2E7D4F",
+      warning: "#B7791F",
+      destructive: "#C0392B",
+      info: "#2F6FA3",
+    },
+    dark: {
+      background: "#111413",
+      foreground: "#ECEAE4",
+      surface: "#181C1B",
+      "surface-muted": "#1F2423",
+      "surface-elevated": "#272D2C",
+      card: "#181C1B",
+      "card-foreground": "#ECEAE4",
+      "sidebar-background": "#181C1B",
+      "sidebar-foreground": "#ECEAE4",
+      "sidebar-active": "#4FB3BC",
+      "header-background": "#181C1B",
+      primary: "#4FB3BC",
+      "primary-foreground": "#0A1E20",
+      secondary: "#1F2423",
+      accent: "#D8B36A",
+      "accent-foreground": "#111413",
+      muted: "#1F2423",
+      "muted-foreground": "#A9A59B",
+      border: "#2B3130",
+      input: "#1F2423",
+      ring: "#4FB3BC",
+      hover: "#1F2423",
+      selected: "#173033",
+      popover: "#181C1B",
+      "chart-1": "#4FB3BC",
+      "chart-2": "#D8B36A",
+      "chart-3": "#6EB5EB",
+      "chart-4": "#6AD196",
+      "chart-5": "#A9A59B",
+      success: "#6AD196",
+      warning: "#F0B85A",
+      destructive: "#F27C70",
+      info: "#6EB5EB",
+    },
+  },
   {
     id: "royal-purple",
     nameAr: "الأرجواني الملكي (المعتمد)",
@@ -605,6 +691,15 @@ export function resolveThemePresetId(
   const p = (appearance?.primary || "").toUpperCase();
   const s = (appearance?.secondary || "").toUpperCase();
 
+  // Upgrade legacy pre-redesign default palettes cleanly to the canonical Petrol & Warm Paper system
+  if (
+    (p === "#131127" && s === "#7C3AED") ||
+    (p === "#123D32" && s === "#187A5A") ||
+    (p === "#0E5A63")
+  ) {
+    return "petrol";
+  }
+
   for (const preset of THEME_PRESETS) {
     if (
       preset.signature.primary.toUpperCase() === p &&
@@ -612,22 +707,6 @@ export function resolveThemePresetId(
     ) {
       return preset.id;
     }
-  }
-
-  // Secondary/Primary partial matching
-  for (const preset of THEME_PRESETS) {
-    if (
-      preset.signature.secondary.toUpperCase() === s ||
-      preset.light.primary.toUpperCase() === s ||
-      preset.dark.primary.toUpperCase() === s
-    ) {
-      return preset.id;
-    }
-  }
-
-  // Legacy emerald corporate hexes
-  if (p === "#123D32" || s === "#187A5A") {
-    return "emerald";
   }
 
   if (isValidThemePresetId(fallbackId)) {

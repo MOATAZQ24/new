@@ -40,23 +40,23 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 const VARIANT_STYLES: Record<ToastVariant, { container: string; iconBg: string; icon: React.ReactNode }> = {
   success: {
-    container: "bg-white dark:bg-slate-800 border-emerald-200 dark:border-emerald-800 text-slate-900 dark:text-slate-100",
-    iconBg: "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300",
+    container: "bg-[var(--surface)] border-[var(--success-border)] text-[var(--text)]",
+    iconBg: "bg-[var(--success-soft)] text-[var(--success-text)]",
     icon: <Icons.CheckCircle size={18} />,
   },
   error: {
-    container: "bg-white dark:bg-slate-800 border-rose-200 dark:border-rose-800 text-slate-900 dark:text-slate-100",
-    iconBg: "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300",
+    container: "bg-[var(--surface)] border-[var(--danger-border)] text-[var(--text)]",
+    iconBg: "bg-[var(--danger-soft)] text-[var(--danger-text)]",
     icon: <Icons.AlertCircle size={18} />,
   },
   warning: {
-    container: "bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800 text-slate-900 dark:text-slate-100",
-    iconBg: "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300",
+    container: "bg-[var(--surface)] border-[var(--warning-border)] text-[var(--text)]",
+    iconBg: "bg-[var(--warning-soft)] text-[var(--warning-text)]",
     icon: <Icons.AlertTriangle size={18} />,
   },
   info: {
-    container: "bg-white dark:bg-slate-800 border-sky-200 dark:border-sky-800 text-slate-900 dark:text-slate-100",
-    iconBg: "bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300",
+    container: "bg-[var(--surface)] border-[var(--info-border)] text-[var(--text)]",
+    iconBg: "bg-[var(--info-soft)] text-[var(--info-text)]",
     icon: <Icons.Info size={18} />,
   },
 };
