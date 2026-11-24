@@ -284,7 +284,7 @@ export default function Employee360ProfilePage() {
               value={`${perf.operational_metrics.completion_rate_percent}%`}
               subtitle={`مكتمل: ${perf.operational_metrics.completed_tasks} من أصل ${perf.operational_metrics.valid_denominator}`}
               icon={<Icons.CheckCircle size={20} />}
-              accentColor="border-[#187A5A]"
+              accentColor="border-[#2563EB]"
             />
             <StatsCard
               title="الالتزام بالمواعيد النهائية"
@@ -301,14 +301,14 @@ export default function Employee360ProfilePage() {
               }
               subtitle={`طلبات: ${profile.tickets_and_activities.requested_tickets.length} • مسندة: ${profile.tickets_and_activities.assigned_tech_tickets.length}`}
               icon={<Icons.HelpDesk size={20} />}
-              accentColor="border-[#C5A46D]"
+              accentColor="border-[#3B82F6]"
             />
             <StatsCard
               title="العهد والأصول المسلمة"
               value={profile.assets_and_custody.active_custody.length}
               subtitle={`الأرشيف السابق: ${profile.assets_and_custody.custody_history.length}`}
               icon={<Icons.Custody size={20} />}
-              accentColor="border-[#123D32]"
+              accentColor="border-[#1D4ED8]"
             />
           </div>
         )}
@@ -328,7 +328,7 @@ export default function Employee360ProfilePage() {
               onClick={() => setActiveTab(t.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === t.id
-                  ? "bg-[#123D32] text-white shadow-xs"
+                  ? "bg-[#1D4ED8] text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -348,7 +348,7 @@ export default function Employee360ProfilePage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                    <div className="w-14 h-14 rounded-2xl bg-[#123D32] text-[#C5A46D] font-black text-xl flex items-center justify-center shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-[#1D4ED8] text-[#3B82F6] font-black text-xl flex items-center justify-center shrink-0">
                       {ov.full_name.slice(0, 2)}
                     </div>
                     <div>
@@ -408,7 +408,7 @@ export default function Employee360ProfilePage() {
                     subtitle="مقارنة المهام المكتملة والنشطة والمتأخرة من قاعدة البيانات الموحدة"
                     totalLabel="مهمة"
                     items={[
-                      { label: "مكتملة (Completed)", value: perf?.operational_metrics.completed_tasks || 0, color: "#187A5A" },
+                      { label: "مكتملة (Completed)", value: perf?.operational_metrics.completed_tasks || 0, color: "#2563EB" },
                       { label: "قيد التنفيذ (Active)", value: perf?.operational_metrics.active_tasks || 0, color: "#0284C7" },
                       { label: "متأخرة (Overdue)", value: perf?.operational_metrics.overdue_tasks || 0, color: "#E11D48" },
                     ]}
@@ -425,7 +425,7 @@ export default function Employee360ProfilePage() {
                     <h3 className="text-sm font-bold text-slate-900">
                       المهام المسندة للموظف ({profile.tasks_and_projects.tasks.length})
                     </h3>
-                    <Link href="/tasks" className="text-xs font-bold text-[#187A5A] hover:underline">
+                    <Link href="/tasks" className="text-xs font-bold text-[#2563EB] hover:underline">
                       فتح لوحة المهام
                     </Link>
                   </div>
@@ -433,7 +433,7 @@ export default function Employee360ProfilePage() {
                     {profile.tasks_and_projects.tasks.map((t) => (
                       <div key={t.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between gap-2">
                         <div>
-                          <span className="font-mono font-bold text-[#187A5A] me-2">{t.reference}</span>
+                          <span className="font-mono font-bold text-[#2563EB] me-2">{t.reference}</span>
                           <span className="font-semibold text-slate-900">{t.title}</span>
                           {t.is_voice_task && (
                             <span className="inline-flex items-center gap-1 ms-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -489,7 +489,7 @@ export default function Employee360ProfilePage() {
                     {profile.assets_and_custody.active_custody.map((c) => (
                       <div key={c.custody_id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-[#187A5A]">{c.asset_code}</span>
+                          <span className="font-mono font-bold text-[#2563EB]">{c.asset_code}</span>
                           <StatusBadge status={c.status} />
                         </div>
                         <div className="font-bold text-slate-900">{c.asset_name} ({c.asset_type})</div>
@@ -510,7 +510,7 @@ export default function Employee360ProfilePage() {
                   </h3>
                   {profile.tickets_and_activities.requested_tickets.map((tk) => (
                     <div key={tk.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex justify-between">
-                      <span><strong className="font-mono text-[#187A5A]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
+                      <span><strong className="font-mono text-[#2563EB]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
                       <StatusBadge status={tk.status} />
                     </div>
                   ))}
@@ -521,7 +521,7 @@ export default function Employee360ProfilePage() {
                   </h3>
                   {profile.tickets_and_activities.assigned_tech_tickets.map((tk) => (
                     <div key={tk.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex justify-between">
-                      <span><strong className="font-mono text-[#187A5A]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
+                      <span><strong className="font-mono text-[#2563EB]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
                       <StatusBadge status={tk.status} />
                     </div>
                   ))}

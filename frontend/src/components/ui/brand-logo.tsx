@@ -49,7 +49,7 @@ export function BrandSymbol({
       ? "#FFFFFF"
       : tone === "monochrome"
         ? "currentColor"
-        : "var(--accent, #B68F4A)";
+        : "var(--accent, #2563EB)";
 
   return (
     <svg

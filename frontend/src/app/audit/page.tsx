@@ -123,7 +123,7 @@ export default function AuditPage() {
                   setActionFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="">جميع أنواع العمليات</option>
                 <option value="CREATE">إضافة (CREATE)</option>
@@ -144,7 +144,7 @@ export default function AuditPage() {
                   setResourceFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="">جميع الكيانات والموديلات</option>
                 <option value="TechnicalAsset">الأصول التقنية (TechnicalAsset)</option>
@@ -216,7 +216,7 @@ export default function AuditPage() {
                       <td className="py-3 px-4 text-center">
                         <button
                           onClick={() => setSelectedLog(log)}
-                          className="p-1.5 text-gray-500 hover:text-[#187A5A] hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-[#2563EB] hover:bg-gray-100 rounded-lg transition-colors"
                           title="عرض التفاصيل والبيانات"
                         >
                           <EyeIcon className="w-4 h-4" />

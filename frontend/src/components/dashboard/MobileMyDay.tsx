@@ -68,16 +68,16 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
   return (
     <div className="space-y-5 lg:hidden animate-in fade-in duration-200">
       {/* 1. Warm Greeting & Focus Header */}
-      <div className="bg-gradient-to-br from-[#123D32] to-[#187A5A] text-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
-        <div className="absolute -left-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-xl pointer-events-none" />
+      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-blue-950 text-white rounded-3xl p-5 shadow-sm relative overflow-hidden border border-slate-800">
+        <div className="absolute -left-6 -bottom-6 w-32 h-32 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
         <div className="relative z-10">
-          <div className="text-xs text-[var(--accent)] font-bold tracking-wide">
+          <div className="text-xs text-blue-400 font-bold tracking-wide">
             {arabicDate}
           </div>
           <h1 className="text-xl font-black mt-1 leading-tight">
             مرحباً، {firstName}
           </h1>
-          <p className="text-xs text-emerald-100/90 mt-1 leading-relaxed">
+          <p className="text-xs text-blue-100/90 mt-1 leading-relaxed">
             {activeCompany?.name_ar || activeCompany?.name_en || "بوابة المستثمر للتقنية"} — إليك أهم مهامك وأولوياتك اليوم.
           </p>
         </div>
@@ -92,9 +92,9 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           {/* Quick Voice Task Button */}
           <Link
             href="/tasks?mode=voice"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-[#187A5A] transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-[#187A5A] dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <Mic size={20} />
             </div>
             <div className="min-w-0">
@@ -110,9 +110,9 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           {/* Quick Ticket Button */}
           <Link
             href="/tickets?action=new"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-[#187A5A] transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
               <PlusCircle size={20} />
             </div>
             <div className="min-w-0">
@@ -128,9 +128,9 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           {/* Scan Asset QR */}
           <Link
             href="/assets?action=scan"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-[#187A5A] transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
               <QrCode size={20} />
             </div>
             <div className="min-w-0">
@@ -182,7 +182,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                 مهام نشطة
               </span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-[#187A5A] flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                 <CheckSquare size={16} />
               </div>
             </div>
@@ -218,7 +218,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                 تذاكر الدعم
               </span>
-              <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 flex items-center justify-center">
                 <Headphones size={16} />
               </div>
             </div>
@@ -235,7 +235,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                 أصول وعهد
               </span>
-              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center">
                 <Laptop size={16} />
               </div>
             </div>
@@ -254,7 +254,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           </h2>
           <Link
             href="/tasks"
-            className="text-xs font-bold text-[#187A5A] dark:text-emerald-400 flex items-center gap-1"
+            className="text-xs font-bold text-primary dark:text-blue-400 flex items-center gap-1"
           >
             <span>عرض الكل</span>
             <ChevronLeft size={14} />
@@ -267,7 +267,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
               <Link
                 key={task.id}
                 href="/tasks"
-                className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center justify-between gap-3 transition hover:border-[#187A5A]"
+                className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center justify-between gap-3 transition hover:border-primary"
               >
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
@@ -290,12 +290,12 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
             ))}
           </div>
         ) : (
-          <div className="p-6 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-center space-y-1.5">
-            <CheckCircle2 size={24} className="mx-auto text-emerald-600" />
-            <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+          <div className="p-6 rounded-2xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 text-center space-y-1.5">
+            <CheckCircle2 size={24} className="mx-auto text-sky-600" />
+            <div className="text-xs font-bold text-sky-900 dark:text-sky-200">
               لا توجد مهام متأخرة اليوم
             </div>
-            <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400">
+            <div className="text-[11px] text-sky-700/80 dark:text-sky-400">
               جميع أعمالك ومسؤولياتك التشغيلية تسير وفق الجدول الزمني المحدد.
             </div>
           </div>
@@ -307,7 +307,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
         <button
           type="button"
           onClick={onSwitchToFullDashboard}
-          className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-[#187A5A] transition py-2 px-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+          className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition py-2 px-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
         >
           <BarChart3 className="w-3.5 h-3.5" />
           <span>عرض لوحة المؤشرات البيانية الكاملة</span>

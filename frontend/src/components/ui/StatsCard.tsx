@@ -29,7 +29,7 @@ export function StatsCard({
   subtitle,
   icon,
   trend,
-  accentColor = "border-[#187A5A]",
+  accentColor = "border-[#2563EB]",
   href,
   onClick,
   active = false,
@@ -43,7 +43,7 @@ export function StatsCard({
       onClick={onClick}
       className={`motion-card bg-white rounded-xl border p-4 sm:p-5 shadow-xs relative overflow-hidden border-t-4 ${accentColor} transition-all ${
         active
-          ? "border-slate-300 ring-2 ring-[#187A5A]/30 shadow-sm bg-[#187A5A]/[0.03]"
+          ? "border-slate-300 ring-2 ring-[#2563EB]/30 shadow-sm bg-[#2563EB]/[0.03]"
           : "border-slate-200/90 hover:shadow-md hover:border-slate-300"
       } ${isInteractive ? "cursor-pointer group" : ""}`}
     >
@@ -55,8 +55,8 @@ export function StatsCard({
           <div
             className={`p-2 rounded-lg transition-colors shrink-0 ${
               active
-                ? "bg-[#187A5A] text-white"
-                : "bg-slate-100/80 text-[#187A5A] group-hover:bg-[#187A5A] group-hover:text-white"
+                ? "bg-[#2563EB] text-white"
+                : "bg-slate-100/80 text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white"
             }`}
           >
             {icon}
@@ -91,7 +91,7 @@ export function StatsCard({
             }}
             className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors cursor-pointer ${
               active
-                ? "bg-[#187A5A] text-white"
+                ? "bg-[#2563EB] text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
             }`}
           >

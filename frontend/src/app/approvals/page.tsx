@@ -232,7 +232,7 @@ export default function ApprovalsPage() {
         <PageHeader
           title="مركز الاعتمادات وطلبات الخدمة (Approval Center)"
           description="إدارة ومتابعة قرارات الاعتماد لمسارات العمل، طلبات شراء الأجهزة وتراخيص البرمجيات والتكليفات الفنية"
-          icon={<ShieldCheckIcon className="w-5 h-5 text-[#187A5A]" />}
+          icon={<ShieldCheckIcon className="w-5 h-5 text-[#2563EB]" />}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center bg-slate-100 p-1 rounded-xl">
@@ -258,7 +258,7 @@ export default function ApprovalsPage() {
                   type="button"
                   onClick={() => setTab("create")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    tab === "create" ? "bg-[#123D32] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                    tab === "create" ? "bg-[#1D4ED8] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   + طلب شراء جديد
@@ -275,7 +275,7 @@ export default function ApprovalsPage() {
               <div className="text-xl font-black font-mono text-slate-900">{data?.kpis.total_approvals ?? 0}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي طلبات الاعتماد</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <ShieldCheckIcon className="w-5 h-5" />
             </div>
           </div>
@@ -292,10 +292,10 @@ export default function ApprovalsPage() {
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-[#187A5A]">{data?.kpis.approved_count ?? 0}</div>
+              <div className="text-xl font-black font-mono text-[#2563EB]">{data?.kpis.approved_count ?? 0}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">تم اعتمادها</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={18} />
             </div>
           </div>
@@ -312,12 +312,12 @@ export default function ApprovalsPage() {
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-[#C5A46D]">
+              <div className="text-xl font-black font-mono text-[#3B82F6]">
                 {(data?.kpis.pending_purchase_amount_sar ?? 0).toLocaleString()} <span className="text-xs font-normal text-slate-500">ر.س</span>
               </div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">مبالغ الشراء المعلقة</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.CreditCard size={18} />
             </div>
           </div>
@@ -459,7 +459,7 @@ export default function ApprovalsPage() {
               <button
                 type="button"
                 onClick={() => setTab("create")}
-                className="px-3.5 py-1.5 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold shadow-xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-xs font-bold shadow-xs cursor-pointer"
               >
                 + إنشاء طلب جديد
               </button>
@@ -478,7 +478,7 @@ export default function ApprovalsPage() {
                   <button
                     type="button"
                     onClick={() => setTab("create")}
-                    className="px-4 py-2 rounded-xl bg-[#123D32] text-white font-bold text-xs"
+                    className="px-4 py-2 rounded-xl bg-[#1D4ED8] text-white font-bold text-xs"
                   >
                     تقديم طلب شراء
                   </button>
@@ -494,7 +494,7 @@ export default function ApprovalsPage() {
                       className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs space-y-2.5"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
+                        <span className="font-mono text-xs font-bold text-[#2563EB] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
                           #{p.request_number}
                         </span>
                         <StatusBadge status={p.status} />
@@ -516,7 +516,7 @@ export default function ApprovalsPage() {
                         <div className="font-mono text-slate-600 dark:text-slate-300">
                           {p.quantity} × {p.unit_cost_sar.toLocaleString()} ر.س
                         </div>
-                        <div className="font-mono font-black text-xs text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md">
+                        <div className="font-mono font-black text-xs text-[#2563EB] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md">
                           {p.total_cost_sar.toLocaleString()} ر.س
                         </div>
                       </div>
@@ -548,7 +548,7 @@ export default function ApprovalsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {data.purchase_requests.map((p) => (
                       <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-[#187A5A]">{p.request_number}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-[#2563EB]">{p.request_number}</td>
                         <td className="py-3 px-4">
                           <div className="font-bold text-slate-900">{p.item_name}</div>
                           {p.justification && (
@@ -597,7 +597,7 @@ export default function ApprovalsPage() {
                     required
                     value={formData.request_number}
                     onChange={(e) => setFormData({ ...formData, request_number: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
@@ -608,7 +608,7 @@ export default function ApprovalsPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   >
                     <option value="Hardware">أجهزة وعتاد (Hardware)</option>
                     <option value="Software">تراخيص برمجيات (Software)</option>
@@ -629,7 +629,7 @@ export default function ApprovalsPage() {
                   placeholder="مثال: لابتوب Dell Latitude 5540، شاشة 27 بوصة، ترخيص Zoom Enterprise..."
                   value={formData.item_name}
                   onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -641,7 +641,7 @@ export default function ApprovalsPage() {
                     placeholder="مثال: جرير، إكسترا، عصر الجوال..."
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
@@ -655,7 +655,7 @@ export default function ApprovalsPage() {
                     required
                     value={formData.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 1 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
@@ -670,7 +670,7 @@ export default function ApprovalsPage() {
                     required
                     value={formData.unit_cost_sar}
                     onChange={(e) => setFormData({ ...formData, unit_cost_sar: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
@@ -681,7 +681,7 @@ export default function ApprovalsPage() {
                   <select
                     value={formData.branch_id}
                     onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   >
                     <option value="">-- اختياري --</option>
                     {branches.map((b) => (
@@ -695,7 +695,7 @@ export default function ApprovalsPage() {
                   <select
                     value={formData.department_id}
                     onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                   >
                     <option value="">-- اختياري --</option>
                     {departments.map((d) => (
@@ -712,14 +712,14 @@ export default function ApprovalsPage() {
                   placeholder="بيان سبب طلب الشراء، الموظفين المستفيدين، أو المشروع المرتبط..."
                   value={formData.justification}
                   onChange={(e) => setFormData({ ...formData, justification: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               {/* Total Summary Box */}
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                 <span className="font-bold text-slate-700">التكلفة التقديرية الإجمالية:</span>
-                <span className="font-mono text-base font-black text-[#187A5A]">
+                <span className="font-mono text-base font-black text-[#2563EB]">
                   {totalCostCalc.toLocaleString()} ر.س
                 </span>
               </div>
@@ -735,7 +735,7 @@ export default function ApprovalsPage() {
                 <button
                   type="submit"
                   disabled={submittingForm}
-                  className="px-6 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {submittingForm ? "جاري الإرسال..." : "إرسال طلب الشراء للاعتماد"}
                 </button>
@@ -777,7 +777,7 @@ export default function ApprovalsPage() {
                       ? "ملاحظات الاعتماد والموافقة الفنية (اختياري)..."
                       : "يرجى ذكر سبب الرفض أو التعديلات المطلوبة (إلزامي)..."
                   }
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 

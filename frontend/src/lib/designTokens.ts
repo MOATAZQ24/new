@@ -15,10 +15,10 @@
 export const designTokens = {
   // Brand & Accent Colors
   brand: {
-    primary: "#123D32",       // Emerald Deep
+    primary: "#1D4ED8",       // Emerald Deep
     primaryHover: "#0E2F26",
-    primaryLight: "#187A5A",  // Emerald Secondary
-    accent: "#C5A46D",        // Gold / Amber Accent
+    primaryLight: "#2563EB",  // Emerald Secondary
+    accent: "#3B82F6",        // Gold / Amber Accent
     accentHover: "#B29158",
     purple: "#7C3AED",        // Reference Theme Accent
     purpleLight: "#8B5CF6",

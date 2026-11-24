@@ -135,25 +135,25 @@ export function TasksSplitDrawer({
   if (!task) return null;
 
   const priorityLabelMap: Record<string, { label: string; color: string; flame?: boolean }> = {
-    Critical: { label: "حرج جداً", color: "text-rose-600 bg-rose-50 border-rose-200", flame: true },
-    Urgent: { label: "عاجل", color: "text-amber-600 bg-amber-50 border-amber-200", flame: true },
-    High: { label: "مرتفع", color: "text-orange-600 bg-orange-50 border-orange-200" },
-    Medium: { label: "متوسط", color: "text-sky-600 bg-sky-50 border-sky-200" },
-    Low: { label: "منخفض", color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+    Critical: { label: "حرج جداً", color: "text-rose-700 bg-rose-100 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800", flame: true },
+    Urgent: { label: "عاجل", color: "text-rose-700 bg-rose-100 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800", flame: true },
+    High: { label: "مرتفع", color: "text-blue-800 bg-blue-50 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800" },
+    Medium: { label: "متوسط", color: "text-slate-800 bg-slate-100 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700" },
+    Low: { label: "منخفض", color: "text-slate-700 bg-slate-100 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
   };
 
   const currentPriority = priorityLabelMap[task.priority] || {
     label: task.priority || "متوسط",
-    color: "text-sky-600 bg-sky-50 border-sky-200",
+    color: "text-slate-800 bg-slate-100 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700",
   };
 
   const statusLabelMap: Record<string, { label: string; dot: string }> = {
     Draft: { label: "مسودة", dot: "bg-slate-400" },
-    Assigned: { label: "بانتظار القبول", dot: "bg-amber-400" },
-    Accepted: { label: "تم القبول", dot: "bg-sky-400" },
-    "In Progress": { label: "قيد التنفيذ", dot: "bg-sky-500" },
+    Assigned: { label: "بانتظار القبول", dot: "bg-indigo-500" },
+    Accepted: { label: "تم القبول", dot: "bg-blue-500" },
+    "In Progress": { label: "قيد التنفيذ", dot: "bg-blue-600" },
     Blocked: { label: "معلّق لوجود عائق", dot: "bg-rose-500" },
-    Completed: { label: "مكتملة", dot: "bg-emerald-500" },
+    Completed: { label: "مكتملة", dot: "bg-sky-500" },
   };
 
   const currentStatus = statusLabelMap[task.status] || {
@@ -232,7 +232,7 @@ export function TasksSplitDrawer({
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20">
               {task.department || "تقنية المعلومات"}
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {task.category || "تشغيلي"}
             </span>
           </div>

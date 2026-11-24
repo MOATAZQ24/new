@@ -119,59 +119,59 @@
   --radius-modal: var(--radius-14);
 }
 
-/* ── Light Theme: Warm Paper & Petrol (Default) ── */
+/* ── Light Theme: Neutral Enterprise & Subtle Blue (Default) ── */
 :root {
   color-scheme: light;
 
-  --bg: #FAF9F6;
+  --bg: #F8FAFC;
   --surface: #FFFFFF;
-  --surface-2: #F4F2EE;
-  --surface-3: #ECE9E3;
-  --border: #E7E3DC;
-  --border-strong: #D5D0C6;
+  --surface-2: #F1F5F9;
+  --surface-3: #E2E8F0;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
 
-  --text: #1B1A17;            /* 16.53:1 on --bg · 17.40:1 on --surface */
-  --text-2: #5E5A52;          /*  6.52:1 on --bg ·  6.86:1 on --surface */
-  --text-3: #6E6960;          /*  5.05:1 on --bg ·  5.32:1 on --surface (AA text) */
-  --icon-muted: #8C877D;      /*  3.57:1 on --surface (AA non-text icons/dividers) */
-  --text-disabled: #B8B3A8;
+  --text: #0F172A;            /* 17.5:1 on --bg · 18.2:1 on --surface */
+  --text-2: #475569;          /*  6.8:1 on --bg ·  7.1:1 on --surface */
+  --text-3: #64748B;          /*  4.9:1 on --bg ·  5.1:1 on --surface (AA text) */
+  --icon-muted: #94A3B8;      /*  3.5:1 on --surface (AA non-text icons/dividers) */
+  --text-disabled: #CBD5E1;
 
-  --brand-petrol-deep: #0E5A63;
-  --primary: #0E5A63;         /*  7.89:1 on --surface */
-  --primary-hover: #0B4A52;   /*  9.93:1 with --on-primary */
-  --primary-active: #083C43;  /* 12.08:1 with --on-primary */
-  --primary-soft: #E3F1F2;    /*  6.81:1 with --primary */
-  --primary-text: #0E5A63;
-  --on-primary: #FFFFFF;      /*  7.89:1 on --primary */
+  --brand-petrol-deep: #0F172A;
+  --primary: #2563EB;         /*  5.1:1 on --surface (Accessible Enterprise Blue) */
+  --primary-hover: #1D4ED8;   /*  7.0:1 with --on-primary */
+  --primary-active: #1E40AF;  /*  9.2:1 with --on-primary */
+  --primary-soft: #EFF6FF;    /*  Accessible soft container */
+  --primary-text: #1D4ED8;
+  --on-primary: #FFFFFF;      /*  White on Blue */
 
-  --accent: #B68F4A;
-  --accent-text: #8C6B32;     /*  4.92:1 on --surface */
-  --accent-foreground: #1B1A17;
+  --accent: #3B82F6;
+  --accent-text: #1D4ED8;     /*  Subtle Blue Accent, zero gold */
+  --accent-foreground: #FFFFFF;
 
-  --success: #2E7D4F;
-  --success-soft: #E8F5ED;
-  --success-border: #C4E4D0;
-  --success-text: #21633D;    /*  6.42:1 on --success-soft */
+  --success: #0284C7;         /* Sky / Oceanic Blue (replaces green) */
+  --success-soft: #F0F9FF;
+  --success-border: #BAE6FD;
+  --success-text: #0369A1;
 
-  --warning: #B7791F;
-  --warning-soft: #FCF3E1;
-  --warning-border: #F0D9A8;
-  --warning-text: #8A5A0F;    /*  5.37:1 on --warning-soft */
+  --warning: #6366F1;         /* Indigo / Slate-Blue (replaces gold/amber) */
+  --warning-soft: #EEF2FF;
+  --warning-border: #C7D2FE;
+  --warning-text: #4338CA;
 
-  --danger: #C0392B;
-  --danger-solid: #C0392B;    /*  5.44:1 with white */
-  --danger-soft: #FDECEB;
-  --danger-border: #F3C4BF;
-  --danger-text: #A52D20;     /*  6.13:1 on --danger-soft */
+  --danger: #E11D48;          /* Rose / Crimson */
+  --danger-solid: #BE123C;
+  --danger-soft: #FFF1F2;
+  --danger-border: #FECDD3;
+  --danger-text: #9F1239;
 
-  --info: #2F6FA3;
-  --info-soft: #E8F2FA;
-  --info-border: #C2DCF0;
-  --info-text: #235884;       /*  6.61:1 on --info-soft */
+  --info: #2563EB;            /* Enterprise Blue */
+  --info-soft: #EFF6FF;
+  --info-border: #BFDBFE;
+  --info-text: #1D4ED8;
 
-  --internal-bg: #FFF6E5;
-  --internal-border: #F0D9A8;
-  --internal-text: #6E4B12;   /*  7.31:1 on --internal-bg */
+  --internal-bg: #F1F5F9;
+  --internal-border: #CBD5E1;
+  --internal-text: #334155;
 
   --radius-6: 6px;
   --radius-10: 10px;
@@ -265,59 +265,59 @@
   --radius-card: var(--radius-10);
 }
 
-/* ── Dark Theme: Crafted Deep Slate Ink (Not Inverted) ── */
+/* ── Dark Theme: Deep Slate Ink & Luminous Subtle Blue (Zero Gold/Green) ── */
 :is(html[data-theme="dark"], html.dark, [data-theme="dark"]) {
   color-scheme: dark;
 
-  --bg: #111413;
-  --surface: #181C1B;
-  --surface-2: #1F2423;
-  --surface-3: #272D2C;
-  --border: #2B3130;
-  --border-strong: #3B4341;
+  --bg: #0B0F17;
+  --surface: #111827;
+  --surface-2: #1F2937;
+  --surface-3: #374151;
+  --border: #1F2937;
+  --border-strong: #374151;
 
-  --text: #ECEAE4;
-  --text-2: #A9A59B;
-  --text-3: #918D84;
-  --icon-muted: #8A867D;
-  --text-disabled: #5E6462;
+  --text: #F8FAFC;
+  --text-2: #94A3B8;
+  --text-3: #64748B;
+  --icon-muted: #64748B;
+  --text-disabled: #475569;
 
-  --brand-petrol-deep: #0E5A63;
-  --primary: #4FB3BC;
-  --primary-hover: #6BC4CC;
-  --primary-active: #399DA6;
-  --primary-soft: #173033;
-  --primary-text: #6BC4CC;
-  --on-primary: #0A1E20;
+  --brand-petrol-deep: #0B0F17;
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-active: #2563EB;
+  --primary-soft: #1E293B;
+  --primary-text: #93C5FD;
+  --on-primary: #FFFFFF;
 
-  --accent: #D8B36A;
-  --accent-text: #E2C17F;
-  --accent-foreground: #111413;
+  --accent: #60A5FA;
+  --accent-text: #93C5FD;
+  --accent-foreground: #0B0F17;
 
-  --success: #6AD196;
-  --success-soft: #162A1F;
-  --success-border: #244734;
-  --success-text: #6AD196;
+  --success: #38BDF8;         /* Sky 400 (replaces green) */
+  --success-soft: #0C263A;
+  --success-border: #075985;
+  --success-text: #7DD3FC;
 
-  --warning: #F0B85A;
-  --warning-soft: #2E2312;
-  --warning-border: #4D3B1D;
-  --warning-text: #F0B85A;
+  --warning: #818CF8;         /* Indigo 400 (replaces gold/amber) */
+  --warning-soft: #1E1B4B;
+  --warning-border: #3730A3;
+  --warning-text: #A5B4FC;
 
-  --danger: #F27C70;
-  --danger-solid: #B93528;    /*  5.86:1 with white */
-  --danger-soft: #301816;
-  --danger-border: #522926;
-  --danger-text: #F27C70;
+  --danger: #FB7185;          /* Rose 400 */
+  --danger-solid: #E11D48;
+  --danger-soft: #351119;
+  --danger-border: #881337;
+  --danger-text: #FDA4AF;
 
-  --info: #6EB5EB;
-  --info-soft: #162634;
-  --info-border: #243F57;
-  --info-text: #6EB5EB;
+  --info: #60A5FA;            /* Blue 400 */
+  --info-soft: #172554;
+  --info-border: #1E40AF;
+  --info-text: #93C5FD;
 
-  --internal-bg: #282115;
-  --internal-border: #5A4725;
-  --internal-text: #F3D293;
+  --internal-bg: #1E293B;
+  --internal-border: #334155;
+  --internal-text: #CBD5E1;
 
   --shadow-e1: 0 1px 2px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.22);
   --shadow-e2: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.30);
@@ -392,11 +392,92 @@
   animation: ig-record-pulse 1200ms var(--ease-out) infinite;
 }
 
+@keyframes ig-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ig-slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ig-slide-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ig-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ig-fade-in {
+  animation: ig-fade-in var(--dur-mid) var(--ease-out) forwards;
+}
+
+.ig-slide-in-up {
+  animation: ig-slide-in-up var(--dur-mid) var(--ease-out) forwards;
+}
+
+.ig-slide-in-down {
+  animation: ig-slide-in-down var(--dur-mid) var(--ease-out) forwards;
+}
+
+.ig-scale-in {
+  animation: ig-scale-in var(--dur-fast) var(--ease-out) forwards;
+}
+
+.ig-interactive {
+  transition: background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.ig-card-hover {
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.ig-card-hover:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-e2);
+  transform: translateY(-1px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ig-loading-keystone,
   .ig-skeleton,
-  .ig-record-dot {
+  .ig-record-dot,
+  .ig-fade-in,
+  .ig-slide-in-up,
+  .ig-slide-in-down,
+  .ig-scale-in {
     animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .ig-card-hover:hover {
     transform: none !important;
   }
 }

@@ -598,7 +598,7 @@ export default function EmployeesPage() {
               <button
                 type="button"
                 onClick={() => setShowAddUserModal(true)}
-                className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Icons.Plus size={16} />
                 <span>إنشاء حساب مستخدم</span>
@@ -612,9 +612,9 @@ export default function EmployeesPage() {
         <div role="status" className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div>
             <span className="font-bold text-emerald-900">تم إنشاء حساب الدخول المؤقت للمستخدم: </span>
-            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#123D32]">{tempPasswordBanner.username}</code>
+            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#1D4ED8]">{tempPasswordBanner.username}</code>
             <span className="mx-1.5 text-emerald-700">كلمة المرور المؤقتة:</span>
-            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#187A5A]">{tempPasswordBanner.password}</code>
+            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#2563EB]">{tempPasswordBanner.password}</code>
           </div>
           <button
             type="button"
@@ -668,7 +668,7 @@ export default function EmployeesPage() {
             <button
               type="button"
               onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
-              className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+              className="h-10 px-3.5 rounded-2xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
             >
               <Icons.Plus size={15} />
               <span>موظف جديد</span>
@@ -695,7 +695,7 @@ export default function EmployeesPage() {
               onChange={(e) => {
                 if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
               }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -712,7 +712,7 @@ export default function EmployeesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -730,7 +730,7 @@ export default function EmployeesPage() {
             <select
               value={selectedFilterBranchIds[0] || ""}
               onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -763,17 +763,17 @@ export default function EmployeesPage() {
               <div className="text-xl font-black font-mono text-slate-900">{summary.total}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الموظفين</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <Icons.Users size={20} />
             </div>
           </div>
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-[#187A5A]">{summary.active}</div>
+              <div className="text-xl font-black font-mono text-[#2563EB]">{summary.active}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظف نشط</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={20} />
             </div>
           </div>
@@ -800,10 +800,10 @@ export default function EmployeesPage() {
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-[#123D32]">{summary.with_assets}</div>
+              <div className="text-xl font-black font-mono text-[#1D4ED8]">{summary.with_assets}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم أصول</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.Assets size={20} />
             </div>
           </div>
@@ -813,7 +813,7 @@ export default function EmployeesPage() {
               <div className="text-xl font-black font-mono text-slate-900">{summary.with_subscriptions}</div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم اشتراكات</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
             </div>
           </div>
@@ -830,7 +830,7 @@ export default function EmployeesPage() {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="بحث في الموظفين والمستخدمين"
             placeholder="بحث في الموظفين ..."
-            className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:border-[#187A5A] focus:bg-white"
+            className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:border-[#2563EB] focus:bg-white"
           />
         </div>
 
@@ -842,7 +842,7 @@ export default function EmployeesPage() {
               onChange={(e) => {
                 if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
               }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -855,7 +855,7 @@ export default function EmployeesPage() {
               aria-label="تصفية حسب حالة التوظيف"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">الحالة: الكل</option>
               <option value="Active">نشط (Active)</option>
@@ -869,7 +869,7 @@ export default function EmployeesPage() {
               aria-label="تصفية حسب الفرع"
               value={selectedFilterBranchIds[0] || ""}
               onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">الفرع: الكل</option>
               {companyBranches.map((br) => (
@@ -920,7 +920,7 @@ export default function EmployeesPage() {
               <button
                 type="button"
                 onClick={() => { setEmpFormError(null); setShowAddEmpModal(true); }}
-                className="motion-control inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                className="motion-control inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
               >
                 <Icons.Plus size={15} />
                 <span>إضافة موظف</span>
@@ -1009,31 +1009,31 @@ export default function EmployeesPage() {
                         <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
                         <td className="p-3 font-bold text-slate-900">
                           <div className="flex items-center gap-2">
-                            <span className="w-7 h-7 rounded-full bg-[#123D32]/10 text-[#123D32] flex items-center justify-center text-[11px] font-bold shrink-0">
+                            <span className="w-7 h-7 rounded-full bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center text-[11px] font-bold shrink-0">
                               {(emp.full_name || "م")[0]}
                             </span>
                             <Link
                               href={`/employees/${emp.id}`}
                               onClick={(ev) => ev.stopPropagation()}
-                              className="hover:text-[#187A5A] hover:underline truncate"
+                              className="hover:text-[#2563EB] hover:underline truncate"
                             >
                               {emp.full_name}
                             </Link>
                           </div>
                         </td>
-                        <td className="p-3 font-mono font-bold text-[#187A5A]">
+                        <td className="p-3 font-mono font-bold text-[#2563EB]">
                           <bdi dir="ltr">{emp.employee_number}</bdi>
                         </td>
                         <td className="p-3 text-slate-700 font-semibold">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 text-[#123D32] text-[11px]">
-                            <Icons.Building size={12} className="text-[#187A5A]" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 text-[#1D4ED8] text-[11px]">
+                            <Icons.Building size={12} className="text-[#2563EB]" />
                             <span>{emp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}</span>
                           </span>
                         </td>
                         <td className="p-3 text-slate-700">
                           {Array.isArray(emp.branch_names) && emp.branch_names.length > 0 ? (
                             <div className="flex items-center gap-1 flex-wrap">
-                              <Icons.MapPin size={12} className="text-[#187A5A] shrink-0" />
+                              <Icons.MapPin size={12} className="text-[#2563EB] shrink-0" />
                               <span className="text-[11px] font-medium">{emp.branch_names.join("، ")}</span>
                             </div>
                           ) : (
@@ -1067,7 +1067,7 @@ export default function EmployeesPage() {
                           <div className="flex items-center justify-center gap-1">
                             <Link
                               href={`/employees/${emp.id}`}
-                              className="motion-control px-2 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] transition-colors"
+                              className="motion-control px-2 py-1 rounded-lg bg-[#1D4ED8] hover:bg-[#2563EB] text-white font-semibold text-[11px] transition-colors"
                               title="ملف الموظف 360°"
                             >
                               ملف 360°
@@ -1076,7 +1076,7 @@ export default function EmployeesPage() {
                               type="button"
                               onClick={() => openEmployeeDetails(emp)}
                               aria-label={`عرض تفاصيل وعهد ${emp.full_name}`}
-                              className="p-1.5 rounded-lg text-slate-600 hover:text-[#187A5A] hover:bg-emerald-50 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-[#2563EB] hover:bg-emerald-50 transition-colors cursor-pointer"
                               title="العهد والمهام و Telegram"
                             >
                               <Icons.Eye size={14} />
@@ -1192,13 +1192,13 @@ export default function EmployeesPage() {
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Icons.User size={16} className="text-[#187A5A]" />
+                <Icons.User size={16} className="text-[#2563EB]" />
                 <span>بيانات الموظف</span>
               </h2>
               {inspectedEmp && (
                 <Link
                   href={`/employees/${inspectedEmp.id}`}
-                  className="text-[11px] font-bold text-[#187A5A] hover:underline"
+                  className="text-[11px] font-bold text-[#2563EB] hover:underline"
                 >
                   فتح ملف 360° ←
                 </Link>
@@ -1221,7 +1221,7 @@ export default function EmployeesPage() {
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
                   <span className="text-slate-500 font-semibold">الفرع *</span>
-                  <span className="font-bold text-[#123D32]">
+                  <span className="font-bold text-[#1D4ED8]">
                     {inspectedEmp.branch_names?.length
                       ? inspectedEmp.branch_names.join("، ")
                       : "غير محدد"}
@@ -1237,7 +1237,7 @@ export default function EmployeesPage() {
                   <button
                     type="button"
                     onClick={() => openEmployeeDetails(inspectedEmp)}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                   >
                     العهد والمهام و Telegram
                   </button>
@@ -1245,7 +1245,7 @@ export default function EmployeesPage() {
                     <button
                       type="button"
                       onClick={() => openEditEmployee(inspectedEmp)}
-                      className="px-3 py-1.5 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white font-semibold text-[11px] cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-[#1D4ED8] hover:bg-[#2563EB] text-white font-semibold text-[11px] cursor-pointer"
                     >
                       تعديل الربط
                     </button>
@@ -1262,7 +1262,7 @@ export default function EmployeesPage() {
           {/* Card 2: قواعد ربط الموظف */}
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Icons.ShieldCheck size={16} className="text-[#187A5A]" />
+              <Icons.ShieldCheck size={16} className="text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">قواعد ربط الموظف</h2>
             </div>
 
@@ -1297,12 +1297,12 @@ export default function EmployeesPage() {
           {/* Card 3: نمذجة الربط */}
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3 flex flex-col justify-between">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Icons.Info size={16} className="text-[#187A5A]" />
+              <Icons.Info size={16} className="text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">نمذجة الربط</h2>
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4 py-2">
-              <div className="px-6 py-2 rounded-xl bg-[#123D32] text-white text-xs font-bold shadow-xs">
+              <div className="px-6 py-2 rounded-xl bg-[#1D4ED8] text-white text-xs font-bold shadow-xs">
                 الموظف
               </div>
 
@@ -1313,16 +1313,16 @@ export default function EmployeesPage() {
               <div className="grid grid-cols-3 gap-2 w-full">
                 <Link
                   href="/companies"
-                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#187A5A] transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#2563EB] transition-colors"
                 >
-                  <Icons.Building size={16} className="mx-auto text-[#123D32] mb-1" />
+                  <Icons.Building size={16} className="mx-auto text-[#1D4ED8] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">شركة</div>
                   <div className="text-[10px] text-slate-500">(أساسية)</div>
                 </Link>
 
                 <Link
                   href="/subscriptions"
-                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#187A5A] transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#2563EB] transition-colors"
                 >
                   <Icons.Subscriptions size={16} className="mx-auto text-[#8A6D3B] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">اشتراكات</div>
@@ -1331,9 +1331,9 @@ export default function EmployeesPage() {
 
                 <Link
                   href="/assets"
-                  className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-center hover:border-[#187A5A] transition-colors"
+                  className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-center hover:border-[#2563EB] transition-colors"
                 >
-                  <Icons.Laptop size={16} className="mx-auto text-[#187A5A] mb-1" />
+                  <Icons.Laptop size={16} className="mx-auto text-[#2563EB] mb-1" />
                   <div className="text-[11px] font-bold text-slate-900">أصول</div>
                   <div className="text-[10px] text-slate-500">(أجهزة وعهد)</div>
                 </Link>
@@ -1380,7 +1380,7 @@ export default function EmployeesPage() {
               required
               value={editFullName}
               onChange={(e) => setEditFullName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1392,7 +1392,7 @@ export default function EmployeesPage() {
               type="text"
               value={editJobTitle}
               onChange={(e) => setEditJobTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1405,7 +1405,7 @@ export default function EmployeesPage() {
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
             <div>
@@ -1417,7 +1417,7 @@ export default function EmployeesPage() {
                 dir="ltr"
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] text-left font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] text-left font-mono"
               />
             </div>
           </div>
@@ -1443,8 +1443,8 @@ export default function EmployeesPage() {
                     }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
                       checked
-                        ? "bg-[#123D32] text-white border-[#123D32]"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                        ? "bg-[#1D4ED8] text-white border-[#1D4ED8]"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-[#2563EB]"
                     }`}
                   >
                     {idx === 0 ? "أساسي: " : checked ? "مساند: " : ""}{br.branch_name}
@@ -1460,7 +1460,7 @@ export default function EmployeesPage() {
               <select
                 value={editDeptId}
                 onChange={(e) => setEditDeptId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">اختر القسم...</option>
                 {companyDepartments.map((d) => (
@@ -1475,7 +1475,7 @@ export default function EmployeesPage() {
               <select
                 value={editManagerId}
                 onChange={(e) => setEditManagerId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">بدون مدير مباشر / الإدارة التنفيذية</option>
                 {employees
@@ -1497,7 +1497,7 @@ export default function EmployeesPage() {
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Active">على رأس العمل (Active)</option>
                 <option value="On Leave">في إجازة (On Leave)</option>
@@ -1512,7 +1512,7 @@ export default function EmployeesPage() {
                 value={editChangeReason}
                 onChange={(e) => setEditChangeReason(e.target.value)}
                 placeholder="مثال: نقل إلى فرع الدمام"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1528,7 +1528,7 @@ export default function EmployeesPage() {
             <button
               type="submit"
               disabled={submittingEditEmp}
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               {submittingEditEmp ? "جارٍ التحديث..." : "حفظ التعديلات"}
             </button>
@@ -1553,7 +1553,7 @@ export default function EmployeesPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="مثال: ahmad_it"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
             />
           </div>
 
@@ -1567,7 +1567,7 @@ export default function EmployeesPage() {
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="user@company.sa"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1581,7 +1581,7 @@ export default function EmployeesPage() {
               value={userPassword}
               onChange={(e) => setUserPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1592,7 +1592,7 @@ export default function EmployeesPage() {
             <select
               value={targetEmployeeId}
               onChange={(e) => setTargetEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">بدون ربط بموظف محدد</option>
               {employees.map((e) => (
@@ -1610,7 +1610,7 @@ export default function EmployeesPage() {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Employee">موظف (Employee)</option>
               <option value="IT Technician">فني تقنية معلومات (IT Technician)</option>
@@ -1630,7 +1630,7 @@ export default function EmployeesPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               إنشاء الحساب
             </button>
@@ -1649,7 +1649,7 @@ export default function EmployeesPage() {
           <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div>
               <span className="text-slate-400 block text-[10px]">الرقم الوظيفي:</span>
-              <span className="font-mono font-bold text-[#187A5A]">{selectedEmp?.employee_number}</span>
+              <span className="font-mono font-bold text-[#2563EB]">{selectedEmp?.employee_number}</span>
             </div>
             <div>
               <span className="text-slate-400 block text-[10px]">المسمى:</span>
@@ -1692,7 +1692,7 @@ export default function EmployeesPage() {
                 <button
                   type="button"
                   onClick={() => setShowTelegramLinkModal(true)}
-                  className="px-3.5 py-1.5 bg-[#187A5A] hover:bg-[#123D32] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                  className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
                 >
                   ربط Telegram
                 </button>
@@ -1701,7 +1701,7 @@ export default function EmployeesPage() {
                   <button
                     type="button"
                     onClick={() => setShowTelegramLinkModal(true)}
-                    className="px-3 py-1.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
                     <Settings className="w-3.5 h-3.5" />
                     <span>إدارة وصلاحيات Telegram</span>
@@ -1733,7 +1733,7 @@ export default function EmployeesPage() {
                 onClick={() => setDetailsTab("custody")}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   detailsTab === "custody"
-                    ? "bg-[#123D32] text-white"
+                    ? "bg-[#1D4ED8] text-white"
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -1743,7 +1743,7 @@ export default function EmployeesPage() {
                 onClick={() => setDetailsTab("tasks")}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   detailsTab === "tasks"
-                    ? "bg-[#123D32] text-white"
+                    ? "bg-[#1D4ED8] text-white"
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -1754,7 +1754,7 @@ export default function EmployeesPage() {
             {detailsTab === "tasks" && canManage && (
               <button
                 onClick={() => setShowAssignTaskModal(true)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-[#187A5A] hover:bg-[#123D32] text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors"
               >
                 <Icons.Plus size={13} />
                 <span>إسناد مهمة جديدة</span>
@@ -1840,7 +1840,7 @@ export default function EmployeesPage() {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               placeholder="مثال: ترقية نظام التشغيل وفحص الأمان"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1853,7 +1853,7 @@ export default function EmployeesPage() {
               value={taskDesc}
               onChange={(e) => setTaskDesc(e.target.value)}
               placeholder="الخطوات والملاحظات الفنية للمهمة..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1865,7 +1865,7 @@ export default function EmployeesPage() {
               <select
                 value={taskPriority}
                 onChange={(e) => setTaskPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Low">منخفضة (Low)</option>
                 <option value="Medium">متوسطة (Medium)</option>
@@ -1882,7 +1882,7 @@ export default function EmployeesPage() {
                 type="date"
                 value={taskDueDate}
                 onChange={(e) => setTaskDueDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1897,7 +1897,7 @@ export default function EmployeesPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               تأكيد وإسناد المهمة
             </button>

@@ -323,7 +323,7 @@ export default function AppearancePage() {
         {/* Color Palette */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
-            <div className="w-5 h-5 rounded bg-gradient-to-br from-primary to-[#C5A46D]" />
+            <div className="w-5 h-5 rounded bg-gradient-to-br from-primary to-[#3B82F6]" />
             <h2 className="text-base font-bold text-slate-900 dark:text-white">لوحة الألوان (Color Palette)</h2>
           </div>
 
@@ -372,11 +372,11 @@ export default function AppearancePage() {
               <button
                 onClick={() => {
                   const defaults = {
-                    primary: "#123D32",
-                    secondary: "#187A5A",
+                    primary: "#1D4ED8",
+                    secondary: "#2563EB",
                     background: "#F5F7F8",
                     surface: "#FFFFFF",
-                    accent: "#C5A46D",
+                    accent: "#3B82F6",
                   };
                   setColors(defaults);
                 }}

@@ -136,7 +136,7 @@ export default function InfrastructurePage() {
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <Icons.Plus size={16} />
             <span>إضافة جهاز بنية تحتية</span>
@@ -160,7 +160,7 @@ export default function InfrastructurePage() {
               aria-label="تصفية حسب نوع الجهاز"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع أنواع الأجهزة</option>
               <option value="Server">خادم (Server)</option>
@@ -176,7 +176,7 @@ export default function InfrastructurePage() {
               aria-label="تصفية حسب حالة الجهاز"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -223,7 +223,7 @@ export default function InfrastructurePage() {
                     </div>
                   </td>
                   <td className="p-3.5 text-slate-700 font-semibold">{d.device_type}</td>
-                  <td className="p-3.5 font-mono font-bold text-[#187A5A]">
+                  <td className="p-3.5 font-mono font-bold text-[#2563EB]">
                     <bdi dir="ltr">{d.management_ip || "-"}</bdi>
                   </td>
                   <td className="p-3.5 text-slate-700">
@@ -241,7 +241,7 @@ export default function InfrastructurePage() {
                         setSelectedDevice(d);
                         setShowDetailsModal(true);
                       }}
-                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                     >
                       التفاصيل والربط
                     </button>
@@ -272,7 +272,7 @@ export default function InfrastructurePage() {
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 placeholder="SW-CORE-01"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -283,7 +283,7 @@ export default function InfrastructurePage() {
               <select
                 value={deviceType}
                 onChange={(e) => setDeviceType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Server">خادم (Server)</option>
                 <option value="Firewall">جدار حماية (Firewall)</option>
@@ -306,7 +306,7 @@ export default function InfrastructurePage() {
                 value={managementIp}
                 onChange={(e) => setManagementIp(e.target.value)}
                 placeholder="10.0.1.1"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
@@ -319,7 +319,7 @@ export default function InfrastructurePage() {
                 value={hostname}
                 onChange={(e) => setHostname(e.target.value)}
                 placeholder="core-sw.corp.local"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
@@ -334,7 +334,7 @@ export default function InfrastructurePage() {
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="Cisco Catalyst 9300"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -347,7 +347,7 @@ export default function InfrastructurePage() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="غرفة الخوادم - الراك A2"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -361,7 +361,7 @@ export default function InfrastructurePage() {
               value={credentialRef}
               onChange={(e) => setCredentialRef(e.target.value)}
               placeholder="vault://infra/core-switch/root"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono bg-slate-50"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono bg-slate-50"
             />
             <p className="text-[10px] text-slate-400 mt-1">
               * متطلب أمان: لا يتم تخزين كلمات المرور كنصوص واضحة مطلقاً، بل مرجع في خزنة الأسرار.
@@ -378,7 +378,7 @@ export default function InfrastructurePage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs"
             >
               حفظ الجهاز
             </button>
@@ -405,7 +405,7 @@ export default function InfrastructurePage() {
             </div>
             <div>
               <span className="text-slate-400">IP الإدارة:</span>{" "}
-              <span className="font-mono font-bold text-[#187A5A]">
+              <span className="font-mono font-bold text-[#2563EB]">
                 {selectedDevice?.management_ip || "-"}
               </span>
             </div>

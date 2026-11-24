@@ -434,12 +434,12 @@ export function AddEmployeeModal({
       {createdCredentials ? (
         <div className="space-y-4 py-2" dir="rtl">
           <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-emerald-200/80 space-y-3">
-            <div className="flex items-center gap-2 text-[#123D32]">
+            <div className="flex items-center gap-2 text-[#1D4ED8]">
               <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
                 <Icons.Check size={18} />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#123D32]">
+                <h3 className="font-bold text-sm text-[#1D4ED8]">
                   تم إنشاء الموظف وحساب الدخول بنجاح!
                 </h3>
                 <p className="text-xs text-emerald-800">
@@ -458,7 +458,7 @@ export function AddEmployeeModal({
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-slate-500 font-semibold">كلمة المرور المؤقتة:</span>
-                <span className="font-mono font-bold text-[#187A5A] px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200">
+                <span className="font-mono font-bold text-[#2563EB] px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200">
                   {createdCredentials.password}
                 </span>
               </div>
@@ -468,7 +468,7 @@ export function AddEmployeeModal({
               <button
                 type="button"
                 onClick={handleCopyCredentials}
-                className="px-4 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               >
                 {copied ? <Icons.Check size={14} /> : <Icons.Copy size={14} />}
                 <span>{copied ? "تم النسخ بنجاح!" : "نسخ بيانات الدخول"}</span>
@@ -498,8 +498,8 @@ export function AddEmployeeModal({
           {/* ── Section 1: البيانات الشخصية والمهنية ─────────────────────────────────── */}
           <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#123D32]">
-                <Icons.User size={15} className="text-[#187A5A]" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8]">
+                <Icons.User size={15} className="text-[#2563EB]" />
                 <span>البيانات الشخصية والمهنية</span>
               </div>
               <span className="text-[11px] text-slate-500 font-semibold">* حقول مطلوبة</span>
@@ -514,7 +514,7 @@ export function AddEmployeeModal({
                   <button
                     type="button"
                     onClick={handleAutoSuggestEmpNumber}
-                    className="text-[10px] text-[#187A5A] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
+                    className="text-[10px] text-[#2563EB] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
                   >
                     <Icons.Sparkles size={11} />
                     <span>اقتراح تلقائي</span>
@@ -530,7 +530,7 @@ export function AddEmployeeModal({
                   className={`w-full px-3 py-2 rounded-xl border text-xs outline-none transition-all font-mono ${
                     isDuplicateNumber
                       ? "border-amber-400 bg-amber-50/50 focus:border-amber-500"
-                      : "border-slate-200 focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A]"
+                      : "border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                   }`}
                 />
                 {isDuplicateNumber && (
@@ -552,7 +552,7 @@ export function AddEmployeeModal({
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="الاسم الثلاثي أو الرباعي"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
                 />
               </div>
             </div>
@@ -568,7 +568,7 @@ export function AddEmployeeModal({
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
                   placeholder="مثال: مهندس شبكات / أخصائي دعم"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
                 />
               </div>
 
@@ -586,7 +586,7 @@ export function AddEmployeeModal({
                   className={`w-full px-3 py-2 rounded-xl border text-xs outline-none transition-all text-left font-mono ${
                     isDuplicateEmail
                       ? "border-amber-400 bg-amber-50/50 focus:border-amber-500"
-                      : "border-slate-200 focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A]"
+                      : "border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                   }`}
                 />
                 {isDuplicateEmail && (
@@ -608,7 +608,7 @@ export function AddEmployeeModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+966 50 000 0000"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-left font-mono"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-left font-mono"
                 />
               </div>
             </div>
@@ -622,7 +622,7 @@ export function AddEmployeeModal({
                   id="add-emp-status"
                   value={empStatus}
                   onChange={(e) => setEmpStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-slate-800"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-slate-800"
                 >
                   <option value="Active">على رأس العمل (Active)</option>
                   <option value="On Leave">في إجازة رسمية (On Leave)</option>
@@ -640,7 +640,7 @@ export function AddEmployeeModal({
                     id="add-emp-company"
                     value={companyId}
                     onChange={(e) => setCompanyId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-slate-900"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-slate-900"
                   >
                     {userCompanies.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -657,12 +657,12 @@ export function AddEmployeeModal({
           {/* ── Section 2: التعيين الإداري والفروع ───────────────────────────────────── */}
           <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#123D32]">
-                <Icons.Building size={15} className="text-[#187A5A]" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#1D4ED8]">
+                <Icons.Building size={15} className="text-[#2563EB]" />
                 <span>التعيين الإداري وتوزيع الفروع</span>
               </div>
               {loadingStructure && (
-                <span className="text-[11px] text-[#187A5A] animate-pulse font-semibold">
+                <span className="text-[11px] text-[#2563EB] animate-pulse font-semibold">
                   جارٍ تحميل الفروع والأقسام...
                 </span>
               )}
@@ -697,7 +697,7 @@ export function AddEmployeeModal({
                         }}
                         className={`p-2 rounded-xl border text-right transition-all cursor-pointer flex items-center justify-between gap-1.5 ${
                           isSelected
-                            ? "bg-[#123D32] text-white border-[#123D32] shadow-xs"
+                            ? "bg-[#1D4ED8] text-white border-[#1D4ED8] shadow-xs"
                             : "bg-slate-50/70 hover:bg-slate-100/80 border-slate-200 text-slate-800"
                         }`}
                       >
@@ -714,7 +714,7 @@ export function AddEmployeeModal({
                           )}
                         </div>
                         {isSelected && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#C5A46D] text-white shrink-0">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#3B82F6] text-white shrink-0">
                             أساسي
                           </span>
                         )}
@@ -747,8 +747,8 @@ export function AddEmployeeModal({
                           }}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
                             isChecked
-                              ? "bg-[#187A5A] text-white border-[#187A5A]"
-                              : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                              ? "bg-[#2563EB] text-white border-[#2563EB]"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-[#2563EB]"
                           }`}
                         >
                           <span className="text-[10px]">{isChecked ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}</span>
@@ -777,7 +777,7 @@ export function AddEmployeeModal({
                   id="add-emp-dept"
                   value={departmentId}
                   onChange={(e) => setDepartmentId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-slate-800"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-slate-800"
                 >
                   <option value="">اختر القسم الإداري...</option>
                   {filteredDepartments.map((d) => (
@@ -830,7 +830,7 @@ export function AddEmployeeModal({
                     }}
                     onFocus={() => setIsManagerDropdownOpen(true)}
                     placeholder="ابحث بالاسم أو الرقم الوظيفي..."
-                    className="w-full ps-3 pe-8 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-slate-800"
+                    className="w-full ps-3 pe-8 py-2 rounded-xl border border-slate-200 bg-white text-xs outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-slate-800"
                   />
                   <div className="absolute top-1/2 -translate-y-1/2 end-2.5 text-slate-400 pointer-events-none">
                     <Icons.Search size={13} />
@@ -850,7 +850,7 @@ export function AddEmployeeModal({
                       className="w-full text-right px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center justify-between"
                     >
                       <span>بدون مدير مباشر / الإدارة العليا</span>
-                      {!managerId && <Icons.Check size={13} className="text-[#187A5A]" />}
+                      {!managerId && <Icons.Check size={13} className="text-[#2563EB]" />}
                     </button>
 
                     {filteredManagers.slice(0, 30).map((m) => {
@@ -866,7 +866,7 @@ export function AddEmployeeModal({
                           }}
                           className={`w-full text-right px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-between gap-2 ${
                             isPicked
-                              ? "bg-[#123D32] text-white"
+                              ? "bg-[#1D4ED8] text-white"
                               : "hover:bg-slate-50 text-slate-800"
                           }`}
                         >
@@ -926,8 +926,8 @@ export function AddEmployeeModal({
                           }}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
                             isPicked
-                              ? "bg-[#187A5A] text-white border-[#187A5A]"
-                              : "bg-white text-slate-700 border-slate-200 hover:border-[#187A5A]"
+                              ? "bg-[#2563EB] text-white border-[#2563EB]"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-[#2563EB]"
                           }`}
                         >
                           <span>{isPicked ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}</span>
@@ -945,7 +945,7 @@ export function AddEmployeeModal({
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <label
                 htmlFor="toggle-user-account"
-                className="flex items-center gap-2 text-xs font-bold text-[#123D32] cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#1D4ED8] cursor-pointer"
               >
                 <input
                   id="toggle-user-account"
@@ -958,10 +958,10 @@ export function AddEmployeeModal({
                       handleAutoSuggestUsername();
                     }
                   }}
-                  className="rounded border-slate-300 text-[#123D32] focus:ring-[#187A5A] w-4 h-4"
+                  className="rounded border-slate-300 text-[#1D4ED8] focus:ring-[#2563EB] w-4 h-4"
                 />
                 <span className="flex items-center gap-1.5">
-                  <Icons.Key size={15} className="text-[#187A5A]" />
+                  <Icons.Key size={15} className="text-[#2563EB]" />
                   <span>إنشاء حساب دخول للنظام لهذا الموظف</span>
                 </span>
               </label>
@@ -982,7 +982,7 @@ export function AddEmployeeModal({
                       <button
                         type="button"
                         onClick={handleAutoSuggestUsername}
-                        className="text-[10px] text-[#187A5A] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
+                        className="text-[10px] text-[#2563EB] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
                       >
                         <Icons.Sparkles size={11} />
                         <span>اقتراح من الاسم</span>
@@ -995,7 +995,7 @@ export function AddEmployeeModal({
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
                       placeholder="e.g. mohammed.ali"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-left"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-left"
                     />
                   </div>
 
@@ -1008,7 +1008,7 @@ export function AddEmployeeModal({
                           onClick={() => setPasswordMode("auto")}
                           className={`font-semibold cursor-pointer ${
                             passwordMode === "auto"
-                              ? "text-[#187A5A] underline font-bold"
+                              ? "text-[#2563EB] underline font-bold"
                               : "text-slate-500 hover:text-slate-800"
                           }`}
                         >
@@ -1020,7 +1020,7 @@ export function AddEmployeeModal({
                           onClick={() => setPasswordMode("custom")}
                           className={`font-semibold cursor-pointer ${
                             passwordMode === "custom"
-                              ? "text-[#187A5A] underline font-bold"
+                              ? "text-[#2563EB] underline font-bold"
                               : "text-slate-500 hover:text-slate-800"
                           }`}
                         >
@@ -1032,7 +1032,7 @@ export function AddEmployeeModal({
                     {passwordMode === "auto" ? (
                       <div className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between font-mono">
                         <span>سيتم توليد كلمة مرور مؤقتة قوية تلقائياً</span>
-                        <Icons.Lock size={13} className="text-[#187A5A]" />
+                        <Icons.Lock size={13} className="text-[#2563EB]" />
                       </div>
                     ) : (
                       <input
@@ -1041,7 +1041,7 @@ export function AddEmployeeModal({
                         value={customPassword}
                         onChange={(e) => setCustomPassword(e.target.value)}
                         placeholder="كلمة مرور قوية (6 خانات على الأقل)..."
-                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#187A5A] focus:ring-1 focus:ring-[#187A5A] transition-all text-left"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all text-left"
                       />
                     )}
                   </div>
@@ -1087,7 +1087,7 @@ export function AddEmployeeModal({
                           onClick={() => setRoleName(role.name)}
                           className={`p-2.5 rounded-xl border text-right transition-all cursor-pointer flex items-start justify-between gap-2 ${
                             isPicked
-                              ? "bg-[#123D32] text-white border-[#123D32] shadow-xs"
+                              ? "bg-[#1D4ED8] text-white border-[#1D4ED8] shadow-xs"
                               : "bg-slate-50/70 hover:bg-slate-100 border-slate-200 text-slate-800"
                           }`}
                         >
@@ -1106,7 +1106,7 @@ export function AddEmployeeModal({
                           <span
                             className={`text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
                               isPicked
-                                ? "bg-[#C5A46D] text-white"
+                                ? "bg-[#3B82F6] text-white"
                                 : "bg-slate-200 text-slate-700"
                             }`}
                           >
@@ -1134,7 +1134,7 @@ export function AddEmployeeModal({
             <button
               type="submit"
               disabled={submitting || isDuplicateNumber || isDuplicateEmail}
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
             >
               {submitting ? (
                 <>

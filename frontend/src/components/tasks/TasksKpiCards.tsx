@@ -85,15 +85,15 @@ export function TasksKpiCards({
         onClick={() => onFilterClick?.("new")}
         className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "new"
-            ? "border-amber-500/80 dark:border-amber-500 ring-2 ring-amber-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-amber-300"
+            ? "border-indigo-500/80 dark:border-indigo-500 ring-2 ring-indigo-500/10"
+            : "border-slate-200/80 dark:border-slate-800 hover:border-indigo-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             بانتظار القبول
           </span>
-          <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
             <Hourglass size={16} />
           </div>
         </div>
@@ -135,15 +135,15 @@ export function TasksKpiCards({
         onClick={() => onFilterClick?.("completed")}
         className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "completed"
-            ? "border-emerald-500/80 dark:border-emerald-500 ring-2 ring-emerald-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-emerald-300"
+            ? "border-sky-500/80 dark:border-sky-500 ring-2 ring-sky-500/10"
+            : "border-slate-200/80 dark:border-slate-800 hover:border-sky-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             مكتملة
           </span>
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center">
             <CheckCircle2 size={16} />
           </div>
         </div>
@@ -207,7 +207,7 @@ export function TasksKpiCards({
                 cx="34"
                 cy="34"
                 r={radius}
-                className="stroke-emerald-500 transition-all duration-700 ease-out"
+                className="stroke-blue-600 dark:stroke-blue-400 transition-all duration-700 ease-out"
                 strokeWidth="6"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}

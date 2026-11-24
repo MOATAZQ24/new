@@ -184,7 +184,7 @@ export default function SandboxPage() {
 
                 <button
                   type="button"
-                  className={`bg-[#123D32] hover:bg-[#0E2F26] text-white rounded-xl font-medium transition-colors shadow-sm ${
+                  className={`bg-[#1D4ED8] hover:bg-[#0E2F26] text-white rounded-xl font-medium transition-colors shadow-sm ${
                     designTokens.density[density].buttonPadding
                   }`}
                 >

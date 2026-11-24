@@ -291,7 +291,7 @@ export default function SubscriptionsPage() {
         {/* Header matching Image 10 */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0 mt-0.5">
               <Icons.Subscriptions size={20} />
             </div>
             <div>
@@ -314,19 +314,19 @@ export default function SubscriptionsPage() {
               </div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الاشتراكات</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
             </div>
           </div>
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-[#187A5A]">
+              <div className="text-xl font-black font-mono text-[#2563EB]">
                 {summary?.active_subscriptions_count ?? 0}
               </div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">اشتراك نشط</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={20} />
             </div>
           </div>
@@ -338,7 +338,7 @@ export default function SubscriptionsPage() {
               </div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">مستخدم مرتبط</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.Users size={20} />
             </div>
           </div>
@@ -369,12 +369,12 @@ export default function SubscriptionsPage() {
 
           <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-lg font-black font-mono text-[#123D32]">
+              <div className="text-lg font-black font-mono text-[#1D4ED8]">
                 {(summary?.total_monthly_cost ?? 0).toLocaleString("en-US")} ر.س
               </div>
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">التكلفة الشهرية</div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-[#C5A46D]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
             </div>
           </div>
@@ -384,7 +384,7 @@ export default function SubscriptionsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <Icons.Notifications size={17} className="text-[#123D32]" />
+              <Icons.Notifications size={17} className="text-[#1D4ED8]" />
               <h2 className="text-sm font-bold text-slate-900">أهم التنبيهات</h2>
             </div>
 
@@ -444,7 +444,7 @@ export default function SubscriptionsPage() {
           <aside className="hidden lg:block lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Icons.Info size={16} className="text-[#123D32]" />
+                <Icons.Info size={16} className="text-[#1D4ED8]" />
                 <span>تفاصيل الاشتراك</span>
               </h2>
               {inspectedSub && <StatusBadge status={inspectedSub.status} />}
@@ -459,7 +459,7 @@ export default function SubscriptionsPage() {
                       {inspectedSub.provider || inspectedSub.subscription_type}
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-lg bg-[#123D32]/10 text-[#123D32] font-bold text-[11px]">
+                  <span className="px-2 py-0.5 rounded-lg bg-[#1D4ED8]/10 text-[#1D4ED8] font-bold text-[11px]">
                     {inspectedSub.subscription_type}
                   </span>
                 </div>
@@ -475,7 +475,7 @@ export default function SubscriptionsPage() {
                   </div>
                   <div className="py-2 flex items-center justify-between">
                     <span className="text-slate-500 font-semibold">عدد المستخدمين</span>
-                    <span className="font-mono font-bold text-[#187A5A]" dir="ltr">
+                    <span className="font-mono font-bold text-[#2563EB]" dir="ltr">
                       {inspectedSub.allocated_seats ?? 0} / {inspectedSub.seat_limit ?? 1}
                     </span>
                   </div>
@@ -498,7 +498,7 @@ export default function SubscriptionsPage() {
                 <button
                   type="button"
                   onClick={() => void openSeatsManager(inspectedSub)}
-                  className="w-full py-2.5 px-3 rounded-xl border border-[#123D32] text-[#123D32] hover:bg-[#123D32] hover:text-white text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-3 rounded-xl border border-[#1D4ED8] text-[#1D4ED8] hover:bg-[#1D4ED8] hover:text-white text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Icons.Users size={15} />
                   <span>إدارة المستخدمين</span>
@@ -555,7 +555,7 @@ export default function SubscriptionsPage() {
                   <button
                     type="button"
                     onClick={() => setShowAddModal(true)}
-                    className="h-10 px-3.5 rounded-2xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
+                    className="h-10 px-3.5 rounded-2xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer"
                   >
                     <Icons.Plus size={15} />
                     <span>اشتراك جديد</span>
@@ -580,7 +580,7 @@ export default function SubscriptionsPage() {
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
                   >
                     <option value="">جميع الأنواع</option>
                     <option value="SaaS">SaaS</option>
@@ -598,7 +598,7 @@ export default function SubscriptionsPage() {
                   <select
                     value={selectedBranchIds[0] || ""}
                     onChange={(e) => setSelectedBranchIds(e.target.value ? [e.target.value] : [])}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
                   >
                     <option value="">جميع الفروع</option>
                     {companyBranches.map((br) => (
@@ -616,7 +616,7 @@ export default function SubscriptionsPage() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
                   >
                     <option value="">جميع الحالات</option>
                     <option value="Active">نشط</option>
@@ -638,7 +638,7 @@ export default function SubscriptionsPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="بحث في الاشتراكات"
                   placeholder="بحث في الاشتراكات ..."
-                  className="w-full ps-8 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#187A5A] focus:bg-white"
+                  className="w-full ps-8 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#2563EB] focus:bg-white"
                 />
               </div>
 
@@ -646,7 +646,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب النوع"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
               >
                 <option value="">كل الأنواع</option>
                 <option value="SaaS">SaaS</option>
@@ -660,7 +660,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب الفرع"
                 value={selectedBranchIds[0] || ""}
                 onChange={(e) => setSelectedBranchIds(e.target.value ? [e.target.value] : [])}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
               >
                 <option value="">كل الفروع</option>
                 {companyBranches.map((br) => (
@@ -674,7 +674,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب حالة الاشتراك"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
               >
                 <option value="">كل الحالات</option>
                 <option value="Active">نشط</option>
@@ -697,7 +697,7 @@ export default function SubscriptionsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   <Icons.Plus size={14} />
                   <span>إضافة اشتراك</span>
@@ -780,7 +780,7 @@ export default function SubscriptionsPage() {
                                   <button
                                     type="button"
                                     onClick={() => setInspectedSub(s)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-[#187A5A] hover:bg-emerald-50 cursor-pointer"
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-[#2563EB] hover:bg-emerald-50 cursor-pointer"
                                     title="عرض التفاصيل"
                                   >
                                     <Icons.Eye size={14} />
@@ -788,7 +788,7 @@ export default function SubscriptionsPage() {
                                   <button
                                     type="button"
                                     onClick={() => void openSeatsManager(s)}
-                                    className="px-2 py-1 rounded-lg bg-[#123D32] hover:bg-[#187A5A] text-white text-[11px] font-bold cursor-pointer whitespace-nowrap"
+                                    className="px-2 py-1 rounded-lg bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-[11px] font-bold cursor-pointer whitespace-nowrap"
                                   >
                                     المقاعد
                                   </button>
@@ -825,7 +825,7 @@ export default function SubscriptionsPage() {
                 value={serviceName}
                 onChange={(e) => setServiceName(e.target.value)}
                 placeholder="Microsoft 365 Business"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -838,7 +838,7 @@ export default function SubscriptionsPage() {
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
                 placeholder="Microsoft / AWS / Fortinet"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -851,7 +851,7 @@ export default function SubscriptionsPage() {
               <select
                 value={subType}
                 onChange={(e) => setSubType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="SaaS">برمجيات كخدمة (SaaS)</option>
                 <option value="Cloud Hosting">استضافة سحابية (Cloud Hosting)</option>
@@ -869,7 +869,7 @@ export default function SubscriptionsPage() {
               <select
                 value={pkgType}
                 onChange={(e) => setPkgType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Basic">Basic</option>
                 <option value="Standard">Standard</option>
@@ -892,7 +892,7 @@ export default function SubscriptionsPage() {
                 required
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
@@ -903,7 +903,7 @@ export default function SubscriptionsPage() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="SAR">SAR (ريال)</option>
                 <option value="USD">USD ($)</option>
@@ -918,7 +918,7 @@ export default function SubscriptionsPage() {
               <select
                 value={billingCycle}
                 onChange={(e) => setBillingCycle(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Monthly">شهري (Monthly)</option>
                 <option value="Quarterly">ربع سنوي (Quarterly)</option>
@@ -938,7 +938,7 @@ export default function SubscriptionsPage() {
                 required
                 value={renewalDate}
                 onChange={(e) => setRenewalDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -950,7 +950,7 @@ export default function SubscriptionsPage() {
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -964,7 +964,7 @@ export default function SubscriptionsPage() {
               value={accountEmail}
               onChange={(e) => setAccountEmail(e.target.value)}
               placeholder="billing@company.sa"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -974,7 +974,7 @@ export default function SubscriptionsPage() {
               id="autoRenew"
               checked={autoRenewal}
               onChange={(e) => setAutoRenewal(e.target.checked)}
-              className="rounded text-[#187A5A]"
+              className="rounded text-[#2563EB]"
             />
             <label htmlFor="autoRenew" className="text-xs text-slate-700 font-semibold cursor-pointer">
               تفعيل التجديد التلقائي (Auto-Renewal)
@@ -989,7 +989,7 @@ export default function SubscriptionsPage() {
               <select
                 value={subBranchId}
                 onChange={(e) => setSubBranchId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">على مستوى الشركة بالكامل</option>
                 {companyBranches.map((br) => (
@@ -1006,7 +1006,7 @@ export default function SubscriptionsPage() {
                 min={1}
                 value={seatLimit}
                 onChange={(e) => setSeatLimit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
@@ -1021,7 +1021,7 @@ export default function SubscriptionsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs"
             >
               حفظ الاشتراك
             </button>
@@ -1048,7 +1048,7 @@ export default function SubscriptionsPage() {
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">المقاعد المستخدمة</span>
-              <strong className="font-mono text-[#123D32]">{seatEmployees.length} / {activeSub?.seat_limit ?? 1}</strong>
+              <strong className="font-mono text-[#1D4ED8]">{seatEmployees.length} / {activeSub?.seat_limit ?? 1}</strong>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">الحالة</span>
@@ -1089,7 +1089,7 @@ export default function SubscriptionsPage() {
                 <button
                   type="submit"
                   disabled={seatsLoading || !pickEmployeeId}
-                  className="w-full px-3 py-2 rounded-xl bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white font-bold cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 text-white font-bold cursor-pointer"
                 >
                   {seatsLoading ? "تحميل..." : "تخصيص"}
                 </button>

@@ -596,7 +596,7 @@ export default function UsersManagementPage() {
             title="إجمالي حسابات المستخدمين"
             value={stats.total}
             icon={<Icons.Users size={18} />}
-            accentColor="border-[#123D32]"
+            accentColor="border-[#1D4ED8]"
           />
           <StatsCard
             title="حسابات نشطة"
@@ -608,7 +608,7 @@ export default function UsersManagementPage() {
             title="مسؤولو النظام والشركات"
             value={stats.admins}
             icon={<Icons.ShieldCheck size={18} />}
-            accentColor="border-[#C5A46D]"
+            accentColor="border-[#3B82F6]"
           />
           <StatsCard
             title="حسابات مقفلة أو مؤقتة"

@@ -134,13 +134,20 @@ body {
   padding-inline: 0.5rem;
 }
 
-/* Legacy Tailwind class token bridges so unmodified modules inherit Warm Paper + Petrol cleanly */
+/* Legacy Tailwind class token bridges so unmodified modules inherit Neutral Enterprise + Subtle Blue cleanly */
 [class~="bg-white"] { background-color: var(--surface); color: var(--text); }
 [class~="bg-[#F5F7F8]"] { background-color: var(--bg); }
-[class~="bg-[#123D32]"] { background-color: var(--brand-petrol-deep); color: #FFFFFF; }
-[class~="bg-[#187A5A]"] { background-color: var(--primary); color: var(--on-primary); }
-[class~="text-[#123D32]"], [class~="text-[#187A5A]"] { color: var(--primary-text); }
-[class~="border-[#187A5A]"] { border-color: var(--primary); }
+[class~="bg-[#1D4ED8]"] { background-color: var(--brand-petrol-deep); color: #FFFFFF; }
+[class~="bg-[#2563EB]"] { background-color: var(--primary); color: var(--on-primary); }
+[class~="text-[#1D4ED8]"], [class~="text-[#2563EB]"] { color: var(--primary-text); }
+[class~="border-[#2563EB]"] { border-color: var(--primary); }
+[class~="bg-[#3B82F6]"], [class~="bg-[#2563EB]"] { background-color: var(--primary-soft); color: var(--primary-text); }
+[class~="text-[#3B82F6]"], [class~="text-[#2563EB]"], [class~="text-[#8A6D3B]"] { color: var(--accent-text); }
+[class~="border-[#3B82F6]"], [class~="border-[#2563EB]"] { border-color: var(--accent); }
+[class~="bg-emerald-500"], [class~="bg-emerald-600"] { background-color: var(--success); }
+[class~="text-emerald-500"], [class~="text-emerald-600"], [class~="text-emerald-700"] { color: var(--success-text); }
+[class~="bg-emerald-50"] { background-color: var(--success-soft); }
+[class~="border-emerald-200"], [class~="border-emerald-300"] { border-color: var(--success-border); }
 
 button:disabled {
   cursor: not-allowed;

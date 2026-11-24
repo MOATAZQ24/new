@@ -25,8 +25,8 @@ import {
 } from "@/lib/applyTheme";
 
 export const defaultAppearance = {
-  theme: "light", primary: "#0E5A63", secondary: "#083C43", background: "#FAF9F6",
-  accent: "#B68F4A", surface: "#FFFFFF", arabic_font: "IBM Plex Sans Arabic", english_font: "Inter",
+  theme: "light", primary: "#2563EB", secondary: "#1D4ED8", background: "#F8FAFC",
+  accent: "#3B82F6", surface: "#FFFFFF", arabic_font: "IBM Plex Sans Arabic", english_font: "Inter",
   font_size: 14, font_weight: 400, density: "comfortable", radius: 10, sidebar_width: 248,
 };
 export type Appearance = typeof defaultAppearance;

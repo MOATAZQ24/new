@@ -92,7 +92,7 @@ export function MobileReportSummary({
                 type="button"
                 onClick={() => onExport(doc.key, doc.fmt)}
                 disabled={Boolean(exportingKey)}
-                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-3.5 shadow-2xs hover:border-[#187A5A] transition active:scale-98 text-start flex items-center justify-between gap-3 cursor-pointer"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-3.5 shadow-2xs hover:border-[#2563EB] transition active:scale-98 text-start flex items-center justify-between gap-3 cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -141,7 +141,7 @@ export function MobileReportSummary({
                 className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-3.5 shadow-2xs space-y-2.5"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#123D32] dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#1D4ED8] dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Building2 size={15} />
                   </div>
                   <span className="text-xs font-bold text-slate-900 dark:text-white truncate">

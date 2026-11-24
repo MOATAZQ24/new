@@ -224,7 +224,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileViewMode("my_day")}
-                className="text-xs font-bold text-[#187A5A] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-primary dark:text-blue-400 bg-primary/10 dark:bg-primary/20 px-3.5 py-1.5 rounded-full border border-primary/20 dark:border-primary/40 flex items-center gap-1 cursor-pointer"
               >
                 <span>←</span>
                 <span>العودة إلى ملخص اليوم (My Day)</span>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           {/* Header Row matching Reference Screenshots 1, 3, 5 */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5">
               <Icons.Dashboard size={20} />
             </div>
             <div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                   لوحة المتابعة
                 </h1>
-                <span className="px-2 py-0.5 rounded-md bg-[#078363]/10 dark:bg-emerald-950/50 text-[#078363] dark:text-emerald-400 text-xs font-bold border border-[#078363]/20">
+                <span className="px-2 py-0.5 rounded-md bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 text-xs font-bold border border-primary/20">
                   {primaryRoleTitleAr}
                 </span>
               </div>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
               onClick={() => void fetchDashboard()}
               disabled={loading}
               aria-label="تحديث بيانات لوحة المتابعة"
-              className="motion-control p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 hover:text-[#187A5A] hover:border-[#187A5A]/40 shadow-xs transition-colors cursor-pointer"
+              className="motion-control p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 hover:text-primary hover:border-primary/40 shadow-xs transition-colors cursor-pointer"
             >
               <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
             </button>
@@ -293,10 +293,10 @@ export default function DashboardPage() {
             <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Icons.Tasks size={17} className="text-[#187A5A]" />
+                  <Icons.Tasks size={17} className="text-[#2563EB]" />
                   <span>مهامي الحالية</span>
                 </h2>
-                <Link href="/tasks" className="text-xs font-semibold text-[#187A5A] hover:underline">
+                <Link href="/tasks" className="text-xs font-semibold text-[#2563EB] hover:underline">
                   عرض المهام ←
                 </Link>
               </div>
@@ -333,7 +333,7 @@ export default function DashboardPage() {
               </div>
               <Link
                 href="/tickets"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white text-xs font-bold transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white text-xs font-bold transition-colors"
               >
                 <Icons.Plus size={15} />
                 <span>فتح تذكرة دعم جديدة</span>
@@ -346,10 +346,10 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/assets"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--primary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--primary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-[#187A5A] flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-primary flex items-center justify-center shrink-0">
                     <Icons.Assets size={22} />
                   </div>
                   <div className="min-w-0">
@@ -365,10 +365,10 @@ export default function DashboardPage() {
 
               <Link
                 href="/tickets"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--secondary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--secondary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-[#123D32]/10 dark:bg-slate-700 text-[#123D32] dark:text-emerald-300 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 flex items-center justify-center shrink-0">
                     <Icons.HelpDesk size={22} />
                   </div>
                   <div className="min-w-0">
@@ -384,10 +384,10 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--accent)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--accent)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-[#C5A46D]/15 dark:bg-amber-900/30 text-[#8A6D3B] dark:text-amber-300 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0">
                     <Icons.Refresh size={22} />
                   </div>
                   <div className="min-w-0">
@@ -425,7 +425,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/companies"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
                   <Icons.Companies size={20} />
@@ -442,9 +442,9 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
-                <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <Icons.Clock size={20} />
                 </div>
                 <div className="min-w-0">
@@ -459,9 +459,9 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                   <Icons.User size={20} />
                 </div>
                 <div className="min-w-0">
@@ -476,7 +476,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-[#187A5A]/40 transition-colors min-w-0"
+                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 flex items-center justify-center shrink-0">
                   <Icons.Users size={20} />
@@ -498,7 +498,7 @@ export default function DashboardPage() {
               <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
-                    <Icons.HelpDesk size={17} className="text-[#123D32] dark:text-emerald-400" />
+                    <Icons.HelpDesk size={17} className="text-[#1D4ED8] dark:text-emerald-400" />
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                       تذاكر Help Desk الأخيرة
                     </h2>
@@ -553,7 +553,7 @@ export default function DashboardPage() {
               <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
-                    <Icons.CheckSquare size={17} className="text-[#187A5A]" />
+                    <Icons.CheckSquare size={17} className="text-primary" />
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                       المهام الحالية
                     </h2>
@@ -685,33 +685,33 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-3 flex-1">
                   <Link
                     href="/assets"
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
                   >
-                    <Icons.Assets size={17} className="text-[#187A5A] shrink-0" />
+                    <Icons.Assets size={17} className="text-primary shrink-0" />
                     <span>إضافة أصل/عهد</span>
                   </Link>
 
                   <Link
                     href="/tickets"
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
                   >
-                    <Icons.HelpDesk size={17} className="text-[#123D32] shrink-0" />
+                    <Icons.HelpDesk size={17} className="text-sky-600 dark:text-sky-400 shrink-0" />
                     <span>فتح تذكرة (Help Desk)</span>
                   </Link>
 
                   <Link
                     href="/employees"
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
                   >
-                    <Icons.Users size={17} className="text-[#187A5A] shrink-0" />
+                    <Icons.Users size={17} className="text-slate-600 dark:text-slate-400 shrink-0" />
                     <span>إضافة موظف</span>
                   </Link>
 
                   <Link
                     href="/tasks"
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 transition-colors"
+                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
                   >
-                    <Icons.Tasks size={17} className="text-[#8A6D3B] shrink-0" />
+                    <Icons.Tasks size={17} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>إسناد مهمة</span>
                   </Link>
                 </div>
@@ -733,7 +733,7 @@ export default function DashboardPage() {
                       onClick={() => setDonutMode("employees")}
                       className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                         donutMode === "employees"
-                          ? "bg-white dark:bg-slate-900 text-[#123D32] dark:text-white shadow-2xs"
+                          ? "bg-white dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
                           : "text-slate-600 dark:text-slate-300"
                       }`}
                     >
@@ -744,7 +744,7 @@ export default function DashboardPage() {
                       onClick={() => setDonutMode("tickets")}
                       className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                         donutMode === "tickets"
-                          ? "bg-white dark:bg-slate-900 text-[#123D32] dark:text-white shadow-2xs"
+                          ? "bg-white dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
                           : "text-slate-600 dark:text-slate-300"
                       }`}
                     >

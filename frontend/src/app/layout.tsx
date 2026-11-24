@@ -13,6 +13,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CustomizationProvider } from "@/context/CustomizationContext";
 import { ToastProvider } from "@/context/ToastContext";
 import DevToolkitLoader from "@/components/dev/DevToolkitLoader";
+import { buildPreHydrationThemeScript } from "@/lib/applyTheme";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className="h-full" suppressHydrationWarning>
+      <head>
+        <script
+          id="theme-pre-hydration"
+          dangerouslySetInnerHTML={{ __html: buildPreHydrationThemeScript() }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--text)] font-sans antialiased">
         <AuthProvider>
           <WorkspaceProvider>

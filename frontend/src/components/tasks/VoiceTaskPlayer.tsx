@@ -165,7 +165,7 @@ export default function VoiceTaskPlayer({
 
   return (
     <div
-      className={`bg-gradient-to-r from-emerald-50/80 via-white to-slate-50 border border-emerald-200/90 rounded-2xl p-3 sm:p-4 shadow-xs select-none ${className}`}
+      className={`bg-gradient-to-r from-blue-50/80 via-white to-slate-50 border border-blue-200/90 rounded-2xl p-3 sm:p-4 shadow-xs select-none ${className}`}
       dir="rtl"
     >
       {blobUrl && (
@@ -179,8 +179,8 @@ export default function VoiceTaskPlayer({
       )}
 
       {title && (
-        <div className="flex items-center gap-1.5 mb-2.5 text-xs font-bold text-emerald-950">
-          <Mic className="w-3.5 h-3.5 text-emerald-700" />
+        <div className="flex items-center gap-1.5 mb-2.5 text-xs font-bold text-blue-950">
+          <Mic className="w-3.5 h-3.5 text-blue-700" />
           <span>{title}</span>
         </div>
       )}
@@ -198,7 +198,7 @@ export default function VoiceTaskPlayer({
             onClick={togglePlay}
             disabled={isLoading}
             aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل التسجيل الصوتي"}
-            className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-tr from-[#123D32] to-[#187A5A] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-tr from-blue-700 to-blue-600 text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
@@ -228,16 +228,16 @@ export default function VoiceTaskPlayer({
                 onChange={handleSeek}
                 disabled={isLoading}
                 aria-label="شريط تقدم التسجيل الصوتي"
-                className="w-full h-2 bg-emerald-100 rounded-lg appearance-none cursor-pointer accent-[#187A5A] disabled:cursor-not-allowed"
+                className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
                 style={{
-                  background: `linear-gradient(to left, #187A5A ${progressPercent}%, #e2e8f0 ${progressPercent}%)`,
+                  background: `linear-gradient(to left, #2563EB ${progressPercent}%, #e2e8f0 ${progressPercent}%)`,
                 }}
               />
             </div>
 
             {/* Time Labels */}
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-              <span className="font-semibold text-emerald-900">{formatTime(currentTime)}</span>
+              <span className="font-semibold text-blue-900">{formatTime(currentTime)}</span>
               <span>{formatTime(totalDuration)}</span>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function VoiceTaskPlayer({
             type="button"
             onClick={cyclePlaybackRate}
             aria-label="تغيير سرعة التشغيل"
-            className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#187A5A] hover:text-[#123D32] bg-white hover:bg-emerald-100/50 rounded-lg border border-emerald-300 transition shadow-2xs cursor-pointer select-none"
+            className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-white hover:bg-blue-100/50 rounded-lg border border-blue-300 transition shadow-2xs cursor-pointer select-none"
           >
             {playbackRate}x
           </button>

@@ -99,7 +99,7 @@ export default function EmployeeCombobox({ value, initialName, companyId, onChan
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
   }}>
     <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700">الموظف / الفني المسند إليه</label>
-    <div className="flex rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-[#187A5A]">
+    <div className="flex rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-[#2563EB]">
       <input ref={input} id={id} role="combobox" aria-autocomplete="list" aria-expanded={open}
         aria-controls={`${id}-list`} aria-describedby={`${id}-status`}
         aria-activedescendant={open && active >= 0 ? `${id}-option-${active}` : undefined}

@@ -264,56 +264,56 @@ export default function SettingsPage() {
       title: "إدارة التوزيع و SLA",
       desc: "الفرق والمهارات، قواعد التوزيع الآلي، سياسات SLA، ومصفوفة الحالات",
       badge: "جديد",
-      icon: <Icons.Sliders size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Sliders size={20} className="text-[#2563EB]" />,
     },
     {
       href: "/settings/branding",
       title: "إعدادات عامة",
       desc: "بيانات النظام، الشعار، والمظهر",
-      icon: <Icons.Sliders size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Sliders size={20} className="text-[#2563EB]" />,
     },
     {
       href: "/companies",
       title: "الأقسام",
       desc: "تعريف أقسام العمل وتوزيعها",
-      icon: <Icons.Companies size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Companies size={20} className="text-[#2563EB]" />,
     },
     {
       href: "/companies",
       title: "الشركات والفروع",
       desc: "إدارة بيانات الشركات والفروع",
-      icon: <BuildingIcon className="w-5 h-5 text-[#187A5A]" />,
+      icon: <BuildingIcon className="w-5 h-5 text-[#2563EB]" />,
     },
     {
       href: "/users",
       title: "المستخدمون والصلاحيات",
       desc: "إضافة المستخدمين، تحديد الأدوار والصلاحيات",
-      icon: <Icons.Users size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Users size={20} className="text-[#2563EB]" />,
     },
     {
       href: "#password-security",
       title: "سياسات النظام",
       desc: "كلمة المرور، مدة الجلسة، وتسجيل الدخول",
-      icon: <ShieldCheckIcon className="w-5 h-5 text-[#187A5A]" />,
+      icon: <ShieldCheckIcon className="w-5 h-5 text-[#2563EB]" />,
     },
     {
       href: "/settings/branding",
       title: "نماذج البيانات",
       desc: "تخصيص حقول الأصول، التذاكر، والمهام",
-      icon: <Icons.Subscriptions size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Subscriptions size={20} className="text-[#2563EB]" />,
     },
     {
       href: "/audit",
       title: "القوائم المرجعية",
       desc: "إدارة الأنواع، الحالات، الأولويات، والفئات",
-      icon: <Icons.Audit size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Audit size={20} className="text-[#2563EB]" />,
     },
     {
       href: "/settings/integrations",
       title: "الإشعارات",
       desc: "قنوات التنبيه (Telegram) وإعداداتها",
       badge: "مفعلة",
-      icon: <Icons.Notifications size={20} className="text-[#187A5A]" />,
+      icon: <Icons.Notifications size={20} className="text-[#2563EB]" />,
     },
   ];
 
@@ -531,7 +531,7 @@ export default function SettingsPage() {
         {/* Header matching reference screenshot */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0 mt-0.5">
               <SettingsIcon className="w-5 h-5" />
             </div>
             <div>
@@ -554,17 +554,17 @@ export default function SettingsPage() {
             <Link
               key={tile.title}
               href={tile.href}
-              className="relative bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-xs hover:border-[#187A5A] hover:shadow-sm transition-all flex flex-col items-center text-center gap-2 group"
+              className="relative bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-xs hover:border-[#2563EB] hover:shadow-sm transition-all flex flex-col items-center text-center gap-2 group"
             >
               {tile.badge && (
                 <span className="absolute top-3 inset-inline-end-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
                   {tile.badge}
                 </span>
               )}
-              <div className="w-10 h-10 rounded-xl bg-emerald-50/90 group-hover:bg-[#123D32]/10 flex items-center justify-center transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50/90 group-hover:bg-[#1D4ED8]/10 flex items-center justify-center transition-colors">
                 {tile.icon}
               </div>
-              <div className="text-sm font-bold text-slate-900 group-hover:text-[#123D32]">
+              <div className="text-sm font-bold text-slate-900 group-hover:text-[#1D4ED8]">
                 {tile.title}
               </div>
               <div className="text-[11px] text-slate-500 leading-relaxed">
@@ -581,11 +581,11 @@ export default function SettingsPage() {
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Icons.Info size={16} className="text-[#187A5A]" />
+                  <Icons.Info size={16} className="text-[#2563EB]" />
                   <span>معلومات النظام</span>
                 </h2>
                 {user?.is_superadmin && (
-                  <Link href="/settings/system" className="text-[11px] font-bold text-[#187A5A] hover:underline">
+                  <Link href="/settings/system" className="text-[11px] font-bold text-[#2563EB] hover:underline">
                     صيانة DR ←
                   </Link>
                 )}
@@ -597,7 +597,7 @@ export default function SettingsPage() {
                     <SettingsIcon className="w-3.5 h-3.5 text-slate-400" />
                     <span>إصدار النظام</span>
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#123D32] border border-emerald-200/70 font-mono font-bold text-[11px]">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] border border-emerald-200/70 font-mono font-bold text-[11px]">
                     v3.0.0 (Enterprise)
                   </span>
                 </div>
@@ -637,7 +637,7 @@ export default function SettingsPage() {
               <span>المنشأة الحالية:</span>
               <div className="flex items-center gap-2">
                 <strong className="text-slate-800">{activeCompany?.name_ar || "بوابة المستثمر"}</strong>
-                <Link href="/about" className="font-bold text-[#187A5A] hover:underline">
+                <Link href="/about" className="font-bold text-[#2563EB] hover:underline">
                   حول النظام
                 </Link>
               </div>
@@ -649,10 +649,10 @@ export default function SettingsPage() {
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Icons.Globe size={16} className="text-[#187A5A]" />
+                  <Icons.Globe size={16} className="text-[#2563EB]" />
                   <span>التكاملات</span>
                 </h2>
-                <Link href="/settings/integrations" className="text-[11px] font-bold text-[#187A5A] hover:underline">
+                <Link href="/settings/integrations" className="text-[11px] font-bold text-[#2563EB] hover:underline">
                   إدارة متقدمة ←
                 </Link>
               </div>
@@ -663,21 +663,21 @@ export default function SettingsPage() {
                     key: "telegram",
                     title: "Telegram",
                     sub: "إرسال التنبيهات والمهام",
-                    badgeCls: "bg-emerald-50 text-[#187A5A] border border-emerald-200/80",
+                    badgeCls: "bg-emerald-50 text-[#2563EB] border border-emerald-200/80",
                     icon: <Send className="w-4 h-4" />,
                   },
                   {
                     key: "n8n",
                     title: "Google Calendar / الأتمتة",
                     sub: "مزامنة المواعيد النهائية",
-                    badgeCls: "bg-[#123D32]/10 text-[#123D32] border border-[#123D32]/20",
+                    badgeCls: "bg-[#1D4ED8]/10 text-[#1D4ED8] border border-[#1D4ED8]/20",
                     icon: <Calendar className="w-4 h-4" />,
                   },
                   {
                     key: "email",
                     title: "البريد الإلكتروني",
                     sub: "إشعارات وتقارير النظام",
-                    badgeCls: "bg-[#C5A46D]/15 text-[#8A6D3B] border border-[#C5A46D]/35",
+                    badgeCls: "bg-[#3B82F6]/15 text-[#8A6D3B] border border-[#3B82F6]/35",
                     icon: <Mail className="w-4 h-4" />,
                   },
                 ].map((item) => {
@@ -720,10 +720,10 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Icons.Monitor size={16} className="text-[#187A5A]" />
+                  <Icons.Monitor size={16} className="text-[#2563EB]" />
                   <span>مظهر النظام</span>
                 </h2>
-                <Link href="/settings/appearance" className="text-[11px] font-bold text-[#187A5A] hover:underline">
+                <Link href="/settings/appearance" className="text-[11px] font-bold text-[#2563EB] hover:underline">
                   تخصيص كامل ←
                 </Link>
               </div>
@@ -743,12 +743,12 @@ export default function SettingsPage() {
                       onClick={() => handleSelectTheme(opt.id)}
                       className={`relative h-[72px] rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         active
-                          ? "border-[#187A5A] bg-emerald-50/70 text-[#123D32] ring-1 ring-[#187A5A]/30"
+                          ? "border-[#2563EB] bg-emerald-50/70 text-[#1D4ED8] ring-1 ring-[#2563EB]/30"
                           : "border-slate-200 bg-slate-50/80 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
                       {active && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#187A5A] text-white flex items-center justify-center shadow-2xs">
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center shadow-2xs">
                           <Check className="w-2.5 h-2.5" />
                         </span>
                       )}
@@ -763,7 +763,7 @@ export default function SettingsPage() {
             <div className="space-y-2.5 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold text-slate-700">معرض الهويات البصرية</span>
-                <span className="text-[11px] font-semibold text-[#187A5A] truncate">
+                <span className="text-[11px] font-semibold text-[#2563EB] truncate">
                   {activePreset.nameAr}
                 </span>
               </div>
@@ -836,7 +836,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
                     <UserIcon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
@@ -847,8 +847,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#123D32] text-white text-[11px] font-bold shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#C5A46D]" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1D4ED8] text-white text-[11px] font-bold shrink-0">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#3B82F6]" />
                   <span>{ROLE_AR_LABELS[primaryRole] || primaryRole}</span>
                 </span>
               </div>
@@ -896,7 +896,7 @@ export default function SettingsPage() {
                       key={r}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
                         isPrimary
-                          ? "bg-emerald-50 text-[#123D32] border-emerald-200 font-bold"
+                          ? "bg-emerald-50 text-[#1D4ED8] border-emerald-200 font-bold"
                           : "bg-slate-50 text-slate-700 border-slate-200"
                       }`}
                     >
@@ -913,7 +913,7 @@ export default function SettingsPage() {
             <div>
               <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
                     <LockIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -961,7 +961,7 @@ export default function SettingsPage() {
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       placeholder="أدخل كلمة المرور الحالية"
-                      className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#187A5A] transition-colors"
+                      className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
                     />
                     <button
                       type="button"
@@ -989,7 +989,7 @@ export default function SettingsPage() {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="8 خانات على الأقل"
-                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#187A5A] transition-colors"
+                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
                       />
                       <button
                         type="button"
@@ -1015,7 +1015,7 @@ export default function SettingsPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="أعد كتابة كلمة المرور الجديدة"
-                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#187A5A] transition-colors"
+                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
                       />
                       <button
                         type="button"
@@ -1036,7 +1036,7 @@ export default function SettingsPage() {
                   <button
                     type="submit"
                     disabled={passLoading}
-                    className="h-10 px-5 text-xs font-bold text-white bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 rounded-xl shadow-xs transition-colors cursor-pointer shrink-0"
+                    className="h-10 px-5 text-xs font-bold text-white bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 rounded-xl shadow-xs transition-colors cursor-pointer shrink-0"
                   >
                     {passLoading ? "جاري الحفظ..." : "تحديث كلمة المرور"}
                   </button>

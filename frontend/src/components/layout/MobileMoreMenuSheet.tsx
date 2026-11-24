@@ -62,14 +62,14 @@ export function MobileMoreMenuSheet({
           sub: "Subscriptions & SaaS",
           href: "/subscriptions",
           icon: CreditCard,
-          color: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+          color: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
         },
         {
           name: "مركز الاعتمادات",
           sub: "Approvals & Workflow",
           href: "/approvals",
           icon: ShieldCheck,
-          color: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+          color: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
         },
       ],
     },
@@ -147,14 +147,14 @@ export function MobileMoreMenuSheet({
           sub: "Integrations & Bot",
           href: "/settings/integrations",
           icon: Settings,
-          color: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+          color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
         },
         {
           name: "المظهر والسمات",
           sub: "Themes & Appearance",
           href: "/settings/appearance",
           icon: Palette,
-          color: "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
+          color: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
         },
       ],
     },
@@ -192,7 +192,7 @@ export function MobileMoreMenuSheet({
                     }}
                     className={`p-3 rounded-2xl flex items-center gap-3 transition-colors active:scale-98 border ${
                       isActive
-                        ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-[#123D32] dark:text-emerald-300 font-bold"
+                        ? "bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/60 text-primary dark:text-blue-300 font-bold"
                         : "bg-slate-50/60 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >

@@ -391,7 +391,7 @@ export default function TelegramLinkingModal({
               onClick={() => setActiveTab("overview")}
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 activeTab === "overview"
-                  ? "border-[#187A5A] text-[#123D32]"
+                  ? "border-[#2563EB] text-[#1D4ED8]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -401,7 +401,7 @@ export default function TelegramLinkingModal({
               onClick={() => setActiveTab("permissions")}
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "permissions"
-                  ? "border-[#187A5A] text-[#123D32]"
+                  ? "border-[#2563EB] text-[#1D4ED8]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -412,7 +412,7 @@ export default function TelegramLinkingModal({
               onClick={() => setActiveTab("activity")}
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "activity"
-                  ? "border-[#187A5A] text-[#123D32]"
+                  ? "border-[#2563EB] text-[#1D4ED8]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -438,7 +438,7 @@ export default function TelegramLinkingModal({
 
         {loading && (
           <div className="py-12 text-center text-slate-500 space-y-2">
-            <div className="w-8 h-8 border-3 border-[#187A5A] border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-xs">جاري تحميل بيانات الاتصال والصلاحيات المعتمدة...</p>
           </div>
         )}
@@ -494,7 +494,7 @@ export default function TelegramLinkingModal({
               </div>
               <div className="space-y-1">
                 <span className="text-slate-500 block">حساب المستخدم المرتبط:</span>
-                <strong className="text-[#187A5A] font-mono">{details.user?.username || "تم تعيينه تلقائياً"}</strong>
+                <strong className="text-[#2563EB] font-mono">{details.user?.username || "تم تعيينه تلقائياً"}</strong>
               </div>
               <div className="space-y-1">
                 <span className="text-slate-500 block">رتبة النظام (CRM Role):</span>
@@ -531,7 +531,7 @@ export default function TelegramLinkingModal({
                 <button
                   onClick={handleSendTestMessage}
                   disabled={sendingTest}
-                  className="px-4 py-2 bg-[#187A5A] hover:bg-[#123D32] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <span>{sendingTest ? "جاري الإرسال..." : "🔔 إرسال رسالة اختبار لحساب الموظف"}</span>
                 </button>
@@ -673,7 +673,7 @@ export default function TelegramLinkingModal({
                   className={`px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap ${
                     copied
                       ? "bg-emerald-600 text-white"
-                      : "bg-[#187A5A] hover:bg-[#123D32] text-white"
+                      : "bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
                   }`}
                 >
                   {copied ? (
@@ -697,7 +697,7 @@ export default function TelegramLinkingModal({
               <ol className="list-decimal list-inside space-y-1.5 leading-relaxed text-slate-600 pr-1">
                 <li>
                   افتح تطبيق Telegram وابحث عن البوت:{" "}
-                  <strong className="text-[#187A5A] font-mono">@{tokenData.bot_username}</strong>
+                  <strong className="text-[#2563EB] font-mono">@{tokenData.bot_username}</strong>
                 </li>
                 <li>
                   الصق الأمر المنسوخ أعلاه بالكامل واضغط <strong>إرسال</strong> في المحادثة.

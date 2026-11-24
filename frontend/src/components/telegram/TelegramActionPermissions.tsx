@@ -132,11 +132,11 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
     >
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#123D32]/10 text-[#123D32] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center">
             <Icons.ShieldCheck size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#123D32]">صلاحيات الإجراءات الفعلية</h3>
+            <h3 className="text-sm font-bold text-[#1D4ED8]">صلاحيات الإجراءات الفعلية</h3>
             <p className="text-[11px] text-slate-600">
               التحكم الدقيق في وحدات النظام وإشعارات الموظف عبر البوت
             </p>
@@ -170,7 +170,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                   );
                 }
               }}
-              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#187A5A] focus:bg-white"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#2563EB] focus:bg-white"
             >
               <option value="custom">مخصص</option>
               <option value="read_only">للقراءة فقط</option>
@@ -183,7 +183,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
             <select
               value={scope}
               onChange={(e) => setScope(e.target.value)}
-              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#187A5A] focus:bg-white"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#2563EB] focus:bg-white"
             >
               <option value="Self">سجلات الموظف فقط</option>
               {details.permissions_matrix?.maximum_scope === "Company" && (
@@ -214,7 +214,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                         !isAllowed
                           ? "border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed opacity-60"
                           : checked
-                          ? "border-[#187A5A]/40 bg-emerald-50 text-[#123D32] font-semibold cursor-pointer"
+                          ? "border-[#2563EB]/40 bg-emerald-50 text-[#1D4ED8] font-semibold cursor-pointer"
                           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer"
                       }`}
                     >
@@ -230,7 +230,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                               : (current[module] || []).filter((a) => a !== action),
                           }))
                         }
-                        className="rounded border-slate-300 text-[#187A5A] focus:ring-[#187A5A]"
+                        className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
                       />
                       <span>{label}</span>
                     </label>
@@ -248,7 +248,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
               type="checkbox"
               checked={notifications}
               onChange={(e) => setNotifications(e.target.checked)}
-              className="rounded border-slate-300 text-[#187A5A] focus:ring-[#187A5A]"
+              className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
             />
             <span>استلام الإشعارات الفورية عبر البوت</span>
           </label>
@@ -269,7 +269,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                   onChange={(e) =>
                     setPreferences((p) => ({ ...p, [event]: e.target.checked }))
                   }
-                  className="rounded border-slate-300 text-[#187A5A] focus:ring-[#187A5A]"
+                  className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
                 />
                 <span>{label}</span>
               </label>
@@ -281,7 +281,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
           <button
             type="button"
             onClick={save}
-            className="motion-control inline-flex items-center gap-1.5 rounded-xl bg-[#123D32] hover:bg-[#187A5A] px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer"
+            className="motion-control inline-flex items-center gap-1.5 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer"
           >
             <Icons.Check size={14} />
             <span>{busy ? "جارٍ الحفظ..." : "حفظ الصلاحيات"}</span>

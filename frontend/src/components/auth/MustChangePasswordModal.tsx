@@ -95,9 +95,9 @@ export function MustChangePasswordModal() {
         tabIndex={-1}
       >
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-[#123D32] to-[#187A5A] p-6 text-white text-center relative">
+        <div className="bg-gradient-to-r from-[#1D4ED8] to-[#2563EB] p-6 text-white text-center relative">
           <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
-            <Icons.ShieldAlert size={32} className="text-[#C5A46D]" />
+            <Icons.ShieldAlert size={32} className="text-[#3B82F6]" />
           </div>
           <h2 id="must-change-password-title" className="text-xl font-bold">تغيير كلمة المرور الإلزامي</h2>
           <p className="text-xs text-white/80 mt-1">
@@ -139,7 +139,7 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
                     placeholder="أدخل كلمة المرور الحالية أو المؤقتة"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#123D32]"
+                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
@@ -163,7 +163,7 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     placeholder="8 خانات على الأقل تشمل أرقام ورموز"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#123D32]"
+                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
@@ -203,7 +203,7 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="أعد إدخال كلمة المرور الجديدة"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#123D32]"
+                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
@@ -220,7 +220,7 @@ export function MustChangePasswordModal() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !isStrong || newPassword !== confirmPassword}
-                  className="flex-1 py-2.5 px-4 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white font-medium rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-2.5 px-4 bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 text-white font-medium rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Icons.Key size={16} />
                   <span>{isSubmitting ? "جارٍ الحفظ..." : "حفظ كلمة المرور والمتابعة"}</span>

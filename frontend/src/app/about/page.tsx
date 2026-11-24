@@ -100,9 +100,9 @@ export default function AboutPage() {
 
           <Link
             href="/help"
-            className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#187A5A] self-start sm:self-center"
+            className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#2563EB] self-start sm:self-center"
           >
-            <BookOpen className="w-4 h-4 text-[#187A5A]" />
+            <BookOpen className="w-4 h-4 text-[#2563EB]" />
             <span>مركز المساعدة والتعلّم</span>
           </Link>
         </div>
@@ -111,7 +111,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <ShieldCheck className="w-4 h-4 text-[#187A5A]" />
+              <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">معلومات المنتج والإصدار</h2>
             </div>
 
@@ -122,7 +122,7 @@ export default function AboutPage() {
               </div>
               <div className="py-2.5 flex items-center justify-between">
                 <span className="text-slate-600">الإصدار (Version)</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#123D32] font-mono font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] font-mono font-bold">
                   v{meta.version}
                 </span>
               </div>
@@ -139,7 +139,7 @@ export default function AboutPage() {
 
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Code2 className="w-4 h-4 text-[#187A5A]" />
+              <Code2 className="w-4 h-4 text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">هوية المطوّر والهندسة الأمنية</h2>
             </div>
 
@@ -165,7 +165,7 @@ export default function AboutPage() {
                     target="_blank"
                     rel="noreferrer"
                     dir="ltr"
-                    className="font-mono font-bold text-[#187A5A] hover:underline truncate max-w-[240px]"
+                    className="font-mono font-bold text-[#2563EB] hover:underline truncate max-w-[240px]"
                   >
                     {meta.developer.linkedin_url}
                   </a>
@@ -182,7 +182,7 @@ export default function AboutPage() {
                   <a
                     href={`mailto:${meta.developer.email}`}
                     dir="ltr"
-                    className="font-mono font-bold text-[#187A5A] hover:underline truncate max-w-[240px]"
+                    className="font-mono font-bold text-[#2563EB] hover:underline truncate max-w-[240px]"
                   >
                     {meta.developer.email}
                   </a>
@@ -197,7 +197,7 @@ export default function AboutPage() {
         {/* Copyright & Legal Notice */}
         <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
           <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-            <Scale className="w-4 h-4 text-[#187A5A]" />
+            <Scale className="w-4 h-4 text-[#2563EB]" />
             <h2 className="text-sm font-bold text-slate-900">إشعار حقوق النشر والترخيص (Copyright &amp; Legal Notice)</h2>
           </div>
           <div className="text-xs text-slate-700 leading-relaxed space-y-2">
@@ -215,7 +215,7 @@ export default function AboutPage() {
         <section id="notices" className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
           <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#187A5A]" />
+              <FileText className="w-4 h-4 text-[#2563EB]" />
               <span>إشعارات وتراخيص الطرف الثالث (Third-Party Notices)</span>
             </h2>
             <span className="text-[11px] font-mono text-slate-500">
@@ -237,7 +237,7 @@ export default function AboutPage() {
                   <tr key={pkg.name}>
                     <td className="p-2.5 font-mono font-bold text-slate-900" dir="ltr">{pkg.name}</td>
                     <td className="p-2.5 text-slate-600">{pkg.category}</td>
-                    <td className="p-2.5 font-mono text-[#187A5A] font-semibold" dir="ltr">{pkg.license}</td>
+                    <td className="p-2.5 font-mono text-[#2563EB] font-semibold" dir="ltr">{pkg.license}</td>
                   </tr>
                 ))}
               </tbody>

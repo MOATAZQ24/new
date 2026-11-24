@@ -38,7 +38,7 @@ const TOKEN_SWATCHES = [
   { name: "--text", labelAr: "نص أساسي", labelEn: "Ink Text", light: "#1B1A17", dark: "#ECEAE4", ratioLight: "17.40:1", ratioDark: "14.30:1", fgVar: "var(--bg)" },
   { name: "--text-2", labelAr: "نص ثانوي", labelEn: "Text Secondary", light: "#5E5A52", dark: "#A9A59B", ratioLight: "6.86:1", ratioDark: "7.00:1", fgVar: "var(--bg)" },
   { name: "--text-3", labelAr: "تسمية AA", labelEn: "Caption AA", light: "#6E6960", dark: "#918D84", ratioLight: "5.32:1", ratioDark: "5.20:1", fgVar: "var(--bg)" },
-  { name: "--accent", labelAr: "نحاسي دافئ", labelEn: "Warm Brass", light: "#B68F4A", dark: "#D8B36A", ratioLight: "Brand", ratioDark: "Brand", fgVar: "#1B1A17" },
+  { name: "--accent", labelAr: "نحاسي دافئ", labelEn: "Warm Brass", light: "#2563EB", dark: "#D8B36A", ratioLight: "Brand", ratioDark: "Brand", fgVar: "#1B1A17" },
   { name: "--success-soft", labelAr: "نجاح / SLA سليم", labelEn: "Success Soft", light: "#E8F5ED", dark: "#162A1F", ratioLight: "6.42:1", ratioDark: "8.07:1", fgVar: "var(--success-text)" },
   { name: "--warning-soft", labelAr: "تحذير / مخاطرة", labelEn: "Warning Soft", light: "#FCF3E1", dark: "#2E2312", ratioLight: "5.37:1", ratioDark: "8.58:1", fgVar: "var(--warning-text)" },
   { name: "--danger-soft", labelAr: "خطر / خرق SLA", labelEn: "Danger Soft", light: "#FDECEB", dark: "#301816", ratioLight: "6.13:1", ratioDark: "6.22:1", fgVar: "var(--danger-text)" },

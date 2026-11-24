@@ -115,7 +115,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#187A5A] hover:bg-[#187A5A]/10 border border-[#187A5A]/30 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#2563EB] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-lg transition-colors"
               >
                 <CheckCircleIcon className="w-4 h-4" />
                 تحديد الكل كمقروء
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
               onClick={() => setUnreadOnly(!unreadOnly)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                 unreadOnly
-                  ? "bg-[#187A5A] text-white border-[#187A5A]"
+                  ? "bg-[#2563EB] text-white border-[#2563EB]"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
             >
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
               onClick={() => setPriorityFilter(tab.id)}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 priorityFilter === tab.id
-                  ? "bg-[#123D32] text-white"
+                  ? "bg-[#1D4ED8] text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
                         ? "bg-rose-50/60 border-r-4 border-rose-500 font-medium"
                         : isRead
                         ? "bg-white opacity-80"
-                        : "bg-[#187A5A]/5 font-medium"
+                        : "bg-[#2563EB]/5 font-medium"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -195,7 +195,7 @@ export default function NotificationsPage() {
                           )}
                           <h4 className="text-sm font-bold text-gray-900">{n.title}</h4>
                           {!isRead && (
-                            <span className="w-2 h-2 rounded-full bg-[#187A5A]" />
+                            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
                           )}
                         </div>
                         <p className="text-xs text-gray-600 leading-relaxed">{n.message}</p>
@@ -211,7 +211,7 @@ export default function NotificationsPage() {
                     {!isRead && (
                       <button
                         onClick={() => handleMarkRead(n.id)}
-                        className="text-xs text-[#187A5A] hover:underline whitespace-nowrap self-center"
+                        className="text-xs text-[#2563EB] hover:underline whitespace-nowrap self-center"
                       >
                         تحديد كمقروء
                       </button>

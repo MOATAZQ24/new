@@ -23,9 +23,9 @@ export default function BrandingPage() {
   // Form state
   const [brandNameAr, setBrandNameAr] = useState("");
   const [brandNameEn, setBrandNameEn] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#123D32");
-  const [secondaryColor, setSecondaryColor] = useState("#187A5A");
-  const [accentColor, setAccentColor] = useState("#C5A46D");
+  const [primaryColor, setPrimaryColor] = useState("#1D4ED8");
+  const [secondaryColor, setSecondaryColor] = useState("#2563EB");
+  const [accentColor, setAccentColor] = useState("#3B82F6");
   const [enforceTheme, setEnforceTheme] = useState(false);
 
   // Logo upload
@@ -49,9 +49,9 @@ export default function BrandingPage() {
     const t = window.setTimeout(() => {
       setBrandNameAr(companyBranding.brand_name_ar || ac?.company_name_ar || ac?.name_ar || "");
       setBrandNameEn(companyBranding.brand_name_en || ac?.company_name_en || ac?.name_en || "");
-      setPrimaryColor(companyBranding.primary_color || "#123D32");
-      setSecondaryColor(companyBranding.secondary_color || "#187A5A");
-      setAccentColor(companyBranding.accent_color || "#C5A46D");
+      setPrimaryColor(companyBranding.primary_color || "#1D4ED8");
+      setSecondaryColor(companyBranding.secondary_color || "#2563EB");
+      setAccentColor(companyBranding.accent_color || "#3B82F6");
       setEnforceTheme(Boolean(companyBranding.enforce_company_theme));
     }, 0);
     return () => window.clearTimeout(t);
@@ -515,9 +515,9 @@ export default function BrandingPage() {
               onClick={() => {
                 setBrandNameAr(companyBranding?.brand_name_ar || "");
                 setBrandNameEn(companyBranding?.brand_name_en || "");
-                setPrimaryColor(companyBranding?.primary_color || "#123D32");
-                setSecondaryColor(companyBranding?.secondary_color || "#187A5A");
-                setAccentColor(companyBranding?.accent_color || "#C5A46D");
+                setPrimaryColor(companyBranding?.primary_color || "#1D4ED8");
+                setSecondaryColor(companyBranding?.secondary_color || "#2563EB");
+                setAccentColor(companyBranding?.accent_color || "#3B82F6");
                 setEnforceTheme(Boolean(companyBranding?.enforce_company_theme));
               }}
               className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"

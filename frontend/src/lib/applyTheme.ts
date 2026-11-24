@@ -28,13 +28,13 @@ export function readStoredPresetId(): ThemePresetId {
   }
 }
 
-export function readStoredThemeMode(): ThemeMode | null {
-  if (typeof window === "undefined") return null;
+export function readStoredThemeMode(): ThemeMode {
+  if (typeof window === "undefined") return "light";
   try {
     const raw = window.localStorage.getItem(THEME_MODE_STORAGE_KEY);
-    return raw === "light" || raw === "dark" || raw === "system" ? raw : null;
+    return raw === "light" || raw === "dark" ? raw : "light";
   } catch {
-    return null;
+    return "light";
   }
 }
 
@@ -114,5 +114,5 @@ export function buildPreHydrationThemeScript(): string {
       { light: p.light, dark: p.dark },
     ])
   );
-  return `(function(){try{var p=localStorage.getItem("${THEME_PRESET_STORAGE_KEY}")||"${DEFAULT_THEME_PRESET_ID}";var m=localStorage.getItem("${THEME_MODE_STORAGE_KEY}")||"system";var presets=${JSON.stringify(payload)};if(!presets[p])p="${DEFAULT_THEME_PRESET_ID}";var dark=m==="dark"||(m==="system"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);var t=dark?presets[p].dark:presets[p].light;var r=document.documentElement;r.dataset.theme=dark?"dark":"light";r.dataset.themePreset=p;r.classList.toggle("dark",dark);for(var k in t){r.style.setProperty("--"+k,t[k]);}r.style.setProperty("--bg-main",t.background);r.style.setProperty("--text-main",t.foreground);r.style.setProperty("--text-muted",t["muted-foreground"]);r.style.setProperty("--border-color",t.border);r.style.setProperty("--primary-dark",t["sidebar-background"]);r.style.setProperty("--primary-green",t.primary);r.style.setProperty("--gold-accent",t.accent);r.style.setProperty("--on-primary",t["primary-foreground"]);r.style.setProperty("--on-secondary",t["primary-foreground"]);r.style.setProperty("--on-background",t.foreground);r.style.setProperty("--surface-subtle",t["surface-muted"]);r.style.setProperty("--surface-hover",t.hover);}catch(e){}})();`;
+  return `(function(){try{var p=localStorage.getItem("${THEME_PRESET_STORAGE_KEY}")||"${DEFAULT_THEME_PRESET_ID}";var m=localStorage.getItem("${THEME_MODE_STORAGE_KEY}")||"light";var presets=${JSON.stringify(payload)};if(!presets[p])p="${DEFAULT_THEME_PRESET_ID}";var dark=m==="dark";var t=dark?presets[p].dark:presets[p].light;var r=document.documentElement;r.dataset.theme=dark?"dark":"light";r.dataset.themePreset=p;r.classList.toggle("dark",dark);for(var k in t){r.style.setProperty("--"+k,t[k]);}r.style.setProperty("--bg-main",t.background);r.style.setProperty("--text-main",t.foreground);r.style.setProperty("--text-muted",t["muted-foreground"]);r.style.setProperty("--border-color",t.border);r.style.setProperty("--primary-dark",t["sidebar-background"]);r.style.setProperty("--primary-green",t.primary);r.style.setProperty("--gold-accent",t.accent);r.style.setProperty("--on-primary",t["primary-foreground"]);r.style.setProperty("--on-secondary",t["primary-foreground"]);r.style.setProperty("--on-background",t.foreground);r.style.setProperty("--surface-subtle",t["surface-muted"]);r.style.setProperty("--surface-hover",t.hover);}catch(e){}})();`;
 }

@@ -66,7 +66,7 @@ export function MobileFilterSheet({
           <button
             type="button"
             onClick={handleApply}
-            className="flex-2 py-2.5 px-4 rounded-xl bg-[#123D32] hover:bg-[#187A5A] text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs cursor-pointer"
+            className="flex-2 py-2.5 px-4 rounded-xl bg-[#1D4ED8] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs cursor-pointer"
           >
             <Check size={15} />
             <span>تطبيق الفلاتر</span>

@@ -27,7 +27,7 @@ export function PageHeader({
     <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-200/90">
       <div className="flex items-start gap-3 min-w-[280px] flex-1">
         {icon && (
-          <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0 mt-0.5">
             {icon}
           </div>
         )}

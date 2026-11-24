@@ -181,7 +181,7 @@ export default function CustodyPage() {
           <button
             type="button"
             onClick={openAssignModal}
-            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <Icons.Plus size={16} />
             <span>تسليم عهدة جديدة</span>
@@ -199,7 +199,7 @@ export default function CustodyPage() {
               onClick={() => setStatusFilter(st)}
               className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === st
-                  ? "bg-[#187A5A] text-white shadow-xs"
+                  ? "bg-[#2563EB] text-white shadow-xs"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -255,7 +255,7 @@ export default function CustodyPage() {
                 <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="p-3.5 font-bold text-slate-900">
                     <div>{r.asset_name}</div>
-                    <div className="text-[11px] font-mono text-[#187A5A] font-semibold">
+                    <div className="text-[11px] font-mono text-[#2563EB] font-semibold">
                       <bdi dir="ltr">{r.asset_code}</bdi>
                     </div>
                   </td>
@@ -285,7 +285,7 @@ export default function CustodyPage() {
                       <button
                         type="button"
                         onClick={() => openReceipt(r.id)}
-                        className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                        className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                       >
                         سند الاستلام
                       </button>
@@ -327,7 +327,7 @@ export default function CustodyPage() {
               required
               value={selectedAssetId}
               onChange={(e) => setSelectedAssetId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- حدد الأصل التقني --</option>
               {availableAssets.map((a) => (
@@ -346,7 +346,7 @@ export default function CustodyPage() {
               required
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- حدد الموظف --</option>
               {employees.map((e) => (
@@ -365,7 +365,7 @@ export default function CustodyPage() {
               <select
                 value={assignCondition}
                 onChange={(e) => setAssignCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -382,7 +382,7 @@ export default function CustodyPage() {
                 type="date"
                 value={expectedReturn}
                 onChange={(e) => setExpectedReturn(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function CustodyPage() {
               value={assignNotes}
               onChange={(e) => setAssignNotes(e.target.value)}
               placeholder="مثال: تم تسليم الشاحن الأصلي وحقيبة لابتوب..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -414,7 +414,7 @@ export default function CustodyPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs"
             >
               تأكيد التسليم
             </button>
@@ -436,7 +436,7 @@ export default function CustodyPage() {
             <select
               value={returnCondition}
               onChange={(e) => setReturnCondition(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Excellent">ممتاز (Excellent)</option>
               <option value="Good">جيد (Good)</option>
@@ -454,7 +454,7 @@ export default function CustodyPage() {
               value={returnNotes}
               onChange={(e) => setReturnNotes(e.target.value)}
               placeholder="تم فحص الشاشة ولوحة المفاتيح والملحقات..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -486,9 +486,9 @@ export default function CustodyPage() {
         {receiptData && (
           <div className="space-y-5 p-2" id="printable-receipt">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#123D32]">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-[#1D4ED8]">
               <div>
-                <h3 className="text-base font-bold text-[#123D32]">
+                <h3 className="text-base font-bold text-[#1D4ED8]">
                   {receiptData.company_name_ar}
                 </h3>
                 <p className="text-[11px] text-slate-400 font-mono">
@@ -519,7 +519,7 @@ export default function CustodyPage() {
             <div className="border border-slate-200 rounded-xl p-3 text-xs space-y-1.5">
               <div className="font-bold text-slate-900 text-sm">{receiptData.asset_name}</div>
               <div className="grid grid-cols-2 gap-2 text-slate-600">
-                <div>كود الأصل: <span className="font-mono font-bold text-[#187A5A]">{receiptData.asset_code}</span></div>
+                <div>كود الأصل: <span className="font-mono font-bold text-[#2563EB]">{receiptData.asset_code}</span></div>
                 <div>النوع: {receiptData.asset_type}</div>
                 <div>الماركة: {receiptData.brand}</div>
                 <div>الرقم التسلسلي: <span className="font-mono">{receiptData.serial_number || "-"}</span></div>
@@ -548,7 +548,7 @@ export default function CustodyPage() {
 
             <button
               onClick={() => window.print()}
-              className="w-full py-2.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold mt-4"
+              className="w-full py-2.5 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold mt-4"
             >
               طباعة السند الرسمي
             </button>

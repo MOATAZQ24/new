@@ -637,7 +637,7 @@ export default function AssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(true)}
-                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                  className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                 >
                   <Icons.Plus size={16} />
                   <span>تسجيل أصل جديد</span>
@@ -663,7 +663,7 @@ export default function AssetsPage() {
             <select
               value={selectedBranchIds[0] || ""}
               onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -681,7 +681,7 @@ export default function AssetsPage() {
             <select
               value={categoryFilter}
               onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع الفئات (تقنية وعامة)</option>
               <option value="IT">أصول تقنية (IT)</option>
@@ -696,7 +696,7 @@ export default function AssetsPage() {
             <select
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع أنواع الأصول</option>
               <option value="Laptop">أجهزة لابتوب (Laptop)</option>
@@ -716,7 +716,7 @@ export default function AssetsPage() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
             >
               <option value="">جميع الحالات</option>
               <option value="Available">متاح للتسليم (Available)</option>
@@ -739,14 +739,14 @@ export default function AssetsPage() {
               value={analytics.kpis?.total_assets ?? 0}
               subtitle={`تقنية (IT): ${analytics.kpis?.it_assets ?? 0} • عامة: ${analytics.kpis?.general_assets ?? 0}`}
               icon={<Icons.Assets size={20} />}
-              accentColor="border-[#123D32]"
+              accentColor="border-[#1D4ED8]"
             />
             <StatsCard
               title="الأصول المسلمة vs المتاحة"
               value={`${analytics.kpis?.assigned_assets ?? 0} / ${analytics.kpis?.available_assets ?? 0}`}
               subtitle="مسلّمة كعهدة / متاحة في المستودع"
               icon={<Icons.Custody size={20} />}
-              accentColor="border-[#187A5A]"
+              accentColor="border-[#2563EB]"
             />
             <StatsCard
               title="الأصول تحت الصيانة"
@@ -760,7 +760,7 @@ export default function AssetsPage() {
               value={analytics.kpis?.warranty_expiring_30d ?? 0}
               subtitle={`بانتظار الإرجاع: ${analytics.kpis?.awaiting_return ?? 0}`}
               icon={<Icons.Clock size={20} />}
-              accentColor="border-[#C5A46D]"
+              accentColor="border-[#3B82F6]"
             />
           </div>
 
@@ -801,7 +801,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب الفرع المعتمد"
               value={selectedBranchIds[0] || ""}
               onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -815,7 +815,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب الفئة"
               value={categoryFilter}
               onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع الفئات (تقنية وعامة)</option>
               <option value="IT">أصول تقنية (IT)</option>
@@ -826,7 +826,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب نوع الأصل"
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع أنواع الأصول</option>
               <option value="Laptop">أجهزة لابتوب (Laptop)</option>
@@ -842,7 +842,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب حالة الأصل"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#187A5A] text-slate-800"
+              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
             >
               <option value="">جميع الحالات</option>
               <option value="Available">متاح للتسليم (Available)</option>
@@ -950,7 +950,7 @@ export default function AssetsPage() {
                   onClick={() => openAssetDetails(ast)}
                   className={`cursor-pointer transition-colors ${selectedAsset?.id === ast.id ? "bg-emerald-50/60" : "hover:bg-slate-50/60"}`}
                 >
-                  <td className="p-3.5 font-mono font-bold text-[#187A5A]">
+                  <td className="p-3.5 font-mono font-bold text-[#2563EB]">
                     <bdi dir="ltr">{ast.asset_code}</bdi>
                   </td>
                   <td className="p-3.5 font-bold text-slate-900">
@@ -996,7 +996,7 @@ export default function AssetsPage() {
                         setSelectedAsset(ast);
                         setShowQRModal(true);
                       }}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] cursor-pointer"
+                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] cursor-pointer"
                       title="عرض وطباعة QR"
                     >
                       <Icons.Dashboard size={14} />
@@ -1007,7 +1007,7 @@ export default function AssetsPage() {
                       ast.status === "Available" ? (
                         <button
                           onClick={() => openHandover(ast)}
-                          className="px-2.5 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg font-semibold text-[11px] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg font-semibold text-[11px] transition-colors cursor-pointer"
                         >
                           تسليم كعهدة
                         </button>
@@ -1027,7 +1027,7 @@ export default function AssetsPage() {
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => openAssetDetails(ast)}
-                        className="px-2 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                        className="px-2 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                       >
                         السجل
                       </button>
@@ -1035,7 +1035,7 @@ export default function AssetsPage() {
                         <button
                           type="button"
                           onClick={() => openTransferBranch(ast)}
-                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 text-[#123D32] font-semibold text-[11px] cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 text-[#1D4ED8] font-semibold text-[11px] cursor-pointer"
                           title="نقل الأصل إلى فرع آخر"
                         >
                           نقل فرع
@@ -1147,7 +1147,7 @@ export default function AssetsPage() {
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="submit" className="px-4 py-2 rounded-xl bg-[#123D32] text-white font-bold cursor-pointer">
+            <button type="submit" className="px-4 py-2 rounded-xl bg-[#1D4ED8] text-white font-bold cursor-pointer">
               تأكيد النقل الفعلي
             </button>
           </div>
@@ -1171,7 +1171,7 @@ export default function AssetsPage() {
                 value={assetCode}
                 onChange={(e) => setAssetCode(e.target.value.toUpperCase())}
                 placeholder="AST-IGT-LAP-005"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
@@ -1185,7 +1185,7 @@ export default function AssetsPage() {
                 value={assetName}
                 onChange={(e) => setAssetName(e.target.value)}
                 placeholder="مثال: MacBook Pro 14"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1198,7 +1198,7 @@ export default function AssetsPage() {
               <select
                 value={assetBranchId}
                 onChange={(e) => setAssetBranchId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 {companyBranches.map((br) => (
                   <option key={br.id} value={br.id}>
@@ -1214,7 +1214,7 @@ export default function AssetsPage() {
               <select
                 value={assetCategory}
                 onChange={(e) => setAssetCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="IT">أصل تقني (IT Asset)</option>
                 <option value="General">أصل عام / مكتبي (General Asset)</option>
@@ -1230,7 +1230,7 @@ export default function AssetsPage() {
               <select
                 value={assetType}
                 onChange={(e) => setAssetType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Laptop">لابتوب (Laptop)</option>
                 <option value="Desktop">حاسب مكتبي (Desktop)</option>
@@ -1251,7 +1251,7 @@ export default function AssetsPage() {
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="Apple / Dell / Lenovo"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1266,7 +1266,7 @@ export default function AssetsPage() {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="M3 Pro / 18GB / 512GB"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -1279,7 +1279,7 @@ export default function AssetsPage() {
                 value={serial}
                 onChange={(e) => setSerial(e.target.value)}
                 placeholder="SN-12345678"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
@@ -1292,7 +1292,7 @@ export default function AssetsPage() {
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1309,7 +1309,7 @@ export default function AssetsPage() {
               <select
                 value={statusVal}
                 onChange={(e) => setStatusVal(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Available">متاح للتسليم (Available)</option>
                 <option value="Under Maintenance">تحت الصيانة</option>
@@ -1327,7 +1327,7 @@ export default function AssetsPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="أي تفاصيل أو ملحقات إضافية..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1341,7 +1341,7 @@ export default function AssetsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               حفظ الأصل وتوليد QR
             </button>
@@ -1365,7 +1365,7 @@ export default function AssetsPage() {
               required
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1377,7 +1377,7 @@ export default function AssetsPage() {
               <select
                 value={editType}
                 onChange={(e) => setEditType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Laptop">لابتوب (Laptop)</option>
                 <option value="Desktop">حاسب مكتبي (Desktop)</option>
@@ -1397,7 +1397,7 @@ export default function AssetsPage() {
                 type="text"
                 value={editBrand}
                 onChange={(e) => setEditBrand(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1411,7 +1411,7 @@ export default function AssetsPage() {
                 type="text"
                 value={editModel}
                 onChange={(e) => setEditModel(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -1423,7 +1423,7 @@ export default function AssetsPage() {
                 type="text"
                 value={editSerial}
                 onChange={(e) => setEditSerial(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
@@ -1436,7 +1436,7 @@ export default function AssetsPage() {
               <select
                 value={editCondition}
                 onChange={(e) => setEditCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1453,7 +1453,7 @@ export default function AssetsPage() {
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Available">متاح (Available)</option>
                 <option value="Assigned">مسلّم كعهدة (Assigned)</option>
@@ -1474,7 +1474,7 @@ export default function AssetsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               حفظ التعديل
             </button>
@@ -1498,7 +1498,7 @@ export default function AssetsPage() {
               required
               value={handoverEmployeeId}
               onChange={(e) => setHandoverEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">اختر الموظف...</option>
               {employees.map((emp) => (
@@ -1517,7 +1517,7 @@ export default function AssetsPage() {
               <select
                 value={handoverCondition}
                 onChange={(e) => setHandoverCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1534,7 +1534,7 @@ export default function AssetsPage() {
                 type="date"
                 value={handoverExpectedReturn}
                 onChange={(e) => setHandoverExpectedReturn(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1548,7 +1548,7 @@ export default function AssetsPage() {
               value={handoverNotes}
               onChange={(e) => setHandoverNotes(e.target.value)}
               placeholder="مثال: تم تسليم الشاحن وحقيبة الجهاز والماوس..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1566,7 +1566,7 @@ export default function AssetsPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
             >
               تأكيد التسليم وتوليد السند
             </button>
@@ -1589,7 +1589,7 @@ export default function AssetsPage() {
             <select
               value={returnCondition}
               onChange={(e) => setReturnCondition(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Excellent">ممتاز (Excellent)</option>
               <option value="Good">جيد (Good)</option>
@@ -1607,7 +1607,7 @@ export default function AssetsPage() {
               value={returnNotes}
               onChange={(e) => setReturnNotes(e.target.value)}
               placeholder="فحص سلامة الشاشة، لوحة المفاتيح، الملحقات..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1660,7 +1660,7 @@ export default function AssetsPage() {
           </div>
           <button
             onClick={() => window.print()}
-            className="w-full py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold cursor-pointer"
+            className="w-full py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold cursor-pointer"
           >
             طباعة ملصق الأصل (Label)
           </button>
@@ -1703,7 +1703,7 @@ export default function AssetsPage() {
           </div>
 
           <h4 className="text-xs font-bold text-slate-800 pt-2 flex items-center gap-2">
-            <Icons.Custody size={16} className="text-[#187A5A]" />
+            <Icons.Custody size={16} className="text-[#2563EB]" />
             <span>سجل تسليم وإرجاع العهدة ({selectedAsset?.custody_history?.length || 0})</span>
           </h4>
 
@@ -1727,7 +1727,7 @@ export default function AssetsPage() {
                     <StatusBadge status={h.status} />
                     <button
                       onClick={() => openReceipt(h.id)}
-                      className="px-2 py-0.5 border border-slate-200 hover:border-[#187A5A] text-slate-700 text-[10px] rounded cursor-pointer"
+                      className="px-2 py-0.5 border border-slate-200 hover:border-[#2563EB] text-slate-700 text-[10px] rounded cursor-pointer"
                     >
                       عرض السند
                     </button>
@@ -1752,7 +1752,7 @@ export default function AssetsPage() {
       >
         <div className="p-4 space-y-4 text-xs">
           <div className="text-center border-b border-slate-200 pb-3">
-            <h3 className="font-black text-sm text-[#123D32]">إقرار استلام عهدة تقنية</h3>
+            <h3 className="font-black text-sm text-[#1D4ED8]">إقرار استلام عهدة تقنية</h3>
             <p className="text-slate-400 text-[11px] mt-0.5">سند رسمي موثق إلكترونياً</p>
           </div>
 
@@ -1772,7 +1772,7 @@ export default function AssetsPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">كود الأصل:</span>
-                <span className="font-mono font-bold text-[#187A5A]">{receiptData.asset_code}</span>
+                <span className="font-mono font-bold text-[#2563EB]">{receiptData.asset_code}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">الرقم التسلسلي (S/N):</span>
@@ -1791,7 +1791,7 @@ export default function AssetsPage() {
           <div className="pt-2 flex justify-end gap-2">
             <button
               onClick={() => window.print()}
-              className="px-4 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold cursor-pointer"
+              className="px-4 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold cursor-pointer"
             >
               طباعة السند
             </button>

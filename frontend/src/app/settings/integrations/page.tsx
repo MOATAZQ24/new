@@ -793,7 +793,7 @@ export default function IntegrationsCenterPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#123D32]/10 text-[#123D32] rounded-xl">
+              <span className="p-2 bg-[#1D4ED8]/10 text-[#1D4ED8] rounded-xl">
                 <Icons.Settings size={20} />
               </span>
               <h1 className="text-xl font-bold text-slate-900">مركز التكاملات والربط السحابي</h1>
@@ -807,12 +807,12 @@ export default function IntegrationsCenterPage() {
             {/* Multi-Company Selector */}
             {user?.is_superadmin && user?.companies && user.companies.length > 1 ? (
               <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                <Icons.Building size={16} className="text-[#187A5A]" />
+                <Icons.Building size={16} className="text-[#2563EB]" />
                 <span className="text-xs font-bold text-slate-700 whitespace-nowrap">المنشأة المستهدفة:</span>
                 <select
                   value={selectedCompanyId}
                   onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  className="text-xs font-bold bg-white text-slate-900 border border-slate-200 rounded-lg px-2.5 py-1 focus:ring-[#187A5A] focus:border-[#187A5A]"
+                  className="text-xs font-bold bg-white text-slate-900 border border-slate-200 rounded-lg px-2.5 py-1 focus:ring-[#2563EB] focus:border-[#2563EB]"
                 >
                   {user.companies.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -822,7 +822,7 @@ export default function IntegrationsCenterPage() {
                 </select>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#123D32]/5 text-[#123D32] rounded-xl text-xs font-bold border border-[#123D32]/10">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1D4ED8]/5 text-[#1D4ED8] rounded-xl text-xs font-bold border border-[#1D4ED8]/10">
                 <Icons.Building size={14} />
                 <span>{currentCompany?.name_ar || currentCompany?.name_en || "المنشأة الحالية"}</span>
               </div>
@@ -858,10 +858,10 @@ export default function IntegrationsCenterPage() {
           <button
             onClick={() => setActiveTab("telegram")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "telegram" ? "bg-white text-[#187A5A] shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "telegram" ? "bg-white text-[#2563EB] shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <Icons.Send size={14} className="text-[#187A5A]" />
+            <Icons.Send size={14} className="text-[#2563EB]" />
             <span>إعدادات البوت والاتصال</span>
           </button>
           <button
@@ -961,7 +961,7 @@ export default function IntegrationsCenterPage() {
                       </button>
                       <button
                         onClick={() => openConfigModal(item)}
-                        className="px-3 py-1.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                       >
                         تهيئة
                       </button>
@@ -1053,7 +1053,7 @@ export default function IntegrationsCenterPage() {
           <div className="space-y-6">
             {/* KPI Cards & Worker Status Banner */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2 bg-gradient-to-r from-[#123D32] to-[#187A5A] rounded-2xl p-5 text-white shadow-md flex flex-col justify-between">
+              <div className="md:col-span-2 bg-gradient-to-r from-[#1D4ED8] to-[#2563EB] rounded-2xl p-5 text-white shadow-md flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 backdrop-blur-xs">
@@ -1102,7 +1102,7 @@ export default function IntegrationsCenterPage() {
                 </div>
                 <button
                   onClick={handleDispatchOutbox}
-                  className="text-xs text-[#187A5A] hover:underline font-bold text-right cursor-pointer"
+                  className="text-xs text-[#2563EB] hover:underline font-bold text-right cursor-pointer"
                 >
                   تشغيل المعالج الفوري الآن ←
                 </button>
@@ -1119,7 +1119,7 @@ export default function IntegrationsCenterPage() {
                     type="checkbox"
                     checked={isTgEnabled}
                     onChange={(e) => setIsTgEnabled(e.target.checked)}
-                    className="rounded text-[#187A5A] focus:ring-[#187A5A] h-4 w-4"
+                    className="rounded text-[#2563EB] focus:ring-[#2563EB] h-4 w-4"
                   />
                 </label>
               </h3>
@@ -1135,7 +1135,7 @@ export default function IntegrationsCenterPage() {
                       value={botTokenInput}
                       onChange={(e) => setBotTokenInput(e.target.value)}
                       placeholder={tgStatus?.has_bot_token ? "رمز التوكن محفوظ بأمان (اتركه فارغاً للإبقاء عليه)" : "123456789:ABC..."}
-                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#187A5A] focus:border-[#187A5A]"
+                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
                     />
                     <span className="text-[11px] text-slate-400 mt-1 block">
                       مخزن ومحمي على الخادم ولا يُعرض كنص صريح في المتصفح أبداً (Zero-Plaintext).
@@ -1221,7 +1221,7 @@ export default function IntegrationsCenterPage() {
                         type="checkbox"
                         checked={rulesState[rule.key] !== false}
                         onChange={(e) => setRulesState({ ...rulesState, [rule.key]: e.target.checked })}
-                        className="mt-0.5 rounded text-[#187A5A] focus:ring-[#187A5A]"
+                        className="mt-0.5 rounded text-[#2563EB] focus:ring-[#2563EB]"
                       />
                       <div>
                         <span className="text-xs font-bold text-slate-800 block">{rule.label}</span>
@@ -1245,7 +1245,7 @@ export default function IntegrationsCenterPage() {
                   type="button"
                   onClick={handleSaveTelegramConfig}
                   disabled={savingConfig}
-                  className="px-6 py-2.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  className="px-6 py-2.5 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   {savingConfig ? "جاري الحفظ..." : "حفظ إعدادات تليجرام"}
                 </button>
@@ -1262,7 +1262,7 @@ export default function IntegrationsCenterPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleDispatchOutbox}
-                    className="px-3 py-1.5 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold cursor-pointer"
+                    className="px-3 py-1.5 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg text-xs font-bold cursor-pointer"
                   >
                     معالجة الصندوق الآن
                   </button>
@@ -1351,7 +1351,7 @@ export default function IntegrationsCenterPage() {
                       value={empSearch}
                       onChange={(e) => setEmpSearch(e.target.value)}
                       placeholder="بحث بالاسم، القسم، الرقم..."
-                      className="pr-8 pl-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#187A5A] focus:border-[#187A5A]"
+                      className="pr-8 pl-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
                     />
                   </div>
                   <button
@@ -1390,7 +1390,7 @@ export default function IntegrationsCenterPage() {
                         <tr key={emp.employee_id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-3.5 font-bold text-slate-900">
                             <div className="flex items-center gap-2">
-                              <span className="w-8 h-8 rounded-full bg-[#123D32]/10 text-[#123D32] font-bold flex items-center justify-center text-xs">
+                              <span className="w-8 h-8 rounded-full bg-[#1D4ED8]/10 text-[#1D4ED8] font-bold flex items-center justify-center text-xs">
                                 {emp.full_name?.charAt(0) || "م"}
                               </span>
                               <div>
@@ -1436,7 +1436,7 @@ export default function IntegrationsCenterPage() {
                               {!emp.is_linked ? (
                                 <button
                                   onClick={() => setLinkModalEmployee({ id: emp.employee_id, name: emp.full_name })}
-                                  className="px-3 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                                  className="px-3 py-1 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
                                 >
                                   ربط Telegram
                                 </button>
@@ -1449,7 +1449,7 @@ export default function IntegrationsCenterPage() {
                                       setDirectMsgFeedback(null);
                                     }}
                                     title="إرسال رسالة مباشرة للموظف عبر Telegram دون إنشاء مهمة"
-                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#187A5A] rounded-lg text-xs font-bold cursor-pointer"
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#2563EB] rounded-lg text-xs font-bold cursor-pointer"
                                   >
                                     <Icons.MessageSquare size={12} />
                                   </button>
@@ -1463,7 +1463,7 @@ export default function IntegrationsCenterPage() {
                                   <button
                                     onClick={() => setLinkModalEmployee({ id: emp.employee_id, name: emp.full_name })}
                                     title="إدارة وصلاحيات Telegram وسجل الأنشطة"
-                                    className="px-2.5 py-1 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-lg text-xs font-bold cursor-pointer shadow-xs"
+                                    className="px-2.5 py-1 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-lg text-xs font-bold cursor-pointer shadow-xs"
                                   >
                                     إدارة الصلاحيات
                                   </button>
@@ -1509,7 +1509,7 @@ export default function IntegrationsCenterPage() {
                 </button>
                 <button
                   onClick={handleOpenAddMenuModal}
-                  className="px-4 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Icons.Plus size={14} />
                   <span>إضافة زر جديد</span>
@@ -1606,7 +1606,7 @@ export default function IntegrationsCenterPage() {
                                 await api.put(`/telegram/menu/${item.id}${getCompanyQuery()}`, { is_enabled: e.target.checked });
                                 fetchMenuData();
                               }}
-                              className="rounded text-[#187A5A] focus:ring-[#187A5A] h-4 w-4"
+                              className="rounded text-[#2563EB] focus:ring-[#2563EB] h-4 w-4"
                             />
                           </label>
                           <button
@@ -1648,7 +1648,7 @@ export default function IntegrationsCenterPage() {
                     {/* Telegram Header */}
                     <div className="bg-[#17212b] p-3 border-b border-slate-800/80 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#187A5A] text-white font-bold flex items-center justify-center text-xs">
+                        <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white font-bold flex items-center justify-center text-xs">
                           IG
                         </div>
                         <div>
@@ -1723,7 +1723,7 @@ export default function IntegrationsCenterPage() {
                     onClick={() => handleSelectTemplate(tmpl)}
                     className={`w-full text-right p-3 rounded-xl transition-all cursor-pointer flex flex-col gap-1 ${
                       selectedTemplateKey === tmpl.template_key
-                        ? "bg-[#123D32] text-white font-bold shadow-xs"
+                        ? "bg-[#1D4ED8] text-white font-bold shadow-xs"
                         : "bg-slate-50 hover:bg-slate-100 text-slate-800"
                     }`}
                   >
@@ -1771,7 +1771,7 @@ export default function IntegrationsCenterPage() {
                           key={v}
                           type="button"
                           onClick={() => handleInsertPlaceholder(v)}
-                          className="px-2 py-0.5 bg-slate-100 hover:bg-[#123D32] hover:text-white text-slate-700 rounded-lg text-[11px] font-mono transition-colors cursor-pointer"
+                          className="px-2 py-0.5 bg-slate-100 hover:bg-[#1D4ED8] hover:text-white text-slate-700 rounded-lg text-[11px] font-mono transition-colors cursor-pointer"
                         >
                           +{`{${v}}`}
                         </button>
@@ -1788,7 +1788,7 @@ export default function IntegrationsCenterPage() {
                         setTemplateEditContent(e.target.value);
                         updatePreview(selectedTemplateKey, e.target.value);
                       }}
-                      className="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#187A5A] focus:border-[#187A5A] text-right"
+                      className="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB] text-right"
                     />
                     <span className="text-[11px] text-slate-400 mt-1 block">
                       يدعم التنسيق الغني: &lt;b&gt;نص غامق&lt;/b&gt; و &lt;i&gt;مائل&lt;/i&gt; والرموز التعبيرية.
@@ -1818,7 +1818,7 @@ export default function IntegrationsCenterPage() {
                       type="button"
                       onClick={handleSaveTemplate}
                       disabled={savingTemplate}
-                      className="px-6 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      className="px-6 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
                     >
                       {savingTemplate ? "جاري الحفظ..." : "حفظ التعديلات"}
                     </button>
@@ -1943,7 +1943,7 @@ export default function IntegrationsCenterPage() {
                   type="button"
                   onClick={handleSaveMenuItem}
                   disabled={savingMenuItem}
-                  className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold"
+                  className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold"
                 >
                   {savingMenuItem ? "جاري الحفظ..." : "حفظ الزر"}
                 </button>
@@ -2049,7 +2049,7 @@ export default function IntegrationsCenterPage() {
                 <button
                   type="submit"
                   disabled={simulating}
-                  className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold"
+                  className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold"
                 >
                   {simulating ? "جاري المحاكاة..." : "تنفيذ الإجراء"}
                 </button>
@@ -2067,7 +2067,7 @@ export default function IntegrationsCenterPage() {
           >
             <form onSubmit={handleSendDirectMessage} className="space-y-4">
               <div className="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
-                <Icons.CheckCircle size={16} className="text-[#187A5A] shrink-0" />
+                <Icons.CheckCircle size={16} className="text-[#2563EB] shrink-0" />
                 <span>
                   هذه الرسالة تُرسل فوراً عبر بوت Telegram للموظف دون إنشاء مهمة عمل ودون التأثير على إحصائيات المهام الفنية.
                 </span>
@@ -2080,7 +2080,7 @@ export default function IntegrationsCenterPage() {
                   onChange={(e) => setDirectMsgText(e.target.value)}
                   placeholder="اكتب التوجيه أو الرسالة الإدارية هنا..."
                   rows={4}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#187A5A] outline-none"
+                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none"
                   required
                 />
               </div>
@@ -2106,7 +2106,7 @@ export default function IntegrationsCenterPage() {
                 <button
                   type="submit"
                   disabled={sendingDirectMsg || !directMsgText.trim()}
-                  className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs"
+                  className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs"
                 >
                   {sendingDirectMsg ? "جاري الإرسال..." : "إرسال الرسالة الآن"}
                 </button>
@@ -2159,7 +2159,7 @@ export default function IntegrationsCenterPage() {
                   type="button"
                   onClick={() => handleSaveConfig(activeModal)}
                   disabled={savingConfig}
-                  className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold"
+                  className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold"
                 >
                   {savingConfig ? "جاري الحفظ..." : "حفظ الإعدادات"}
                 </button>

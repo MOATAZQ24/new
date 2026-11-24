@@ -288,7 +288,7 @@ export default function HelpLearningCenterPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0 mt-0.5">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -308,16 +308,16 @@ export default function HelpLearningCenterPage() {
                 setTourStep(0);
                 setTourOpen(true);
               }}
-              className="h-10 px-4 rounded-xl bg-[#187A5A] text-white text-xs font-bold inline-flex items-center gap-2 shadow-xs cursor-pointer"
+              className="h-10 px-4 rounded-xl bg-[#2563EB] text-white text-xs font-bold inline-flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <Compass className="w-4 h-4" />
               <span>بدء الجولة الإرشادية</span>
             </button>
             <Link
               href="/about"
-              className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#187A5A]"
+              className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#2563EB]"
             >
-              <Info className="w-4 h-4 text-[#187A5A]" />
+              <Info className="w-4 h-4 text-[#2563EB]" />
               <span>حول النظام والمطور</span>
             </Link>
           </div>
@@ -328,10 +328,10 @@ export default function HelpLearningCenterPage() {
           <section
             role="dialog"
             aria-label="الجولة الإرشادية التفاعلية"
-            className="rounded-2xl bg-white border-2 border-[#187A5A] p-5 shadow-md space-y-4"
+            className="rounded-2xl bg-white border-2 border-[#2563EB] p-5 shadow-md space-y-4"
           >
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#187A5A]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB]">
                 <Compass className="w-4 h-4" />
                 <span>
                   الخطوة {tourStep + 1} من {TOUR_STEPS.length}
@@ -364,7 +364,7 @@ export default function HelpLearningCenterPage() {
                 <button
                   type="button"
                   onClick={() => setTourStep((s) => s + 1)}
-                  className="h-9 px-4 rounded-lg bg-[#187A5A] text-white text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+                  className="h-9 px-4 rounded-lg bg-[#2563EB] text-white text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
                 >
                   <span>التالي</span>
                   <ChevronLeft className="w-4 h-4" />
@@ -373,7 +373,7 @@ export default function HelpLearningCenterPage() {
                 <button
                   type="button"
                   onClick={finishTour}
-                  className="h-9 px-4 rounded-lg bg-[#187A5A] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                  className="h-9 px-4 rounded-lg bg-[#2563EB] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>إنهاء الجولة</span>
@@ -393,7 +393,7 @@ export default function HelpLearningCenterPage() {
               onChange={(e) => setQuery(e.target.value)}
               aria-label="ابحث في الأدلة التعليمية والأسئلة الشائعة"
               placeholder="ابحث عن وحدة، إجراء، أو مصطلح (مثال: Custody, QR, Telegram, Backup)..."
-              className="w-full h-10 ps-9 pe-3 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full h-10 ps-9 pe-3 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
           <button
@@ -402,7 +402,7 @@ export default function HelpLearningCenterPage() {
             onClick={() => setOnlyMyRole((v) => !v)}
             className={`h-10 px-3.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer ${
               onlyMyRole
-                ? "border-[#187A5A] bg-emerald-50 text-[#123D32]"
+                ? "border-[#2563EB] bg-emerald-50 text-[#1D4ED8]"
                 : "border-slate-200 bg-slate-50 text-slate-700"
             }`}
           >
@@ -421,7 +421,7 @@ export default function HelpLearningCenterPage() {
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-50 text-[#123D32] text-[10px] font-bold mb-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] text-[10px] font-bold mb-1.5">
                       {tut.category}
                     </span>
                     <h2 className="text-sm font-bold text-slate-900">{tut.titleAr}</h2>
@@ -431,7 +431,7 @@ export default function HelpLearningCenterPage() {
                   </div>
                   <Link
                     href={tut.route}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-[#187A5A] hover:border-[#187A5A] shrink-0"
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-[#2563EB] hover:border-[#2563EB] shrink-0"
                   >
                     فتح الشاشة ←
                   </Link>
@@ -455,7 +455,7 @@ export default function HelpLearningCenterPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <HelpCircle className="w-4 h-4 text-[#187A5A]" />
+              <HelpCircle className="w-4 h-4 text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">الأسئلة الشائعة (FAQs)</h2>
             </div>
             <div className="space-y-2.5">
@@ -470,7 +470,7 @@ export default function HelpLearningCenterPage() {
 
           <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Wrench className="w-4 h-4 text-[#187A5A]" />
+              <Wrench className="w-4 h-4 text-[#2563EB]" />
               <h2 className="text-sm font-bold text-slate-900">استكشاف الأعطال وإصلاحها (Troubleshooting)</h2>
             </div>
             <div className="space-y-2.5">

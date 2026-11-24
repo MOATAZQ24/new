@@ -258,7 +258,7 @@ export default function ReportsPage() {
         {/* Header matching Images 11 & 12 */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0 mt-0.5">
               <Icons.Reports size={20} />
             </div>
             <div>
@@ -291,7 +291,7 @@ export default function ReportsPage() {
                   setImportResult(null);
                   setImportFileContent("");
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <PlusIcon className="w-4 h-4" />
                 <span>استيراد بيانات (Excel / CSV)</span>
@@ -387,7 +387,7 @@ export default function ReportsPage() {
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#187A5A] flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
                   <LaptopIcon className="w-6 h-6" />
                 </div>
                 <div>
@@ -399,7 +399,7 @@ export default function ReportsPage() {
               </div>
 
               <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#123D32]/10 text-[#123D32] flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
                   <LifeBuoyIcon className="w-6 h-6" />
                 </div>
                 <div>
@@ -459,7 +459,7 @@ export default function ReportsPage() {
 
               <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <Icons.FileText size={17} className="text-[#123D32]" />
+                  <Icons.FileText size={17} className="text-[#1D4ED8]" />
                   <h2 className="text-sm font-bold text-slate-900">تقارير جاهزة</h2>
                 </div>
                 <div className="space-y-2">
@@ -497,7 +497,7 @@ export default function ReportsPage() {
             <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <Icons.Sparkles size={17} className="text-[#C5A46D]" />
+                  <Icons.Sparkles size={17} className="text-[#3B82F6]" />
                   <h2 className="text-sm font-bold text-slate-900">إجراءات سريعة</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 flex-1">
@@ -507,23 +507,23 @@ export default function ReportsPage() {
                       const el = document.getElementById("reports-catalog");
                       el?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <PlusIcon className="w-4 h-4 text-[#187A5A]" />
+                    <PlusIcon className="w-4 h-4 text-[#2563EB]" />
                     <span>إنشاء تقرير مخصص</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "excel")}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <DownloadIcon className="w-4 h-4 text-[#123D32]" />
+                    <DownloadIcon className="w-4 h-4 text-[#1D4ED8]" />
                     <span>تصدير تقرير</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "html")}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
                     <PrinterIcon className="w-4 h-4 text-[#8A6D3B]" />
                     <span>طباعة التقرير</span>
@@ -535,9 +535,9 @@ export default function ReportsPage() {
                       setImportResult(null);
                       setImportFileContent("");
                     }}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#187A5A]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
                   >
-                    <Icons.FileText size={15} className="text-[#187A5A]" />
+                    <Icons.FileText size={15} className="text-[#2563EB]" />
                     <span>استيراد Excel</span>
                   </button>
                 </div>
@@ -545,7 +545,7 @@ export default function ReportsPage() {
 
               <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <Icons.Building size={17} className="text-[#123D32]" />
+                  <Icons.Building size={17} className="text-[#1D4ED8]" />
                   <h2 className="text-sm font-bold text-slate-900">ملخص حسب الشركة</h2>
                 </div>
                 {overview.company_breakdown.length === 0 ? (
@@ -578,7 +578,7 @@ export default function ReportsPage() {
 
               <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <Icons.Clock size={17} className="text-[#123D32]" />
+                  <Icons.Clock size={17} className="text-[#1D4ED8]" />
                   <h2 className="text-sm font-bold text-slate-900">أحدث التقارير</h2>
                 </div>
                 <div className="space-y-2">
@@ -623,7 +623,7 @@ export default function ReportsPage() {
               >
                 <div>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2.5 rounded-xl bg-[#187A5A]/10 text-[#187A5A]">
+                    <div className="p-2.5 rounded-xl bg-[#2563EB]/10 text-[#2563EB]">
                       <Icon className="w-6 h-6" />
                     </div>
                     <div>
@@ -677,7 +677,7 @@ export default function ReportsPage() {
               <select
                 value={importModule}
                 onChange={(e) => setImportModule(e.target.value as "assets" | "employees" | "infrastructure")}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="assets">الأصول التقنية (Technical Assets)</option>
                 <option value="employees">الموظفون والتقنيون (Employees)</option>
@@ -693,7 +693,7 @@ export default function ReportsPage() {
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleFileUpload}
-                className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#123D32] file:text-white hover:file:bg-[#187A5A] cursor-pointer"
+                className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1D4ED8] file:text-white hover:file:bg-[#2563EB] cursor-pointer"
               />
             </div>
           </div>
@@ -720,7 +720,7 @@ export default function ReportsPage() {
                   ? "الرقم الوظيفي,اسم الموظف,المسمى الوظيفي,البريد الإلكتروني,الهاتف\nEMP-101,أحمد المنصور,فني شبكات,ahmad@company.sa,0501112222"
                   : "اسم الجهاز,نوع الجهاز,الشركة المصنعة,الموديل,IP الإدارة,الموقع\nCore-SW-01,Switch,Cisco,Catalyst 9300,10.0.0.1,غرفة الخوادم الرئيسية"
               }
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A] font-mono text-left"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono text-left"
               dir="ltr"
             />
           </div>
@@ -774,7 +774,7 @@ export default function ReportsPage() {
                 type="button"
                 onClick={() => handleExecuteImport(false)}
                 disabled={importLoading || !importFileContent.trim()}
-                className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {importLoading ? "جاري الاستيراد..." : "تنفيذ الاستيراد الفعلي"}
               </button>

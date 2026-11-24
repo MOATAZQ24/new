@@ -32,8 +32,8 @@ export const DEFAULT_BRAND: BrandConfig = {
   shortCode: "IGOS",
   supportEmail: "support@investorgate.sa",
   primaryColor: "#078363",
-  secondaryColor: "#123D32",
-  accentColor: "#C5A46D",
+  secondaryColor: "#1D4ED8",
+  accentColor: "#3B82F6",
 };
 
 export function getActiveBrand(customOverrides?: Partial<BrandConfig>): BrandConfig {

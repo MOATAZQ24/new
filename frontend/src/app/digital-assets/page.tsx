@@ -677,7 +677,7 @@ export default function DigitalAssetsPage() {
             title="إجمالي الأصول الرقمية"
             value={stats.total}
             icon={<Icons.Lock size={18} />}
-            accentColor="border-[#123D32]"
+            accentColor="border-[#1D4ED8]"
           />
           <StatsCard
             title="الأصول النشطة"
@@ -689,7 +689,7 @@ export default function DigitalAssetsPage() {
             title="نسبة تفعيل 2FA"
             value={`${stats.twoFactorRate}%`}
             icon={<Icons.ShieldCheck size={18} />}
-            accentColor="border-[#C5A46D]"
+            accentColor="border-[#3B82F6]"
           />
           <StatsCard
             title="أسرار الخزنة المشفرة"

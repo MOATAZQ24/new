@@ -131,7 +131,7 @@ export default function SystemSettingsPage() {
           </p>
           <Link
             href="/settings"
-            className="inline-block mt-4 px-4 py-2 bg-[#123D32] text-white text-xs font-bold rounded-lg"
+            className="inline-block mt-4 px-4 py-2 bg-[#1D4ED8] text-white text-xs font-bold rounded-lg"
           >
             العودة إلى الإعدادات العامة
           </Link>
@@ -166,7 +166,7 @@ export default function SystemSettingsPage() {
           </Link>
           <Link
             href="/settings/system"
-            className="px-4 py-2 text-xs font-bold text-white bg-[#123D32] rounded-lg shadow-sm"
+            className="px-4 py-2 text-xs font-bold text-white bg-[#1D4ED8] rounded-lg shadow-sm"
           >
             صيانة النظام والنسخ الاحتياطي
           </Link>
@@ -192,7 +192,7 @@ export default function SystemSettingsPage() {
             <button
               onClick={handleCreateBackup}
               disabled={backupLoading}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#187A5A] hover:bg-[#123D32] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{backupLoading ? "جاري إنشاء النسخة والتحقق..." : "إنشاء نسخة احتياطية فورية"}</span>
@@ -250,7 +250,7 @@ export default function SystemSettingsPage() {
             {/* Database Engine Card */}
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <Database className="w-4 h-4 text-[#187A5A]" /> محرك قاعدة البيانات وسجلات الجداول
+                <Database className="w-4 h-4 text-[#2563EB]" /> محرك قاعدة البيانات وسجلات الجداول
               </h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -300,7 +300,7 @@ export default function SystemSettingsPage() {
             {/* Storage & Environment Card */}
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-[#187A5A]" /> مساحة القرص والبيئة التشغيلية
+                <HardDrive className="w-4 h-4 text-[#2563EB]" /> مساحة القرص والبيئة التشغيلية
               </h3>
               
               {health.storage.used_percent !== undefined && (
@@ -311,7 +311,7 @@ export default function SystemSettingsPage() {
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                     <div 
-                      className="bg-[#187A5A] h-2.5 rounded-full transition-all" 
+                      className="bg-[#2563EB] h-2.5 rounded-full transition-all" 
                       style={{ width: `${health.storage.used_percent}%` }}
                     />
                   </div>
@@ -340,7 +340,7 @@ export default function SystemSettingsPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden space-y-3 p-5">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <Save className="w-4 h-4 text-[#187A5A]" /> النسخ الاحتياطية المتوفرة للتعافي ({backups.length})
+              <Save className="w-4 h-4 text-[#2563EB]" /> النسخ الاحتياطية المتوفرة للتعافي ({backups.length})
             </h3>
             <span className="text-xs text-gray-500">مخزنة في دليل النسخ المؤمّن على الخادم</span>
           </div>
@@ -364,7 +364,7 @@ export default function SystemSettingsPage() {
                   </div>
                   <button
                     onClick={() => handleDownloadBackup(b.filename)}
-                    className="px-3 py-1.5 text-xs font-semibold text-[#187A5A] hover:bg-[#187A5A]/10 border border-[#187A5A]/30 rounded-lg transition-colors whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-semibold text-[#2563EB] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-lg transition-colors whitespace-nowrap"
                   >
                     تنزيل النسخة
                   </button>
@@ -377,7 +377,7 @@ export default function SystemSettingsPage() {
         {/* Operational Diagnostics & Audit Logs */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-5 space-y-3">
           <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <ScrollText className="w-4 h-4 text-[#187A5A]" /> سجل العمليات التشغيلية والأمان الحديثة
+            <ScrollText className="w-4 h-4 text-[#2563EB]" /> سجل العمليات التشغيلية والأمان الحديثة
           </h3>
 
           <div className="overflow-x-auto max-h-72 overflow-y-auto">

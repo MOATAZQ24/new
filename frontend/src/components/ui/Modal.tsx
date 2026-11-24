@@ -28,13 +28,14 @@ export function Modal({ isOpen, onClose, title, description, children, footer, m
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45 data-[state=open]:opacity-100 transition-opacity duration-[var(--dur-mid)]" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] data-[state=open]:opacity-100 transition-opacity duration-[var(--dur-mid)]" />
         <DialogPrimitive.Content
           aria-describedby={description ? undefined : undefined}
           className={cn(
             "fixed z-50 start-1/2 top-1/2 -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2",
             "w-[calc(100vw-2rem)] overflow-hidden rounded-[var(--radius-14)] border border-[var(--border)]",
             "bg-[var(--surface)] text-[var(--text)] shadow-[var(--shadow-e3)] max-h-[88vh] flex flex-col outline-none",
+            "ig-scale-in transition-all duration-[var(--dur-fast)]",
             maxWidth
           )}
         >

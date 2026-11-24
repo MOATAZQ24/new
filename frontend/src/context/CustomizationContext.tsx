@@ -113,16 +113,16 @@ interface CustomizationContextType {
 }
 
 const DEFAULT_COLORS: ColorPalette = {
-  primary: "#0E5A63",
-  secondary: "#083C43",
-  background: "#FAF9F6",
+  primary: "#2563EB",
+  secondary: "#1D4ED8",
+  background: "#F8FAFC",
   surface: "#FFFFFF",
-  accent: "#B68F4A",
+  accent: "#3B82F6",
 };
 
 const DEFAULT_TYPOGRAPHY: TypographySettings = {
   arabicFont: "IBM Plex Sans Arabic",
-  englishFont: "IBM Plex Sans",
+  englishFont: "Inter",
   fontSize: "medium",
   fontWeight: "normal",
 };
@@ -141,7 +141,7 @@ const CustomizationContext = createContext<CustomizationContextType | undefined>
 
 export function LegacyCustomizationProvider({ children }: { children: React.ReactNode }) {
   const { user, activeCompanyId } = useAuth();
-  const [theme, setThemeState] = useState<"light" | "dark" | "system">("system");
+  const [theme, setThemeState] = useState<"light" | "dark" | "system">("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [colors, setColors] = useState<ColorPalette>(DEFAULT_COLORS);
   const [typography, setTypography] = useState<TypographySettings>(DEFAULT_TYPOGRAPHY);
@@ -176,48 +176,48 @@ export function LegacyCustomizationProvider({ children }: { children: React.Reac
     if (resolvedTheme === "dark") {
       root.classList.add("dark");
       root.setAttribute("data-theme", "dark");
-      root.style.setProperty("--bg-main", "#0B0E17");
-      root.style.setProperty("--background", "#0B0E17");
-      root.style.setProperty("--surface", "#131A29");
-      root.style.setProperty("--card", "#131A29");
-      root.style.setProperty("--text-main", "#F1F5F9");
-      root.style.setProperty("--foreground", "#F1F5F9");
+      root.style.setProperty("--bg-main", "#0B0F17");
+      root.style.setProperty("--background", "#0B0F17");
+      root.style.setProperty("--surface", "#111827");
+      root.style.setProperty("--card", "#111827");
+      root.style.setProperty("--text-main", "#F8FAFC");
+      root.style.setProperty("--foreground", "#F8FAFC");
       root.style.setProperty("--text-muted", "#94A3B8");
       root.style.setProperty("--muted-foreground", "#94A3B8");
-      root.style.setProperty("--border-color", "#232E42");
-      root.style.setProperty("--border", "#232E42");
-      root.style.setProperty("--primary", "#8B5CF6");
+      root.style.setProperty("--border-color", "#1F2937");
+      root.style.setProperty("--border", "#1F2937");
+      root.style.setProperty("--primary", "#3B82F6");
       root.style.setProperty("--primary-foreground", "#FFFFFF");
-      root.style.setProperty("--secondary", "#6D28D9");
-      root.style.setProperty("--accent", "#A78BFA");
-      root.style.setProperty("--sidebar-background", "#090B14");
-      root.style.setProperty("--sidebar-active", "#7C3AED");
-      root.style.setProperty("--ring", "#8B5CF6");
+      root.style.setProperty("--secondary", "#2563EB");
+      root.style.setProperty("--accent", "#60A5FA");
+      root.style.setProperty("--sidebar-background", "#111827");
+      root.style.setProperty("--sidebar-active", "#3B82F6");
+      root.style.setProperty("--ring", "#3B82F6");
     } else {
       root.classList.remove("dark");
       root.setAttribute("data-theme", "light");
-      root.style.setProperty("--bg-main", colors.background || "#F7F8FC");
-      root.style.setProperty("--background", colors.background || "#F7F8FC");
+      root.style.setProperty("--bg-main", colors.background || "#F8FAFC");
+      root.style.setProperty("--background", colors.background || "#F8FAFC");
       root.style.setProperty("--surface", colors.surface || "#FFFFFF");
       root.style.setProperty("--card", colors.surface || "#FFFFFF");
-      root.style.setProperty("--text-main", "#131127");
-      root.style.setProperty("--foreground", "#131127");
-      root.style.setProperty("--text-muted", "#64748B");
-      root.style.setProperty("--muted-foreground", "#64748B");
-      root.style.setProperty("--border-color", "#E5E7EB");
-      root.style.setProperty("--border", "#E5E7EB");
-      root.style.setProperty("--primary", colors.secondary || "#7C3AED");
+      root.style.setProperty("--text-main", "#0F172A");
+      root.style.setProperty("--foreground", "#0F172A");
+      root.style.setProperty("--text-muted", "#475569");
+      root.style.setProperty("--muted-foreground", "#475569");
+      root.style.setProperty("--border-color", "#E2E8F0");
+      root.style.setProperty("--border", "#E2E8F0");
+      root.style.setProperty("--primary", colors.primary || "#2563EB");
       root.style.setProperty("--primary-foreground", "#FFFFFF");
-      root.style.setProperty("--secondary", colors.primary || "#131127");
-      root.style.setProperty("--accent", colors.accent || "#8B5CF6");
-      root.style.setProperty("--sidebar-background", colors.primary || "#131127");
-      root.style.setProperty("--sidebar-active", colors.secondary || "#7C3AED");
-      root.style.setProperty("--ring", colors.secondary || "#7C3AED");
+      root.style.setProperty("--secondary", colors.secondary || "#1D4ED8");
+      root.style.setProperty("--accent", colors.accent || "#3B82F6");
+      root.style.setProperty("--sidebar-background", "#FFFFFF");
+      root.style.setProperty("--sidebar-active", "#2563EB");
+      root.style.setProperty("--ring", "#2563EB");
     }
 
-    root.style.setProperty("--primary-dark", colors.primary);
-    root.style.setProperty("--primary-green", colors.secondary);
-    root.style.setProperty("--gold-accent", colors.accent);
+    root.style.setProperty("--primary-dark", colors.primary || "#2563EB");
+    root.style.setProperty("--primary-green", colors.secondary || "#1D4ED8");
+    root.style.setProperty("--gold-accent", colors.accent || "#3B82F6");
 
     const fontScale = typography.fontSize === "small" ? "0.92" : typography.fontSize === "large" ? "1.08" : "1";
     root.style.setProperty("--font-scale", fontScale);

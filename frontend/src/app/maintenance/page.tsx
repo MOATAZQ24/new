@@ -161,7 +161,7 @@ export default function MaintenancePage() {
         <button
           type="button"
           onClick={openAddModal}
-          className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="motion-control flex items-center gap-1.5 px-3.5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Icons.Plus size={16} />
           <span>طلب صيانة / تغيير جديد</span>
@@ -178,7 +178,7 @@ export default function MaintenancePage() {
               onClick={() => setActionFilter(act)}
               className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 actionFilter === act
-                  ? "bg-[#187A5A] text-white shadow-xs"
+                  ? "bg-[#2563EB] text-white shadow-xs"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -262,7 +262,7 @@ export default function MaintenancePage() {
                         setSelectedRecord(r);
                         setShowDetailModal(true);
                       }}
-                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#187A5A] text-slate-700 hover:text-[#187A5A] font-semibold text-[11px] cursor-pointer"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                     >
                       عرض وتقييم المخاطر
                     </button>
@@ -291,7 +291,7 @@ export default function MaintenancePage() {
               <select
                 value={actionType}
                 onChange={(e) => setActionType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Configuration Change">تعديل إعدادات (Configuration Change)</option>
                 <option value="Maintenance">صيانة وإصلاح (Maintenance)</option>
@@ -309,7 +309,7 @@ export default function MaintenancePage() {
                   setTargetType(e.target.value);
                   setTargetId("");
                 }}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="infrastructure">جهاز بنية تحتية (خادم، راوتر، جدار حماية)</option>
                 <option value="asset">أصل تقني (لابتوب، طابعة، شاشة)</option>
@@ -325,7 +325,7 @@ export default function MaintenancePage() {
               required
               value={targetId}
               onChange={(e) => setTargetId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- اختر من القائمة --</option>
               {targetType === "infrastructure"
@@ -352,7 +352,7 @@ export default function MaintenancePage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="مثال: تعديل قواعد Firewall لعزل خوادم الدفع"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -365,7 +365,7 @@ export default function MaintenancePage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="شرح خطوات التغيير والإعدادات المعدلة..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#187A5A]"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -441,7 +441,7 @@ export default function MaintenancePage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#123D32] hover:bg-[#187A5A] text-white rounded-xl text-xs font-bold shadow-xs"
+              className="px-5 py-2 bg-[#1D4ED8] hover:bg-[#2563EB] text-white rounded-xl text-xs font-bold shadow-xs"
             >
               تقديم الطلب
             </button>

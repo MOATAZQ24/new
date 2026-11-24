@@ -836,9 +836,9 @@ export default function TasksPage() {
                 setOverdueOnly(false);
                 setFilterMode("all");
               }}
-              className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/60 dark:border-emerald-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
+              className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/60 dark:border-blue-900/40 rounded-2xl p-3 text-center space-y-1 shadow-2xs active:scale-95 transition cursor-pointer"
             >
-              <div className="flex items-center justify-center text-emerald-500 mb-0.5">
+              <div className="flex items-center justify-center text-blue-500 mb-0.5">
                 <CheckCircle2 size={18} strokeWidth={2.4} />
               </div>
               <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
@@ -1081,7 +1081,7 @@ export default function TasksPage() {
                   onClick={() => setFilterMode("all")}
                   className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
                     filterMode === "all"
-                      ? "bg-[#187A5A] text-white border-[#187A5A]"
+                      ? "bg-[#2563EB] text-white border-[#2563EB]"
                       : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -1092,7 +1092,7 @@ export default function TasksPage() {
                   onClick={() => setFilterMode("my")}
                   className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
                     filterMode === "my"
-                      ? "bg-[#187A5A] text-white border-[#187A5A]"
+                      ? "bg-[#2563EB] text-white border-[#2563EB]"
                       : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -1108,7 +1108,7 @@ export default function TasksPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
               >
                 <option value="">جميع الحالات والمراحل</option>
                 <optgroup label="مراحل دورة العمل الموحدة">
@@ -1145,7 +1145,7 @@ export default function TasksPage() {
                 <select
                   value={filterAssigneeId}
                   onChange={(e) => setFilterAssigneeId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
                 >
                   <option value="">جميع الموظفين</option>
                   {filterEmployees.map((emp) => (
@@ -1162,7 +1162,7 @@ export default function TasksPage() {
               <select
                 value={priorityFilter}
                 onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
               >
                 <option value="">جميع الأولويات</option>
                 <option value="Critical">حرج جداً (Critical)</option>
@@ -1180,7 +1180,7 @@ export default function TasksPage() {
               <select
                 value={sortBy}
                 onChange={(e) => { setSortBy(e.target.value as "created_desc" | "due_asc" | "updated_desc"); setPage(1); }}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#187A5A] text-slate-800 dark:text-slate-100"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
               >
                 <option value="created_desc">الأحدث أولاً</option>
                 <option value="due_asc">الأقرب موعداً</option>
@@ -1623,13 +1623,13 @@ export default function TasksPage() {
 
         {/* Toast Feedback */}
         {toastMessage && (
-          <div className="motion-toast p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-sm font-bold flex items-center justify-between shadow-xs">
+          <div className="motion-toast p-4 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-sm font-bold flex items-center justify-between shadow-xs">
             <span>{toastMessage}</span>
             <button
               type="button"
               onClick={() => setToastMessage(null)}
               aria-label="إغلاق الرسالة"
-              className="text-emerald-700 hover:text-emerald-950 text-xs p-1 rounded hover:bg-emerald-100 cursor-pointer"
+              className="text-blue-700 hover:text-blue-950 text-xs p-1 rounded hover:bg-blue-100 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1653,7 +1653,7 @@ export default function TasksPage() {
                 <button
                   type="button"
                   onClick={() => void loadTasks()}
-                  className="motion-control inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-xl shadow-xs transition cursor-pointer"
+                  className="motion-control inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-xl shadow-xs transition cursor-pointer"
                 >
                   <Clock className="w-4 h-4 text-slate-500 inline" />
                   <span>إعادة المحاولة الآن</span>
@@ -1763,7 +1763,7 @@ export default function TasksPage() {
                 onClick={() => setCreateMode("text")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "text"
-                    ? "border-[#187A5A] text-[#123D32]"
+                    ? "border-[#2563EB] text-[#1D4ED8]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -1775,7 +1775,7 @@ export default function TasksPage() {
                 onClick={() => setCreateMode("voice")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "voice"
-                    ? "border-[#187A5A] text-[#123D32]"
+                    ? "border-[#2563EB] text-[#1D4ED8]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -1787,7 +1787,7 @@ export default function TasksPage() {
                 onClick={() => setCreateMode("broadcast")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "broadcast"
-                    ? "border-[#187A5A] text-[#123D32]"
+                    ? "border-[#2563EB] text-[#1D4ED8]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -1815,7 +1815,7 @@ export default function TasksPage() {
                     onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "individual" })}
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "individual"
-                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
                         : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                     }`}
                   >
@@ -1827,7 +1827,7 @@ export default function TasksPage() {
                     onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "shared" })}
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "shared"
-                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
                         : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                     }`}
                   >
@@ -1839,7 +1839,7 @@ export default function TasksPage() {
                     onClick={() => setBroadcastData({ ...broadcastData, broadcast_mode: "announcement" })}
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "announcement"
-                        ? "border-[#187A5A] bg-[#187A5A]/5 text-[#123D32] ring-1 ring-[#187A5A]"
+                        ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
                         : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                     }`}
                   >
@@ -1860,7 +1860,7 @@ export default function TasksPage() {
                   onChange={(e) => setBroadcastData({ ...broadcastData, title: e.target.value })}
                   placeholder={broadcastData.broadcast_mode === "announcement" ? "مثال: تعميم بخصوص تحديث سياسات الأمن السيبراني" : "مثال: فحص وتحديث أجهزة قسم العمليات"}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
 
@@ -1871,7 +1871,7 @@ export default function TasksPage() {
                   onChange={(e) => setBroadcastData({ ...broadcastData, description: e.target.value })}
                   rows={3}
                   placeholder="اكتب التوجيهات الفنية أو تفاصيل الإسناد هنا..."
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
 
@@ -1927,7 +1927,7 @@ export default function TasksPage() {
                   <select
                     value={broadcastData.accountable_id || broadcastData.recipients[0]?.id}
                     onChange={(e) => setBroadcastData({ ...broadcastData, accountable_id: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     {broadcastData.recipients.map((r) => (
                       <option key={r.id} value={r.id}>
@@ -1953,7 +1953,7 @@ export default function TasksPage() {
                         target_duration_minutes: durMap[p] || 4320,
                       });
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     <option value="Critical">طارئ (مستهدف: ساعة واحدة)</option>
                     <option value="Urgent">عاجل (مستهدف: 4 ساعات)</option>
@@ -1969,7 +1969,7 @@ export default function TasksPage() {
                     type="number"
                     value={broadcastData.target_duration_minutes}
                     onChange={(e) => setBroadcastData({ ...broadcastData, target_duration_minutes: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
               </div>
@@ -1980,7 +1980,7 @@ export default function TasksPage() {
                   type="checkbox"
                   checked={broadcastData.notify_telegram}
                   onChange={(e) => setBroadcastData({ ...broadcastData, notify_telegram: e.target.checked })}
-                  className="rounded text-[#187A5A] focus:ring-[#187A5A]"
+                  className="rounded text-[#2563EB] focus:ring-[#2563EB]"
                 />
                 <span className="text-xs font-medium text-gray-700">
                   إرسال إشعار فوري عبر Telegram لكافة الموظفين المرتبطين
@@ -1999,7 +1999,7 @@ export default function TasksPage() {
                 <button
                   type="submit"
                   disabled={broadcastLoading || broadcastData.recipients.length === 0}
-                  className="px-5 py-2 text-sm font-bold text-white bg-[#123D32] hover:bg-[#187A5A] disabled:opacity-50 rounded-lg shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+                  className="px-5 py-2 text-sm font-bold text-white bg-[#1D4ED8] hover:bg-[#2563EB] disabled:opacity-50 rounded-lg shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   {broadcastLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
                   {broadcastLoading ? "جاري تنفيذ البث..." : `تنفيذ البث (${broadcastData.recipients.length} مستلم)`}
@@ -2022,9 +2022,9 @@ export default function TasksPage() {
                   disabled={createLoading}
                 />
 
-                <div className="bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100 space-y-3">
+                <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#123D32] mb-1">
+                    <label className="block text-xs font-bold text-[#1D4ED8] mb-1">
                       الموظف / الفني المسند إليه <span className="text-red-500">*</span>
                     </label>
                     <EmployeeCombobox
@@ -2077,7 +2077,7 @@ export default function TasksPage() {
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       placeholder="مثال: تعليمات فحص السيرفر الصباحية"
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
                   </div>
                 </div>
@@ -2087,7 +2087,7 @@ export default function TasksPage() {
                   <button
                     type="button"
                     onClick={() => setShowAdvancedVoiceFields(!showAdvancedVoiceFields)}
-                    className="text-xs font-semibold text-[#187A5A] hover:text-[#123D32] flex items-center gap-1.5 py-1 cursor-pointer transition-colors"
+                    className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1.5 py-1 cursor-pointer transition-colors"
                   >
                     <span>{showAdvancedVoiceFields ? "إخفاء الخيارات الإضافية" : "خيارات إضافية (أولوية، موعد نهائي، أصل مرتبط...)"}</span>
                   </button>
@@ -2101,7 +2101,7 @@ export default function TasksPage() {
                         <select
                           value={formData.related_asset_id}
                           onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
                         >
                           <option value="">-- غير مرتبط بأصل --</option>
                           {assets.map((ast) => (
@@ -2115,7 +2115,7 @@ export default function TasksPage() {
                         <select
                           value={formData.priority}
                           onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
                         >
                           <option value="Urgent">عاجل جداً (Urgent)</option>
                           <option value="High">مرتفع (High)</option>
@@ -2138,7 +2138,7 @@ export default function TasksPage() {
                           value={formData.notes}
                           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                           placeholder="ملاحظة سريعة..."
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
                         />
                       </div>
                     </div>
@@ -2157,7 +2157,7 @@ export default function TasksPage() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="مثال: ترقية خوادم قواعد البيانات، تهيئة طابعات القسم المالي"
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
 
@@ -2168,7 +2168,7 @@ export default function TasksPage() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="تفاصيل وإرشادات تنفيذ المهمة الفنية..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
 
@@ -2213,7 +2213,7 @@ export default function TasksPage() {
                                 checked={formData.notify_telegram && !!selectedEmp.is_telegram_linked}
                                 disabled={!selectedEmp.is_telegram_linked}
                                 onChange={(e) => setFormData({ ...formData, notify_telegram: e.target.checked })}
-                                className="rounded border-gray-300 text-[#187A5A] focus:ring-[#187A5A]"
+                                className="rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
                               />
                               <span>إرسال إشعار فوري عبر Telegram</span>
                             </label>
@@ -2233,7 +2233,7 @@ export default function TasksPage() {
                     <select
                       value={formData.related_asset_id}
                       onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
                       <option value="">-- غير مرتبط بأصل --</option>
                       {assets.map((ast) => (
@@ -2247,7 +2247,7 @@ export default function TasksPage() {
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
                       <option value="Urgent">عاجل جداً (Urgent)</option>
                       <option value="High">مرتفع (High)</option>
@@ -2261,7 +2261,7 @@ export default function TasksPage() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
                       <option value="Assigned">تم الإسناد (Assigned)</option>
                       <option value="Draft">مسودة (Draft)</option>
@@ -2274,7 +2274,7 @@ export default function TasksPage() {
                       type="date"
                       value={formData.start_date}
                       onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
                   </div>
 
@@ -2292,7 +2292,7 @@ export default function TasksPage() {
                     rows={2}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
               </>
@@ -2316,7 +2316,7 @@ export default function TasksPage() {
               <button
                 type="submit"
                 disabled={createLoading}
-                className="px-5 py-2 text-sm font-medium text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm flex items-center gap-2"
+                className="px-5 py-2 text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm flex items-center gap-2"
               >
                 {createLoading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
                 {createLoading
@@ -2341,7 +2341,7 @@ export default function TasksPage() {
             maxWidth="max-w-3xl"
           >
             <div className="space-y-6">
-              {isManagerOrAdmin && <button type="button" className="rounded-lg bg-[#187A5A] px-4 py-2 text-sm text-white" onClick={() => {
+              {isManagerOrAdmin && <button type="button" className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm text-white" onClick={() => {
                 setEditingTask(selectedTask); setSelectedEmployee(null); setCreateError(null);
                 setFormData({
                   title: selectedTask.title,
@@ -2565,7 +2565,7 @@ export default function TasksPage() {
                     <button
                       onClick={() => handleResendTelegram(selectedTask.id)}
                       disabled={resendLoading}
-                      className="text-xs font-medium text-[#187A5A] hover:text-[#123D32] bg-white hover:bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                      className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] bg-white hover:bg-blue-50 px-3 py-1 rounded-lg border border-slate-200 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                     >
                       {resendLoading ? "جاري الإرسال..." : "إعادة إرسال الإشعار لـ Telegram"}
                     </button>
@@ -2657,7 +2657,7 @@ export default function TasksPage() {
                     <button
                       onClick={() => handleStartTask(selectedTask.id)}
                       disabled={actionLoading}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg shadow-sm transition-colors"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg shadow-sm transition-colors"
                     >
                       بدء التنفيذ (Start Work)
                     </button>
@@ -2713,7 +2713,7 @@ export default function TasksPage() {
                       <button
                         onClick={() => setApproveModal(true)}
                         disabled={actionLoading}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] rounded-lg shadow-sm transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg shadow-sm transition-colors"
                       >
                         اعتماد واكتمال المهمة (Approve)
                       </button>
@@ -2732,7 +2732,7 @@ export default function TasksPage() {
               {/* Comments Section */}
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <MessageSquareIcon className="w-4 h-4 text-[#187A5A]" />
+                  <MessageSquareIcon className="w-4 h-4 text-[#2563EB]" />
                   سجل التعليقات والتحديثات الفنية ({selectedTask.comments?.length || 0})
                 </h4>
 
@@ -2759,12 +2759,12 @@ export default function TasksPage() {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="اكتب تعليقاً أو استفساراً تشغيلياً..."
-                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                   <button
                     type="submit"
                     disabled={commentSubmitting || !newComment.trim()}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
                   >
                     <SendIcon className="w-4 h-4" />
                     إرسال
@@ -2907,7 +2907,7 @@ export default function TasksPage() {
               value={approvalNotesInput}
               onChange={(e) => setApprovalNotesInput(e.target.value)}
               placeholder="ملاحظات الاعتماد (اختياري)..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#187A5A]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
@@ -2921,7 +2921,7 @@ export default function TasksPage() {
                 type="button"
                 onClick={handleApproveTask}
                 disabled={actionLoading}
-                className="px-4 py-2 text-xs font-bold text-white bg-[#187A5A] hover:bg-[#123D32] disabled:opacity-50 rounded-lg shadow-sm"
+                className="px-4 py-2 text-xs font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 rounded-lg shadow-sm"
               >
                 اعتماد وإكمال المهمة
               </button>
@@ -2956,12 +2956,12 @@ export default function TasksPage() {
               });
               setCreateModal(true);
             }}
-            className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#123D32] via-[#187A5A] to-[#1e9e74] text-white shadow-2xl hover:shadow-emerald-900/60 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#C5A46D]/60 border-2 border-[#C5A46D]/80 cursor-pointer"
+            className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white shadow-2xl hover:shadow-blue-900/40 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#3B82F6]/60 border-2 border-[#3B82F6]/80 cursor-pointer"
             title="تسجيل وإسناد مهمة صوتية سريعة"
             aria-label="تسجيل وإسناد مهمة صوتية سريعة"
           >
             {/* Animated ping ring */}
-            <span className="absolute -inset-1 rounded-full bg-[#187A5A] opacity-35 animate-ping pointer-events-none group-hover:opacity-70" />
+            <span className="absolute -inset-1 rounded-full bg-[#2563EB] opacity-35 animate-ping pointer-events-none group-hover:opacity-70" />
             <Mic className="w-7 h-7 sm:w-8 sm:h-8 select-none drop-shadow-md text-white" />
 
             {/* Desktop / Tablet Hover Tooltip */}
