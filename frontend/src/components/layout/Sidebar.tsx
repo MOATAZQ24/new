@@ -7,14 +7,32 @@
  * ==============================================================================
  */
 
-
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icons } from "@/components/ui/Icons";
-import { Star } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Building2,
+  CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Headphones,
+  HelpCircle,
+  Inbox,
+  LayoutDashboard,
+  Moon,
+  Settings,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sun,
+  Users,
+  X,
+} from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { BrandMark } from "@/components/ui/BrandMark";
+import { BrandLogo, BrandSymbol } from "@/components/ui/brand-logo";
+import { AssetIcon, CustodyIcon, SwitchIcon, VaultIcon } from "@/components/ui/domain-icons";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 import { useCustomization } from "@/context/CustomizationContext";
@@ -22,24 +40,30 @@ import { useCustomization } from "@/context/CustomizationContext";
 interface NavItem {
   name: string;
   href: string;
-  icon: keyof typeof Icons;
+  section: "work" | "ops" | "admin";
+  icon: React.ReactNode;
   managerOnly?: boolean;
 }
 
-const navItems: NavItem[] = [
-  { name: "لوحة التحكم", href: "/", icon: "Dashboard" },
-  { name: "أعمالي", href: "/my-work", icon: "Tasks" },
-  { name: "مركز الخدمات", href: "/tickets", icon: "HelpDesk" },
-  { name: "إدارة المهام", href: "/tasks", icon: "Tasks" },
-  { name: "الموافقات", href: "/approvals", icon: "ShieldCheck" },
-  { name: "الأصول التقنية", href: "/assets", icon: "Assets" },
-  { name: "الاشتراكات والتراخيص", href: "/subscriptions", icon: "Subscriptions" },
-  { name: "الموظفون", href: "/employees", icon: "Users" },
-  { name: "الهيكل التنظيمي", href: "/companies", icon: "Companies" },
-  { name: "التقارير والتحليلات", href: "/reports", icon: "Reports" },
-  { name: "قاعدة المعرفة", href: "/help", icon: "Audit" },
-  { name: "التوزيع و SLA", href: "/settings/work-management", icon: "Settings", managerOnly: true },
-  { name: "الإعدادات", href: "/settings", icon: "Settings" },
+const NAV_ITEMS: NavItem[] = [
+  { name: "أعمالي", href: "/my-work", section: "work", icon: <Inbox className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "لوحة التحكم", href: "/", section: "work", icon: <LayoutDashboard className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "مكتب المساعدة", href: "/tickets", section: "work", icon: <Headphones className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "المهام", href: "/tasks", section: "work", icon: <CheckSquare className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "الموافقات والتغييرات", href: "/approvals", section: "work", icon: <ShieldCheck className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+
+  { name: "الأصول التقنية", href: "/assets", section: "ops", icon: <AssetIcon size={18} /> },
+  { name: "العهدة والتسليم", href: "/custody", section: "ops", icon: <CustodyIcon size={18} /> },
+  { name: "البنية التحتية", href: "/infrastructure", section: "ops", icon: <SwitchIcon size={18} /> },
+  { name: "الاشتراكات والتراخيص", href: "/subscriptions", section: "ops", icon: <CreditCard className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "خزنة الأصول الرقمية", href: "/digital-assets", section: "ops", icon: <VaultIcon size={18} /> },
+
+  { name: "الموظفون", href: "/employees", section: "admin", icon: <Users className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "الهيكل التنظيمي", href: "/companies", section: "admin", icon: <Building2 className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "التقارير والتحليلات", href: "/reports", section: "admin", icon: <BarChart3 className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "قاعدة المعرفة", href: "/help", section: "admin", icon: <BookOpen className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
+  { name: "التوزيع و SLA", href: "/settings/work-management", section: "admin", icon: <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.5} />, managerOnly: true },
+  { name: "الإعدادات", href: "/settings", section: "admin", icon: <Settings className="h-[18px] w-[18px]" strokeWidth={1.5} /> },
 ];
 
 interface SidebarProps {
@@ -48,15 +72,35 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
   const { activeCompany, user } = useAuth();
   const { draft, setDraft, save } = useWorkspace();
-  const { theme, setTheme, resolvedTheme } = useCustomization();
+  const { setTheme, resolvedTheme } = useCustomization();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const isManagerOrAdmin = Boolean(
     user?.is_superadmin ||
       user?.roles?.some((r) => ["Super Admin", "Company Admin", "IT Manager"].includes(r))
   );
+
+  const visibleItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.managerOnly || isManagerOrAdmin),
+    [isManagerOrAdmin]
+  );
+
+  // Longest-prefix matching prevents highlighting both /settings and /settings/work-management
+  const activeHref = useMemo(() => {
+    const matches = visibleItems.filter((item) =>
+      item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`)
+    );
+    if (matches.length === 0) return "";
+    return matches.sort((a, b) => b.href.length - a.href.length)[0].href;
+  }, [visibleItems, pathname]);
 
   const toggleTheme = () => {
     const nextMode = resolvedTheme === "dark" ? "light" : "dark";
@@ -68,21 +112,6 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     setDraft(nextConfig);
     void save(nextConfig);
   };
-
-  const configured = navItems
-    .filter((item) => !item.managerOnly || isManagerOrAdmin)
-    .map((item) => {
-    const pref = draft.navigation.find((p) => p.href === item.href);
-    return {
-      ...item,
-      icon: pref && pref.icon && pref.icon !== "default" ? pref.icon : item.icon,
-      pinned: Boolean(pref?.pinned),
-    };
-  });
-  const orderedItems = [
-    ...configured.filter((i) => i.pinned),
-    ...configured.filter((i) => !i.pinned),
-  ];
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -99,164 +128,137 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     void save(next).catch(() => setDraft(draft));
   };
 
-  return (
-    <aside
-      data-collapsed={draft.collapsed}
-      data-mobile-open={mobileOpen}
-      aria-label="القائمة الرئيسية للنظام"
-      className="workspace-sidebar bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-white/10 select-none shadow-xl transition-all duration-200"
-    >
-      {/* Brand & Collapse Header */}
-      <div className="workspace-sidebar-header p-4 border-b border-white/10 flex items-center justify-between gap-2">
-        <Link
-          href="/"
-          onClick={() => onCloseMobile?.()}
-          className="flex items-center gap-3 min-w-0"
-          title="Investor Gate - الرئيسية"
-        >
-          <div className="w-10 h-10 rounded-lg bg-[var(--accent)] flex items-center justify-center text-[var(--accent-foreground)] font-black text-xl shadow-md shrink-0 overflow-hidden">
-            {activeCompany?.company_logo?.startsWith("/workspace/") ? (
-              <img
-                src={mediaUrl(activeCompany.company_logo)}
-                alt=""
-                className="w-10 h-10 object-contain rounded-lg"
-              />
-            ) : (
-              <BrandMark size={40} variant="gold-badge" />
-            )}
-          </div>
-          <div className="workspace-brand-text flex flex-col min-w-0 flex-1 overflow-hidden">
-            <span className="block font-bold text-sm tracking-tight text-white leading-tight truncate">
-              بوابة المستثمر
-            </span>
-            <span className="block text-[11px] text-[var(--accent)] font-medium truncate">
-              Investor Gate OS
-            </span>
-          </div>
-        </Link>
-
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            className="hidden lg:inline-flex items-center justify-center p-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            aria-label="طي أو توسيع القائمة / Toggle sidebar"
-            aria-expanded={!draft.collapsed}
-            aria-controls="primary-navigation"
-            title={draft.collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-            onClick={handleToggleCollapse}
-          >
-            {draft.collapsed ? <Icons.ChevronLeft size={17} /> : <Icons.ChevronRight size={17} />}
-          </button>
-
-          {mobileOpen && (
-            <button
-              type="button"
-              className="lg:hidden inline-flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              aria-label="إغلاق قائمة التنقل"
-              onClick={() => onCloseMobile?.()}
-            >
-              <Icons.X size={18} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Active Company Badge */}
-      <div className="workspace-company-pill px-3.5 py-2.5 bg-black/20 mx-3 my-2.5 rounded-lg border border-white/10 flex items-center justify-between gap-2">
-        <div className="truncate">
-          <div className="text-[10px] text-white/70">الشركة النشطة</div>
-          <div className="text-xs font-semibold text-white truncate">
-            {activeCompany ? activeCompany.name_ar : "بوابة المستثمر"}
-          </div>
-        </div>
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--sidebar-active)] text-white font-mono shrink-0">
-          <bdi>{activeCompany?.code || "IGT"}</bdi>
-        </span>
-      </div>
-
-      {/* Navigation Links */}
-      <nav id="primary-navigation" className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-        {orderedItems.map((item) => {
-          const isActive =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          const IconComp = Icons[item.icon as keyof typeof Icons];
-
+  const renderSection = (section: NavItem["section"]) => {
+    const group = visibleItems.filter((i) => i.section === section);
+    return (
+      <div className="space-y-0.5">
+        {group.map((item) => {
+          const isActive = item.href === activeHref;
           const linkEl = (
             <Link
               key={item.href}
               href={item.href}
-              title={draft.collapsed ? undefined : item.name}
               aria-current={isActive ? "page" : undefined}
               onClick={() => onCloseMobile?.()}
-              className={`motion-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 ${
+              className={`relative flex items-center gap-2.5 rounded-[var(--radius-6)] px-2.5 h-9 text-[13px] transition-colors duration-[var(--dur-fast)] ${
                 isActive
-                  ? "bg-[var(--sidebar-active)] text-white font-bold shadow-xs"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  ? "bg-[var(--primary-soft)] text-[var(--primary-text)] font-semibold"
+                  : "text-[var(--text-2)] font-medium hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
               }`}
             >
-              <span
-                className={`shrink-0 ${
-                  isActive ? "text-[var(--accent)]" : "text-white/75"
-                }`}
-              >
-                {IconComp && <IconComp size={18} />}
+              {isActive && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-y-1.5 start-0 w-[2px] rounded-full bg-[var(--primary)]"
+                />
+              )}
+              <span className={`shrink-0 ${isActive ? "text-[var(--primary-text)]" : "text-[var(--icon-muted)]"}`}>
+                {item.icon}
               </span>
-              <span className="workspace-nav-label flex-1 truncate">
-                {item.pinned && <Star size={11} className="inline ml-1 text-amber-400 fill-amber-400" />}
-                {item.name}
-              </span>
+              <span className="workspace-nav-label flex-1 truncate">{item.name}</span>
             </Link>
           );
 
           if (draft.collapsed) {
             return (
-              <Tooltip key={item.href} content={item.name} position="left" delayMs={100}>
+              <Tooltip key={item.href} content={item.name} position="left" delayMs={120}>
                 {linkEl}
               </Tooltip>
             );
           }
-
           return linkEl;
         })}
+      </div>
+    );
+  };
+
+  return (
+    <aside
+      data-collapsed={draft.collapsed}
+      data-mobile-open={mobileOpen}
+      aria-label="القائمة الرئيسية للنظام"
+      className="workspace-sidebar bg-[var(--surface)] text-[var(--text)] flex flex-col h-screen fixed inset-y-0 start-0 z-40 border-e border-[var(--border)] select-none"
+    >
+      {/* Brand Header (52px aligned with TopNav) */}
+      <div className="workspace-sidebar-header h-[52px] px-3.5 border-b border-[var(--border)] flex items-center justify-between gap-2 shrink-0">
+        <Link
+          href="/my-work"
+          onClick={() => onCloseMobile?.()}
+          className="flex items-center gap-2.5 min-w-0"
+          title="بوابة المستثمر — Investor Gate OS"
+        >
+          {activeCompany?.company_logo?.startsWith("/workspace/") ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={mediaUrl(activeCompany.company_logo)} alt="" className="w-7 h-7 object-contain rounded shrink-0" />
+              <div className="workspace-brand-text flex flex-col min-w-0 leading-tight">
+                <span className="text-[14px] font-semibold text-[var(--text)] truncate">بوابة المستثمر</span>
+                <span className="text-[10px] text-[var(--text-3)] uppercase tracking-[0.08em] truncate" dir="ltr">INVESTOR GATE</span>
+              </div>
+            </>
+          ) : draft.collapsed ? (
+            <BrandSymbol size={28} />
+          ) : (
+            <BrandLogo variant="horizontal" size={28} />
+          )}
+        </Link>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            className="hidden lg:inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-6)] text-[var(--text-3)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+            aria-label={draft.collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+            aria-expanded={!draft.collapsed}
+            aria-controls="primary-navigation"
+            onClick={handleToggleCollapse}
+          >
+            {draft.collapsed ? <ChevronLeft className="h-4 w-4" strokeWidth={1.5} /> : <ChevronRight className="h-4 w-4" strokeWidth={1.5} />}
+          </button>
+
+          {mobileOpen && (
+            <button
+              type="button"
+              className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-6)] text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] cursor-pointer"
+              aria-label="إغلاق قائمة التنقل"
+              onClick={() => onCloseMobile?.()}
+            >
+              <X className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation Sections */}
+      <nav id="primary-navigation" className="flex-1 overflow-y-auto px-2.5 py-3 space-y-3">
+        {renderSection("work")}
+        <div className="border-t border-[var(--border)] pt-3">{renderSection("ops")}</div>
+        <div className="border-t border-[var(--border)] pt-3">{renderSection("admin")}</div>
       </nav>
 
-      {/* System Footer & Quick Actions (Reference 1 & 2) */}
-      <div className="workspace-sidebar-footer p-3 border-t border-white/10 space-y-2">
-        <div className="flex items-center justify-between gap-1 text-white/80">
-          <Link
-            href="/help"
-            title="المساعدة"
-            onClick={() => onCloseMobile?.()}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs hover:bg-white/10 text-white/85 hover:text-white transition-colors"
-          >
-            <span className="w-5 h-5 rounded-full border border-white/40 flex items-center justify-center text-[11px] font-bold">?</span>
-            <span className="workspace-nav-label font-medium">المساعدة</span>
-          </Link>
+      {/* Quiet Footer */}
+      <div className="workspace-sidebar-footer px-2.5 py-2.5 border-t border-[var(--border)] flex items-center justify-between gap-1 shrink-0">
+        <Link
+          href="/help"
+          onClick={() => onCloseMobile?.()}
+          className="inline-flex items-center gap-2 h-8 px-2 rounded-[var(--radius-6)] text-[12px] font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] transition-colors"
+        >
+          <HelpCircle className="h-4 w-4 text-[var(--icon-muted)] shrink-0" strokeWidth={1.5} />
+          <span className="workspace-nav-label">المساعدة</span>
+        </Link>
 
-          <div className="flex items-center gap-1">
-            {/* Quick theme pill toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label="تبديل المظهر"
-              title={resolvedTheme === "dark" ? "التحويل للوضع الفاتح" : "التحويل للوضع الداكن"}
-              className="p-1.5 rounded-lg bg-black/30 hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
-            >
-              {resolvedTheme === "dark" ? <Icons.Sun size={15} className="text-amber-300" /> : <Icons.Moon size={15} />}
-            </button>
-
-            {/* Collapse button */}
-            <button
-              type="button"
-              onClick={handleToggleCollapse}
-              aria-label="طي القائمة"
-              title={draft.collapsed ? "توسيع" : "طي"}
-              className="hidden lg:inline-flex p-1.5 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
-            >
-              <Icons.ChevronRight size={15} className={`transition-transform ${draft.collapsed ? "rotate-180" : ""}`} />
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={mounted && resolvedTheme === "dark" ? "تفعيل الوضع النهاري" : "تفعيل الوضع الليلي"}
+          title={mounted && resolvedTheme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-6)] text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] transition-colors cursor-pointer"
+        >
+          {mounted && resolvedTheme === "dark" ? (
+            <Sun className="h-4 w-4" strokeWidth={1.5} />
+          ) : (
+            <Moon className="h-4 w-4" strokeWidth={1.5} />
+          )}
+        </button>
       </div>
     </aside>
   );

@@ -22,7 +22,7 @@ import {
   Wrench,
   FileBarChart2,
   ClipboardList,
-  Sparkles,
+  Search,
   Settings,
   Palette,
 } from "lucide-react";
@@ -107,17 +107,17 @@ export function MobileMoreMenuSheet({
       ],
     },
     {
-      title: "الذكاء والتقارير",
+      title: "التقارير والأوامر",
       items: [
         {
-          name: "المساعد التشغيلي الذكي",
-          sub: "AI Operations Agent",
-          href: "/#ai-assistant",
-          icon: Sparkles,
-          color: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+          name: "البحث السريع والأوامر",
+          sub: "Quick Search & Commands",
+          href: "/#quick-search",
+          icon: Search,
+          color: "bg-[var(--primary-soft)] text-[var(--primary-text)]",
           onClick: () => {
             onClose();
-            // Trigger AI assistant / Command bar
+            // Trigger Command bar
             window.dispatchEvent(
               new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true })
             );

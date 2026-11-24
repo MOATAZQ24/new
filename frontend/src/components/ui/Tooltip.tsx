@@ -1,3 +1,4 @@
+"use client";
 /**
  * ==============================================================================
  * Investor Gate OS (IGOS) - Technical Operations Platform
@@ -6,84 +7,40 @@
  * ==============================================================================
  */
 
-"use client";
+import React from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { cn } from "@/lib/cn";
 
-import React, { useState, useRef, useEffect, useId } from "react";
+export const TooltipProvider = TooltipPrimitive.Provider;
 
-interface TooltipProps {
+export interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactElement<Record<string, unknown>>;
+  children: React.ReactElement;
   position?: "top" | "bottom" | "right" | "left";
   delayMs?: number;
   className?: string;
 }
 
-export function Tooltip({
-  content,
-  children,
-  position = "top",
-  delayMs = 200,
-  className = "",
-}: TooltipProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const tooltipId = useId();
-
-  const show = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, delayMs);
-  };
-
-  const hide = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsVisible(false);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  const positionClasses = {
-    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-    right: "left-full top-1/2 -translate-y-1/2 ml-2",
-    left: "right-full top-1/2 -translate-y-1/2 mr-2",
-  };
-
-  const caretClasses = {
-    top: "top-full left-1/2 -translate-x-1/2 border-t-[#202124] dark:border-t-[#1E293B] border-x-transparent border-b-transparent",
-    bottom: "bottom-full left-1/2 -translate-x-1/2 border-b-[#202124] dark:border-b-[#1E293B] border-x-transparent border-t-transparent",
-    right: "right-full top-1/2 -translate-y-1/2 border-r-[#202124] dark:border-r-[#1E293B] border-y-transparent border-l-transparent",
-    left: "left-full top-1/2 -translate-y-1/2 border-l-[#202124] dark:border-l-[#1E293B] border-y-transparent border-r-transparent",
-  };
-
+export function Tooltip({ content, children, position = "top", delayMs = 200, className }: TooltipProps) {
   return (
-    <div
-      className="relative inline-flex"
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
-      onBlur={hide}
-    >
-      {React.cloneElement(children, {
-        "aria-describedby": isVisible ? tooltipId : undefined,
-      })}
-
-      {isVisible && (
-        <div
-          id={tooltipId}
-          role="tooltip"
-          className={`absolute z-50 px-2.5 py-1 text-xs font-medium text-white bg-[#202124] dark:bg-[#1E293B] border border-border/40 rounded-lg shadow-lg pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 ${positionClasses[position]} ${className}`}
-        >
-          {content}
-          <div className={`absolute w-0 h-0 border-4 ${caretClasses[position]}`} />
-        </div>
-      )}
-    </div>
+    <TooltipPrimitive.Provider delayDuration={delayMs}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            side={position}
+            sideOffset={6}
+            className={cn(
+              "z-50 rounded-[var(--radius-6)] border border-[var(--border)] bg-[var(--text)] px-2.5 py-1.5",
+              "text-[12px] font-medium leading-[1.35] text-[var(--bg)] shadow-[var(--shadow-e2)] max-w-xs break-words",
+              className
+            )}
+          >
+            {content}
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 }
-
 export default Tooltip;

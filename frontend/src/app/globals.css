@@ -9,6 +9,7 @@
 @import "../styles/tokens.css";
 @import "./tailwind.gen.css";
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 /* Logical spacing utilities for RTL/LTR parity */
 .inset-inline-start-0 { inset-inline-start: 0; }

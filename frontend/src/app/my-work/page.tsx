@@ -197,6 +197,7 @@ export default function MyWorkPage() {
           </div>
 
           <select
+            aria-label="تصفية حسب حالة SLA"
             value={slaFilter}
             onChange={(e) => setSlaFilter(e.target.value)}
             className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)]"

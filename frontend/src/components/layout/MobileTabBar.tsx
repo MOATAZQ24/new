@@ -56,10 +56,10 @@ export function MobileTabBar() {
   return (
     <>
       <nav
-        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 shadow-lg select-none pb-[max(env(safe-area-inset-bottom),8px)]"
+        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-[var(--surface)] border-t border-[var(--border)] select-none pb-[max(env(safe-area-inset-bottom),6px)]"
         aria-label="شريط التنقل السفلي للجوال"
       >
-        <div className="grid grid-cols-5 h-16 items-center px-1">
+        <div className="grid grid-cols-5 h-15 items-center px-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.isActive;
@@ -67,22 +67,18 @@ export function MobileTabBar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center justify-center h-full active:scale-95 transition-transform"
+                className="flex items-center justify-center h-full"
                 title={item.sub}
               >
                 <div
-                  className={`w-14 h-12 rounded-2xl flex flex-col items-center justify-center transition-all duration-150 ${
+                  className={`w-14 h-11 rounded-[var(--radius-10)] flex flex-col items-center justify-center transition-colors duration-[var(--dur-fast)] ${
                     active
-                      ? "bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold shadow-2xs"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+                      ? "bg-[var(--primary-soft)] text-[var(--primary-text)] font-semibold"
+                      : "text-[var(--text-2)] hover:text-[var(--text)] font-medium"
                   }`}
                 >
-                  <Icon
-                    size={20}
-                    strokeWidth={active ? 2.4 : 2}
-                    className="shrink-0"
-                  />
-                  <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[50px] leading-tight">
+                  <Icon size={18} strokeWidth={1.5} className="shrink-0" />
+                  <span className="text-[10.5px] mt-0.5 truncate max-w-[52px] leading-tight">
                     {item.name}
                   </span>
                 </div>
@@ -90,26 +86,21 @@ export function MobileTabBar() {
             );
           })}
 
-          {/* 5th Tab: "المزيد" (More) */}
           <Link
             href="/more"
-            className="flex items-center justify-center h-full active:scale-95 transition-transform"
+            className="flex items-center justify-center h-full"
             title="المزيد من القوائم والوحدات"
             aria-label="المزيد من الوحدات"
           >
             <div
-              className={`w-14 h-12 rounded-2xl flex flex-col items-center justify-center transition-all duration-150 ${
+              className={`w-14 h-11 rounded-[var(--radius-10)] flex flex-col items-center justify-center transition-colors duration-[var(--dur-fast)] ${
                 isMoreActive
-                  ? "bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold shadow-2xs"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
+                  ? "bg-[var(--primary-soft)] text-[var(--primary-text)] font-semibold"
+                  : "text-[var(--text-2)] hover:text-[var(--text)] font-medium"
               }`}
             >
-              <LayoutGrid
-                size={20}
-                strokeWidth={isMoreActive ? 2.4 : 2}
-                className="shrink-0"
-              />
-              <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[50px] leading-tight">
+              <LayoutGrid size={18} strokeWidth={1.5} className="shrink-0" />
+              <span className="text-[10.5px] mt-0.5 truncate max-w-[52px] leading-tight">
                 المزيد
               </span>
             </div>

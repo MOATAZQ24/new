@@ -56,6 +56,8 @@ export function applyThemeToDocument(presetId: ThemePresetId, isDark: boolean) {
 
   if (presetId === "petrol") {
     const legacyProps = [
+      "--bg", "--surface-2", "--surface-3", "--text", "--text-2", "--text-3",
+      "--primary-soft", "--primary-text", "--primary-hover", "--border-strong",
       "--background", "--foreground", "--surface", "--surface-muted", "--surface-elevated",
       "--card", "--card-foreground", "--sidebar-background", "--sidebar-foreground",
       "--sidebar-active", "--header-background", "--primary", "--primary-foreground",
@@ -73,6 +75,18 @@ export function applyThemeToDocument(presetId: ThemePresetId, isDark: boolean) {
   Object.entries(tokens).forEach(([key, value]) => {
     root.style.setProperty(`--${key}`, value);
   });
+
+  // Design-system v2 canonical aliases so every preset stays WCAG AA in both light and dark modes
+  root.style.setProperty("--bg", tokens.background);
+  root.style.setProperty("--surface-2", tokens["surface-muted"]);
+  root.style.setProperty("--surface-3", tokens.hover);
+  root.style.setProperty("--text", tokens.foreground);
+  root.style.setProperty("--text-2", tokens["muted-foreground"]);
+  root.style.setProperty("--text-3", tokens["muted-foreground"]);
+  root.style.setProperty("--primary-soft", tokens.selected);
+  root.style.setProperty("--primary-text", tokens.primary);
+  root.style.setProperty("--primary-hover", tokens.secondary);
+  root.style.setProperty("--border-strong", tokens.border);
 
   // Legacy & shell compatibility aliases
   root.style.setProperty("--bg-main", tokens.background);

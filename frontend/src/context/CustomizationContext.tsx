@@ -113,16 +113,16 @@ interface CustomizationContextType {
 }
 
 const DEFAULT_COLORS: ColorPalette = {
-  primary: "#131127",
-  secondary: "#7C3AED",
-  background: "#F7F8FC",
+  primary: "#0E5A63",
+  secondary: "#083C43",
+  background: "#FAF9F6",
   surface: "#FFFFFF",
-  accent: "#8B5CF6",
+  accent: "#B68F4A",
 };
 
 const DEFAULT_TYPOGRAPHY: TypographySettings = {
   arabicFont: "IBM Plex Sans Arabic",
-  englishFont: "Inter",
+  englishFont: "IBM Plex Sans",
   fontSize: "medium",
   fontWeight: "normal",
 };

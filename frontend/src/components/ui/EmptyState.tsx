@@ -1,3 +1,4 @@
+"use client";
 /**
  * ==============================================================================
  * Investor Gate OS (IGOS) - Technical Operations Platform
@@ -7,41 +8,28 @@
  */
 
 import React from "react";
-import { Icons } from "@/components/ui/Icons";
+import { Inbox } from "lucide-react";
+import { cn } from "@/lib/cn";
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
   action?: React.ReactNode;
   compact?: boolean;
+  className?: string;
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  compact = false,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, compact = false, className }: EmptyStateProps) {
   return (
-    <div
-      className={`text-center flex flex-col items-center justify-center ${
-        compact ? "py-8 px-4" : "py-14 px-6"
-      }`}
-    >
-      <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mb-3.5 ring-1 ring-slate-200/80">
-        {icon || <Icons.Inbox size={26} />}
+    <div className={cn("flex flex-col items-center justify-center text-center", compact ? "py-8 px-4" : "py-14 px-6", className)}>
+      <div className="mb-3.5 flex h-12 w-12 items-center justify-center rounded-[var(--radius-10)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--icon-muted)]" aria-hidden="true">
+        {icon || <Inbox className="h-5 w-5" strokeWidth={1.5} />}
       </div>
-      <h3 className="text-sm sm:text-base font-bold text-slate-800">{title}</h3>
-      {description && (
-        <p className="text-xs text-slate-600 mt-1.5 max-w-md leading-relaxed">
-          {description}
-        </p>
-      )}
+      <h3 className="text-[15px] font-semibold leading-[1.4] text-[var(--text)]">{title}</h3>
+      {description && <p className="mt-1.5 max-w-md text-[13px] leading-[1.6] text-[var(--text-2)]">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
-
 export default EmptyState;

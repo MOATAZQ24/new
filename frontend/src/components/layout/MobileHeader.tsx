@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Bell, ChevronDown, Check, Building2, User } from "lucide-react";
+import { Search, Bell, ChevronDown, Check, Building2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl } from "@/context/WorkspaceContext";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -56,59 +56,54 @@ export function MobileHeader() {
   return (
     <>
       <header
-        className="fixed top-0 inset-x-0 z-30 lg:hidden h-16 bg-gradient-to-b from-primary/[0.08] via-white/95 to-white/90 dark:via-slate-900/95 dark:to-slate-900/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 px-4 flex items-center justify-between gap-2 shadow-2xs select-none"
+        className="fixed top-0 inset-x-0 z-30 lg:hidden h-[52px] bg-[var(--surface)] border-b border-[var(--border)] px-3 flex items-center justify-between gap-2 select-none"
         aria-label="شريط الجوال العلوي"
       >
-        {/* Right side (RTL): Brand name and logo badge */}
         <button
           type="button"
           onClick={() => setCompanySheetOpen(true)}
-          className="flex items-center gap-2.5 text-start -m-1.5 p-1.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/[0.05] transition active:scale-98 cursor-pointer"
+          className="flex items-center gap-2 text-start px-1.5 py-1 rounded-[var(--radius-6)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer min-w-0"
           title="تبديل المنشأة أو الشركة"
         >
-          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
-            {activeCompany?.company_logo?.startsWith("/workspace/") ? (
-              <img
-                src={mediaUrl(activeCompany.company_logo)}
-                alt=""
-                className="w-9 h-9 object-contain rounded-xl"
-              />
-            ) : (
-              <BrandMark size={30} variant="gold-badge" />
-            )}
-          </div>
+          {activeCompany?.company_logo?.startsWith("/workspace/") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mediaUrl(activeCompany.company_logo)}
+              alt=""
+              className="w-7 h-7 object-contain rounded shrink-0"
+            />
+          ) : (
+            <BrandMark size={28} variant="light-bg" />
+          )}
 
-          <div className="min-w-0 flex items-center gap-1.5">
-            <span className="font-bold text-sm text-slate-900 dark:text-white tracking-tight">
-              Investor Gate OS
+          <div className="min-w-0 flex items-center gap-1">
+            <span className="font-semibold text-[14px] text-[var(--text)] truncate">
+              بوابة المستثمر
             </span>
             {companiesList.length > 1 && (
-              <ChevronDown size={14} className="text-slate-400 shrink-0" />
+              <ChevronDown size={14} strokeWidth={1.5} className="text-[var(--icon-muted)] shrink-0" />
             )}
           </div>
         </button>
 
-        {/* Left side (RTL): Search & Notifications round floating buttons */}
-        <div className="flex items-center gap-2">
-          {/* Quick Universal Search Trigger */}
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-2xs border border-slate-100 dark:border-slate-800/80 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition active:scale-95 cursor-pointer"
+            className="w-11 h-11 rounded-[var(--radius-6)] flex items-center justify-center text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] transition-colors cursor-pointer"
             aria-label="البحث السريع (Ctrl+K)"
           >
-            <Search size={18} strokeWidth={2.2} />
+            <Search size={18} strokeWidth={1.5} />
           </button>
 
-          {/* Notifications Link */}
           <Link
             href="/notifications"
-            className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-2xs border border-slate-100 dark:border-slate-800/80 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 relative transition active:scale-95"
+            className="w-11 h-11 rounded-[var(--radius-6)] flex items-center justify-center text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] relative transition-colors"
             aria-label="مركز الإشعارات"
           >
-            <Bell size={18} strokeWidth={2.2} />
+            <Bell size={18} strokeWidth={1.5} />
             {unreadCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-800" />
+              <span className="absolute top-2.5 end-2.5 w-2 h-2 rounded-full bg-[var(--danger-solid)] ring-2 ring-[var(--surface)]" />
             )}
           </Link>
         </div>

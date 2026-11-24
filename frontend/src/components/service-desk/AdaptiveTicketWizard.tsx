@@ -23,7 +23,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Search,
-  Sparkles,
   Mic,
   RotateCcw,
   User,
@@ -292,8 +291,8 @@ export default function AdaptiveTicketWizard({
       <div className="bg-muted/40 border-b border-border/60 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-              <Sparkles className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-[var(--radius-8)] bg-[var(--primary-soft)] text-[var(--primary-text)] flex items-center justify-center font-bold">
+              <FileText className="w-5 h-5" strokeWidth={1.75} />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-foreground">

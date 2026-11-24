@@ -15,7 +15,6 @@ import { MobileHeader } from "./MobileHeader";
 import { MobileTabBar } from "./MobileTabBar";
 import { MustChangePasswordModal } from "@/components/auth/MustChangePasswordModal";
 import { CommandPalette } from "@/components/ui/CommandPalette";
-import { GlobalAIComposer } from "@/components/ai/GlobalAIComposer";
 import { useWorkspace } from "@/context/WorkspaceContext";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -36,7 +35,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }, [draft, setDraft, save]);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
       <a href="#main-content" className="skip-to-content">
         التخطي إلى المحتوى الرئيسي
       </a>
@@ -44,7 +43,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Mandatory password change modal on first login */}
       <MustChangePasswordModal />
       <CommandPalette />
-      <GlobalAIComposer />
 
       {/* ─── DESKTOP SHELL (hidden on mobile, visible on lg and up) ─── */}
       <div className="hidden lg:block">

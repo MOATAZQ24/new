@@ -1,3 +1,4 @@
+"use client";
 /**
  * ==============================================================================
  * Investor Gate OS (IGOS) - Technical Operations Platform
@@ -6,91 +7,105 @@
  * ==============================================================================
  */
 
-import React, { useEffect, useId, useRef, useState } from "react";
-import { Icons } from "@/components/ui/Icons";
-import { useDialogAccessibility } from "@/components/ui/useDialogAccessibility";
+import React, { useState } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { AlertTriangle, X } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { Button } from "./button";
+import { Input } from "./input";
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  description?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   maxWidth?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  maxWidth = "max-w-xl",
-}: ModalProps) {
-  const titleId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = useState(isOpen);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      const frame = window.requestAnimationFrame(() => {
-        setIsMounted(true);
-        setIsVisible(true);
-      });
-      return () => window.cancelAnimationFrame(frame);
-    }
-
-    if (!isMounted) return;
-
-    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 210;
-    let timer: number | undefined;
-    const frame = window.requestAnimationFrame(() => {
-      setIsVisible(false);
-      timer = window.setTimeout(() => setIsMounted(false), delay);
-    });
-    return () => {
-      window.cancelAnimationFrame(frame);
-      if (timer !== undefined) window.clearTimeout(timer);
-    };
-  }, [isOpen, isMounted]);
-
-  useDialogAccessibility(isOpen && isMounted, panelRef, onClose);
-
-  if (!isMounted) return null;
-
+export function Modal({ isOpen, onClose, title, description, children, footer, maxWidth = "max-w-xl" }: ModalProps) {
   return (
-    <div
-      aria-hidden={!isVisible}
-      className="motion-dialog-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
-      data-open={isVisible}
-      role="presentation"
-    >
-      <div
-        ref={panelRef}
-        aria-labelledby={titleId}
-        aria-modal={isOpen ? "true" : undefined}
-        className={`motion-dialog-panel bg-white rounded-2xl shadow-2xl border border-slate-200 w-full ${maxWidth} overflow-hidden`}
-        data-open={isVisible}
-        role={isOpen ? "dialog" : undefined}
-        tabIndex={-1}
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200/80 dark:border-slate-700 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/70">
-          <h3 id={titleId} className="font-bold text-sm text-slate-900 dark:text-slate-100">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="إغلاق النافذة"
-            className="motion-control p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-          >
-            <Icons.X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6 max-h-[82vh] overflow-y-auto">{children}</div>
-      </div>
-    </div>
+    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45 data-[state=open]:opacity-100 transition-opacity duration-[var(--dur-mid)]" />
+        <DialogPrimitive.Content
+          aria-describedby={description ? undefined : undefined}
+          className={cn(
+            "fixed z-50 start-1/2 top-1/2 -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2",
+            "w-[calc(100vw-2rem)] overflow-hidden rounded-[var(--radius-14)] border border-[var(--border)]",
+            "bg-[var(--surface)] text-[var(--text)] shadow-[var(--shadow-e3)] max-h-[88vh] flex flex-col outline-none",
+            maxWidth
+          )}
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+            <div className="min-w-0">
+              <DialogPrimitive.Title className="text-[16px] font-semibold leading-[1.4] text-[var(--text)]">{title}</DialogPrimitive.Title>
+              {description && <DialogPrimitive.Description className="mt-1 text-[13px] text-[var(--text-2)]">{description}</DialogPrimitive.Description>}
+            </div>
+            <DialogPrimitive.Close asChild>
+              <button type="button" aria-label="إغلاق النافذة" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-6)] text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] cursor-pointer">
+                <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            </DialogPrimitive.Close>
+          </div>
+          <div className="overflow-y-auto px-5 py-4 text-start flex-1">{children}</div>
+          {footer && <div className="flex items-center justify-end gap-2 border-t border-[var(--border)] bg-[var(--surface-2)] px-5 py-3">{footer}</div>}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
+export interface ConfirmDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void | Promise<void>;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+  requireTypedConfirmation?: string;
+  loading?: boolean;
+}
+
+export function ConfirmDialog({ isOpen, onClose, onConfirm, title, description, confirmLabel = "تأكيد", cancelLabel = "إلغاء", destructive = false, requireTypedConfirmation, loading = false }: ConfirmDialogProps) {
+  const [typed, setTyped] = useState("");
+  const canConfirm = !requireTypedConfirmation || typed.trim() === requireTypedConfirmation.trim();
+  const handleClose = () => { setTyped(""); onClose(); };
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={title}
+      maxWidth="max-w-md"
+      footer={
+        <>
+          <Button variant="secondary" onClick={handleClose} disabled={loading}>{cancelLabel}</Button>
+          <Button variant={destructive ? "danger" : "primary"} onClick={async () => { await onConfirm(); setTyped(""); }} disabled={!canConfirm || loading} loading={loading}>{confirmLabel}</Button>
+        </>
+      }
+    >
+      <div className="flex items-start gap-3">
+        {destructive && (
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-6)] bg-[var(--danger-soft)] text-[var(--danger-text)]">
+            <AlertTriangle className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+          </div>
+        )}
+        <div className="flex-1 space-y-3">
+          <p className="text-[14px] leading-[1.6] text-[var(--text-2)]">{description}</p>
+          {requireTypedConfirmation && (
+            <div className="space-y-1.5">
+              <label className="block text-[12px] font-medium text-[var(--text)]">
+                اكتب <bdi className="font-semibold text-[var(--danger-text)]">{requireTypedConfirmation}</bdi> للتأكيد:
+              </label>
+              <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={requireTypedConfirmation} autoFocus />
+            </div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
 export default Modal;

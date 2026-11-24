@@ -676,7 +676,7 @@ export default function DashboardPage() {
               {/* Quick Actions 2x2 Tile Card */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <Icons.Sparkles size={17} className="text-[#C5A46D]" />
+                  <Icons.Tasks size={17} className="text-[var(--primary-text)]" />
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                     إجراءات سريعة
                   </h2>

@@ -14,7 +14,7 @@ import {
   Mic,
   PlusCircle,
   QrCode,
-  Sparkles,
+  Search,
   AlertTriangle,
   CheckCircle2,
   Clock,
@@ -143,7 +143,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
             </div>
           </Link>
 
-          {/* AI Operations Assistant */}
+          {/* Quick Search & Command Bar */}
           <button
             type="button"
             onClick={() => {
@@ -151,17 +151,17 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
                 new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true })
               );
             }}
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-[#187A5A] transition active:scale-98 flex items-center gap-3 text-start cursor-pointer"
+            className="p-3.5 rounded-[var(--radius-10)] bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] transition active:scale-98 flex items-center gap-3 text-start cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <Sparkles size={20} />
+            <div className="w-10 h-10 rounded-[var(--radius-8)] bg-[var(--primary-soft)] text-[var(--primary-text)] flex items-center justify-center shrink-0">
+              <Search size={19} strokeWidth={1.75} />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-black text-slate-900 dark:text-white">
-                المساعد الذكي
+              <div className="text-xs font-semibold text-[var(--text)]">
+                البحث السريع
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                أوامر وبحث فوري
+              <div className="text-[11px] text-[var(--text-3)] truncate mt-0.5">
+                أوامر وتنقل فوري
               </div>
             </div>
           </button>

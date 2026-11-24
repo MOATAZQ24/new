@@ -36,7 +36,7 @@ import {
   Search,
   Plus,
   Zap,
-  Sparkles,
+  PlusCircle,
   LayoutGrid,
   Kanban,
   BookOpen,
@@ -446,10 +446,10 @@ export default function TicketsPage() {
             <button
               type="button"
               onClick={() => setWizardModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black bg-primary text-primary-foreground hover:opacity-95 shadow-xs transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[var(--radius-6)] text-xs font-semibold bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-hover)] transition cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>معالج الطلبات الذكي</span>
+              <PlusCircle className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>طلب خدمة جديد</span>
             </button>
           </div>
         </div>
@@ -655,7 +655,7 @@ export default function TicketsPage() {
                         onClick={() => setWizardModalOpen(true)}
                         className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
                       >
-                        فتح طلب عبر المعالج الذكي
+                        فتح طلب خدمة جديد
                       </button>
                     }
                   />
@@ -802,7 +802,7 @@ export default function TicketsPage() {
         <Modal
           isOpen={wizardModalOpen}
           onClose={() => setWizardModalOpen(false)}
-          title="معالج طلبات الخدمة التقنية الذكي"
+          title="معالج طلبات الخدمة التقنية"
           maxWidth="max-w-4xl"
         >
           <AdaptiveTicketWizard

@@ -30,6 +30,7 @@ const allowedDevOrigins = Array.from(
 );
 
 const nextConfig: NextConfig = {
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   allowedDevOrigins,
   output: "standalone",
   devIndicators: false,
