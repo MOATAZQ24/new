@@ -1,0 +1,402 @@
+/**
+ * ==============================================================================
+ * Investor Gate OS (IGOS) - Technical Operations Platform
+ * Original Developer: Moataz Qasem (2026)
+ * Attribution Framework: IGOS Developer Attribution & Provenance Framework (IGOS-DAPF)
+ * ==============================================================================
+ *
+ * Single Source of Truth Design Tokens (Warm Paper Light + Crafted Deep Slate Ink Dark)
+ * WCAG 2.2 AA contrast verified for every text/background pair in both themes.
+ */
+
+/* ── Self-Hosted Fonts (Zero External CDN, Weights 400 / 500 / 600 Only) ── */
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-arabic-400.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-arabic-500.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-arabic-600.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-sans-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ── Tailwind v4 @theme Token Bindings ── */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-icon-muted: var(--icon-muted);
+  --color-text-disabled: var(--text-disabled);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-primary-foreground: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-text: var(--danger-text);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-text: var(--info-text);
+
+  --color-internal-bg: var(--internal-bg);
+  --color-internal-border: var(--internal-border);
+  --color-internal-text: var(--internal-text);
+
+  /* Compatibility aliases */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--text-2);
+  --color-secondary: var(--surface-2);
+  --color-input: var(--surface);
+  --color-ring: var(--primary);
+
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+
+  --radius-control: var(--radius-6);
+  --radius-card: var(--radius-10);
+  --radius-modal: var(--radius-14);
+}
+
+/* ── Light Theme: Warm Paper & Petrol (Default) ── */
+:root {
+  color-scheme: light;
+
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --surface-2: #F4F2EE;
+  --surface-3: #ECE9E3;
+  --border: #E7E3DC;
+  --border-strong: #D5D0C6;
+
+  --text: #1B1A17;            /* 16.53:1 on --bg · 17.40:1 on --surface */
+  --text-2: #5E5A52;          /*  6.52:1 on --bg ·  6.86:1 on --surface */
+  --text-3: #6E6960;          /*  5.05:1 on --bg ·  5.32:1 on --surface (AA text) */
+  --icon-muted: #8C877D;      /*  3.57:1 on --surface (AA non-text icons/dividers) */
+  --text-disabled: #B8B3A8;
+
+  --brand-petrol-deep: #0E5A63;
+  --primary: #0E5A63;         /*  7.89:1 on --surface */
+  --primary-hover: #0B4A52;   /*  9.93:1 with --on-primary */
+  --primary-active: #083C43;  /* 12.08:1 with --on-primary */
+  --primary-soft: #E3F1F2;    /*  6.81:1 with --primary */
+  --primary-text: #0E5A63;
+  --on-primary: #FFFFFF;      /*  7.89:1 on --primary */
+
+  --accent: #B68F4A;
+  --accent-text: #8C6B32;     /*  4.92:1 on --surface */
+  --accent-foreground: #1B1A17;
+
+  --success: #2E7D4F;
+  --success-soft: #E8F5ED;
+  --success-border: #C4E4D0;
+  --success-text: #21633D;    /*  6.42:1 on --success-soft */
+
+  --warning: #B7791F;
+  --warning-soft: #FCF3E1;
+  --warning-border: #F0D9A8;
+  --warning-text: #8A5A0F;    /*  5.37:1 on --warning-soft */
+
+  --danger: #C0392B;
+  --danger-solid: #C0392B;    /*  5.44:1 with white */
+  --danger-soft: #FDECEB;
+  --danger-border: #F3C4BF;
+  --danger-text: #A52D20;     /*  6.13:1 on --danger-soft */
+
+  --info: #2F6FA3;
+  --info-soft: #E8F2FA;
+  --info-border: #C2DCF0;
+  --info-text: #235884;       /*  6.61:1 on --info-soft */
+
+  --internal-bg: #FFF6E5;
+  --internal-border: #F0D9A8;
+  --internal-text: #6E4B12;   /*  7.31:1 on --internal-bg */
+
+  --radius-6: 6px;
+  --radius-10: 10px;
+  --radius-14: 14px;
+  --radius-full: 9999px;
+
+  --shadow-e0: none;
+  --shadow-e1: 0 1px 2px rgba(27, 26, 23, 0.05), 0 1px 3px rgba(27, 26, 23, 0.04);
+  --shadow-e2: 0 6px 16px -4px rgba(27, 26, 23, 0.10), 0 2px 6px -2px rgba(27, 26, 23, 0.05);
+  --shadow-e3: 0 18px 40px -10px rgba(27, 26, 23, 0.18), 0 4px 12px -4px rgba(27, 26, 23, 0.08);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --gutter-desktop: 24px;
+  --gutter-mobile: 16px;
+  --sidebar-expanded: 248px;
+  --sidebar-collapsed: 64px;
+  --topbar-height: 52px;
+
+  --font-ui: "IBM Plex Sans Arabic", "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --text-12: 0.75rem;
+  --text-13: 0.8125rem;
+  --text-14: 0.875rem;
+  --text-16: 1rem;
+  --text-20: 1.25rem;
+  --text-24: 1.5rem;
+  --text-32: 2rem;
+  --leading-body: 1.6;
+  --leading-heading: 1.4;
+
+  --dur-fast: 120ms;
+  --dur-mid: 200ms;
+  --dur-slow: 280ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --focus-ring: 0 0 0 2px var(--primary-soft), 0 0 0 3.5px var(--primary);
+
+  /* Compatibility Aliases for Existing Modules */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface-muted: var(--surface-2);
+  --surface-elevated: var(--surface);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-active: var(--primary);
+  --header-background: var(--surface);
+  --primary-foreground: var(--on-primary);
+  --secondary: var(--primary-active);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-2);
+  --input: var(--surface);
+  --ring: var(--primary);
+  --hover: var(--surface-2);
+  --selected: var(--primary-soft);
+  --popover: var(--surface);
+  --destructive: var(--danger);
+  --chart-1: var(--primary);
+  --chart-2: var(--accent);
+  --chart-3: var(--info);
+  --chart-4: var(--success);
+  --chart-5: var(--text-2);
+  --primary-dark: var(--primary-active);
+  --primary-green: var(--primary);
+  --on-secondary: var(--on-primary);
+  --on-background: var(--text);
+  --bg-main: var(--bg);
+  --surface-subtle: var(--surface-2);
+  --surface-hover: var(--surface-2);
+  --gold-accent: var(--accent);
+  --border-color: var(--border);
+  --text-main: var(--text);
+  --text-muted: var(--text-2);
+  --status-success-bg: var(--success-soft);
+  --status-success-text: var(--success-text);
+  --status-warning-bg: var(--warning-soft);
+  --status-warning-text: var(--warning-text);
+  --status-error-bg: var(--danger-soft);
+  --status-error-text: var(--danger-text);
+  --status-info-bg: var(--info-soft);
+  --status-info-text: var(--info-text);
+  --motion-fast: var(--dur-fast);
+  --motion-standard: var(--dur-mid);
+  --motion-easing: var(--ease-out);
+  --radius-control: var(--radius-6);
+  --radius-card: var(--radius-10);
+}
+
+/* ── Dark Theme: Crafted Deep Slate Ink (Not Inverted) ── */
+:is(html[data-theme="dark"], html.dark, [data-theme="dark"]) {
+  color-scheme: dark;
+
+  --bg: #111413;
+  --surface: #181C1B;
+  --surface-2: #1F2423;
+  --surface-3: #272D2C;
+  --border: #2B3130;
+  --border-strong: #3B4341;
+
+  --text: #ECEAE4;
+  --text-2: #A9A59B;
+  --text-3: #918D84;
+  --icon-muted: #8A867D;
+  --text-disabled: #5E6462;
+
+  --brand-petrol-deep: #0E5A63;
+  --primary: #4FB3BC;
+  --primary-hover: #6BC4CC;
+  --primary-active: #399DA6;
+  --primary-soft: #173033;
+  --primary-text: #6BC4CC;
+  --on-primary: #0A1E20;
+
+  --accent: #D8B36A;
+  --accent-text: #E2C17F;
+  --accent-foreground: #111413;
+
+  --success: #6AD196;
+  --success-soft: #162A1F;
+  --success-border: #244734;
+  --success-text: #6AD196;
+
+  --warning: #F0B85A;
+  --warning-soft: #2E2312;
+  --warning-border: #4D3B1D;
+  --warning-text: #F0B85A;
+
+  --danger: #F27C70;
+  --danger-solid: #B93528;    /*  5.86:1 with white */
+  --danger-soft: #301816;
+  --danger-border: #522926;
+  --danger-text: #F27C70;
+
+  --info: #6EB5EB;
+  --info-soft: #162634;
+  --info-border: #243F57;
+  --info-text: #6EB5EB;
+
+  --internal-bg: #282115;
+  --internal-border: #5A4725;
+  --internal-text: #F3D293;
+
+  --shadow-e1: 0 1px 2px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.22);
+  --shadow-e2: 0 8px 20px -4px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.30);
+  --shadow-e3: 0 20px 44px -10px rgba(0, 0, 0, 0.60), 0 4px 12px -4px rgba(0, 0, 0, 0.36);
+
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface-muted: var(--surface-2);
+  --surface-elevated: var(--surface-2);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-active: var(--primary);
+  --header-background: var(--surface);
+  --primary-foreground: var(--on-primary);
+  --secondary: var(--surface-2);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-2);
+  --input: var(--surface-2);
+  --ring: var(--primary);
+  --hover: var(--surface-2);
+  --selected: var(--primary-soft);
+  --popover: var(--surface);
+  --destructive: var(--danger);
+  --text-main: var(--text);
+  --text-muted: var(--text-2);
+  --bg-main: var(--bg);
+  --border-color: var(--border);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ig-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@keyframes ig-gate-pulse {
+  0%, 100% {
+    opacity: 0.45;
+    transform: translateY(1.5px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.ig-loading-keystone {
+  animation: ig-gate-pulse 600ms var(--ease-out) infinite;
+}
+
+@keyframes ig-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.ig-skeleton {
+  background-color: var(--surface-3);
+  animation: ig-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ig-record-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.42; transform: scale(0.92); }
+}
+
+.ig-record-dot {
+  animation: ig-record-pulse 1200ms var(--ease-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-loading-keystone,
+  .ig-skeleton,
+  .ig-record-dot {
+    animation: none !important;
+    transform: none !important;
+  }
+}

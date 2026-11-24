@@ -6,20 +6,44 @@
  * ==============================================================================
  */
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CustomizationProvider } from "@/context/CustomizationContext";
 import { ToastProvider } from "@/context/ToastContext";
-import { buildPreHydrationThemeScript } from "@/lib/applyTheme";
 import DevToolkitLoader from "@/components/dev/DevToolkitLoader";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Investor Gate - نظام إدارة عمليات تقنية المعلومات",
-  description: "نظام إدارة الأصول التقنية ومكتب المساعدة والعمليات للشركات المتعددة",
+  title: "بوابة المستثمر — Investor Gate OS",
+  description: "نظام إدارة عمليات تقنية المعلومات والأصول ومكتب المساعدة للشركات المتعددة",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-192-maskable.png", sizes: "192x192", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "بوابة المستثمر",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF9F6" },
+    { media: "(prefers-color-scheme: dark)", color: "#111413" },
+  ],
 };
 
 export default function RootLayout({
@@ -29,22 +53,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className="h-full" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
-        <meta name="theme-color" content="#131127" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="بوابة المستثمر" />
-        <link rel="manifest" href="/manifest.json" />
-        <script dangerouslySetInnerHTML={{ __html: buildPreHydrationThemeScript() }} />
-      </head>
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] font-sans antialiased">
+      <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--text)] font-sans antialiased">
         <AuthProvider>
           <WorkspaceProvider>
             <CustomizationProvider>
               <ToastProvider>{children}</ToastProvider>
-              <DevToolkitLoader />
+              {process.env.NEXT_PUBLIC_DEV_TOOLKIT === "1" ? <DevToolkitLoader /> : null}
             </CustomizationProvider>
           </WorkspaceProvider>
         </AuthProvider>
