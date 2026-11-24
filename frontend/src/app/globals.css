@@ -355,24 +355,24 @@ html.dark {
 
 /* Eye-comfort frosted status badges for Dark Mode */
 :is(html[data-theme="dark"], html.dark) :is(.bg-rose-50, .bg-rose-50\/50, .bg-rose-50\/70, .bg-rose-50\/80, .bg-rose-100) {
-  background-color: rgba(225, 29, 72, 0.15) !important;
-  color: #FB7185 !important;
-  border-color: rgba(225, 29, 72, 0.25) !important;
+  background-color: rgba(225, 29, 72, 0.2) !important;
+  color: #FDA4AF !important;
+  border-color: rgba(225, 29, 72, 0.35) !important;
 }
 :is(html[data-theme="dark"], html.dark) :is(.bg-emerald-50, .bg-emerald-50\/50, .bg-emerald-50\/70, .bg-emerald-50\/80, .bg-emerald-100) {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-  color: #34D399 !important;
-  border-color: rgba(16, 185, 129, 0.25) !important;
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
 }
 :is(html[data-theme="dark"], html.dark) :is(.bg-amber-50, .bg-amber-50\/50, .bg-amber-50\/70, .bg-amber-50\/80, .bg-amber-100) {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-  color: #FBBF24 !important;
-  border-color: rgba(245, 158, 11, 0.25) !important;
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #FCD34D !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
 }
 :is(html[data-theme="dark"], html.dark) :is(.bg-sky-50, .bg-sky-50\/50, .bg-sky-50\/70, .bg-sky-50\/80, .bg-sky-100, .bg-blue-50, .bg-blue-100) {
-  background-color: rgba(14, 165, 233, 0.15) !important;
-  color: #38BDF8 !important;
-  border-color: rgba(14, 165, 233, 0.25) !important;
+  background-color: rgba(14, 165, 233, 0.2) !important;
+  color: #7DD3FC !important;
+  border-color: rgba(14, 165, 233, 0.35) !important;
 }
 html[data-density="compact"] :is(td, th) { padding-block: .35rem; }
 html[data-density="spacious"] :is(td, th) { padding-block: 1.1rem; }

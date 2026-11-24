@@ -204,7 +204,7 @@ export function TasksSplitDrawer({
           type="button"
           onClick={() => onCopyLink?.(task.id)}
           title="نسخ رمز المهمة"
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 hover:text-purple-700 transition cursor-pointer"
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition cursor-pointer"
         >
           <span>{task.reference || `TASK-${task.id.slice(0, 6)}`}</span>
           <LinkIcon size={12} className="text-slate-400" />
@@ -229,7 +229,7 @@ export function TasksSplitDrawer({
 
           {/* Department & Operational Tags */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20">
               {task.department || "تقنية المعلومات"}
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
@@ -282,7 +282,7 @@ export function TasksSplitDrawer({
               <span className="font-bold text-slate-800 dark:text-slate-100">
                 {task.assigned_to_name || "أحمد الحربي"}
               </span>
-              <div className="w-6 h-6 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
                 {task.assigned_to_name ? task.assigned_to_name[0] : "أ"}
               </div>
             </div>
@@ -338,7 +338,7 @@ export function TasksSplitDrawer({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
             <span className="flex items-center gap-1.5">
-              <Paperclip size={14} className="text-purple-600" />
+              <Paperclip size={14} className="text-primary" />
               <span>المرفقات (2)</span>
             </span>
           </div>
@@ -349,7 +349,7 @@ export function TasksSplitDrawer({
               <button
                 type="button"
                 onClick={togglePlayAudio}
-                className="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer shadow-xs"
+                className="w-9 h-9 rounded-xl bg-primary hover:opacity-90 text-primary-foreground flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer shadow-xs"
                 title={isPlayingAudio ? "إيقاف مؤقت" : "تشغيل التسجيل الصوتي"}
               >
                 {isPlayingAudio ? <Pause size={16} /> : <Play size={16} />}
@@ -366,7 +366,7 @@ export function TasksSplitDrawer({
 
             {/* Waveform graphic visualization */}
             <div className="flex items-center gap-1">
-              <div className="text-[11px] font-mono font-bold text-purple-700 dark:text-purple-300">
+              <div className="text-[11px] font-mono font-bold text-primary">
                 02:48
               </div>
               <div className="flex items-center gap-0.5 h-5 px-1">
@@ -376,8 +376,8 @@ export function TasksSplitDrawer({
                     style={{ height: `${h}px` }}
                     className={`w-1 rounded-full transition-all duration-300 ${
                       isPlayingAudio
-                        ? "bg-purple-600 animate-pulse"
-                        : "bg-purple-300 dark:bg-purple-800"
+                        ? "bg-primary animate-pulse"
+                        : "bg-primary/30 dark:bg-primary/40"
                     }`}
                   />
                 ))}
@@ -406,7 +406,7 @@ export function TasksSplitDrawer({
                 e.preventDefault();
                 alert("جاري تحميل الملف...");
               }}
-              className="text-xs font-semibold text-purple-600 hover:text-purple-700 hover:underline shrink-0"
+              className="text-xs font-semibold text-primary hover:underline shrink-0"
             >
               تحميل
             </a>
@@ -416,14 +416,14 @@ export function TasksSplitDrawer({
         {/* 6. Activity Timeline (سجل النشاط) (Reference 2) */}
         <div className="space-y-3 pt-2">
           <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-            <Clock size={14} className="text-purple-600" />
+            <Clock size={14} className="text-primary" />
             <span>سجل النشاط</span>
           </div>
 
-          <div className="relative border-r-2 border-purple-200 dark:border-purple-900 mr-2 pr-4 space-y-4">
+          <div className="relative border-r-2 border-primary/20 dark:border-primary/30 mr-2 pr-4 space-y-4">
             {/* 1. بدء التنفيذ */}
             <div className="relative">
-              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
+              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
                 <Play size={8} className="fill-current mr-0.5" />
               </div>
               <div className="space-y-0.5">
@@ -438,7 +438,7 @@ export function TasksSplitDrawer({
 
             {/* 2. إسناد المهمة */}
             <div className="relative">
-              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-purple-500 text-white flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
+              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-primary/80 text-primary-foreground flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
                 <User size={9} />
               </div>
               <div className="space-y-0.5">
@@ -453,7 +453,7 @@ export function TasksSplitDrawer({
 
             {/* 3. إنشاء المهمة */}
             <div className="relative">
-              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-purple-400 text-white flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
+              <div className="absolute -right-[23px] top-0.5 w-4 h-4 rounded-full bg-primary/60 text-primary-foreground flex items-center justify-center text-[9px] ring-4 ring-white dark:ring-slate-900">
                 +
               </div>
               <div className="space-y-0.5">

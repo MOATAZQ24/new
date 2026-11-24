@@ -169,36 +169,36 @@ export function TasksDataTable({
     switch (priority) {
       case "Critical":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
             <Flame className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             <span>حرج جداً</span>
           </span>
         );
       case "Urgent":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-            <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800">
+            <Zap className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
             <span>عاجل</span>
           </span>
         );
       case "High":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
             <span>مرتفع</span>
           </span>
         );
       case "Low":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-            <ArrowDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+            <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>منخفض</span>
           </span>
         );
       case "Medium":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
-            <Target className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+            <Target className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
             <span>متوسط</span>
           </span>
         );
@@ -211,8 +211,8 @@ export function TasksDataTable({
       case "In Progress":
       case "Accepted":
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 dark:text-sky-300">
-            <span className="w-2 h-2 rounded-full bg-sky-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>قيد التنفيذ</span>
           </span>
         );
@@ -221,8 +221,8 @@ export function TasksDataTable({
       case "Pending":
       case "Pending Acceptance":
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
-            <Hourglass size={12} className="text-amber-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+            <Hourglass size={12} className="text-amber-700 dark:text-amber-400" />
             <span>بانتظار القبول</span>
           </span>
         );
@@ -230,14 +230,14 @@ export function TasksDataTable({
       case "Done":
       case "Approved / Completed":
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-            <CheckCircle2 size={13} className="text-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+            <CheckCircle2 size={13} className="text-emerald-700 dark:text-emerald-400" />
             <span>مكتملة</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             <span className="w-2 h-2 rounded-full bg-slate-400" />
             <span>{status}</span>
           </span>
@@ -298,7 +298,7 @@ export function TasksDataTable({
                   aria-label="تحديد جميع المهام"
                   checked={selectedIds.length > 0 && selectedIds.length === tasks.length}
                   onChange={toggleSelectAll}
-                  className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                  className="rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                 />
               </th>
               <th className="py-2.5 px-2 w-24 whitespace-nowrap">#</th>

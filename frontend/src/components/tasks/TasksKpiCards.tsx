@@ -101,9 +101,6 @@ export function TasksKpiCards({
           <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {newCount}
           </span>
-          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full" dir="ltr">
-            ↑ +12%
-          </span>
         </div>
       </button>
 
@@ -128,9 +125,6 @@ export function TasksKpiCards({
         <div className="mt-3 flex items-baseline justify-between">
           <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {inProgressCount}
-          </span>
-          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full" dir="ltr">
-            ↑ +7%
           </span>
         </div>
       </button>
@@ -157,9 +151,6 @@ export function TasksKpiCards({
           <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {completedCount}
           </span>
-          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full" dir="ltr">
-            ↑ +18%
-          </span>
         </div>
       </button>
 
@@ -184,9 +175,6 @@ export function TasksKpiCards({
         <div className="mt-3 flex items-baseline justify-between">
           <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {overdueCount}
-          </span>
-          <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded-full" dir="ltr">
-            ↓ -29%
           </span>
         </div>
       </button>
