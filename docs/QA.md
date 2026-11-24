@@ -21,3 +21,17 @@
 
 ## Track 2: `feat/ui-redesign`
 - Pending Stage 0 Audit & Stage 1 Design Brief approval.
+
+---
+
+## Track 2 (`feat/ui-redesign`) — Stage 0 Baseline Audit & Stage 1 Brief Sign-Off (2026-11-24)
+
+### Stage 0 Automated Baseline (`@axe-core/playwright`, Desktop `1440×900` RTL)
+- `/login`: `0` critical, `0` serious, `1` moderate (`region`)
+- `/`: `0` critical, `1` serious (`color-contrast` × 2 nodes)
+- `/my-work`: `1` critical (`select-name`), `1` serious (`color-contrast`), `1` moderate (`region`)
+- `/tickets`: `0` critical, `1` serious (`color-contrast`), `1` moderate (`page-has-heading-one`)
+- `/tasks`: `2` critical (`button-name` × 2, `select-name` × 4), `1` serious (`color-contrast` × 8)
+- **Baseline Screenshots:** 19 captures stored in `docs/design/screens/stage0/` (`1440/1024/390`, Light/Dark, RTL/LTR).
+- **Stage 1 Deliverables Ready for Review:** `docs/AUDIT.md`, `docs/DESIGN.md`, `docs/DECISIONS.log`, `docs/design/explorations/` (3 hand-authored SVG Gate logo directions + rendered PNG specimens).
+- **Status:** **HOLDING AT STAGE 1 GATE** — Awaiting explicit user approval of Design Brief, WCAG tokens, and preferred SVG logo direction before implementing Stage 2 (`Phase 4A`).

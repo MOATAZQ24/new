@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Investor Gate — Direction A: Rising Threshold">
+  <!-- Left architectural gate jamb curving into a poised horizontal lintel -->
+  <path d="M5 27V14C5 9.02944 9.02944 5 14 5H16.5V9.5H14C11.5147 9.5 9.5 11.5147 9.5 14V27H5Z" fill="#0E5A63"/>
+  <!-- Right rising threshold pillar stepping gracefully higher for upward growth -->
+  <path d="M22.5 27V10.5L19.5 8.5V4L27 8.5V27H22.5Z" fill="#0E5A63"/>
+  <!-- Rising keystone passage bar in the negative-space threshold -->
+  <path d="M13 18.2L19 14.8V19L13 22.4V18.2Z" fill="#B68F4A"/>
+</svg>

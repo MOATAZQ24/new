@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Investor Gate — Direction C: Monolith Aperture">
+  <!-- Precision geometric frame with open central threshold -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 7C5.5 5.89543 6.39543 5 7.5 5H24.5C25.6046 5 26.5 5.89543 26.5 7V27H21V11.25H11V27H5.5V7Z" fill="#0E5A63"/>
+  <!-- Upward diagonal passage beam cleanly inset inside the aperture -->
+  <path d="M13 19.2L19 15.5V19.6L13 23.3V19.2Z" fill="#B68F4A"/>
+</svg>
