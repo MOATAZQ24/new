@@ -17,14 +17,17 @@ import {
   ChevronDown,
   LogOut,
   Menu,
+  Moon,
   Search,
+  Sun,
   X,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
-import { mediaUrl } from "@/context/WorkspaceContext";
+import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCustomization } from "@/context/CustomizationContext";
+import { persistThemeLocally } from "@/lib/applyTheme";
 import { Avatar } from "@/components/ui/avatar";
 
 interface SearchResultItem {
@@ -81,6 +84,25 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
   const router = useRouter();
   const { user, activeCompany, activeCompanyId, setActiveCompanyId, logout } = useAuth();
   const { companyBranding } = useCustomization();
+  const { draft, setDraft, save, presetId } = useWorkspace();
+  const { setTheme, resolvedTheme } = useCustomization();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextMode = resolvedTheme === "dark" ? "light" : "dark";
+    persistThemeLocally(presetId, nextMode);
+    setTheme(nextMode);
+    const nextConfig = {
+      ...draft,
+      appearance: { ...draft.appearance, theme: nextMode },
+    };
+    setDraft(nextConfig);
+    void save(nextConfig);
+  };
 
   const [openPopover, setOpenPopover] = useState<PopoverType>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -361,6 +383,21 @@ export function TopNav({ mobileMenuOpen = false, onOpenMobileMenu }: TopNavProps
 
       {/* Inline-End: Notifications Bell + User Menu (Clean, Never Clips at 1024px) */}
       <div className="flex items-center gap-1.5 shrink-0">
+        {/* Quick Theme Toggle (Light / Dark) */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={mounted && resolvedTheme === "dark" ? "تفعيل الوضع النهاري" : "تفعيل الوضع الليلي"}
+          title={mounted && resolvedTheme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-6)] text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] transition-colors cursor-pointer"
+        >
+          {mounted && resolvedTheme === "dark" ? (
+            <Sun className="h-[18px] w-[18px] text-amber-400" strokeWidth={1.5} />
+          ) : (
+            <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          )}
+        </button>
+
         <div className="relative">
           <button
             type="button"

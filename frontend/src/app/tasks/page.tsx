@@ -2930,7 +2930,7 @@ export default function TasksPage() {
         </Modal>
 
         {/* Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment (Hidden on Mobile to preserve single clean FAB) */}
-        <div className="hidden lg:block fixed bottom-8 right-8 z-50">
+        <div className="hidden lg:block fixed bottom-8 left-8 z-30">
           <button
             type="button"
             onClick={() => {

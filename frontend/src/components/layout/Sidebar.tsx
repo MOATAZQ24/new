@@ -36,6 +36,7 @@ import { AssetIcon, CustodyIcon, SwitchIcon, VaultIcon } from "@/components/ui/d
 import { useAuth } from "@/context/AuthContext";
 import { mediaUrl, useWorkspace } from "@/context/WorkspaceContext";
 import { useCustomization } from "@/context/CustomizationContext";
+import { persistThemeLocally } from "@/lib/applyTheme";
 
 interface NavItem {
   name: string;
@@ -74,7 +75,7 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname() || "/";
   const { activeCompany, user } = useAuth();
-  const { draft, setDraft, save } = useWorkspace();
+  const { draft, setDraft, save, presetId } = useWorkspace();
   const { setTheme, resolvedTheme } = useCustomization();
   const [mounted, setMounted] = useState(false);
 
@@ -104,6 +105,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
   const toggleTheme = () => {
     const nextMode = resolvedTheme === "dark" ? "light" : "dark";
+    persistThemeLocally(presetId, nextMode);
     setTheme(nextMode);
     const nextConfig = {
       ...draft,
