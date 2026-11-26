@@ -235,12 +235,12 @@ export default function ApprovalsPage() {
           icon={<ShieldCheckIcon className="w-5 h-5 text-[#2563EB]" />}
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+              <div className="flex items-center bg-[var(--surface-2)] p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setTab("approvals")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    tab === "approvals" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                    tab === "approvals" ? "bg-[var(--surface)] text-[var(--text)] shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
                   }`}
                 >
                   مسارات الاعتماد ({data?.kpis.total_approvals || 0})
@@ -249,7 +249,7 @@ export default function ApprovalsPage() {
                   type="button"
                   onClick={() => setTab("purchases")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    tab === "purchases" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                    tab === "purchases" ? "bg-[var(--surface)] text-[var(--text)] shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
                   }`}
                 >
                   طلبات الشراء والتوريد ({data?.kpis.total_purchase_requests || 0})
@@ -258,7 +258,7 @@ export default function ApprovalsPage() {
                   type="button"
                   onClick={() => setTab("create")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    tab === "create" ? "bg-[#1D4ED8] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                    tab === "create" ? "bg-[#1D4ED8] text-white shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
                   }`}
                 >
                   + طلب شراء جديد
@@ -270,52 +270,52 @@ export default function ApprovalsPage() {
 
         {/* 5 KPI Summary Cards (Hidden on mobile) */}
         <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{data?.kpis.total_approvals ?? 0}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي طلبات الاعتماد</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{data?.kpis.total_approvals ?? 0}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">إجمالي طلبات الاعتماد</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <ShieldCheckIcon className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-amber-600">{data?.kpis.pending_approvals ?? 0}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">بانتظار الاعتماد</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">بانتظار الاعتماد</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <Icons.Clock size={18} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#2563EB]">{data?.kpis.approved_count ?? 0}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">تم اعتمادها</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">تم اعتمادها</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={18} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{data?.kpis.total_purchase_requests ?? 0}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">طلبات الشراء المسجلة</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{data?.kpis.total_purchase_requests ?? 0}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">طلبات الشراء المسجلة</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <Icons.Assets size={18} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#3B82F6]">
-                {(data?.kpis.pending_purchase_amount_sar ?? 0).toLocaleString()} <span className="text-xs font-normal text-slate-500">ر.س</span>
+                {(data?.kpis.pending_purchase_amount_sar ?? 0).toLocaleString()} <span className="text-xs font-normal text-[var(--text-3)]">ر.س</span>
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">مبالغ الشراء المعلقة</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">مبالغ الشراء المعلقة</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.CreditCard size={18} />
@@ -325,17 +325,17 @@ export default function ApprovalsPage() {
 
         {/* Tab 1: Workflow Approvals */}
         {tab === "approvals" && (
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-slate-900">سجل مسارات الاعتماد الفنية والإدارية</span>
-                <span className="text-xs text-slate-500">({data?.approvals.length || 0} طلب)</span>
+                <span className="font-bold text-sm text-[var(--text)]">سجل مسارات الاعتماد الفنية والإدارية</span>
+                <span className="text-xs text-[var(--text-3)]">({data?.approvals.length || 0} طلب)</span>
               </div>
               <div className="flex items-center gap-2">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-slate-50 outline-none"
+                  className="px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs text-[var(--text-2)] bg-[var(--surface-2)] outline-none"
                 >
                   <option value="">جميع الحالات</option>
                   <option value="Pending">معلق (Pending)</option>
@@ -351,7 +351,7 @@ export default function ApprovalsPage() {
               </div>
             ) : !data?.approvals || data.approvals.length === 0 ? (
               <EmptyState
-                icon={<ShieldCheckIcon className="w-8 h-8 text-slate-400" />}
+                icon={<ShieldCheckIcon className="w-8 h-8 text-[var(--text-3)]" />}
                 title="لا توجد طلبات اعتماد مسجلة حالياً"
                 description="يتم إنشاء مسارات الاعتماد تلقائياً عند طلب شراء أجهزة جديدة، أو طلبات الصيانة الاستثنائية وتراخيص البرمجيات."
               />
@@ -377,7 +377,7 @@ export default function ApprovalsPage() {
                 {/* Desktop Approvals Table */}
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full text-right text-xs">
-                    <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-100">
+                    <thead className="bg-[var(--surface-2)] text-[var(--text-2)] font-bold border-b border-[var(--border)]">
                       <tr>
                         <th className="py-3 px-4">عنوان الطلب / المسار</th>
                         <th className="py-3 px-4">النوع</th>
@@ -389,18 +389,18 @@ export default function ApprovalsPage() {
                         <th className="py-3 px-4 text-center">الإجراءات</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-[var(--border)]">
                       {data.approvals.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                        <tr key={item.id} className="hover:bg-[var(--surface-2)] transition-colors">
                           <td className="py-3 px-4">
-                            <div className="font-bold text-slate-900">{item.title}</div>
+                            <div className="font-bold text-[var(--text)]">{item.title}</div>
                             {item.decision_notes && (
-                              <div className="text-[11px] text-slate-500 mt-0.5">ملاحظات: {item.decision_notes}</div>
+                              <div className="text-[11px] text-[var(--text-3)] mt-0.5">ملاحظات: {item.decision_notes}</div>
                             )}
                           </td>
-                          <td className="py-3 px-4 font-mono text-slate-600">{item.workflow_type}</td>
-                          <td className="py-3 px-4 font-medium text-slate-700">{item.initiator_name}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                          <td className="py-3 px-4 font-mono text-[var(--text-2)]">{item.workflow_type}</td>
+                          <td className="py-3 px-4 font-medium text-[var(--text-2)]">{item.initiator_name}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-[var(--text)]">
                             {item.amount_sar ? `${item.amount_sar.toLocaleString()} ر.س` : "—"}
                           </td>
                           <td className="py-3 px-4">
@@ -409,7 +409,7 @@ export default function ApprovalsPage() {
                           <td className="py-3 px-4">
                             <StatusBadge status={item.current_state} />
                           </td>
-                          <td className="py-3 px-4 text-slate-500" dir="ltr">
+                          <td className="py-3 px-4 text-[var(--text-3)]" dir="ltr">
                             {item.created_at?.slice(0, 10)}
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -433,7 +433,7 @@ export default function ApprovalsPage() {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-[11px] text-slate-400 font-medium">
+                              <span className="text-[11px] text-[var(--text-3)] font-medium">
                                 {item.current_state === "Approved" ? "معتمد" : item.current_state === "Rejected" ? "مرفوض" : "قيد المراجعة"}
                               </span>
                             )}
@@ -450,11 +450,11 @@ export default function ApprovalsPage() {
 
         {/* Tab 2: Purchase & Service Requests */}
         {tab === "purchases" && (
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-sm text-slate-900">كتالوج طلبات الشراء والتوريد الفني</h3>
-                <p className="text-xs text-slate-500">طلبات الأجهزة، الملحقات، وتراخيص الأنظمة المسجلة بالشركة</p>
+                <h3 className="font-bold text-sm text-[var(--text)]">كتالوج طلبات الشراء والتوريد الفني</h3>
+                <p className="text-xs text-[var(--text-3)]">طلبات الأجهزة، الملحقات، وتراخيص الأنظمة المسجلة بالشركة</p>
               </div>
               <button
                 type="button"
@@ -471,7 +471,7 @@ export default function ApprovalsPage() {
               </div>
             ) : !data?.purchase_requests || data.purchase_requests.length === 0 ? (
               <EmptyState
-                icon={<Icons.Assets size={28} className="text-slate-400" />}
+                icon={<Icons.Assets size={28} className="text-[var(--text-3)]" />}
                 title="لا توجد طلبات شراء مسجلة"
                 description="يمكنك تسجيل أول طلب شراء أو توريد عتاد وتقنية للموظفين والأقسام."
                 action={
@@ -491,7 +491,7 @@ export default function ApprovalsPage() {
                   {data.purchase_requests.map((p) => (
                     <div
                       key={p.id}
-                      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 p-4 shadow-2xs space-y-2.5"
+                      className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700/80 p-4 shadow-2xs space-y-2.5"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-xs font-bold text-[#2563EB] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
@@ -501,19 +501,19 @@ export default function ApprovalsPage() {
                       </div>
 
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                        <h4 className="text-sm font-bold text-[var(--text)] dark:text-white leading-snug">
                           {p.item_name}
                         </h4>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                          <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
+                        <div className="flex items-center gap-2 mt-1 text-xs text-[var(--text-3)]">
+                          <span className="bg-[var(--surface-2)] dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
                             {p.category}
                           </span>
                           {p.vendor_name && <span>المورد: {p.vendor_name}</span>}
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
-                        <div className="font-mono text-slate-600 dark:text-slate-300">
+                      <div className="pt-2 border-t border-[var(--border)] dark:border-slate-700/60 flex items-center justify-between text-xs">
+                        <div className="font-mono text-[var(--text-2)] dark:text-slate-300">
                           {p.quantity} × {p.unit_cost_sar.toLocaleString()} ر.س
                         </div>
                         <div className="font-mono font-black text-xs text-[#2563EB] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md">
@@ -521,7 +521,7 @@ export default function ApprovalsPage() {
                         </div>
                       </div>
 
-                      <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-between">
+                      <div className="pt-1 text-[11px] text-[var(--text-3)] flex items-center justify-between">
                         <span>{p.requester_name} ({p.department_name})</span>
                         <span dir="ltr">{p.created_at?.slice(0, 10)}</span>
                       </div>
@@ -532,7 +532,7 @@ export default function ApprovalsPage() {
                 {/* Desktop Purchases Table */}
                 <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-100">
+                  <thead className="bg-[var(--surface-2)] text-[var(--text-2)] font-bold border-b border-[var(--border)]">
                     <tr>
                       <th className="py-3 px-4">رقم الطلب</th>
                       <th className="py-3 px-4">الصنف / الجهاز</th>
@@ -545,24 +545,24 @@ export default function ApprovalsPage() {
                       <th className="py-3 px-4">الحالة</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {data.purchase_requests.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                      <tr key={p.id} className="hover:bg-[var(--surface-2)] transition-colors">
                         <td className="py-3 px-4 font-mono font-bold text-[#2563EB]">{p.request_number}</td>
                         <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{p.item_name}</div>
+                          <div className="font-bold text-[var(--text)]">{p.item_name}</div>
                           {p.justification && (
-                            <div className="text-[11px] text-slate-500 mt-0.5 truncate max-w-xs">{p.justification}</div>
+                            <div className="text-[11px] text-[var(--text-3)] mt-0.5 truncate max-w-xs">{p.justification}</div>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-slate-600">{p.category}</td>
-                        <td className="py-3 px-4 text-slate-600">{p.vendor_name || "—"}</td>
+                        <td className="py-3 px-4 text-[var(--text-2)]">{p.category}</td>
+                        <td className="py-3 px-4 text-[var(--text-2)]">{p.vendor_name || "—"}</td>
                         <td className="py-3 px-4 font-mono font-semibold">{p.quantity}</td>
                         <td className="py-3 px-4 font-mono">{p.unit_cost_sar.toLocaleString()} ر.س</td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                        <td className="py-3 px-4 font-mono font-bold text-[var(--text)]">
                           {p.total_cost_sar.toLocaleString()} ر.س
                         </td>
-                        <td className="py-3 px-4 text-slate-700">{p.requester_name}</td>
+                        <td className="py-3 px-4 text-[var(--text-2)]">{p.requester_name}</td>
                         <td className="py-3 px-4">
                           <StatusBadge status={p.status} />
                         </td>
@@ -578,10 +578,10 @@ export default function ApprovalsPage() {
 
         {/* Tab 3: Create New Procurement Request */}
         {tab === "create" && (
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 max-w-3xl mx-auto">
-            <div className="mb-5 border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-base text-slate-900">تقديم طلب شراء وتوريد فني جديد</h3>
-              <p className="text-xs text-slate-500 mt-1">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs p-6 max-w-3xl mx-auto">
+            <div className="mb-5 border-b border-[var(--border)] pb-3">
+              <h3 className="font-bold text-base text-[var(--text)]">تقديم طلب شراء وتوريد فني جديد</h3>
+              <p className="text-xs text-[var(--text-3)] mt-1">
                 سيتم إدراج الطلب تلقائياً في دورة الاعتماد وإرساله للمسؤولين الماليين والتقنيين للموافقة.
               </p>
             </div>
@@ -589,7 +589,7 @@ export default function ApprovalsPage() {
             <form onSubmit={handleCreatePurchase} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-[var(--text-2)] mb-1">
                     رقم الطلب <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -597,30 +597,30 @@ export default function ApprovalsPage() {
                     required
                     value={formData.request_number}
                     onChange={(e) => setFormData({ ...formData, request_number: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] font-mono text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-[var(--text-2)] mb-1">
                     تصنيف الصنف <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   >
-                    <option value="Hardware">أجهزة وعتاد (Hardware)</option>
-                    <option value="Software">تراخيص برمجيات (Software)</option>
-                    <option value="Access">صلاحيات ووصول سحابي (Access)</option>
+                    <option value="Hardware">أجهزة وعتاد</option>
+                    <option value="Software">تراخيص برمجيات</option>
+                    <option value="Access">صلاحيات ووصول سحابي</option>
                     <option value="Maintenance">قطع غيار وصيانة (Maintenance)</option>
-                    <option value="Network">معدات شبكات واتصالات (Network)</option>
+                    <option value="Network">معدات شبكات واتصالات</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-[var(--text-2)] mb-1">
                   اسم الصنف / الجهاز المطلوب <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -629,24 +629,24 @@ export default function ApprovalsPage() {
                   placeholder="مثال: لابتوب Dell Latitude 5540، شاشة 27 بوصة، ترخيص Zoom Enterprise..."
                   value={formData.item_name}
                   onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">المورد المقترح (اختياري)</label>
+                  <label className="block font-bold text-[var(--text-2)] mb-1">المورد المقترح (اختياري)</label>
                   <input
                     type="text"
                     placeholder="مثال: جرير، إكسترا، عصر الجوال..."
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-[var(--text-2)] mb-1">
                     الكمية <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -655,12 +655,12 @@ export default function ApprovalsPage() {
                     required
                     value={formData.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 1 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-[var(--text-2)] mb-1">
                     سعر الوحدة المقدر (ر.س) <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -670,18 +670,18 @@ export default function ApprovalsPage() {
                     required
                     value={formData.unit_cost_sar}
                     onChange={(e) => setFormData({ ...formData, unit_cost_sar: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">الفرع المستفيد</label>
+                  <label className="block font-bold text-[var(--text-2)] mb-1">الفرع المستفيد</label>
                   <select
                     value={formData.branch_id}
                     onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   >
                     <option value="">-- اختياري --</option>
                     {branches.map((b) => (
@@ -691,11 +691,11 @@ export default function ApprovalsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">الإدارة / القسم</label>
+                  <label className="block font-bold text-[var(--text-2)] mb-1">الإدارة / القسم</label>
                   <select
                     value={formData.department_id}
                     onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                   >
                     <option value="">-- اختياري --</option>
                     {departments.map((d) => (
@@ -706,29 +706,29 @@ export default function ApprovalsPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">مبررات الشروع والاحتياج العملي</label>
+                <label className="block font-bold text-[var(--text-2)] mb-1">مبررات الشروع والاحتياج العملي</label>
                 <textarea
                   rows={3}
                   placeholder="بيان سبب طلب الشراء، الموظفين المستفيدين، أو المشروع المرتبط..."
                   value={formData.justification}
                   onChange={(e) => setFormData({ ...formData, justification: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               {/* Total Summary Box */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                <span className="font-bold text-slate-700">التكلفة التقديرية الإجمالية:</span>
+              <div className="p-3.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between">
+                <span className="font-bold text-[var(--text-2)]">التكلفة التقديرية الإجمالية:</span>
                 <span className="font-mono text-base font-black text-[#2563EB]">
                   {totalCostCalc.toLocaleString()} ر.س
                 </span>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end gap-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setTab("approvals")}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -764,7 +764,7 @@ export default function ApprovalsPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-[var(--text-2)] mb-1">
                   ملاحظات وتوجيهات الاعتماد {decisionType === "Rejected" && <span className="text-rose-500">*</span>}
                 </label>
                 <textarea
@@ -777,15 +777,15 @@ export default function ApprovalsPage() {
                       ? "ملاحظات الاعتماد والموافقة الفنية (اختياري)..."
                       : "يرجى ذكر سبب الرفض أو التعديلات المطلوبة (إلزامي)..."
                   }
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+              <div className="pt-2 flex justify-end gap-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setDecisionModal(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
                 >
                   إلغاء
                 </button>

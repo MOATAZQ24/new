@@ -93,14 +93,14 @@ export default function MorePage() {
   return (
     <DashboardLayout>
       {/* Mobile Presentation - Pixel-perfect reproduction of Reference Image 3 */}
-      <div className="block lg:hidden min-h-screen bg-slate-50/60 dark:bg-slate-950 pb-24 px-4 pt-3 space-y-4">
+      <div className="block lg:hidden min-h-screen bg-[var(--surface-2)] dark:bg-slate-950 pb-24 px-4 pt-3 space-y-4">
         {/* Page Title & Subtitle Header */}
         <div className="flex items-center justify-between pt-1">
           <div className="text-right">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[var(--text)] dark:text-white tracking-tight">
               المزيد
             </h1>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+            <p className="text-xs text-[var(--text-3)] dark:text-slate-500 mt-0.5 font-medium">
               الوصول إلى جميع الوحدات والخدمات
             </p>
           </div>
@@ -111,27 +111,27 @@ export default function MorePage() {
 
         {/* Section 1: الوحدات الرئيسية (Main Modules) */}
         <div>
-          <h2 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <h2 className="text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             الوحدات الرئيسية
           </h2>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800/80 shadow-2xs divide-y divide-[var(--border)] dark:divide-slate-800/60 overflow-hidden">
             {mainModules.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
+                  className="flex items-center justify-between p-3.5 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
                       <Icon size={20} strokeWidth={2.2} />
                     </div>
                     <div className="min-w-0 text-right">
-                      <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                      <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                         {item.title}
                       </div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                         {item.subtitle}
                       </div>
                     </div>
@@ -145,7 +145,7 @@ export default function MorePage() {
 
         {/* Section 2: أدوات سريعة (Quick Tools) */}
         <div>
-          <h2 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <h2 className="text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             أدوات سريعة
           </h2>
           <div className="grid grid-cols-4 gap-2.5">
@@ -153,12 +153,12 @@ export default function MorePage() {
             <button
               type="button"
               onClick={() => handleQuickAction("create_ticket")}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+              className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 active:scale-95 transition"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center">
                 <FilePlus size={20} strokeWidth={2.2} />
               </div>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">
+              <span className="text-[11px] font-bold text-[var(--text)] dark:text-slate-200 text-center leading-tight">
                 إنشاء طلب
               </span>
             </button>
@@ -167,12 +167,12 @@ export default function MorePage() {
             <button
               type="button"
               onClick={() => handleQuickAction("voice_task")}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+              className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 active:scale-95 transition"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center">
                 <Mic size={20} strokeWidth={2.2} />
               </div>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">
+              <span className="text-[11px] font-bold text-[var(--text)] dark:text-slate-200 text-center leading-tight">
                 تسجيل صوتي
               </span>
             </button>
@@ -181,12 +181,12 @@ export default function MorePage() {
             <button
               type="button"
               onClick={() => handleQuickAction("upload_file")}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+              className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 active:scale-95 transition"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center">
                 <Camera size={20} strokeWidth={2.2} />
               </div>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">
+              <span className="text-[11px] font-bold text-[var(--text)] dark:text-slate-200 text-center leading-tight">
                 رفع ملف
               </span>
             </button>
@@ -195,12 +195,12 @@ export default function MorePage() {
             <button
               type="button"
               onClick={() => handleQuickAction("scan_qr")}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+              className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex flex-col items-center justify-center gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 active:scale-95 transition"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center">
                 <QrCode size={20} strokeWidth={2.2} />
               </div>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">
+              <span className="text-[11px] font-bold text-[var(--text)] dark:text-slate-200 text-center leading-tight">
                 مسح QR
               </span>
             </button>
@@ -208,16 +208,16 @@ export default function MorePage() {
         </div>
 
         {/* Section 3: Bottom System Links */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800/80 shadow-2xs divide-y divide-[var(--border)] dark:divide-slate-800/60 overflow-hidden">
           <Link
             href="/settings"
-            className="flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
+            className="flex items-center justify-between p-3.5 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 flex items-center justify-center">
                 <Settings size={18} strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
+              <span className="font-bold text-sm text-[var(--text)] dark:text-slate-200">
                 الإعدادات
               </span>
             </div>
@@ -226,13 +226,13 @@ export default function MorePage() {
 
           <Link
             href="/tickets"
-            className="flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
+            className="flex items-center justify-between p-3.5 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 flex items-center justify-center">
                 <Headphones size={18} strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
+              <span className="font-bold text-sm text-[var(--text)] dark:text-slate-200">
                 مساعدة ودعم
               </span>
             </div>
@@ -259,11 +259,11 @@ export default function MorePage() {
 
       {/* Desktop Fallback Presentation */}
       <div className="hidden lg:block space-y-6">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-6 border border-[var(--border)] dark:border-slate-800">
+          <h1 className="text-2xl font-bold text-[var(--text)] dark:text-white">
             جميع وحدات النظام والخدمات
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-[var(--text-3)] text-sm mt-1">
             الوصول السريع إلى كافة الأقسام الإدارية والتشغيلية
           </p>
           <div className="grid grid-cols-3 gap-4 mt-6">
@@ -273,13 +273,13 @@ export default function MorePage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary transition group"
+                  className="p-4 rounded-xl border border-[var(--border)] dark:border-slate-800 hover:border-primary transition group"
                 >
                   <Icon className="text-primary mb-2" size={24} />
-                  <div className="font-bold text-slate-800 dark:text-white group-hover:text-primary">
+                  <div className="font-bold text-[var(--text)] dark:text-white group-hover:text-primary">
                     {item.title}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">{item.subtitle}</div>
+                  <div className="text-xs text-[var(--text-3)] mt-1">{item.subtitle}</div>
                 </Link>
               );
             })}
@@ -294,16 +294,16 @@ export default function MorePage() {
         title="ماسح الرمز السريع (QR)"
       >
         <div className="p-4 text-center space-y-4">
-          <div className="w-48 h-48 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-primary">
+          <div className="w-48 h-48 mx-auto rounded-2xl bg-[var(--surface-2)] dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-primary">
             <QrCode size={64} className="text-primary animate-pulse" />
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[var(--text-3)]">
             وجه كاميرا الهاتف نحو ملصق كود الأصل أو التذكرة للمسح الفوري
           </p>
           <button
             type="button"
             onClick={() => setQrModalOpen(false)}
-            className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 font-bold text-xs"
+            className="w-full py-2.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] font-bold text-xs"
           >
             إغلاق
           </button>

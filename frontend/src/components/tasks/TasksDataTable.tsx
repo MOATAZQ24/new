@@ -99,12 +99,12 @@ export function TasksDataTable({
   // Helper to format countdown timer badges matching Reference 1 & 2
   const getCountdownBadge = (task: TaskRowItem) => {
     if (task.status === "Completed" || task.status === "Approved / Completed") {
-      return <span className="text-slate-400 font-mono font-bold">-</span>;
+      return <span className="text-[var(--text-3)] font-mono font-bold">-</span>;
     }
 
     if (!task.due_date) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[var(--surface-2)] text-[var(--text-2)]">
           <span>04:18:09</span>
           <Clock size={12} />
         </span>
@@ -130,7 +130,7 @@ export function TasksDataTable({
     if (hours >= 24) {
       const days = Math.floor(hours / 24);
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300">
           <span>{days} أيام</span>
           <Clock size={12} />
         </span>
@@ -191,16 +191,16 @@ export function TasksDataTable({
         );
       case "Low":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-            <ArrowDown className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--border)] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+            <ArrowDown className="w-3.5 h-3.5 text-[var(--text-2)] dark:text-slate-400" />
             <span>منخفض</span>
           </span>
         );
       case "Medium":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
-            <Target className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)] dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+            <Target className="w-3.5 h-3.5 text-[var(--text-2)] dark:text-slate-400" />
             <span>متوسط</span>
           </span>
         );
@@ -239,7 +239,7 @@ export function TasksDataTable({
         );
       case "Draft":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--border)] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             <span className="w-2 h-2 rounded-full bg-slate-400" />
             <span>مسودة</span>
           </span>
@@ -253,7 +253,7 @@ export function TasksDataTable({
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--border)] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             <span className="w-2 h-2 rounded-full bg-slate-400" />
             <span>{status}</span>
           </span>
@@ -267,17 +267,17 @@ export function TasksDataTable({
       <Server key={1} size={15} className="text-blue-600 dark:text-blue-400" />,
       <BarChart3 key={2} size={15} className="text-indigo-600 dark:text-indigo-400" />,
       <Monitor key={3} size={15} className="text-sky-600 dark:text-sky-400" />,
-      <Users key={4} size={15} className="text-slate-600 dark:text-slate-400" />,
+      <Users key={4} size={15} className="text-[var(--text-2)] dark:text-slate-400" />,
       <Wrench key={5} size={15} className="text-blue-500 dark:text-blue-300" />,
     ];
     return icons[index % icons.length];
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden text-right">
+    <div className="bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden text-right">
       {/* Table Header Bar (Reference 1 & 2) */}
-      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="font-bold text-slate-800 dark:text-slate-200">
+      <div className="px-4 py-3 border-b border-[var(--border)] dark:border-slate-800 flex items-center justify-between text-xs text-[var(--text-3)] dark:text-slate-400 bg-[var(--surface-2)] dark:bg-slate-900/50">
+        <div className="font-bold text-[var(--text)] dark:text-slate-200">
           المهام ({totalCount})
         </div>
         <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export function TasksDataTable({
               type="button"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
-              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
+              className="p-1 rounded hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
             >
               <ChevronRight size={14} />
             </button>
@@ -295,7 +295,7 @@ export function TasksDataTable({
               type="button"
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
-              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
+              className="p-1 rounded hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 disabled:opacity-30 cursor-pointer"
             >
               <ChevronLeft size={14} />
             </button>
@@ -307,14 +307,14 @@ export function TasksDataTable({
       <div className="overflow-x-auto w-full">
         <table className="w-full min-w-[760px] text-xs text-right border-collapse">
           <thead>
-            <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 font-bold">
+            <tr className="border-b border-[var(--border)] dark:border-slate-800 bg-[var(--surface-2)] dark:bg-slate-800/40 text-[var(--text-2)] dark:text-slate-400 font-bold">
               <th className="py-2.5 px-2 w-8 text-center">
                 <input
                   type="checkbox"
                   aria-label="تحديد جميع المهام"
                   checked={selectedIds.length > 0 && selectedIds.length === tasks.length}
                   onChange={toggleSelectAll}
-                  className="rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                  className="rounded border-[var(--border)] text-primary focus:ring-primary cursor-pointer"
                 />
               </th>
               <th className="py-2.5 px-2 w-24 whitespace-nowrap">#</th>
@@ -327,7 +327,7 @@ export function TasksDataTable({
               <th className="py-2.5 px-2 w-10 text-center">الإجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-[var(--border)] dark:divide-slate-800">
             {tasks.map((task, index) => {
               const isSelected = selectedTaskId === task.id;
               const isChecked = selectedIds.includes(task.id);
@@ -339,7 +339,7 @@ export function TasksDataTable({
                   className={`group transition-colors cursor-pointer select-none ${
                     isSelected
                       ? "bg-primary/10 dark:bg-primary/20 border-r-4 border-r-primary"
-                      : "hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
+                      : "hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50"
                   }`}
                 >
                   {/* Checkbox */}
@@ -352,7 +352,7 @@ export function TasksDataTable({
                       aria-label={`تحديد المهمة ${task.title}`}
                       checked={isChecked}
                       onChange={() => {}}
-                      className="rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                      className="rounded border-[var(--border)] text-primary focus:ring-primary cursor-pointer"
                     />
                   </td>
 
@@ -360,7 +360,7 @@ export function TasksDataTable({
                   <td className="p-3">
                     <span
                       dir="ltr"
-                      className="font-mono text-[11px] font-bold whitespace-nowrap text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"
+                      className="font-mono text-[11px] font-bold whitespace-nowrap text-[var(--text-2)] dark:text-slate-300 bg-[var(--surface-2)] dark:bg-slate-800 px-2 py-0.5 rounded"
                     >
                       {task.reference || `TASK-${task.id.slice(0, 6)}`}
                     </span>
@@ -370,11 +370,11 @@ export function TasksDataTable({
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <div className="shrink-0">{getTaskIcon(index)}</div>
-                      <span className="font-bold text-slate-900 dark:text-white truncate max-w-xs xl:max-w-md">
+                      <span className="font-bold text-[var(--text)] dark:text-white truncate max-w-xs xl:max-w-md">
                         {task.title}
                       </span>
                       {task.attachments_count ? (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] text-slate-500 font-mono">
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-[var(--text-3)] font-mono">
                           <Paperclip size={11} />
                           <span>{task.attachments_count}</span>
                         </span>
@@ -398,16 +398,16 @@ export function TasksDataTable({
                       <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
                         {task.assigned_to_name ? task.assigned_to_name[0] : "أ"}
                       </div>
-                      <span className="font-medium text-slate-800 dark:text-slate-200 truncate">
+                      <span className="font-medium text-[var(--text)] dark:text-slate-200 truncate">
                         {task.assigned_to_name || "أحمد الحربي"}
                       </span>
                     </div>
                   </td>
 
                   {/* Due Date */}
-                  <td className="p-3 text-slate-600 dark:text-slate-400">
+                  <td className="p-3 text-[var(--text-2)] dark:text-slate-400">
                     <div className="flex items-center gap-1.5 whitespace-nowrap">
-                      <Calendar size={13} className="text-slate-400 shrink-0" />
+                      <Calendar size={13} className="text-[var(--text-3)] shrink-0" />
                       <span>
                         {task.status === "Completed"
                           ? "تم الإنجاز"
@@ -432,7 +432,7 @@ export function TasksDataTable({
                         e.stopPropagation();
                         onActionClick?.(task, e);
                       }}
-                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                      className="p-1 rounded-lg text-[var(--text-3)] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 transition cursor-pointer"
                       title="خيارات إضافية"
                     >
                       <MoreHorizontal size={15} />
@@ -446,12 +446,12 @@ export function TasksDataTable({
       </div>
 
       {/* Pagination Footer (Reference 1 & 2) */}
-      <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
+      <div className="px-4 py-3 border-t border-[var(--border)] dark:border-slate-800 flex items-center justify-between text-xs text-[var(--text-3)] dark:text-slate-400 bg-[var(--surface-2)] dark:bg-slate-900/50">
         <div>
           <select
             defaultValue="50"
             aria-label="عدد المهام لكل صفحة"
-            className="bg-transparent border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-300 outline-none"
+            className="bg-transparent border border-[var(--border)] dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-[var(--text-2)] dark:text-slate-300 outline-none"
           >
             <option value="25">25 لكل صفحة</option>
             <option value="50">50 لكل صفحة</option>
@@ -465,7 +465,7 @@ export function TasksDataTable({
             aria-label="الصفحة السابقة"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="p-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
+            className="p-1 px-2 rounded-lg border border-[var(--border)] dark:border-slate-700 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
           >
             «
           </button>
@@ -478,7 +478,7 @@ export function TasksDataTable({
               className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
                 page === p
                   ? "bg-primary text-primary-foreground shadow-xs"
-                  : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  : "hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 text-[var(--text-2)] dark:text-slate-300"
               }`}
             >
               {p}
@@ -489,7 +489,7 @@ export function TasksDataTable({
             aria-label="الصفحة التالية"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="p-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
+            className="p-1 px-2 rounded-lg border border-[var(--border)] dark:border-slate-700 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
           >
             »
           </button>

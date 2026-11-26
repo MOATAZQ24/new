@@ -194,7 +194,7 @@ export function TaskWorkloadView() {
                       متاح
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-500/15 text-slate-600 dark:text-slate-300">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-500/15 text-[var(--text-2)] dark:text-slate-300">
                       <UserCheck className="w-3 h-3" />
                       غير متاح
                     </span>

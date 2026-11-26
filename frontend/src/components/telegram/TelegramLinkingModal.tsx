@@ -269,7 +269,7 @@ export default function TelegramLinkingModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     } catch {
-      alert("يرجى تحديد النص ونسخه يدوياً");
+      setError("يرجى تحديد النص ونسخه يدوياً");
     }
   };
 
@@ -386,13 +386,13 @@ export default function TelegramLinkingModal({
       <div className="space-y-4 text-right font-sans">
         {/* Navigation Tabs (Only when verified or switching) */}
         {isVerified && (
-          <div className="flex border-b border-slate-200">
+          <div className="flex border-b border-[var(--border)]">
             <button
               onClick={() => setActiveTab("overview")}
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 activeTab === "overview"
                   ? "border-[#2563EB] text-[#1D4ED8]"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  : "border-transparent text-[var(--text-3)] hover:text-slate-800"
               }`}
             >
               ℹ️ نظرة عامة والاتصال
@@ -402,7 +402,7 @@ export default function TelegramLinkingModal({
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "permissions"
                   ? "border-[#2563EB] text-[#1D4ED8]"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  : "border-transparent text-[var(--text-3)] hover:text-slate-800"
               }`}
             >
               <Shield className="w-3.5 h-3.5" />
@@ -413,7 +413,7 @@ export default function TelegramLinkingModal({
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "activity"
                   ? "border-[#2563EB] text-[#1D4ED8]"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  : "border-transparent text-[var(--text-3)] hover:text-slate-800"
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -427,7 +427,7 @@ export default function TelegramLinkingModal({
               className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                 activeTab === "link_command"
                   ? "border-amber-600 text-amber-800"
-                  : "border-transparent text-slate-500 hover:text-amber-800"
+                  : "border-transparent text-[var(--text-3)] hover:text-amber-800"
               }`}
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -437,7 +437,7 @@ export default function TelegramLinkingModal({
         )}
 
         {loading && (
-          <div className="py-12 text-center text-slate-500 space-y-2">
+          <div className="py-12 text-center text-[var(--text-3)] space-y-2">
             <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-xs">جاري تحميل بيانات الاتصال والصلاحيات المعتمدة...</p>
           </div>
@@ -483,50 +483,50 @@ export default function TelegramLinkingModal({
             </div>
 
             {/* Profile & Security Context */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 gap-3 bg-[var(--surface-2)] p-3.5 rounded-xl border border-[var(--border)] text-xs">
               <div className="space-y-1">
-                <span className="text-slate-500 block">الموظف:</span>
-                <strong className="text-slate-800">{details.employee?.full_name}</strong>
+                <span className="text-[var(--text-3)] block">الموظف:</span>
+                <strong className="text-[var(--text)]">{details.employee?.full_name}</strong>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">المسمى الوظيفي:</span>
-                <span className="text-slate-800 font-medium">{details.employee?.job_title || "موظف"}</span>
+                <span className="text-[var(--text-3)] block">المسمى الوظيفي:</span>
+                <span className="text-[var(--text)] font-medium">{details.employee?.job_title || "موظف"}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">حساب المستخدم المرتبط:</span>
+                <span className="text-[var(--text-3)] block">حساب المستخدم المرتبط:</span>
                 <strong className="text-[#2563EB] font-mono">{details.user?.username || "تم تعيينه تلقائياً"}</strong>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">رتبة النظام (CRM Role):</span>
-                <span className="px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-bold text-[11px]">
+                <span className="text-[var(--text-3)] block">رتبة النظام (CRM Role):</span>
+                <span className="px-2 py-0.5 bg-slate-200 text-[var(--text)] rounded font-bold text-[11px]">
                   {details.user?.roles?.join("، ") || "Employee"}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">معرف تيليجرام (Telegram User ID):</span>
-                <span className="font-mono text-slate-800 font-bold">{details.link?.telegram_user_id || "—"}</span>
+                <span className="text-[var(--text-3)] block">معرف تيليجرام (Telegram User ID):</span>
+                <span className="font-mono text-[var(--text)] font-bold">{details.link?.telegram_user_id || "—"}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">اسم المستخدم في تيليجرام:</span>
+                <span className="text-[var(--text-3)] block">اسم المستخدم في تيليجرام:</span>
                 <span className="font-mono text-blue-700 font-bold">
                   {details.link?.telegram_username ? `@${details.link.telegram_username}` : "غير محدد"}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">معرف المحادثة (Chat ID):</span>
-                <span className="font-mono text-slate-800">{details.link?.telegram_chat_id || "—"}</span>
+                <span className="text-[var(--text-3)] block">معرف المحادثة (Chat ID):</span>
+                <span className="font-mono text-[var(--text)]">{details.link?.telegram_chat_id || "—"}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-500 block">تاريخ التوثيق والربط:</span>
-                <span className="text-slate-600">
+                <span className="text-[var(--text-3)] block">تاريخ التوثيق والربط:</span>
+                <span className="text-[var(--text-2)]">
                   {details.link?.linked_at ? details.link.linked_at.slice(0, 16).replace("T", " ") : "—"}
                 </span>
               </div>
             </div>
 
             {/* Test Notification Action */}
-            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
-              <h5 className="text-xs font-bold text-slate-800">اختبار وصول الرسائل المباشرة</h5>
+            <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-2">
+              <h5 className="text-xs font-bold text-[var(--text)]">اختبار وصول الرسائل المباشرة</h5>
               <div className="flex gap-2">
                 <button
                   onClick={handleSendTestMessage}
@@ -550,7 +550,7 @@ export default function TelegramLinkingModal({
             </div>
 
             {/* Unlink Action */}
-            <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+            <div className="flex justify-between items-center pt-2 border-t border-[var(--border)]">
               <button
                 onClick={handleUnlink}
                 className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
@@ -559,7 +559,7 @@ export default function TelegramLinkingModal({
               </button>
               <button
                 onClick={onClose}
-                className="px-5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold cursor-pointer"
+                className="px-5 py-1.5 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg text-xs font-bold cursor-pointer"
               >
                 إغلاق
               </button>
@@ -575,15 +575,15 @@ export default function TelegramLinkingModal({
         {/* ── TAB 3: ACTIVITY & AUDIT LOGS ────────────────────────────── */}
         {!loading && isVerified && activeTab === "activity" && details && (
           <div className="space-y-3">
-            <h5 className="text-xs font-bold text-slate-800">أحدث الأنشطة والعمليات المنفذة عبر البوت (Audit Log):</h5>
+            <h5 className="text-xs font-bold text-[var(--text)]">أحدث الأنشطة والعمليات المنفذة عبر البوت (Audit Log):</h5>
             {(!details.activity_logs || details.activity_logs.length === 0) ? (
-              <div className="py-8 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="py-8 text-center text-[var(--text-3)] text-xs bg-[var(--surface-2)] rounded-xl border border-dashed border-[var(--border)]">
                 لا توجد سجلات تفاعل سابقة مسجلة لهذا الحساب حتى الآن.
               </div>
             ) : (
-              <div className="max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
+              <div className="max-h-72 overflow-y-auto border border-[var(--border)] rounded-xl">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-100/80 text-slate-600 font-bold sticky top-0">
+                  <thead className="bg-[var(--surface-2)] text-[var(--text-2)] font-bold sticky top-0">
                     <tr>
                       <th className="p-2.5">الوقت</th>
                       <th className="p-2.5">الإجراء</th>
@@ -591,13 +591,13 @@ export default function TelegramLinkingModal({
                       <th className="p-2.5">المصدر / التفاصيل</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {details.activity_logs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50/50">
-                        <td className="p-2.5 font-mono text-[11px] text-slate-500">
+                      <tr key={log.id} className="hover:bg-[var(--surface-2)]">
+                        <td className="p-2.5 font-mono text-[11px] text-[var(--text-3)]">
                           {log.created_at ? log.created_at.slice(0, 16).replace("T", " ") : "—"}
                         </td>
-                        <td className="p-2.5 font-medium text-slate-800">
+                        <td className="p-2.5 font-medium text-[var(--text)]">
                           {log.action}
                         </td>
                         <td className="p-2.5">
@@ -613,7 +613,7 @@ export default function TelegramLinkingModal({
                             {log.status}
                           </span>
                         </td>
-                        <td className="p-2.5 text-slate-600 text-[11px]">
+                        <td className="p-2.5 text-[var(--text-2)] text-[11px]">
                           {log.error_message ? (
                             <span className="text-rose-600 font-semibold">{log.error_message}</span>
                           ) : log.details ? (
@@ -631,7 +631,7 @@ export default function TelegramLinkingModal({
             <div className="pt-2 flex justify-end">
               <button
                 onClick={onClose}
-                className="px-5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold cursor-pointer"
+                className="px-5 py-1.5 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg text-xs font-bold cursor-pointer"
               >
                 إغلاق
               </button>
@@ -645,7 +645,7 @@ export default function TelegramLinkingModal({
             {/* Bot Info Banner */}
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs">
               <div>
-                <span className="text-slate-500 block text-[10px]">بوت مركز العمليات المعتمد:</span>
+                <span className="text-[var(--text-3)] block text-[10px]">بوت مركز العمليات المعتمد:</span>
                 <strong className="text-blue-900 font-mono text-sm">
                   @{tokenData.bot_username}
                 </strong>
@@ -657,7 +657,7 @@ export default function TelegramLinkingModal({
 
             {/* Command Box with Prominent Copy Button */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">
+              <label className="block text-xs font-bold text-[var(--text-2)]">
                 أمر الربط المخصص (انسخ الأمر بالكامل وأرسله للبوت):
               </label>
               <div className="flex items-center gap-2">
@@ -689,12 +689,12 @@ export default function TelegramLinkingModal({
             </div>
 
             {/* Step by Step Arabic Instructions */}
-            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2 text-xs text-slate-700">
-              <h5 className="font-bold text-slate-900 flex items-center gap-1.5">
+            <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-xl p-3.5 space-y-2 text-xs text-[var(--text-2)]">
+              <h5 className="font-bold text-[var(--text)] flex items-center gap-1.5">
                 <span>📋</span>
                 <span>خطوات إتمام الربط السريع للموظف:</span>
               </h5>
-              <ol className="list-decimal list-inside space-y-1.5 leading-relaxed text-slate-600 pr-1">
+              <ol className="list-decimal list-inside space-y-1.5 leading-relaxed text-[var(--text-2)] pr-1">
                 <li>
                   افتح تطبيق Telegram وابحث عن البوت:{" "}
                   <strong className="text-[#2563EB] font-mono">@{tokenData.bot_username}</strong>
@@ -720,10 +720,10 @@ export default function TelegramLinkingModal({
             </div>
 
             {/* Footer Actions */}
-            <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+            <div className="pt-2 flex items-center justify-between border-t border-[var(--border)]">
               <button
                 onClick={startLinkingWorkflow}
-                className="text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                className="text-xs text-[var(--text-3)] hover:text-slate-800 font-medium cursor-pointer"
               >
                 🔄 توليد أمر ربط جديد
               </button>
@@ -736,7 +736,7 @@ export default function TelegramLinkingModal({
                     onClose();
                   }
                 }}
-                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer"
+                className="px-4 py-1.5 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg text-xs font-semibold cursor-pointer"
               >
                 {isVerified ? "رجوع للنظرة العامة" : "إلغاء"}
               </button>

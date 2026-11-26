@@ -25,7 +25,7 @@ export function TableSkeleton({
         {Array.from({ length: Math.min(rows, 6) }).map((_, idx) => (
           <div
             key={idx}
-            className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 animate-pulse"
+            className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4 animate-pulse"
           >
             <div className="flex items-center justify-between">
               <div className="w-11 h-11 rounded-xl bg-slate-200" />
@@ -33,11 +33,11 @@ export function TableSkeleton({
             </div>
             <div className="space-y-2">
               <div className="h-4 bg-slate-200 rounded w-3/4" />
-              <div className="h-3 bg-slate-100 rounded w-1/2" />
+              <div className="h-3 bg-[var(--surface-2)] rounded w-1/2" />
             </div>
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="h-3 bg-slate-100 rounded w-full" />
-              <div className="h-3 bg-slate-100 rounded w-4/5" />
+            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
+              <div className="h-3 bg-[var(--surface-2)] rounded w-full" />
+              <div className="h-3 bg-[var(--surface-2)] rounded w-4/5" />
             </div>
           </div>
         ))}
@@ -47,16 +47,16 @@ export function TableSkeleton({
 
   if (variant === "list") {
     return (
-      <div className="divide-y divide-slate-100" aria-busy="true" aria-label="جاري التحميل">
+      <div className="divide-y divide-[var(--border)]" aria-busy="true" aria-label="جاري التحميل">
         {Array.from({ length: rows }).map((_, idx) => (
           <div key={idx} className="p-4 sm:p-5 flex items-center justify-between gap-4 animate-pulse">
             <div className="space-y-2 flex-1">
               <div className="flex gap-2">
                 <div className="h-5 w-16 rounded-full bg-slate-200" />
-                <div className="h-5 w-24 rounded-full bg-slate-100" />
+                <div className="h-5 w-24 rounded-full bg-[var(--surface-2)]" />
               </div>
               <div className="h-4 w-2/3 rounded bg-slate-200" />
-              <div className="h-3 w-1/2 rounded bg-slate-100" />
+              <div className="h-3 w-1/2 rounded bg-[var(--surface-2)]" />
             </div>
             <div className="h-8 w-28 rounded-lg bg-slate-200 shrink-0" />
           </div>
@@ -70,7 +70,7 @@ export function TableSkeleton({
       {Array.from({ length: rows }).map((_, rowIdx) => (
         <div
           key={rowIdx}
-          className="grid gap-3 py-2 border-b border-slate-100 last:border-b-0"
+          className="grid gap-3 py-2 border-b border-[var(--border)] last:border-b-0"
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: cols }).map((__, colIdx) => (

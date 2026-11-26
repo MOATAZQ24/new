@@ -98,8 +98,8 @@ export default function EmployeeCombobox({ value, initialName, companyId, onChan
   return <div dir="rtl" className="relative min-w-0" onBlur={event => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
   }}>
-    <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700">الموظف / الفني المسند إليه</label>
-    <div className="flex rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-[#2563EB]">
+    <label htmlFor={id} className="mb-1 block text-xs font-medium text-[var(--text-2)]">الموظف / الفني المسند إليه</label>
+    <div className="flex rounded-lg border border-[var(--border)] bg-[var(--surface)] focus-within:ring-2 focus-within:ring-[#2563EB]">
       <input ref={input} id={id} role="combobox" aria-autocomplete="list" aria-expanded={open}
         aria-controls={`${id}-list`} aria-describedby={`${id}-status`}
         aria-activedescendant={open && active >= 0 ? `${id}-option-${active}` : undefined}
@@ -124,31 +124,31 @@ export default function EmployeeCombobox({ value, initialName, companyId, onChan
             event.preventDefault(); if (active >= 0) choose(options[active]);
           }
         }} />
-      {(query || value) && <button type="button" aria-label="مسح الموظف المحدد" className="shrink-0 px-3 text-gray-500 hover:text-gray-900"
+      {(query || value) && <button type="button" aria-label="مسح الموظف المحدد" className="shrink-0 px-3 text-[var(--text-3)] hover:text-gray-900"
         onClick={() => { setQuery(""); setSelected(null); onChange(null); setOpen(false); setError(""); }}>×</button>}
     </div>
-    {open && <div className="motion-dropdown absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+    {open && <div className="motion-dropdown absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
       <ul ref={list} id={`${id}-list`} role="listbox" aria-label="الموظفون المتاحون للإسناد" aria-busy={loading} className="max-h-64 overflow-y-auto overscroll-contain">
         {!loading && !error && options.map((employee, index) => <li key={employee.id} id={`${id}-option-${index}`} role="option"
           data-index={index} aria-selected={employee.id === value} aria-disabled={!employee.assignable}
           tabIndex={-1} onMouseDown={event => event.preventDefault()} onClick={() => choose(employee)} onMouseMove={() => setActive(index)}
-          className={`motion-dropdown-option cursor-pointer border-b border-gray-100 px-3 py-3 text-sm last:border-0 ${active === index ? "bg-emerald-50" : "hover:bg-gray-50"} ${employee.assignable ? "" : "opacity-50"}`}>
-          <span className="block break-words font-semibold text-gray-900">{employee.full_name}</span>
-          <span className="block break-words text-xs text-gray-500">{[employee.department_name, employee.job_title].filter(Boolean).join(" · ")}</span>
+          className={`motion-dropdown-option cursor-pointer border-b border-[var(--border)] px-3 py-3 text-sm last:border-0 ${active === index ? "bg-emerald-50" : "hover:bg-[var(--surface-2)]"} ${employee.assignable ? "" : "opacity-50"}`}>
+          <span className="block break-words font-semibold text-[var(--text)]">{employee.full_name}</span>
+          <span className="block break-words text-xs text-[var(--text-3)]">{[employee.department_name, employee.job_title].filter(Boolean).join(" · ")}</span>
           <span className="mt-1 flex flex-wrap gap-2 text-xs">
-            <span className={employee.assignable ? "text-emerald-700" : "text-gray-500"}>{employee.assignable ? "نشط (Active)" : "غير نشط (Inactive)"}</span>
-            <span className={`inline-flex items-center gap-1 ${employee.is_telegram_linked ? "text-emerald-700" : "text-gray-500"}`}>
+            <span className={employee.assignable ? "text-emerald-700" : "text-[var(--text-3)]"}>{employee.assignable ? "نشط (Active)" : "غير نشط (Inactive)"}</span>
+            <span className={`inline-flex items-center gap-1 ${employee.is_telegram_linked ? "text-emerald-700" : "text-[var(--text-3)]"}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${employee.is_telegram_linked ? "bg-emerald-500" : "bg-gray-400"}`} />
               <span>{employee.is_telegram_linked ? "Telegram مرتبط" : "Telegram غير مرتبط"}</span>
             </span>
-            {employee.employee_number && <span className="text-gray-500">الرقم الوظيفي: <bdi>{employee.employee_number}</bdi></span>}
+            {employee.employee_number && <span className="text-[var(--text-3)]">الرقم الوظيفي: <bdi>{employee.employee_number}</bdi></span>}
           </span>
         </li>)}
       </ul>
-      <div role="status" className="px-3 py-2 text-xs text-gray-500">
+      <div role="status" className="px-3 py-2 text-xs text-[var(--text-3)]">
         {loading ? "جارٍ البحث..." : error || (options.length ? "اختر باللمس أو بمفاتيح الأسهم وEnter. اكتب اسماً أدق لمزيد من النتائج." : "لا يوجد موظفون مطابقون متاحون للإسناد.")}
       </div>
     </div>}
-    <p id={`${id}-status`} role="status" className="mt-1 text-xs text-gray-500">{error || (selected?.assignable === false ? "الموظف الحالي غير نشط. اختر موظفاً آخر." : "الربط بـ Telegram لا يدل على التواجد أو التوفر.")}</p>
+    <p id={`${id}-status`} role="status" className="mt-1 text-xs text-[var(--text-3)]">{error || (selected?.assignable === false ? "الموظف الحالي غير نشط. اختر موظفاً آخر." : "الربط بـ Telegram لا يدل على التواجد أو التوفر.")}</p>
   </div>;
 }

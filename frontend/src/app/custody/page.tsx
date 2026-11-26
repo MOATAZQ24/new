@@ -190,7 +190,7 @@ export default function CustodyPage() {
       />
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {["Active", "Returned", "Transferred", ""].map((st) => (
             <button
@@ -200,7 +200,7 @@ export default function CustodyPage() {
               className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === st
                   ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
               }`}
             >
               {st === "Active"
@@ -220,14 +220,14 @@ export default function CustodyPage() {
           disabled={loading}
           aria-label="تحديث سجل العهد"
           title="تحديث البيانات"
-          className="motion-control p-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer"
+          className="motion-control p-2 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl cursor-pointer"
         >
           <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
         </button>
       </div>
 
       {/* Custody Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={6} />
         ) : records.length === 0 ? (
@@ -239,7 +239,7 @@ export default function CustodyPage() {
         ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+            <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
               <tr>
                 <th className="p-3.5">الأصل التقني</th>
                 <th className="p-3.5">الموظف المستلم</th>
@@ -250,30 +250,30 @@ export default function CustodyPage() {
                 <th className="p-3.5 text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--border)]">
               {records.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-900">
+                <tr key={r.id} className="hover:bg-[var(--surface-2)] transition-colors">
+                  <td className="p-3.5 font-bold text-[var(--text)]">
                     <div>{r.asset_name}</div>
                     <div className="text-[11px] font-mono text-[#2563EB] font-semibold">
                       <bdi dir="ltr">{r.asset_code}</bdi>
                     </div>
                   </td>
-                  <td className="p-3.5 font-bold text-slate-800">
+                  <td className="p-3.5 font-bold text-[var(--text)]">
                     {r.employee_name}
                   </td>
-                  <td className="p-3.5 text-slate-700 font-mono">
+                  <td className="p-3.5 text-[var(--text-2)] font-mono">
                     <bdi dir="ltr">{new Date(r.assignment_date).toLocaleDateString("ar-SA")}</bdi>
                   </td>
                   <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px]">
+                    <span className="px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-2)] font-semibold text-[11px]">
                       {r.condition_on_assignment}
                     </span>
                   </td>
                   <td className="p-3.5">
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="p-3.5 text-slate-600 font-mono">
+                  <td className="p-3.5 text-[var(--text-2)] font-mono">
                     <bdi dir="ltr">
                     {r.actual_return_date
                       ? new Date(r.actual_return_date).toLocaleDateString("ar-SA")
@@ -285,7 +285,7 @@ export default function CustodyPage() {
                       <button
                         type="button"
                         onClick={() => openReceipt(r.id)}
-                        className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
+                        className="motion-control px-2.5 py-1 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                       >
                         سند الاستلام
                       </button>
@@ -320,14 +320,14 @@ export default function CustodyPage() {
       >
         <form onSubmit={handleAssign} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اختر الأصل المتاح للتسليم *
             </label>
             <select
               required
               value={selectedAssetId}
               onChange={(e) => setSelectedAssetId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- حدد الأصل التقني --</option>
               {availableAssets.map((a) => (
@@ -339,14 +339,14 @@ export default function CustodyPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اختر الموظف المستلم *
             </label>
             <select
               required
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- حدد الموظف --</option>
               {employees.map((e) => (
@@ -359,13 +359,13 @@ export default function CustodyPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 حالة الأصل عند التسليم
               </label>
               <select
                 value={assignCondition}
                 onChange={(e) => setAssignCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -375,20 +375,20 @@ export default function CustodyPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تاريخ الإرجاع المتوقع
               </label>
               <input
                 type="date"
                 value={expectedReturn}
                 onChange={(e) => setExpectedReturn(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ملاحظات أو ملحقات مسلّمة (شاحن، حقيبة، ماوس)
             </label>
             <textarea
@@ -396,7 +396,7 @@ export default function CustodyPage() {
               value={assignNotes}
               onChange={(e) => setAssignNotes(e.target.value)}
               placeholder="مثال: تم تسليم الشاحن الأصلي وحقيبة لابتوب..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -408,7 +408,7 @@ export default function CustodyPage() {
             <button
               type="button"
               onClick={() => setShowAssignModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold"
             >
               إلغاء
             </button>
@@ -430,13 +430,13 @@ export default function CustodyPage() {
       >
         <form onSubmit={handleReturn} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               حالة الأصل عند الإرجاع والتقييم الفني *
             </label>
             <select
               value={returnCondition}
               onChange={(e) => setReturnCondition(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Excellent">ممتاز (Excellent)</option>
               <option value="Good">جيد (Good)</option>
@@ -446,7 +446,7 @@ export default function CustodyPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ملاحظات الفحص الفني
             </label>
             <textarea
@@ -454,7 +454,7 @@ export default function CustodyPage() {
               value={returnNotes}
               onChange={(e) => setReturnNotes(e.target.value)}
               placeholder="تم فحص الشاشة ولوحة المفاتيح والملحقات..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -462,7 +462,7 @@ export default function CustodyPage() {
             <button
               type="button"
               onClick={() => setShowReturnModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold"
             >
               إلغاء
             </button>
@@ -491,24 +491,24 @@ export default function CustodyPage() {
                 <h3 className="text-base font-bold text-[#1D4ED8]">
                   {receiptData.company_name_ar}
                 </h3>
-                <p className="text-[11px] text-slate-400 font-mono">
+                <p className="text-[11px] text-[var(--text-3)] font-mono">
                   {receiptData.receipt_number}
                 </p>
               </div>
-              <div className="text-left text-xs font-mono text-slate-500">
+              <div className="text-left text-xs font-mono text-[var(--text-3)]">
                 {receiptData.assignment_date}
               </div>
             </div>
 
             {/* Employee Info */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+            <div className="bg-[var(--surface-2)] p-3 rounded-xl border border-[var(--border)] text-xs space-y-1">
               <div>
-                <span className="text-slate-400">اسم الموظف المستلم:</span>{" "}
-                <span className="font-bold text-slate-900">{receiptData.employee_name}</span>{" "}
+                <span className="text-[var(--text-3)]">اسم الموظف المستلم:</span>{" "}
+                <span className="font-bold text-[var(--text)]">{receiptData.employee_name}</span>{" "}
                 ({receiptData.employee_number})
               </div>
               <div>
-                <span className="text-slate-400">المسمى والقسم:</span>{" "}
+                <span className="text-[var(--text-3)]">المسمى والقسم:</span>{" "}
                 <span>
                   {receiptData.job_title} • {receiptData.department || "-"}
                 </span>
@@ -516,32 +516,32 @@ export default function CustodyPage() {
             </div>
 
             {/* Asset Info */}
-            <div className="border border-slate-200 rounded-xl p-3 text-xs space-y-1.5">
-              <div className="font-bold text-slate-900 text-sm">{receiptData.asset_name}</div>
-              <div className="grid grid-cols-2 gap-2 text-slate-600">
+            <div className="border border-[var(--border)] rounded-xl p-3 text-xs space-y-1.5">
+              <div className="font-bold text-[var(--text)] text-sm">{receiptData.asset_name}</div>
+              <div className="grid grid-cols-2 gap-2 text-[var(--text-2)]">
                 <div>كود الأصل: <span className="font-mono font-bold text-[#2563EB]">{receiptData.asset_code}</span></div>
                 <div>النوع: {receiptData.asset_type}</div>
                 <div>الماركة: {receiptData.brand}</div>
                 <div>الرقم التسلسلي: <span className="font-mono">{receiptData.serial_number || "-"}</span></div>
               </div>
-              <div className="pt-1 text-slate-500">
+              <div className="pt-1 text-[var(--text-3)]">
                 حالة الأصل عند الاستلام: <span className="font-bold">{receiptData.condition_on_assignment}</span>
               </div>
             </div>
 
             {/* Legal Declaration */}
-            <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl text-[11px] text-slate-700 leading-relaxed text-justify">
+            <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl text-[11px] text-[var(--text-2)] leading-relaxed text-justify">
               {receiptData.declaration_text}
             </div>
 
             {/* Signatures */}
-            <div className="pt-6 grid grid-cols-2 gap-6 text-xs text-center border-t border-slate-200">
+            <div className="pt-6 grid grid-cols-2 gap-6 text-xs text-center border-t border-[var(--border)]">
               <div>
-                <div className="text-slate-400">توقيع مسؤول تقنية المعلومات:</div>
+                <div className="text-[var(--text-3)]">توقيع مسؤول تقنية المعلومات:</div>
                 <div className="mt-8 font-bold">إدارة تقنية المعلومات</div>
               </div>
               <div>
-                <div className="text-slate-400">توقيع الموظف المستلم:</div>
+                <div className="text-[var(--text-3)]">توقيع الموظف المستلم:</div>
                 <div className="mt-8 font-bold">{receiptData.employee_name}</div>
               </div>
             </div>

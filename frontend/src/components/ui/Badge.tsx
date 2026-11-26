@@ -58,7 +58,7 @@ export function Chip({ onRemove, removeLabel = "إزالة", children, className
           type="button"
           onClick={onRemove}
           aria-label={removeLabel}
-          className="ms-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] cursor-pointer"
+          className="ms-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-[var(--surface)]/10 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] cursor-pointer"
         >
           <X className="h-3 w-3" strokeWidth={1.5} aria-hidden="true" />
         </button>

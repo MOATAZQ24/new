@@ -57,7 +57,7 @@ export function SlaBadge({ state, dueAt, compact = false }: SlaBadgeProps) {
   }
   if (norm === "paused") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/12 text-slate-700 dark:text-slate-300 border border-slate-500/25 whitespace-nowrap">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/12 text-[var(--text-2)] dark:text-slate-300 border border-slate-500/25 whitespace-nowrap">
         <PauseCircle className="w-3 h-3 shrink-0" aria-hidden="true" />
         <span>متوقف مؤقتاً</span>
       </span>

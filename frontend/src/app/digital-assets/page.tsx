@@ -613,17 +613,17 @@ export default function DigitalAssetsPage() {
     <DashboardLayout>
       <div className="space-y-6 pb-12">
         {/* Header & Vault Status */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface)] dark:bg-slate-900 p-6 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm">
           <div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Icons.Lock size={22} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-[var(--text)] dark:text-white">
                   الأصول الرقمية وخزنة الأسرار
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-sm text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                   إدارة وحماية الأصول السحابية والنطاقات وحفظ أسرار الاعتماد المشفرة (Zero-Plaintext Policy)
                 </p>
               </div>
@@ -632,7 +632,7 @@ export default function DigitalAssetsPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Vault Status Indicator */}
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border bg-[var(--surface-2)] dark:bg-slate-800/60 border-[var(--border)] dark:border-slate-700">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
                   vaultStatus?.status === "healthy" || vaultStatus?.status === "mock"
@@ -640,7 +640,7 @@ export default function DigitalAssetsPage() {
                     : "bg-amber-500"
                 }`}
               />
-              <span className="text-slate-700 dark:text-slate-300">
+              <span className="text-[var(--text-2)] dark:text-slate-300">
                 خزنة HashiCorp Vault:
               </span>
               <span
@@ -700,18 +700,18 @@ export default function DigitalAssetsPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 p-4 rounded-xl border border-[var(--border)] dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Icons.Search
               size={18}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)]"
             />
             <input
               type="text"
               placeholder="البحث بالاسم، المنصة، اسم المستخدم، البريد، أو الرابط..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pr-10 pl-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pr-10 pl-4 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text)] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -719,7 +719,7 @@ export default function DigitalAssetsPage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text-2)] dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">جميع التصنيفات</option>
               {categories.map((c) => (
@@ -732,7 +732,7 @@ export default function DigitalAssetsPage() {
             <select
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text-2)] dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">جميع المنصات</option>
               {platforms.map((p) => (
@@ -745,7 +745,7 @@ export default function DigitalAssetsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text-2)] dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -762,7 +762,7 @@ export default function DigitalAssetsPage() {
                   setPlatformFilter("");
                   setStatusFilter("");
                 }}
-                className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-red-600 transition"
+                className="px-3 py-2 text-xs font-semibold text-[var(--text-2)] dark:text-slate-400 hover:text-red-600 transition"
               >
                 إلغاء الفلاتر
               </button>
@@ -771,10 +771,10 @@ export default function DigitalAssetsPage() {
         </div>
 
         {/* Assets Table */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-800">
+            <table className="w-full text-right text-sm text-[var(--text-2)] dark:text-slate-300">
+              <thead className="bg-[var(--surface-2)] dark:bg-slate-800/50 text-xs font-semibold text-[var(--text-3)] dark:text-slate-400 uppercase border-b border-[var(--border)] dark:border-slate-800">
                 <tr>
                   <th className="px-6 py-4">الأصل الرقمي والمنصة</th>
                   <th className="px-6 py-4">التصنيف</th>
@@ -786,7 +786,7 @@ export default function DigitalAssetsPage() {
                   <th className="px-6 py-4 text-center">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-[var(--border)] dark:divide-slate-800">
                 {loading ? (
                   <tr>
                     <td colSpan={8}>
@@ -807,9 +807,9 @@ export default function DigitalAssetsPage() {
                   assets.map((asset) => (
                     <tr
                       key={asset.asset_id}
-                      className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/40 transition-colors"
                     >
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                      <td className="px-6 py-4 font-medium text-[var(--text)] dark:text-white">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                             <Icons.Globe size={18} />
@@ -822,15 +822,15 @@ export default function DigitalAssetsPage() {
                                   href={asset.url.startsWith("http") ? asset.url : `https://${asset.url}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-slate-400 hover:text-primary transition"
+                                  className="text-[var(--text-3)] hover:text-primary transition"
                                   title="فتح الرابط الخارجي"
                                 >
                                   <Icons.ExternalLink size={14} />
                                 </a>
                               )}
                             </div>
-                            <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                              <span className="font-medium text-slate-600 dark:text-slate-400">
+                            <div className="text-xs text-[var(--text-3)] flex items-center gap-1.5 mt-0.5">
+                              <span className="font-medium text-[var(--text-2)] dark:text-slate-400">
                                 {asset.platform}
                               </span>
                               {asset.branch_name && (
@@ -844,48 +844,48 @@ export default function DigitalAssetsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-block px-2.5 py-1 text-xs rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        <span className="inline-block px-2.5 py-1 text-xs rounded-md bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 border border-[var(--border)] dark:border-slate-700">
                           {asset.category}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-xs">
                         <div className="space-y-1">
                           {asset.username && (
-                            <div className="text-slate-900 dark:text-white font-mono font-semibold">
+                            <div className="text-[var(--text)] dark:text-white font-mono font-semibold">
                               {asset.username}
                             </div>
                           )}
                           {asset.account_email && (
-                            <div className="text-slate-600 dark:text-slate-300 font-mono text-[11px] flex items-center gap-1">
-                              <span className="text-slate-400">البريد:</span>
+                            <div className="text-[var(--text-2)] dark:text-slate-300 font-mono text-[11px] flex items-center gap-1">
+                              <span className="text-[var(--text-3)]">البريد:</span>
                               <span>{asset.account_email}</span>
                             </div>
                           )}
                           {asset.recovery_phone && (
-                            <div className="text-slate-500 dark:text-slate-400 font-mono text-[11px] flex items-center gap-1">
-                              <span className="text-slate-400">الهاتف:</span>
+                            <div className="text-[var(--text-3)] dark:text-slate-400 font-mono text-[11px] flex items-center gap-1">
+                              <span className="text-[var(--text-3)]">الهاتف:</span>
                               <span dir="ltr">{asset.recovery_phone}</span>
                             </div>
                           )}
                           {asset.recovery_email && (
                             <div className="text-amber-700 dark:text-amber-400 font-mono text-[10px] flex items-center gap-1">
-                              <span className="text-slate-400">استرداد:</span>
+                              <span className="text-[var(--text-3)]">استرداد:</span>
                               <span>{asset.recovery_email}</span>
                             </div>
                           )}
                           {!asset.username && !asset.account_email && !asset.recovery_phone && (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-[var(--text-3)]">—</span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs">
                         {asset.assigned_employee_name ? (
-                          <div className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                            <Icons.User size={14} className="text-slate-400" />
+                          <div className="flex items-center gap-1.5 text-[var(--text)] dark:text-slate-200">
+                            <Icons.User size={14} className="text-[var(--text-3)]" />
                             <span>{asset.assigned_employee_name}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400">غير مخصص</span>
+                          <span className="text-[var(--text-3)]">غير مخصص</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -895,12 +895,12 @@ export default function DigitalAssetsPage() {
                               <Icons.ShieldCheck size={13} />
                               <span>مفعل</span>
                             </span>
-                            <span className="text-[10px] text-slate-400 font-medium">
+                            <span className="text-[10px] text-[var(--text-3)] font-medium">
                               {asset.two_factor_method ? asset.two_factor_method.split(" ")[0] : "TOTP"}
                             </span>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--surface-2)] text-[var(--text-2)] dark:bg-slate-800 dark:text-slate-400">
                             <span>معطل</span>
                           </span>
                         )}
@@ -924,21 +924,21 @@ export default function DigitalAssetsPage() {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => handleOpenDrawer(asset)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-primary hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="عرض التفاصيل والخزنة"
                           >
                             <Icons.Eye size={18} />
                           </button>
                           <button
                             onClick={() => handleOpenEdit(asset)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-amber-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="تعديل الأصل"
                           >
                             <Icons.Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDeleteAsset(asset)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-red-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="حذف الأصل"
                           >
                             <Icons.Trash size={18} />
@@ -961,23 +961,23 @@ export default function DigitalAssetsPage() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="digital-asset-drawer-title"
-              className="motion-drawer w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-r border-slate-200 dark:border-slate-800"
+              className="motion-drawer w-full max-w-2xl bg-[var(--surface)] dark:bg-slate-900 h-full shadow-2xl flex flex-col border-r border-[var(--border)] dark:border-slate-800"
               tabIndex={-1}
             >
               {/* Drawer Header */}
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-6 border-b border-[var(--border)] dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <Icons.Lock size={24} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 id="digital-asset-drawer-title" className="text-xl font-bold text-slate-900 dark:text-white">
+                      <h2 id="digital-asset-drawer-title" className="text-xl font-bold text-[var(--text)] dark:text-white">
                         {selectedAsset.name}
                       </h2>
                       <StatusBadge status={selectedAsset.status} />
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-[var(--text-3)] mt-0.5">
                       {selectedAsset.platform} • {selectedAsset.category}
                     </p>
                   </div>
@@ -985,20 +985,20 @@ export default function DigitalAssetsPage() {
 
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="p-2 rounded-xl text-[var(--text-3)] hover:text-slate-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   <Icons.X size={20} />
                 </button>
               </div>
 
               {/* Drawer Tabs */}
-              <div className="flex border-b border-slate-200 dark:border-slate-800 px-6">
+              <div className="flex border-b border-[var(--border)] dark:border-slate-800 px-6">
                 <button
                   onClick={() => setDrawerTab("details")}
                   className={`py-3 px-4 text-sm font-semibold border-b-2 transition ${
                     drawerTab === "details"
                       ? "border-primary text-primary"
-                      : "border-transparent text-slate-500 hover:text-slate-800"
+                      : "border-transparent text-[var(--text-3)] hover:text-slate-800"
                   }`}
                 >
                   تفاصيل الأصل
@@ -1008,7 +1008,7 @@ export default function DigitalAssetsPage() {
                   className={`py-3 px-4 text-sm font-semibold border-b-2 flex items-center gap-2 transition ${
                     drawerTab === "secrets"
                       ? "border-primary text-primary"
-                      : "border-transparent text-slate-500 hover:text-slate-800"
+                      : "border-transparent text-[var(--text-3)] hover:text-slate-800"
                   }`}
                 >
                   <span>خزنة الأسرار المشفرة</span>
@@ -1021,11 +1021,11 @@ export default function DigitalAssetsPage() {
                   className={`py-3 px-4 text-sm font-semibold border-b-2 flex items-center gap-2 transition ${
                     drawerTab === "permissions"
                       ? "border-primary text-primary"
-                      : "border-transparent text-slate-500 hover:text-slate-800"
+                      : "border-transparent text-[var(--text-3)] hover:text-slate-800"
                   }`}
                 >
                   <span>صلاحيات الوصول</span>
-                  <span className="px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300">
                     {selectedAsset.permissions?.length || 0}
                   </span>
                 </button>
@@ -1037,8 +1037,8 @@ export default function DigitalAssetsPage() {
                 {drawerTab === "details" && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">الرابط المباشر (URL)</span>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">الرابط المباشر (URL)</span>
                         {selectedAsset.url ? (
                           <a
                             href={selectedAsset.url.startsWith("http") ? selectedAsset.url : `https://${selectedAsset.url}`}
@@ -1050,40 +1050,40 @@ export default function DigitalAssetsPage() {
                             <Icons.ExternalLink size={12} />
                           </a>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-[var(--text-3)]">—</span>
                         )}
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">اسم المستخدم / الحساب</span>
-                        <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">اسم المستخدم / الحساب</span>
+                        <span className="font-mono font-semibold text-[var(--text)] dark:text-slate-200">
                           {selectedAsset.username || "—"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">بريد الحساب المسجل</span>
-                        <span className="font-mono text-slate-800 dark:text-slate-200 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">بريد الحساب المسجل</span>
+                        <span className="font-mono text-[var(--text)] dark:text-slate-200 text-xs">
                           {selectedAsset.account_email || "—"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">هاتف الاسترداد (Recovery Phone)</span>
-                        <span className="font-mono text-slate-800 dark:text-slate-200 text-xs" dir="ltr">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">هاتف الاسترداد (Recovery Phone)</span>
+                        <span className="font-mono text-[var(--text)] dark:text-slate-200 text-xs" dir="ltr">
                           {selectedAsset.recovery_phone || "—"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">البريد البديل للاسترداد (Recovery Email)</span>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">البريد البديل للاسترداد (Recovery Email)</span>
                         <span className="font-mono text-amber-700 dark:text-amber-400 text-xs">
                           {selectedAsset.recovery_email || "—"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">حماية المصادقة الثنائية (2FA)</span>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">حماية المصادقة الثنائية (2FA)</span>
                         <span className="font-semibold text-xs">
                           {selectedAsset.two_factor_enabled ? (
                             <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -1100,85 +1100,85 @@ export default function DigitalAssetsPage() {
                       </div>
 
                       {selectedAsset.two_factor_phone && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                          <span className="text-xs text-slate-400 block mb-1">هاتف رموز الـ 2FA (2FA Phone)</span>
-                          <span className="font-mono text-slate-800 dark:text-slate-200 text-xs" dir="ltr">
+                        <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                          <span className="text-xs text-[var(--text-3)] block mb-1">هاتف رموز الـ 2FA (2FA Phone)</span>
+                          <span className="font-mono text-[var(--text)] dark:text-slate-200 text-xs" dir="ltr">
                             {selectedAsset.two_factor_phone}
                           </span>
                         </div>
                       )}
 
                       {selectedAsset.domain_registrar && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                          <span className="text-xs text-slate-400 block mb-1">مسجل النطاق (Registrar)</span>
-                          <span className="font-medium text-slate-800 dark:text-slate-200 text-xs">
+                        <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                          <span className="text-xs text-[var(--text-3)] block mb-1">مسجل النطاق (Registrar)</span>
+                          <span className="font-medium text-[var(--text)] dark:text-slate-200 text-xs">
                             {selectedAsset.domain_registrar}
                           </span>
                         </div>
                       )}
 
                       {selectedAsset.nameservers && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                          <span className="text-xs text-slate-400 block mb-1">خوادم الأسماء (Nameservers)</span>
-                          <span className="font-mono text-slate-700 dark:text-slate-300 text-xs">
+                        <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                          <span className="text-xs text-[var(--text-3)] block mb-1">خوادم الأسماء (Nameservers)</span>
+                          <span className="font-mono text-[var(--text-2)] dark:text-slate-300 text-xs">
                             {selectedAsset.nameservers}
                           </span>
                         </div>
                       )}
 
                       {selectedAsset.subscription_tier && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                          <span className="text-xs text-slate-400 block mb-1">خطة وفئة الاشتراك</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                        <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                          <span className="text-xs text-[var(--text-3)] block mb-1">خطة وفئة الاشتراك</span>
+                          <span className="font-semibold text-[var(--text)] dark:text-slate-200 text-xs">
                             {selectedAsset.subscription_tier}
                           </span>
                         </div>
                       )}
 
                       {selectedAsset.payment_method && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                          <span className="text-xs text-slate-400 block mb-1">طريقة الدفع المسجلة</span>
-                          <span className="font-medium text-slate-800 dark:text-slate-200 text-xs">
+                        <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                          <span className="text-xs text-[var(--text-3)] block mb-1">طريقة الدفع المسجلة</span>
+                          <span className="font-medium text-[var(--text)] dark:text-slate-200 text-xs">
                             {selectedAsset.payment_method}
                           </span>
                         </div>
                       )}
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">الموظف المسؤول (Assigned)</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">الموظف المسؤول (Assigned)</span>
+                        <span className="font-semibold text-[var(--text)] dark:text-slate-200">
                           {selectedAsset.assigned_employee_name || "غير مخصص"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">تكلفة الاشتراك التقديرية</span>
-                        <span className="font-bold text-slate-900 dark:text-white">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">تكلفة الاشتراك التقديرية</span>
+                        <span className="font-bold text-[var(--text)] dark:text-white">
                           {selectedAsset.subscription_cost ? `${selectedAsset.subscription_cost} ر.س` : "مجاني / غير محدد"}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs text-slate-400 block mb-1">تاريخ الانتهاء / التجديد</span>
-                        <span className="text-slate-800 dark:text-slate-200 text-xs">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs text-[var(--text-3)] block mb-1">تاريخ الانتهاء / التجديد</span>
+                        <span className="text-[var(--text)] dark:text-slate-200 text-xs">
                           {selectedAsset.expires_at ? new Date(selectedAsset.expires_at).toLocaleDateString("ar-SA") : "لا يوجد انتهاء"}
                         </span>
                       </div>
                     </div>
 
                     {selectedAsset.notes && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                        <span className="text-xs font-semibold text-slate-400 block mb-2">ملاحظات إضافية</span>
-                        <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                      <div className="p-4 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
+                        <span className="text-xs font-semibold text-[var(--text-3)] block mb-2">ملاحظات إضافية</span>
+                        <p className="text-sm text-[var(--text-2)] dark:text-slate-300 whitespace-pre-line leading-relaxed">
                           {selectedAsset.notes}
                         </p>
                       </div>
                     )}
 
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+                    <div className="pt-4 border-t border-[var(--border)] dark:border-slate-800 flex justify-end gap-3">
                       <button
                         onClick={() => handleOpenEdit(selectedAsset)}
-                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition"
+                        className="px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 rounded-xl text-sm font-semibold transition"
                       >
                         تعديل البيانات
                       </button>
@@ -1201,7 +1201,7 @@ export default function DigitalAssetsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                      <h3 className="font-bold text-[var(--text)] dark:text-white text-base">
                         الأسرار وكلمات المرور المسجلة
                       </h3>
                       <button
@@ -1225,7 +1225,7 @@ export default function DigitalAssetsPage() {
                         {selectedAsset.secrets.map((secret) => (
                           <div
                             key={secret.secret_id}
-                            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3"
+                            className="p-4 rounded-xl border border-[var(--border)] dark:border-slate-800 bg-[var(--surface-2)] dark:bg-slate-800/40 space-y-3"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2.5">
@@ -1233,13 +1233,13 @@ export default function DigitalAssetsPage() {
                                   <Icons.Key size={16} />
                                 </div>
                                 <div>
-                                  <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                  <div className="font-bold text-sm text-[var(--text)] dark:text-white flex items-center gap-2">
                                     <span>{secret.secret_type}</span>
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-[var(--text-2)] dark:text-slate-300 font-mono">
                                       {secret.access_policy}
                                     </span>
                                   </div>
-                                  <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                                  <div className="text-[11px] font-mono text-[var(--text-3)] mt-0.5">
                                     {secret.vault_reference_masked}
                                   </div>
                                 </div>
@@ -1255,14 +1255,14 @@ export default function DigitalAssetsPage() {
                                 </button>
                                 <button
                                   onClick={() => handleOpenRotate(secret)}
-                                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                                  className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-slate-900 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 transition"
                                   title="تدوير السر (Rotate)"
                                 >
                                   <Icons.Refresh size={16} />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteSecret(secret)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                                  className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-red-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 transition"
                                   title="حذف من الخزنة"
                                 >
                                   <Icons.Trash size={16} />
@@ -1270,16 +1270,16 @@ export default function DigitalAssetsPage() {
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                            <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--text-3)] pt-2 border-t border-[var(--border)] dark:border-slate-800">
                               <div>
                                 <span>آخر تدوير: </span>
-                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                <span className="font-medium text-[var(--text-2)] dark:text-slate-300">
                                   {secret.last_rotated ? new Date(secret.last_rotated).toLocaleDateString("ar-SA") : "لم يتم التدوير"}
                                 </span>
                               </div>
                               <div>
                                 <span>آخر وصول: </span>
-                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                <span className="font-medium text-[var(--text-2)] dark:text-slate-300">
                                   {secret.last_accessed ? new Date(secret.last_accessed).toLocaleTimeString("ar-SA") : "لم يُكشف بعد"}
                                 </span>
                               </div>
@@ -1288,12 +1288,12 @@ export default function DigitalAssetsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="p-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                      <div className="p-8 text-center border border-dashed border-[var(--border)] dark:border-slate-800 rounded-xl">
                         <Icons.Lock size={32} className="mx-auto text-slate-300 mb-2" />
-                        <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <p className="text-sm font-semibold text-[var(--text-2)] dark:text-slate-300">
                           لا توجد أسرار أو كلمات مرور في الخزنة لهذا الأصل
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-[var(--text-3)] mt-1">
                           انقر على &quot;إضافة سر إلى الخزنة&quot; لحفظ كلمة المرور أو مفتاح الـ API بأمان
                         </p>
                       </div>
@@ -1306,10 +1306,10 @@ export default function DigitalAssetsPage() {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                        <h3 className="font-bold text-[var(--text)] dark:text-white text-base">
                           أذونات الوصول والتحكم
                         </h3>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-[var(--text-3)] mt-0.5">
                           تحديد الموظفين المخولين بعرض الأصل وكشف أسرار الخزنة
                         </p>
                       </div>
@@ -1330,29 +1330,29 @@ export default function DigitalAssetsPage() {
                     </div>
 
                     {selectedAsset.permissions && selectedAsset.permissions.length > 0 ? (
-                      <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                      <div className="divide-y divide-[var(--border)] dark:divide-slate-800 border border-[var(--border)] dark:border-slate-800 rounded-xl overflow-hidden">
                         {selectedAsset.permissions.map((perm) => (
                           <div
                             key={perm.permission_id}
-                            className="p-4 flex items-center justify-between bg-white dark:bg-slate-900"
+                            className="p-4 flex items-center justify-between bg-[var(--surface)] dark:bg-slate-900"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 text-xs">
+                              <div className="w-9 h-9 rounded-full bg-[var(--surface-2)] dark:bg-slate-800 flex items-center justify-center font-bold text-[var(--text-2)] dark:text-slate-300 text-xs">
                                 {perm.username?.substring(0, 2).toUpperCase() || "US"}
                               </div>
                               <div>
-                                <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                <div className="font-bold text-sm text-[var(--text)] dark:text-white flex items-center gap-2">
                                   <span>{perm.full_name || perm.username}</span>
                                   <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold">
                                     {perm.access_level}
                                   </span>
                                 </div>
-                                <div className="text-xs text-slate-400 flex items-center gap-3 mt-1">
+                                <div className="text-xs text-[var(--text-3)] flex items-center gap-3 mt-1">
                                   <span>اسم الدخول: {perm.username}</span>
                                   <span>•</span>
                                   <span>
                                     كشف الأسرار:{" "}
-                                    <strong className={perm.can_reveal_secrets ? "text-emerald-600" : "text-slate-500"}>
+                                    <strong className={perm.can_reveal_secrets ? "text-emerald-600" : "text-[var(--text-3)]"}>
                                       {perm.can_reveal_secrets ? "مسموح" : "غير مسموح"}
                                     </strong>
                                   </span>
@@ -1372,7 +1372,7 @@ export default function DigitalAssetsPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center py-8 text-sm text-slate-400">
+                      <p className="text-center py-8 text-sm text-[var(--text-3)]">
                         لا توجد صلاحيات مخصصة مسجلة
                       </p>
                     )}
@@ -1399,7 +1399,7 @@ export default function DigitalAssetsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     اسم الأصل الرقمي *
                   </label>
                   <input
@@ -1408,18 +1408,18 @@ export default function DigitalAssetsPage() {
                     placeholder="مثال: حساب AWS Production"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     المنصة (Platform) *
                   </label>
                   <select
                     value={formPlatform}
                     onChange={(e) => setFormPlatform(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     {platforms.map((p) => (
                       <option key={p} value={p}>
@@ -1430,13 +1430,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     التصنيف (Category) *
                   </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>
@@ -1447,13 +1447,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الفرع التابع له
                   </label>
                   <select
                     value={formBranchId}
                     onChange={(e) => setFormBranchId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="">عام / الشركة كاملة</option>
                     {branches.map((b) => (
@@ -1465,7 +1465,7 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     رابط المنصة / بوابة الدخول (URL)
                   </label>
                   <input
@@ -1473,12 +1473,12 @@ export default function DigitalAssetsPage() {
                     placeholder="https://..."
                     value={formUrl}
                     onChange={(e) => setFormUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     اسم المستخدم / المعرف (Username)
                   </label>
                   <input
@@ -1486,12 +1486,12 @@ export default function DigitalAssetsPage() {
                     placeholder="مثال: admin_ops"
                     value={formUsername}
                     onChange={(e) => setFormUsername(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     بريد الحساب الأساسي (Account Email)
                   </label>
                   <input
@@ -1499,12 +1499,12 @@ export default function DigitalAssetsPage() {
                     placeholder="ops@investorgate.com"
                     value={formAccountEmail}
                     onChange={(e) => setFormAccountEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     البريد البديل للاسترداد (Recovery Email)
                   </label>
                   <input
@@ -1512,12 +1512,12 @@ export default function DigitalAssetsPage() {
                     placeholder="backup@investorgate-holdings.com"
                     value={formRecoveryEmail}
                     onChange={(e) => setFormRecoveryEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     هاتف الاسترداد والحساب (Linked Phone)
                   </label>
                   <input
@@ -1525,19 +1525,19 @@ export default function DigitalAssetsPage() {
                     placeholder="+9665..."
                     value={formRecoveryPhone}
                     onChange={(e) => setFormRecoveryPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     طريقة المصادقة الثنائية (2FA Method)
                   </label>
                   <select
                     value={formTwoFactorMethod}
                     onChange={(e) => setFormTwoFactorMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Authenticator App (TOTP)">تطبيق المصادقة (Google / MS Authenticator)</option>
                     <option value="SMS Verification">رسائل نصية قصيرة (SMS)</option>
@@ -1548,7 +1548,7 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     هاتف رموز الـ 2FA (إذا كان مختلفاً)
                   </label>
                   <input
@@ -1556,13 +1556,13 @@ export default function DigitalAssetsPage() {
                     placeholder="+9665..."
                     value={formTwoFactorPhone}
                     onChange={(e) => setFormTwoFactorPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     مسجل النطاق (Domain Registrar)
                   </label>
                   <input
@@ -1570,12 +1570,12 @@ export default function DigitalAssetsPage() {
                     placeholder="SaudiNIC, Cloudflare, GoDaddy..."
                     value={formDomainRegistrar}
                     onChange={(e) => setFormDomainRegistrar(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     خوادم الأسماء (Nameservers)
                   </label>
                   <input
@@ -1583,13 +1583,13 @@ export default function DigitalAssetsPage() {
                     placeholder="ns1.cloudflare.com, ns2..."
                     value={formNameservers}
                     onChange={(e) => setFormNameservers(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-xs"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-xs"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     فئة / خطة الاشتراك (Tier)
                   </label>
                   <input
@@ -1597,12 +1597,12 @@ export default function DigitalAssetsPage() {
                     placeholder="Enterprise, Verified, Business..."
                     value={formSubscriptionTier}
                     onChange={(e) => setFormSubscriptionTier(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     طريقة الدفع (Payment Method)
                   </label>
                   <input
@@ -1610,18 +1610,18 @@ export default function DigitalAssetsPage() {
                     placeholder="بطاقة الشركة (*4412), حوالة سنوية..."
                     value={formPaymentMethod}
                     onChange={(e) => setFormPaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الموظف المسؤول (Assigned Employee)
                   </label>
                   <select
                     value={formAssignedEmployeeId}
                     onChange={(e) => setFormAssignedEmployeeId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="">بدون تخصيص</option>
                     {employees.map((emp) => (
@@ -1633,13 +1633,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الحالة
                   </label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Active">نشط (Active)</option>
                     <option value="Suspended">معلق (Suspended)</option>
@@ -1649,7 +1649,7 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     تكلفة الاشتراك (ر.س)
                   </label>
                   <input
@@ -1658,24 +1658,24 @@ export default function DigitalAssetsPage() {
                     step="0.01"
                     value={formSubscriptionCost}
                     onChange={(e) => setFormSubscriptionCost(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     تاريخ الانتهاء / التجديد
                   </label>
                   <input
                     type="date"
                     value={formExpiresAt}
                     onChange={(e) => setFormExpiresAt(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700">
                 <input
                   type="checkbox"
                   id="twoFactorCheckbox"
@@ -1683,13 +1683,13 @@ export default function DigitalAssetsPage() {
                   onChange={(e) => setFormTwoFactorEnabled(e.target.checked)}
                   className="rounded text-primary focus:ring-primary w-4 h-4"
                 />
-                <label htmlFor="twoFactorCheckbox" className="text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer">
+                <label htmlFor="twoFactorCheckbox" className="text-xs font-semibold text-[var(--text)] dark:text-slate-200 cursor-pointer">
                   المصادقة الثنائية (2FA) مفعلة على هذا الحساب
                 </label>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   ملاحظات
                 </label>
                 <textarea
@@ -1697,7 +1697,7 @@ export default function DigitalAssetsPage() {
                   placeholder="أي معلومات إضافية أو إرشادات أمان..."
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -1705,7 +1705,7 @@ export default function DigitalAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -1737,7 +1737,7 @@ export default function DigitalAssetsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     اسم الأصل الرقمي *
                   </label>
                   <input
@@ -1745,18 +1745,18 @@ export default function DigitalAssetsPage() {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     المنصة (Platform) *
                   </label>
                   <select
                     value={formPlatform}
                     onChange={(e) => setFormPlatform(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     {platforms.map((p) => (
                       <option key={p} value={p}>
@@ -1767,13 +1767,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     التصنيف (Category) *
                   </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>
@@ -1784,13 +1784,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الفرع
                   </label>
                   <select
                     value={formBranchId}
                     onChange={(e) => setFormBranchId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="">عام / الشركة كاملة</option>
                     {branches.map((b) => (
@@ -1802,74 +1802,74 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     رابط المنصة (URL)
                   </label>
                   <input
                     type="text"
                     value={formUrl}
                     onChange={(e) => setFormUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     اسم المستخدم (Username)
                   </label>
                   <input
                     type="text"
                     value={formUsername}
                     onChange={(e) => setFormUsername(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     بريد الحساب الأساسي
                   </label>
                   <input
                     type="email"
                     value={formAccountEmail}
                     onChange={(e) => setFormAccountEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     البريد البديل للاسترداد (Recovery Email)
                   </label>
                   <input
                     type="email"
                     value={formRecoveryEmail}
                     onChange={(e) => setFormRecoveryEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     هاتف الاسترداد والحساب (Linked Phone)
                   </label>
                   <input
                     type="text"
                     value={formRecoveryPhone}
                     onChange={(e) => setFormRecoveryPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     طريقة المصادقة الثنائية (2FA Method)
                   </label>
                   <select
                     value={formTwoFactorMethod}
                     onChange={(e) => setFormTwoFactorMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Authenticator App (TOTP)">تطبيق المصادقة (Google / MS Authenticator)</option>
                     <option value="SMS Verification">رسائل نصية قصيرة (SMS)</option>
@@ -1880,75 +1880,75 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     هاتف رموز الـ 2FA (إذا كان مختلفاً)
                   </label>
                   <input
                     type="text"
                     value={formTwoFactorPhone}
                     onChange={(e) => setFormTwoFactorPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     مسجل النطاق (Domain Registrar)
                   </label>
                   <input
                     type="text"
                     value={formDomainRegistrar}
                     onChange={(e) => setFormDomainRegistrar(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     خوادم الأسماء (Nameservers)
                   </label>
                   <input
                     type="text"
                     value={formNameservers}
                     onChange={(e) => setFormNameservers(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-xs"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-xs"
                     dir="ltr"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     فئة / خطة الاشتراك (Tier)
                   </label>
                   <input
                     type="text"
                     value={formSubscriptionTier}
                     onChange={(e) => setFormSubscriptionTier(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     طريقة الدفع (Payment Method)
                   </label>
                   <input
                     type="text"
                     value={formPaymentMethod}
                     onChange={(e) => setFormPaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الموظف المسؤول
                   </label>
                   <select
                     value={formAssignedEmployeeId}
                     onChange={(e) => setFormAssignedEmployeeId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="">بدون تخصيص</option>
                     {employees.map((emp) => (
@@ -1960,13 +1960,13 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الحالة
                   </label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Active">نشط (Active)</option>
                     <option value="Suspended">معلق (Suspended)</option>
@@ -1976,7 +1976,7 @@ export default function DigitalAssetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     تكلفة الاشتراك (ر.س)
                   </label>
                   <input
@@ -1985,24 +1985,24 @@ export default function DigitalAssetsPage() {
                     step="0.01"
                     value={formSubscriptionCost}
                     onChange={(e) => setFormSubscriptionCost(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     تاريخ الانتهاء / التجديد
                   </label>
                   <input
                     type="date"
                     value={formExpiresAt}
                     onChange={(e) => setFormExpiresAt(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700">
                 <input
                   type="checkbox"
                   id="twoFactorCheckboxEdit"
@@ -2010,20 +2010,20 @@ export default function DigitalAssetsPage() {
                   onChange={(e) => setFormTwoFactorEnabled(e.target.checked)}
                   className="rounded text-primary focus:ring-primary w-4 h-4"
                 />
-                <label htmlFor="twoFactorCheckboxEdit" className="text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer">
+                <label htmlFor="twoFactorCheckboxEdit" className="text-xs font-semibold text-[var(--text)] dark:text-slate-200 cursor-pointer">
                   المصادقة الثنائية (2FA) مفعلة على هذا الحساب
                 </label>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   ملاحظات
                 </label>
                 <textarea
                   rows={2}
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -2031,7 +2031,7 @@ export default function DigitalAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -2076,7 +2076,7 @@ export default function DigitalAssetsPage() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                       كلمة مرور حسابك الحالي *
                     </label>
                     <input
@@ -2085,7 +2085,7 @@ export default function DigitalAssetsPage() {
                       placeholder="أدخل كلمة مرور تسجيل الدخول..."
                       value={reauthPassword}
                       onChange={(e) => setReauthPassword(e.target.value)}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                     />
                   </div>
 
@@ -2093,7 +2093,7 @@ export default function DigitalAssetsPage() {
                     <button
                       type="button"
                       onClick={() => setShowRevealModal(false)}
-                      className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                     >
                       إلغاء
                     </button>
@@ -2120,7 +2120,7 @@ export default function DigitalAssetsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-3)] mb-1">
                       قيمة السر ({selectedSecret?.secret_type}):
                     </label>
                     <div className="relative">
@@ -2128,7 +2128,7 @@ export default function DigitalAssetsPage() {
                         type="text"
                         readOnly
                         value={revealedValue}
-                        className="w-full px-4 py-3 text-base font-mono font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white select-all"
+                        className="w-full px-4 py-3 text-base font-mono font-bold rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-white select-all"
                       />
                       <button
                         onClick={handleCopySecret}
@@ -2155,7 +2155,7 @@ export default function DigitalAssetsPage() {
                         setRevealedValue(null);
                         setShowRevealModal(false);
                       }}
-                      className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                      className="px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--surface-2)] hover:bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 transition"
                     >
                       إغلاق وإخفاء السر
                     </button>
@@ -2174,7 +2174,7 @@ export default function DigitalAssetsPage() {
             title="إضافة سر جديد إلى الخزنة المشفرة"
           >
             <form onSubmit={handleAddSecret} className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+              <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800 text-xs text-[var(--text-2)] dark:text-slate-400">
                 سيتم إرسال هذا السر مباشرة إلى <strong>HashiCorp Vault KV v2</strong> ولن يتم حفظ أي نسخة نصية في جداول التطبيق.
               </div>
 
@@ -2185,13 +2185,13 @@ export default function DigitalAssetsPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   نوع السر *
                 </label>
                 <select
                   value={secretType}
                   onChange={(e) => setSecretType(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 >
                   <option value="Password">كلمة مرور الحساب (Master Password)</option>
                   <option value="2FA Authenticator Key">مفتاح إعداد تطبيق المصادقة الثنائية (TOTP Authenticator Key / Serial)</option>
@@ -2206,7 +2206,7 @@ export default function DigitalAssetsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   قيمة السر (Secret Value) *
                 </label>
                 <input
@@ -2215,19 +2215,19 @@ export default function DigitalAssetsPage() {
                   placeholder="أدخل السر المراد تشفيره في الخزنة..."
                   value={secretValue}
                   onChange={(e) => setSecretValue(e.target.value)}
-                  className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   تاريخ استحقاق التدوير (Rotation Due) - اختياري
                 </label>
                 <input
                   type="date"
                   value={rotationDue}
                   onChange={(e) => setRotationDue(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -2235,7 +2235,7 @@ export default function DigitalAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddSecretModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -2270,7 +2270,7 @@ export default function DigitalAssetsPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   قيمة السر الجديدة (New Secret Value) *
                 </label>
                 <input
@@ -2279,12 +2279,12 @@ export default function DigitalAssetsPage() {
                   placeholder="أدخل السر الجديد..."
                   value={newRotateValue}
                   onChange={(e) => setNewRotateValue(e.target.value)}
-                  className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   تأكيد كلمة مرور حسابك (Re-authentication) *
                 </label>
                 <input
@@ -2293,7 +2293,7 @@ export default function DigitalAssetsPage() {
                   placeholder="أدخل كلمة مرور حسابك..."
                   value={reauthPassword}
                   onChange={(e) => setReauthPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -2301,7 +2301,7 @@ export default function DigitalAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowRotateModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -2332,14 +2332,14 @@ export default function DigitalAssetsPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   المستخدم *
                 </label>
                 <select
                   required
                   value={permUserId}
                   onChange={(e) => setPermUserId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 >
                   <option value="">اختر المستخدم...</option>
                   {users.map((u) => (
@@ -2351,13 +2351,13 @@ export default function DigitalAssetsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   مستوى الصلاحية *
                 </label>
                 <select
                   value={permAccessLevel}
                   onChange={(e) => setPermAccessLevel(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 >
                   <option value="Viewer">مشاهد فقط (Viewer)</option>
                   <option value="Editor">محرر (Editor)</option>
@@ -2365,7 +2365,7 @@ export default function DigitalAssetsPage() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700">
                 <input
                   type="checkbox"
                   id="canRevealCheckbox"
@@ -2373,20 +2373,20 @@ export default function DigitalAssetsPage() {
                   onChange={(e) => setPermCanReveal(e.target.checked)}
                   className="rounded text-primary focus:ring-primary w-4 h-4"
                 />
-                <label htmlFor="canRevealCheckbox" className="text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer">
+                <label htmlFor="canRevealCheckbox" className="text-xs font-semibold text-[var(--text)] dark:text-slate-200 cursor-pointer">
                   السماح بكشف وعرض أسرار الخزنة (Reveal Secrets)
                 </label>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   تاريخ انتهاء الصلاحية (اختياري)
                 </label>
                 <input
                   type="date"
                   value={permExpiresAt}
                   onChange={(e) => setPermExpiresAt(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -2394,7 +2394,7 @@ export default function DigitalAssetsPage() {
                 <button
                   type="button"
                   onClick={() => setShowGrantPermModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>

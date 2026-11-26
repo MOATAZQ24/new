@@ -455,7 +455,7 @@ export default function WorkManagementSettingsPage() {
                         {tm.default_strategy} • {tm.member_count} عضو {tm.lead_user_name ? `• القائد: ${tm.lead_user_name}` : ""}
                       </div>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] ${tm.is_active ? "bg-emerald-500/15 text-emerald-700" : "bg-slate-500/15 text-slate-600"}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] ${tm.is_active ? "bg-emerald-500/15 text-emerald-700" : "bg-slate-500/15 text-[var(--text-2)]"}`}>
                       {tm.is_active ? "نشط" : "معطل"}
                     </span>
                   </div>
@@ -554,7 +554,7 @@ export default function WorkManagementSettingsPage() {
                               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border cursor-pointer ${
                                 m.is_available
                                   ? "bg-emerald-500/12 border-emerald-500/30 text-emerald-700"
-                                  : "bg-slate-500/12 border-slate-500/30 text-slate-600"
+                                  : "bg-slate-500/12 border-slate-500/30 text-[var(--text-2)]"
                               }`}
                             >
                               {m.is_available ? "متاح" : "غير متاح"}

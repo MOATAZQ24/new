@@ -104,7 +104,7 @@ export function MobileAssetCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -117,24 +117,24 @@ export function MobileAssetCard({
       <div className="flex items-center justify-between gap-3">
         {/* Right side (RTL): Device Icon/Visual + Title + Type + Location */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-200 border border-[var(--border)] dark:border-slate-700/60 flex items-center justify-center shrink-0">
             {React.createElement(getDeviceIcon(asset), { size: 24, strokeWidth: 1.8 })}
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 dir="auto" className="font-bold text-sm text-slate-900 dark:text-white truncate">
+            <h3 dir="auto" className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
               {displayName}
             </h3>
 
             {/* Type with icon */}
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {React.createElement(getDeviceIcon(asset), { size: 12, className: "text-slate-400 shrink-0" })}
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[var(--text-3)] dark:text-slate-400 font-medium">
+              {React.createElement(getDeviceIcon(asset), { size: 12, className: "text-[var(--text-3)] shrink-0" })}
               <span>{asset.asset_type || "جهاز تقني"}</span>
             </div>
 
             {/* Location with MapPin icon */}
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 dark:text-slate-500 font-medium">
-              <MapPin size={12} className="text-slate-400 shrink-0" />
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[var(--text-3)] dark:text-slate-500 font-medium">
+              <MapPin size={12} className="text-[var(--text-3)] shrink-0" />
               <span className="truncate">{locationLabel}</span>
             </div>
           </div>

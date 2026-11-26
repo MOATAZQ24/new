@@ -114,11 +114,12 @@ export default function TicketsPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Enterprise Service Desk Navigation View
-  const { isEmployee } = useUserRole();
+  // Enterprise Service Desk Navigation View (Default to Unified Inbox for instant access)
+  const { isAdmin, isManager, isTechnician } = useUserRole();
   const [currentView, setCurrentView] = useState<
     "inbox" | "operations" | "kanban" | "self_service" | "approvals"
-  >(() => (isEmployee ? "self_service" : "inbox"));
+  >("inbox");
+  void isAdmin; void isManager; void isTechnician;
 
   // Enterprise Modals
   const [wizardModalOpen, setWizardModalOpen] = useState(false);
@@ -548,11 +549,11 @@ export default function TicketsPage() {
                       className="bg-card border border-border px-3 py-2 text-xs rounded-xl outline-none focus:border-primary text-foreground"
                     >
                       <option value="">جميع التصنيفات</option>
-                      <option value="Hardware">أجهزة وعتاد (Hardware)</option>
-                      <option value="Software">برمجيات وأنظمة (Software)</option>
-                      <option value="Network">شبكات واتصالات (Network)</option>
-                      <option value="Access">صلاحيات ووصول (Access)</option>
-                      <option value="Email">بريد إلكتروني (Email)</option>
+                      <option value="Hardware">أجهزة وعتاد</option>
+                      <option value="Software">برمجيات وأنظمة</option>
+                      <option value="Network">شبكات واتصالات</option>
+                      <option value="Access">صلاحيات ووصول</option>
+                      <option value="Email">بريد إلكتروني</option>
                     </select>
 
                     <select
@@ -562,7 +563,7 @@ export default function TicketsPage() {
                       className="bg-card border border-border px-3 py-2 text-xs rounded-xl outline-none focus:border-primary text-foreground"
                     >
                       <option value="">جميع الحالات</option>
-                      <option value="Open">مفتوحة (Open)</option>
+                      <option value="Open">مفتوحة</option>
                       <option value="Assigned">مسندة لفني</option>
                       <option value="In Progress">قيد المعالجة</option>
                       <option value="Pending Approval">بانتظار الاعتماد</option>
@@ -578,11 +579,11 @@ export default function TicketsPage() {
                       className="bg-card border border-border px-3 py-2 text-xs rounded-xl outline-none focus:border-primary text-foreground"
                     >
                       <option value="">جميع الأولويات</option>
-                      <option value="Critical">حرج (Critical)</option>
-                      <option value="Urgent">عاجل (Urgent)</option>
-                      <option value="High">مرتفع (High)</option>
-                      <option value="Medium">متوسط (Medium)</option>
-                      <option value="Low">منخفض (Low)</option>
+                      <option value="Critical">حرج</option>
+                      <option value="Urgent">عاجل</option>
+                      <option value="High">مرتفع</option>
+                      <option value="Medium">متوسط</option>
+                      <option value="Low">منخفض</option>
                     </select>
                   </>
                 }

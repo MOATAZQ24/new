@@ -35,7 +35,7 @@ export function TablePreferences({ tableId, columns, filters = {}, onApplyFilter
     catch (e) { setStatus(e instanceof Error ? e.message : "تعذر الحفظ"); }
     finally { setBusy(false); }
   };
-  return <details className="workspace-settings bg-white border rounded-xl p-4">
+  return <details className="workspace-settings bg-[var(--surface)] border rounded-xl p-4">
     <summary className="cursor-pointer font-bold">تفضيلات الجدول / Table preferences</summary>
     <div className="grid sm:grid-cols-3 gap-4 my-4">
       <label>اسم العرض / View name<input maxLength={80} value={pref.view} onChange={e => update({ view: e.target.value })} /></label>

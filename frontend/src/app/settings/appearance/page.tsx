@@ -162,14 +162,14 @@ export default function AppearancePage() {
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--surface)] dark:bg-slate-900 p-6 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Icons.Settings size={22} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">إعدادات المظهر والواجهة</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <h1 className="text-xl font-bold text-[var(--text)] dark:text-white">إعدادات المظهر والواجهة</h1>
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                 تخصيص السمة، الألوان، الخطوط، الكثافة البصرية، وعرض الشريط الجانبي
               </p>
             </div>
@@ -178,7 +178,7 @@ export default function AppearancePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+              className="px-4 py-2 text-sm font-semibold text-[var(--text-2)] dark:text-slate-400 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 rounded-xl transition"
             >
               إلغاء
             </button>
@@ -217,12 +217,12 @@ export default function AppearancePage() {
         )}
 
         {/* Theme Templates (Dynamic Templates) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Layers size={20} className="text-primary" />
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">قوالب السمات الجاهزة (Theme Templates)</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <h2 className="text-base font-bold text-[var(--text)] dark:text-white">قوالب السمات الجاهزة (Theme Templates)</h2>
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                 تغيير الهوية البصرية للبرنامج كاملاً بنقرة واحدة وفق المعايير المعتمدة كقالب حي
               </p>
             </div>
@@ -248,11 +248,11 @@ export default function AppearancePage() {
                   className={`p-4 rounded-xl border-2 text-right transition flex flex-col justify-between gap-3 cursor-pointer ${
                     isSelected
                       ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-sm"
-                      : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800"
+                      : "border-[var(--border)] dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-[var(--surface)] dark:bg-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-slate-900 dark:text-white">
+                    <span className="font-bold text-sm text-[var(--text)] dark:text-white">
                       {p.nameAr}
                     </span>
                     {isSelected && (
@@ -262,7 +262,7 @@ export default function AppearancePage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                  <p className="text-xs text-[var(--text-3)] dark:text-slate-400 line-clamp-2">
                     {p.descriptionAr}
                   </p>
                   <div className="flex items-center gap-2 pt-1">
@@ -278,10 +278,10 @@ export default function AppearancePage() {
         </div>
 
         {/* Theme Mode */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Eye size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">سمة العرض (Theme)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">سمة العرض (Theme)</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -293,16 +293,16 @@ export default function AppearancePage() {
                 className={`p-4 rounded-xl border-2 text-right transition flex flex-col gap-2 ${
                   draftTheme === t
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
-                    : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                    : "border-[var(--border)] dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-2">
+                <div className="w-10 h-10 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 flex items-center justify-center text-primary mb-2">
                   {t === "light" ? <Sun size={20} /> : t === "dark" ? <Moon size={20} /> : <Laptop size={20} />}
                 </div>
-                <div className="font-bold text-sm text-slate-900 dark:text-white">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white">
                   {t === "light" ? "فاتح (Light)" : t === "dark" ? "داكن (Dark)" : "تلقائي (System)"}
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-[var(--text-3)]">
                   {t === "light"
                     ? "خلفية بيضاء فاتحة دائماً"
                     : t === "dark"
@@ -321,10 +321,10 @@ export default function AppearancePage() {
         </div>
 
         {/* Color Palette */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <div className="w-5 h-5 rounded bg-gradient-to-br from-primary to-[#3B82F6]" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">لوحة الألوان (Color Palette)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">لوحة الألوان (Color Palette)</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -336,7 +336,7 @@ export default function AppearancePage() {
               { key: "accent" as const, label: "لون التأكيد (Accent)", hint: "الذهبي للعناصر المميزة" },
             ].map(({ key, label, hint }) => (
               <div key={key} className="flex flex-col gap-2">
-                <label htmlFor={`color-${key}-picker`} className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</label>
+                <label htmlFor={`color-${key}-picker`} className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300">{label}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -344,7 +344,7 @@ export default function AppearancePage() {
                     aria-label={`${label} — اختيار اللون`}
                     value={draftColors[key]}
                     onChange={(e) => handleColorChange(key, e.target.value)}
-                    className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-800"
+                    className="w-10 h-10 rounded-lg cursor-pointer border border-[var(--border)] dark:border-slate-700 p-0.5 bg-[var(--surface)] dark:bg-slate-800"
                   />
                   <div className="flex-1">
                     <input
@@ -356,14 +356,14 @@ export default function AppearancePage() {
                           handleColorChange(key, e.target.value);
                         }
                       }}
-                      className="w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
+                      className="w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
                       maxLength={7}
                       placeholder="#123456"
                     />
                   </div>
                 </div>
-                <div className="h-8 rounded-lg border border-slate-200 dark:border-slate-700" style={{ backgroundColor: draftColors[key] }} />
-                <p className="text-[11px] text-slate-400 leading-relaxed">{hint}</p>
+                <div className="h-8 rounded-lg border border-[var(--border)] dark:border-slate-700" style={{ backgroundColor: draftColors[key] }} />
+                <p className="text-[11px] text-[var(--text-3)] leading-relaxed">{hint}</p>
               </div>
             ))}
 
@@ -380,7 +380,7 @@ export default function AppearancePage() {
                   };
                   setColors(defaults);
                 }}
-                className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center"
+                className="px-3 py-2 text-xs font-semibold text-[var(--text-2)] dark:text-slate-400 border border-[var(--border)] dark:border-slate-700 rounded-lg hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition text-center"
               >
                 استعادة ألوان Investor Gate
               </button>
@@ -389,30 +389,30 @@ export default function AppearancePage() {
         </div>
 
         {/* Typography */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.FileText size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">إعدادات الخطوط (Typography)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">إعدادات الخطوط (Typography)</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Arabic Font */}
             <div>
-              <label htmlFor="arabic-font" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="arabic-font" className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 خط العربية
               </label>
               <select
                 id="arabic-font"
                 value={draftTypography.arabicFont}
                 onChange={(e) => handleTypographyChange("arabicFont", e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
               >
                 {ARABIC_FONTS.map((f) => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
               <div
-                className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300"
+                className="mt-2 p-3 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700 text-sm text-[var(--text-2)] dark:text-slate-300"
                 style={{ fontFamily: `'${draftTypography.arabicFont}', sans-serif` }}
               >
                 مثال: مرحباً بكم في نظام Investor Gate للعمليات التقنية المتكاملة.
@@ -421,21 +421,21 @@ export default function AppearancePage() {
 
             {/* English Font */}
             <div>
-              <label htmlFor="english-font" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="english-font" className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 خط الإنجليزية والأرقام
               </label>
               <select
                 id="english-font"
                 value={draftTypography.englishFont}
                 onChange={(e) => handleTypographyChange("englishFont", e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
               >
                 {ENGLISH_FONTS.map((f) => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
               <div
-                className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300"
+                className="mt-2 p-3 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700 text-sm text-[var(--text-2)] dark:text-slate-300"
                 style={{ fontFamily: `'${draftTypography.englishFont}', sans-serif` }}
               >
                 Example: Investor Gate IT Operations System 2026.
@@ -444,7 +444,7 @@ export default function AppearancePage() {
 
             {/* Font Size */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 حجم الخط الأساسي
               </label>
               <div className="flex gap-2">
@@ -456,7 +456,7 @@ export default function AppearancePage() {
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg border-2 transition ${
                       draftTypography.fontSize === s
                         ? "border-primary bg-primary/5 text-primary"
-                        : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        : "border-[var(--border)] dark:border-slate-700 text-[var(--text-2)] dark:text-slate-400 hover:border-slate-300"
                     }`}
                   >
                     {s === "small" ? "صغير" : s === "medium" ? "متوسط (افتراضي)" : "كبير"}
@@ -467,7 +467,7 @@ export default function AppearancePage() {
 
             {/* Font Weight */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 وزن / سُمك الخط
               </label>
               <div className="flex gap-2">
@@ -479,7 +479,7 @@ export default function AppearancePage() {
                     className={`flex-1 py-2 text-xs rounded-lg border-2 transition ${
                       draftTypography.fontWeight === w
                         ? "border-primary bg-primary/5 text-primary font-bold"
-                        : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        : "border-[var(--border)] dark:border-slate-700 text-[var(--text-2)] dark:text-slate-400 hover:border-slate-300"
                     }`}
                     style={{ fontWeight: w === "normal" ? 400 : w === "medium" ? 500 : 700 }}
                   >
@@ -492,10 +492,10 @@ export default function AppearancePage() {
         </div>
 
         {/* UI Density */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Filter size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">كثافة الواجهة (UI Density)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">كثافة الواجهة (UI Density)</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -507,11 +507,11 @@ export default function AppearancePage() {
                 className={`p-4 rounded-xl border-2 text-right transition ${
                   draftDensity === value
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
-                    : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                    : "border-[var(--border)] dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                 }`}
               >
-                <div className="font-bold text-sm text-slate-900 dark:text-white mb-1">{label}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{desc}</div>
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white mb-1">{label}</div>
+                <div className="text-xs text-[var(--text-3)] dark:text-slate-400 leading-relaxed">{desc}</div>
                 {draftDensity === value && (
                   <div className="mt-2 flex items-center gap-1 text-xs text-primary font-semibold">
                     <Icons.Check size={14} />
@@ -524,10 +524,10 @@ export default function AppearancePage() {
         </div>
 
         {/* Border Radius */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.CheckSquare size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">تقريب زوايا المكونات (Border Radius)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">تقريب زوايا المكونات (Border Radius)</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -539,7 +539,7 @@ export default function AppearancePage() {
                 className={`p-4 border-2 transition flex flex-col items-center gap-3 ${
                   draftRadius === value
                     ? "border-primary bg-primary/5 dark:bg-primary/10"
-                    : "border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                    : "border-[var(--border)] dark:border-slate-700 hover:border-slate-300"
                 }`}
                 style={{ borderRadius: preview }}
               >
@@ -547,23 +547,23 @@ export default function AppearancePage() {
                   className="w-12 h-12 bg-primary/20 dark:bg-primary/30"
                   style={{ borderRadius: preview }}
                 />
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center">{label}</div>
-                <code className="text-[10px] text-slate-400">{preview}</code>
+                <div className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 text-center">{label}</div>
+                <code className="text-[10px] text-[var(--text-3)]">{preview}</code>
               </button>
             ))}
           </div>
         </div>
 
         {/* Sidebar Width */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Infrastructure size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">عرض الشريط الجانبي</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">عرض الشريط الجانبي</h2>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label htmlFor="sidebar-width" className="text-sm text-slate-700 dark:text-slate-300">عرض الشريط الجانبي الموسّع</label>
+              <label htmlFor="sidebar-width" className="text-sm text-[var(--text-2)] dark:text-slate-300">عرض الشريط الجانبي الموسّع</label>
               <span className="text-sm font-bold text-primary">{draftSidebarWidth} px</span>
             </div>
             <input
@@ -577,7 +577,7 @@ export default function AppearancePage() {
               onChange={(e) => handleSidebarWidthChange(Number(e.target.value))}
               className="w-full accent-primary"
             />
-            <div className="flex justify-between text-xs text-slate-400">
+            <div className="flex justify-between text-xs text-[var(--text-3)]">
               <span>ضيق (200px)</span>
               <span>افتراضي (256px)</span>
               <span>واسع (320px)</span>
@@ -586,10 +586,10 @@ export default function AppearancePage() {
         </div>
 
         {/* Live Preview Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Eye size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">معاينة حية للتغييرات</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">معاينة حية للتغييرات</h2>
           </div>
 
           <div
@@ -643,8 +643,8 @@ export default function AppearancePage() {
         </div>
 
         {/* Bottom Save Bar */}
-        <div className="sticky bottom-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg rounded-2xl p-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <div className="sticky bottom-4 bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 shadow-lg rounded-2xl p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm text-[var(--text-2)] dark:text-slate-400">
             {saved && <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />}
             <p>
               {saved

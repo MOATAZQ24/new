@@ -89,10 +89,10 @@ export default function AboutPage() {
               <BrandMark size={48} variant="gold-badge" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
                 {meta.product} — حول النظام والهوية البرمجية
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-[var(--text-3)] mt-0.5">
                 معلومات الإصدار، هوية المطوّر، إشعارات الحقوق، وتراخيص الطرف الثالث
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function AboutPage() {
 
           <Link
             href="/help"
-            className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#2563EB] self-start sm:self-center"
+            className="h-10 px-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-bold text-[var(--text)] inline-flex items-center gap-2 hover:border-[#2563EB] self-start sm:self-center"
           >
             <BookOpen className="w-4 h-4 text-[#2563EB]" />
             <span>مركز المساعدة والتعلّم</span>
@@ -109,53 +109,53 @@ export default function AboutPage() {
 
         {/* Product & Developer Identity Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">معلومات المنتج والإصدار</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">معلومات المنتج والإصدار</h2>
             </div>
 
-            <div className="divide-y divide-slate-100 text-xs">
+            <div className="divide-y divide-[var(--border)] text-xs">
               <div className="py-2.5 flex items-center justify-between">
-                <span className="text-slate-600">المنتج (Product)</span>
-                <strong className="text-slate-900 font-mono" dir="ltr">{meta.product}</strong>
+                <span className="text-[var(--text-2)]">المنتج (Product)</span>
+                <strong className="text-[var(--text)] font-mono" dir="ltr">{meta.product}</strong>
               </div>
               <div className="py-2.5 flex items-center justify-between">
-                <span className="text-slate-600">الإصدار (Version)</span>
+                <span className="text-[var(--text-2)]">الإصدار (Version)</span>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] font-mono font-bold">
                   v{meta.version}
                 </span>
               </div>
               <div className="py-2.5 flex items-center justify-between">
-                <span className="text-slate-600">سنة حقوق النشر (Copyright Year)</span>
-                <strong className="font-mono text-slate-900">© {meta.copyright_year}</strong>
+                <span className="text-[var(--text-2)]">سنة حقوق النشر (Copyright Year)</span>
+                <strong className="font-mono text-[var(--text)]">© {meta.copyright_year}</strong>
               </div>
               <div className="py-2.5 flex items-center justify-between">
-                <span className="text-slate-600">نموذج الاستضافة</span>
-                <span className="font-semibold text-slate-800">Self-Hosted Enterprise (RTL/LTR)</span>
+                <span className="text-[var(--text-2)]">نموذج الاستضافة</span>
+                <span className="font-semibold text-[var(--text)]">Self-Hosted Enterprise (RTL/LTR)</span>
               </div>
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <Code2 className="w-4 h-4 text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">هوية المطوّر والهندسة الأمنية</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">هوية المطوّر والهندسة الأمنية</h2>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2">
-                <span className="text-slate-500">المطوّر (Developer)</span>
-                <strong className="text-slate-900">
+              <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2">
+                <span className="text-[var(--text-3)]">المطوّر (Developer)</span>
+                <strong className="text-[var(--text)]">
                   {meta.developer.name_ar} / <span dir="ltr" className="font-mono">{meta.developer.name_en}</span>
                 </strong>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2">
-                <span className="text-slate-500">الدور التخصصي (Role)</span>
-                <strong className="text-slate-800 font-mono" dir="ltr">{meta.developer.role}</strong>
+              <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2">
+                <span className="text-[var(--text-3)]">الدور التخصصي (Role)</span>
+                <strong className="text-[var(--text)] font-mono" dir="ltr">{meta.developer.role}</strong>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2">
-                <span className="text-slate-500 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2">
+                <span className="text-[var(--text-3)] flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5" />
                   <span>LinkedIn</span>
                 </span>
@@ -170,11 +170,11 @@ export default function AboutPage() {
                     {meta.developer.linkedin_url}
                   </a>
                 ) : (
-                  <span className="text-slate-500">غير مهيأ في release_metadata.json</span>
+                  <span className="text-[var(--text-3)]">غير مهيأ في release_metadata.json</span>
                 )}
               </div>
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2">
-                <span className="text-slate-500 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2">
+                <span className="text-[var(--text-3)] flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" />
                   <span>البريد المعتمد</span>
                 </span>
@@ -187,7 +187,7 @@ export default function AboutPage() {
                     {meta.developer.email}
                   </a>
                 ) : (
-                  <span className="text-slate-500">غير مهيأ في release_metadata.json</span>
+                  <span className="text-[var(--text-3)]">غير مهيأ في release_metadata.json</span>
                 )}
               </div>
             </div>
@@ -195,48 +195,48 @@ export default function AboutPage() {
         </div>
 
         {/* Copyright & Legal Notice */}
-        <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-          <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+        <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+          <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
             <Scale className="w-4 h-4 text-[#2563EB]" />
-            <h2 className="text-sm font-bold text-slate-900">إشعار حقوق النشر والترخيص (Copyright &amp; Legal Notice)</h2>
+            <h2 className="text-sm font-bold text-[var(--text)]">إشعار حقوق النشر والترخيص (Copyright &amp; Legal Notice)</h2>
           </div>
-          <div className="text-xs text-slate-700 leading-relaxed space-y-2">
+          <div className="text-xs text-[var(--text-2)] leading-relaxed space-y-2">
             <p>
               <strong>© {meta.copyright_year} {meta.product}.</strong> تم تطوير وهندسة النظام بواسطة{" "}
               <strong>{meta.developer.name_ar} ({meta.developer.name_en})</strong> — {meta.developer.role}.
             </p>
-            <p className="text-slate-600">
+            <p className="text-[var(--text-2)]">
               يُفصل هذا الإسناد التقني عن الملكية القانونية للناشر النهائي؛ حيث يظل اعتماد الاسم القانوني للناشر (Publisher Identity) واتفاقية الترخيص التجاري النهائية رهن الاعتماد القانوني الرسمي للمنشأة المالكة.
             </p>
           </div>
         </section>
 
         {/* Third-Party Notices */}
-        <section id="notices" className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <section id="notices" className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[var(--border)]">
+            <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#2563EB]" />
               <span>إشعارات وتراخيص الطرف الثالث (Third-Party Notices)</span>
             </h2>
-            <span className="text-[11px] font-mono text-slate-500">
+            <span className="text-[11px] font-mono text-[var(--text-3)]">
               {THIRD_PARTY_COMPONENTS.length} Core Libraries
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+              <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
                 <tr>
                   <th className="p-2.5">المكوّن (Package)</th>
                   <th className="p-2.5">الدور</th>
                   <th className="p-2.5">الترخيص (License)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[var(--border)]">
                 {THIRD_PARTY_COMPONENTS.map((pkg) => (
                   <tr key={pkg.name}>
-                    <td className="p-2.5 font-mono font-bold text-slate-900" dir="ltr">{pkg.name}</td>
-                    <td className="p-2.5 text-slate-600">{pkg.category}</td>
+                    <td className="p-2.5 font-mono font-bold text-[var(--text)]" dir="ltr">{pkg.name}</td>
+                    <td className="p-2.5 text-[var(--text-2)]">{pkg.category}</td>
                     <td className="p-2.5 font-mono text-[#2563EB] font-semibold" dir="ltr">{pkg.license}</td>
                   </tr>
                 ))}

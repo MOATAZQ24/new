@@ -209,9 +209,9 @@ export default function TicketWorkspace({
             onChange={(e) => handleStatusChange(e.target.value)}
             className="px-3 py-1.5 text-xs font-bold rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/20 outline-none"
           >
-            <option value="Open">مفتوحة (Open)</option>
+            <option value="Open">مفتوحة</option>
             <option value="Assigned">مسندة (Assigned)</option>
-            <option value="In Progress">قيد المعالجة (In Progress)</option>
+            <option value="In Progress">قيد المعالجة</option>
             <option value="Waiting for User">بانتظار العميل (Waiting for User)</option>
             <option value="Pending Approval">بانتظار الاعتماد (Pending Approval)</option>
             <option value="Resolved">تم الحل (Resolved)</option>

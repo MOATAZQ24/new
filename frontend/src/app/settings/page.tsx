@@ -147,7 +147,7 @@ export default function SettingsPage() {
     if (!found) {
       return {
         label: "غير مهيأ",
-        cls: "bg-slate-100 text-slate-600 border-slate-200",
+        cls: "bg-[var(--surface-2)] text-[var(--text-2)] border-[var(--border)]",
       };
     }
     if (found.is_enabled && (found.status === "Connected" || found.status === "Active")) {
@@ -164,7 +164,7 @@ export default function SettingsPage() {
     }
     return {
       label: "غير مفعل",
-      cls: "bg-slate-100 text-slate-600 border-slate-200",
+      cls: "bg-[var(--surface-2)] text-[var(--text-2)] border-[var(--border)]",
     };
   };
 
@@ -326,14 +326,14 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       {/* Mobile Settings View - Pixel-perfect reproduction of Reference Image 1 */}
-      <div className="block lg:hidden min-h-screen bg-slate-50/60 dark:bg-slate-950 pb-24 px-4 pt-3 space-y-4">
+      <div className="block lg:hidden min-h-screen bg-[var(--surface-2)] dark:bg-slate-950 pb-24 px-4 pt-3 space-y-4">
         {/* Page Header */}
         <div className="flex items-center justify-between pt-1">
           <div className="text-right">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[var(--text)] dark:text-white tracking-tight">
               الإعدادات
             </h1>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+            <p className="text-xs text-[var(--text-3)] dark:text-slate-500 mt-0.5 font-medium">
               إدارة حسابك وتخصيص تجربة النظام
             </p>
           </div>
@@ -344,20 +344,20 @@ export default function SettingsPage() {
 
         {/* 1. الحساب (Account) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <UserLucide size={15} className="text-primary" />
             <span>الحساب</span>
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3.5 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-full bg-primary/[0.12] dark:bg-primary/20 text-primary font-bold flex items-center justify-center text-sm shrink-0">
                 {userDisplayName.charAt(0) || "ف"}
               </div>
               <div className="min-w-0 text-right">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                   {userDisplayName}
                 </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                   {userJobTitle}
                 </div>
               </div>
@@ -368,14 +368,14 @@ export default function SettingsPage() {
 
         {/* 2. المظهر (الثيم) (Theme) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <Palette size={15} className="text-primary" />
             <span>المظهر (الثيم)</span>
           </div>
           <button
             type="button"
             onClick={() => setMobileThemeSheetOpen(true)}
-            className="w-full bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99 cursor-pointer"
+            className="w-full bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3.5 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 transition active:scale-99 cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
               {/* Theme Swatch Preview */}
@@ -385,10 +385,10 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="min-w-0 text-right">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                   الثيم الحالي
                 </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                   {activePreset?.nameAr || "الافتراضي"}
                 </div>
               </div>
@@ -399,23 +399,23 @@ export default function SettingsPage() {
 
         {/* 3. الإشعارات (Notifications) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <BellLucide size={15} className="text-primary" />
             <span>الإشعارات</span>
           </div>
           <Link
             href="/notifications"
-            className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99"
+            className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3.5 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 transition active:scale-99"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
                 <BellLucide size={18} strokeWidth={2.2} />
               </div>
               <div className="min-w-0 text-right">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                   إدارة الإشعارات
                 </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                   اختر ما تريد استلامه
                 </div>
               </div>
@@ -426,20 +426,20 @@ export default function SettingsPage() {
 
         {/* 4. اللغة (Language) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <Globe size={15} className="text-primary" />
             <span>اللغة</span>
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3.5 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary font-bold text-xs flex items-center justify-center shrink-0">
                 Aع
               </div>
               <div className="min-w-0 text-right">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                   لغة النظام
                 </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                   العربية
                 </div>
               </div>
@@ -450,22 +450,22 @@ export default function SettingsPage() {
 
         {/* 5. الأمان (Security) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <ShieldCheck size={15} className="text-primary" />
             <span>الأمان</span>
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-2xs divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800/80 shadow-2xs divide-y divide-[var(--border)] dark:divide-slate-800/60 overflow-hidden">
             {/* تغيير كلمة المرور */}
             <button
               type="button"
               onClick={() => setMobilePasswordSheetOpen(true)}
-              className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99 text-right cursor-pointer"
+              className="w-full flex items-center justify-between p-3.5 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 transition active:scale-99 text-right cursor-pointer"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
                   <Key size={18} strokeWidth={2.2} />
                 </div>
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                <span className="font-bold text-sm text-[var(--text)] dark:text-white">
                   تغيير كلمة المرور
                 </span>
               </div>
@@ -479,10 +479,10 @@ export default function SettingsPage() {
                   <Lock size={18} strokeWidth={2.2} />
                 </div>
                 <div className="min-w-0 text-right">
-                  <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                  <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                     المصادقة الثنائية (2FA)
                   </div>
-                  <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                     تعزيز أمان حسابك
                   </div>
                 </div>
@@ -500,23 +500,23 @@ export default function SettingsPage() {
 
         {/* 6. التفضيلات (Preferences) */}
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text)] dark:text-slate-200 mb-2 px-1">
             <Sliders size={15} className="text-primary" />
             <span>التفضيلات</span>
           </div>
           <Link
             href="/settings/appearance"
-            className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition active:scale-99"
+            className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl p-3.5 border border-[var(--border)] dark:border-slate-800/80 shadow-2xs flex items-center justify-between text-right hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/50 transition active:scale-99"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-primary/[0.08] dark:bg-primary/15 text-primary flex items-center justify-center shrink-0">
                 <Sliders size={18} strokeWidth={2.2} />
               </div>
               <div className="min-w-0 text-right">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                <div className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
                   تخصيص النظام
                 </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                   العرض، التاريخ، والمزيد
                 </div>
               </div>
@@ -535,15 +535,15 @@ export default function SettingsPage() {
               <SettingsIcon className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">الإعدادات</h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">الإعدادات</h1>
+              <p className="text-xs sm:text-sm text-[var(--text-3)] mt-0.5">
                 إدارة النظام، المستخدمين، الصلاحيات، البيانات الأساسية، والتكاملات
               </p>
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-xs self-start sm:self-center">
-            <Icons.Calendar size={15} className="text-slate-500" />
+          <div className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-semibold text-[var(--text-2)] shadow-xs self-start sm:self-center">
+            <Icons.Calendar size={15} className="text-[var(--text-3)]" />
             <span>{todayArabic}</span>
           </div>
         </div>
@@ -554,7 +554,7 @@ export default function SettingsPage() {
             <Link
               key={tile.title}
               href={tile.href}
-              className="relative bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-xs hover:border-[#2563EB] hover:shadow-sm transition-all flex flex-col items-center text-center gap-2 group"
+              className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4 sm:p-5 shadow-xs hover:border-[#2563EB] hover:shadow-sm transition-all flex flex-col items-center text-center gap-2 group"
             >
               {tile.badge && (
                 <span className="absolute top-3 inset-inline-end-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
@@ -564,10 +564,10 @@ export default function SettingsPage() {
               <div className="w-10 h-10 rounded-xl bg-emerald-50/90 group-hover:bg-[#1D4ED8]/10 flex items-center justify-center transition-colors">
                 {tile.icon}
               </div>
-              <div className="text-sm font-bold text-slate-900 group-hover:text-[#1D4ED8]">
+              <div className="text-sm font-bold text-[var(--text)] group-hover:text-[#1D4ED8]">
                 {tile.title}
               </div>
-              <div className="text-[11px] text-slate-500 leading-relaxed">
+              <div className="text-[11px] text-[var(--text-3)] leading-relaxed">
                 {tile.desc}
               </div>
             </Link>
@@ -577,10 +577,10 @@ export default function SettingsPage() {
         {/* Middle 3 Cards: معلومات النظام | التكاملات | مظهر النظام */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
           {/* Card 1: System Information */}
-          <section className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
+          <section className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                   <Icons.Info size={16} className="text-[#2563EB]" />
                   <span>معلومات النظام</span>
                 </h2>
@@ -591,10 +591,10 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <div className="divide-y divide-slate-100 text-xs mt-1">
+              <div className="divide-y divide-[var(--border)] text-xs mt-1">
                 <div className="py-2.5 flex items-center justify-between gap-2">
-                  <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                    <SettingsIcon className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[var(--text-2)] font-medium flex items-center gap-1.5">
+                    <SettingsIcon className="w-3.5 h-3.5 text-[var(--text-3)]" />
                     <span>إصدار النظام</span>
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] border border-emerald-200/70 font-mono font-bold text-[11px]">
@@ -603,8 +603,8 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="py-2.5 flex items-center justify-between gap-2">
-                  <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[var(--text-2)] font-medium flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-[var(--text-3)]" />
                     <span>قاعدة البيانات</span>
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50/80 border border-emerald-200/70 font-bold text-emerald-700 text-[11px]">
@@ -614,16 +614,16 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="py-2.5 flex items-center justify-between gap-2">
-                  <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[var(--text-2)] font-medium flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[var(--text-3)]" />
                     <span>آخر نسخة احتياطية</span>
                   </span>
-                  <span className="font-semibold text-slate-800 text-[11px]">{lastBackupLabel}</span>
+                  <span className="font-semibold text-[var(--text)] text-[11px]">{lastBackupLabel}</span>
                 </div>
 
                 <div className="py-2.5 flex items-center justify-between gap-2">
-                  <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[var(--text-2)] font-medium flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-[var(--text-3)]" />
                     <span>حالة الخدمات</span>
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/70 font-bold text-[11px]">
@@ -633,10 +633,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="pt-3 mt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--text-3)]">
               <span>المنشأة الحالية:</span>
               <div className="flex items-center gap-2">
-                <strong className="text-slate-800">{activeCompany?.name_ar || "بوابة المستثمر"}</strong>
+                <strong className="text-[var(--text)]">{activeCompany?.name_ar || "بوابة المستثمر"}</strong>
                 <Link href="/about" className="font-bold text-[#2563EB] hover:underline">
                   حول النظام
                 </Link>
@@ -645,10 +645,10 @@ export default function SettingsPage() {
           </section>
 
           {/* Card 2: Integrations */}
-          <section className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
+          <section className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                   <Icons.Globe size={16} className="text-[#2563EB]" />
                   <span>التكاملات</span>
                 </h2>
@@ -686,7 +686,7 @@ export default function SettingsPage() {
                   return (
                     <div
                       key={item.key}
-                      className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between gap-2.5"
+                      className="p-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2.5"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-2xs ${item.badgeCls}`}>
@@ -694,12 +694,12 @@ export default function SettingsPage() {
                         </span>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-900 truncate">{item.title}</span>
+                            <span className="text-xs font-bold text-[var(--text)] truncate">{item.title}</span>
                             <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${stateMeta.cls}`}>
                               {stateMeta.label}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 truncate mt-0.5">{item.sub}</div>
+                          <div className="text-[11px] text-[var(--text-3)] truncate mt-0.5">{item.sub}</div>
                         </div>
                       </div>
 
@@ -716,10 +716,10 @@ export default function SettingsPage() {
           </section>
 
           {/* Card 3: System Appearance */}
-          <section className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between space-y-4 md:col-span-2 xl:col-span-1">
+          <section className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between space-y-4 md:col-span-2 xl:col-span-1">
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                   <Icons.Monitor size={16} className="text-[#2563EB]" />
                   <span>مظهر النظام</span>
                 </h2>
@@ -744,7 +744,7 @@ export default function SettingsPage() {
                       className={`relative h-[72px] rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         active
                           ? "border-[#2563EB] bg-emerald-50/70 text-[#1D4ED8] ring-1 ring-[#2563EB]/30"
-                          : "border-slate-200 bg-slate-50/80 text-slate-700 hover:bg-slate-100"
+                          : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                       }`}
                     >
                       {active && (
@@ -760,9 +760,9 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+            <div className="space-y-2.5 pt-2 border-t border-[var(--border)]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold text-slate-700">معرض الهويات البصرية</span>
+                <span className="text-xs font-bold text-[var(--text-2)]">معرض الهويات البصرية</span>
                 <span className="text-[11px] font-semibold text-[#2563EB] truncate">
                   {activePreset.nameAr}
                 </span>
@@ -814,11 +814,11 @@ export default function SettingsPage() {
                             style={{ backgroundColor: preset.dark.accent }}
                           />
                         </div>
-                        <span className="text-[9px] font-mono text-slate-500 truncate" dir="ltr">
+                        <span className="text-[9px] font-mono text-[var(--text-3)] truncate" dir="ltr">
                           {preset.nameEn.split(" ")[0]}
                         </span>
                       </div>
-                      <div className="text-[11px] font-bold text-slate-900 truncate leading-tight">
+                      <div className="text-[11px] font-bold text-[var(--text)] truncate leading-tight">
                         {preset.nameAr}
                       </div>
                     </button>
@@ -832,16 +832,16 @@ export default function SettingsPage() {
         {/* Bottom 2 Panels: Account Profile & Password Change */}
         <div id="password-security" className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">
           {/* Card 4: Authenticated Account Profile */}
-          <section className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between space-y-4">
+          <section className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between space-y-4">
             <div className="space-y-4">
-              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
                     <UserIcon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-sm font-bold text-slate-900 truncate">{userDisplayName}</h2>
-                    <p className="text-xs text-slate-500 truncate" dir="ltr">
+                    <h2 className="text-sm font-bold text-[var(--text)] truncate">{userDisplayName}</h2>
+                    <p className="text-xs text-[var(--text-3)] truncate" dir="ltr">
                       {user?.email || `@${user?.username || "user"}`}
                     </p>
                   </div>
@@ -854,27 +854,27 @@ export default function SettingsPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-xl flex items-center justify-between gap-2">
-                  <span className="text-slate-500 font-medium">اسم المستخدم</span>
-                  <strong className="text-slate-900 font-mono" dir="ltr">
+                <div className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between gap-2">
+                  <span className="text-[var(--text-3)] font-medium">اسم المستخدم</span>
+                  <strong className="text-[var(--text)] font-mono" dir="ltr">
                     @{user?.username || "—"}
                   </strong>
                 </div>
 
-                <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-xl flex items-center justify-between gap-2">
-                  <span className="text-slate-500 font-medium">المسمى الوظيفي</span>
-                  <strong className="text-slate-800 truncate">{userJobTitle}</strong>
+                <div className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between gap-2">
+                  <span className="text-[var(--text-3)] font-medium">المسمى الوظيفي</span>
+                  <strong className="text-[var(--text)] truncate">{userJobTitle}</strong>
                 </div>
 
-                <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-xl flex items-center justify-between gap-2">
-                  <span className="text-slate-500 font-medium">البريد الإلكتروني</span>
-                  <span className="text-slate-800 font-mono truncate" dir="ltr">
+                <div className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between gap-2">
+                  <span className="text-[var(--text-3)] font-medium">البريد الإلكتروني</span>
+                  <span className="text-[var(--text)] font-mono truncate" dir="ltr">
                     {user?.email || "—"}
                   </span>
                 </div>
 
-                <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-xl flex items-center justify-between gap-2">
-                  <span className="text-slate-500 font-medium">حالة الحساب</span>
+                <div className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between gap-2">
+                  <span className="text-[var(--text-3)] font-medium">حالة الحساب</span>
                   <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span>نشط ومفعل</span>
@@ -883,10 +883,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 space-y-2">
+            <div className="pt-3 border-t border-[var(--border)] space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">الأدوار والصلاحيات المسندة ({assignedRoles.length})</span>
-                <span className="text-[11px] text-slate-500">نطاق الصلاحيات المعتمد</span>
+                <span className="font-bold text-[var(--text-2)]">الأدوار والصلاحيات المسندة ({assignedRoles.length})</span>
+                <span className="text-[11px] text-[var(--text-3)]">نطاق الصلاحيات المعتمد</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {assignedRoles.map((r) => {
@@ -897,7 +897,7 @@ export default function SettingsPage() {
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
                         isPrimary
                           ? "bg-emerald-50 text-[#1D4ED8] border-emerald-200 font-bold"
-                          : "bg-slate-50 text-slate-700 border-slate-200"
+                          : "bg-[var(--surface-2)] text-[var(--text-2)] border-[var(--border)]"
                       }`}
                     >
                       {ROLE_AR_LABELS[r] ? `${ROLE_AR_LABELS[r]} (${r})` : r}
@@ -909,19 +909,19 @@ export default function SettingsPage() {
           </section>
 
           {/* Card 5: Password Change Form */}
-          <section className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between">
+          <section className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-[var(--border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
                     <LockIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-slate-900">تغيير كلمة المرور</h2>
-                    <p className="text-xs text-slate-500">تحديث كلمة المرور المشفرة بتقنية Argon2id</p>
+                    <h2 className="text-sm font-bold text-[var(--text)]">تغيير كلمة المرور</h2>
+                    <p className="text-xs text-[var(--text-3)]">تحديث كلمة المرور المشفرة بتقنية Argon2id</p>
                   </div>
                 </div>
-                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-mono">
+                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-[var(--surface-2)] text-[var(--text-2)] text-[10px] font-mono">
                   8+ خانات
                 </span>
               </div>
@@ -949,7 +949,7 @@ export default function SettingsPage() {
 
               <form onSubmit={handleChangePassword} className="space-y-3.5">
                 <div>
-                  <label htmlFor="current-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label htmlFor="current-password" className="block text-xs font-semibold text-[var(--text-2)] mb-1.5">
                     كلمة المرور الحالية <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -961,13 +961,13 @@ export default function SettingsPage() {
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       placeholder="أدخل كلمة المرور الحالية"
-                      className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
+                      className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-2)] focus:bg-[var(--surface)] focus:outline-none focus:border-[#2563EB] transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowOldPass((v) => !v)}
                       aria-label={showOldPass ? "إخفاء كلمة المرور الحالية" : "إظهار كلمة المرور الحالية"}
-                      className="absolute inset-y-0 end-0 px-3 text-slate-400 hover:text-slate-700 flex items-center cursor-pointer"
+                      className="absolute inset-y-0 end-0 px-3 text-[var(--text-3)] hover:text-slate-700 flex items-center cursor-pointer"
                     >
                       {showOldPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -976,7 +976,7 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="new-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label htmlFor="new-password" className="block text-xs font-semibold text-[var(--text-2)] mb-1.5">
                       كلمة المرور الجديدة <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -989,13 +989,13 @@ export default function SettingsPage() {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="8 خانات على الأقل"
-                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
+                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-2)] focus:bg-[var(--surface)] focus:outline-none focus:border-[#2563EB] transition-colors"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPass((v) => !v)}
                         aria-label={showNewPass ? "إخفاء كلمة المرور الجديدة" : "إظهار كلمة المرور الجديدة"}
-                        className="absolute inset-y-0 end-0 px-3 text-slate-400 hover:text-slate-700 flex items-center cursor-pointer"
+                        className="absolute inset-y-0 end-0 px-3 text-[var(--text-3)] hover:text-slate-700 flex items-center cursor-pointer"
                       >
                         {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -1003,7 +1003,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="confirm-new-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label htmlFor="confirm-new-password" className="block text-xs font-semibold text-[var(--text-2)] mb-1.5">
                       تأكيد كلمة المرور <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -1015,13 +1015,13 @@ export default function SettingsPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="أعد كتابة كلمة المرور الجديدة"
-                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#2563EB] transition-colors"
+                        className="w-full h-10 ps-3.5 pe-10 text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-2)] focus:bg-[var(--surface)] focus:outline-none focus:border-[#2563EB] transition-colors"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPass((v) => !v)}
                         aria-label={showConfirmPass ? "إخفاء تأكيد كلمة المرور" : "إظهار تأكيد كلمة المرور"}
-                        className="absolute inset-y-0 end-0 px-3 text-slate-400 hover:text-slate-700 flex items-center cursor-pointer"
+                        className="absolute inset-y-0 end-0 px-3 text-[var(--text-3)] hover:text-slate-700 flex items-center cursor-pointer"
                       >
                         {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -1030,7 +1030,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="pt-1 flex items-center justify-between gap-3">
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-[var(--text-3)]">
                     يتم حفظ كلمة المرور المشفرة فوراً دون إنهاء الجلسة الحالية
                   </span>
                   <button
@@ -1054,7 +1054,7 @@ export default function SettingsPage() {
         title="اختيار ثيم ومظهر النظام"
       >
         <div className="p-4 space-y-3">
-          <p className="text-xs text-slate-500 mb-2">
+          <p className="text-xs text-[var(--text-3)] mb-2">
             اختر الثيم المفضل لك لتطبيقه فورياً وديناميكياً على كافة الشاشات:
           </p>
           <div className="space-y-2">
@@ -1072,7 +1072,7 @@ export default function SettingsPage() {
                   className={`w-full p-3.5 rounded-2xl border flex items-center justify-between text-right transition active:scale-99 ${
                     isSelected
                       ? "border-primary bg-primary/[0.06] shadow-xs"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                      : "border-[var(--border)] dark:border-slate-800 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1084,10 +1084,10 @@ export default function SettingsPage() {
                       {isSelected && <Check size={14} strokeWidth={3} />}
                     </div>
                     <div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-white">
+                      <div className="font-bold text-sm text-[var(--text)] dark:text-white">
                         {p.nameAr}
                       </div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500">
+                      <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500">
                         {p.descriptionAr}
                       </div>
                     </div>
@@ -1123,7 +1123,7 @@ export default function SettingsPage() {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1">
               كلمة المرور الحالية
             </label>
             <input
@@ -1131,12 +1131,12 @@ export default function SettingsPage() {
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] dark:border-slate-800 text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1">
               كلمة المرور الجديدة
             </label>
             <input
@@ -1144,12 +1144,12 @@ export default function SettingsPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] dark:border-slate-800 text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1">
               تأكيد كلمة المرور الجديدة
             </label>
             <input
@@ -1157,7 +1157,7 @@ export default function SettingsPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] dark:border-slate-800 text-xs"
             />
           </div>
 

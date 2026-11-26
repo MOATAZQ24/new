@@ -148,12 +148,12 @@ export default function MaintenancePage() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--border)]">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl font-bold text-[var(--text)] tracking-tight">
             الصيانة والاستبدال وإدارة التغييرات (Maintenance & Changes)
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-[var(--text-3)] mt-0.5">
             توثيق الصيانة الفنية، استبدال الأجهزة، واعتماد تعديل إعدادات الشبكة والخوادم
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function MaintenancePage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {["", "Configuration Change", "Maintenance", "Replacement"].map((act) => (
             <button
@@ -179,7 +179,7 @@ export default function MaintenancePage() {
               className={`motion-control px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 actionFilter === act
                   ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
               }`}
             >
               {act === ""
@@ -199,14 +199,14 @@ export default function MaintenancePage() {
           disabled={loading}
           aria-label="تحديث سجل الصيانة"
           title="تحديث البيانات"
-          className="motion-control p-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer"
+          className="motion-control p-2 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl cursor-pointer"
         >
           <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
         </button>
       </div>
 
       {/* Records Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={6} />
         ) : records.length === 0 ? (
@@ -218,7 +218,7 @@ export default function MaintenancePage() {
         ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+            <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
               <tr>
                 <th className="p-3.5">عنوان الإجراء</th>
                 <th className="p-3.5">النوع</th>
@@ -229,21 +229,21 @@ export default function MaintenancePage() {
                 <th className="p-3.5 text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--border)]">
               {records.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-900">
+                <tr key={r.id} className="hover:bg-[var(--surface-2)] transition-colors">
+                  <td className="p-3.5 font-bold text-[var(--text)]">
                     <div>{r.title}</div>
-                    <div className="text-[11px] text-slate-600 font-normal line-clamp-1">
+                    <div className="text-[11px] text-[var(--text-2)] font-normal line-clamp-1">
                       {r.description || "-"}
                     </div>
                   </td>
                   <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded font-semibold text-[11px] bg-slate-100 text-slate-700">
+                    <span className="px-2 py-0.5 rounded font-semibold text-[11px] bg-[var(--surface-2)] text-[var(--text-2)]">
                       {r.action_type}
                     </span>
                   </td>
-                  <td className="p-3.5 text-slate-800 font-medium">
+                  <td className="p-3.5 text-[var(--text)] font-medium">
                     {r.target_name || `${r.target_type}`}
                   </td>
                   <td className="p-3.5">
@@ -252,7 +252,7 @@ export default function MaintenancePage() {
                   <td className="p-3.5">
                     <StatusBadge status={r.status} />
                   </td>
-                  <td className="p-3.5 text-slate-700 font-semibold">
+                  <td className="p-3.5 text-[var(--text-2)] font-semibold">
                     {r.assigned_technician_name || "غير محدد"}
                   </td>
                   <td className="p-3.5 text-center">
@@ -262,7 +262,7 @@ export default function MaintenancePage() {
                         setSelectedRecord(r);
                         setShowDetailModal(true);
                       }}
-                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                     >
                       عرض وتقييم المخاطر
                     </button>
@@ -285,13 +285,13 @@ export default function MaintenancePage() {
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الإجراء التشغيلي *
               </label>
               <select
                 value={actionType}
                 onChange={(e) => setActionType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Configuration Change">تعديل إعدادات (Configuration Change)</option>
                 <option value="Maintenance">صيانة وإصلاح (Maintenance)</option>
@@ -300,7 +300,7 @@ export default function MaintenancePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الهدف المتأثر *
               </label>
               <select
@@ -309,7 +309,7 @@ export default function MaintenancePage() {
                   setTargetType(e.target.value);
                   setTargetId("");
                 }}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="infrastructure">جهاز بنية تحتية (خادم، راوتر، جدار حماية)</option>
                 <option value="asset">أصل تقني (لابتوب، طابعة، شاشة)</option>
@@ -318,14 +318,14 @@ export default function MaintenancePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اختر الجهاز أو الأصل المتأثر *
             </label>
             <select
               required
               value={targetId}
               onChange={(e) => setTargetId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">-- اختر من القائمة --</option>
               {targetType === "infrastructure"
@@ -343,7 +343,7 @@ export default function MaintenancePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               عنوان الإجراء أو التغيير *
             </label>
             <input
@@ -352,12 +352,12 @@ export default function MaintenancePage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="مثال: تعديل قواعد Firewall لعزل خوادم الدفع"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الوصف الفني والتفاصيل
             </label>
             <textarea
@@ -365,18 +365,18 @@ export default function MaintenancePage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="شرح خطوات التغيير والإعدادات المعدلة..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           {actionType === "Configuration Change" && (
-            <div className="space-y-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-              <h4 className="text-xs font-bold text-slate-800">
+            <div className="space-y-3 p-3.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl">
+              <h4 className="text-xs font-bold text-[var(--text)]">
                 بيانات خطة التغيير وتقييم المخاطر (Change Management)
               </h4>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-[var(--text-2)] mb-1">
                   سبب التغيير (Change Reason)
                 </label>
                 <input
@@ -384,13 +384,13 @@ export default function MaintenancePage() {
                   value={changeReason}
                   onChange={(e) => setChangeReason(e.target.value)}
                   placeholder="سد ثغرة أمنية أو تحسين أداء..."
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white"
+                  className="w-full px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs bg-[var(--surface)]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  <label className="block text-[11px] font-bold text-[var(--text-2)] mb-1">
                     تقييم المخاطر (Risk Assessment)
                   </label>
                   <input
@@ -398,12 +398,12 @@ export default function MaintenancePage() {
                     value={riskAssessment}
                     onChange={(e) => setRiskAssessment(e.target.value)}
                     placeholder="مخاطر انقطاع مؤقت لخدمة..."
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white"
+                    className="w-full px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs bg-[var(--surface)]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  <label className="block text-[11px] font-bold text-[var(--text-2)] mb-1">
                     نافذة التنفيذ المخططة (Execution Window)
                   </label>
                   <input
@@ -411,13 +411,13 @@ export default function MaintenancePage() {
                     value={windowTime}
                     onChange={(e) => setWindowTime(e.target.value)}
                     placeholder="الجمعة 11:00م إلى 01:00ص"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white"
+                    className="w-full px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs bg-[var(--surface)]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-[var(--text-2)] mb-1">
                   خطة التراجع في حال الفشل (Rollback Plan)
                 </label>
                 <textarea
@@ -425,7 +425,7 @@ export default function MaintenancePage() {
                   value={rollbackPlan}
                   onChange={(e) => setRollbackPlan(e.target.value)}
                   placeholder="استعادة ملف الإعدادات الاحتياطي backup.cfg..."
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white"
+                  className="w-full px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs bg-[var(--surface)]"
                 />
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function MaintenancePage() {
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold"
             >
               إلغاء
             </button>
@@ -457,41 +457,41 @@ export default function MaintenancePage() {
         maxWidth="max-w-2xl"
       >
         <div className="space-y-4 text-xs">
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl grid grid-cols-2 gap-3">
+          <div className="p-4 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl grid grid-cols-2 gap-3">
             <div>
-              <span className="text-slate-400">نوع الإجراء:</span>{" "}
+              <span className="text-[var(--text-3)]">نوع الإجراء:</span>{" "}
               <span className="font-bold">{selectedRecord?.action_type}</span>
             </div>
             <div>
-              <span className="text-slate-400">الهدف:</span>{" "}
+              <span className="text-[var(--text-3)]">الهدف:</span>{" "}
               <span className="font-semibold">{selectedRecord?.target_name || selectedRecord?.target_type}</span>
             </div>
             <div>
-              <span className="text-slate-400">حالة الاعتماد:</span>{" "}
+              <span className="text-[var(--text-3)]">حالة الاعتماد:</span>{" "}
               <StatusBadge status={selectedRecord?.approval_status || "Pending"} />
             </div>
             <div>
-              <span className="text-slate-400">الحالة العامة:</span>{" "}
+              <span className="text-[var(--text-3)]">الحالة العامة:</span>{" "}
               <StatusBadge status={selectedRecord?.status || "Open"} />
             </div>
           </div>
 
           {selectedRecord?.change_reason && (
-            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+            <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-2">
               <div>
-                <span className="font-bold text-slate-800">سبب التغيير:</span>
-                <p className="text-slate-600 mt-0.5">{selectedRecord.change_reason}</p>
+                <span className="font-bold text-[var(--text)]">سبب التغيير:</span>
+                <p className="text-[var(--text-2)] mt-0.5">{selectedRecord.change_reason}</p>
               </div>
               {selectedRecord?.risk_assessment && (
                 <div>
                   <span className="font-bold text-amber-800">تقييم المخاطر:</span>
-                  <p className="text-slate-600 mt-0.5">{selectedRecord.risk_assessment}</p>
+                  <p className="text-[var(--text-2)] mt-0.5">{selectedRecord.risk_assessment}</p>
                 </div>
               )}
               {selectedRecord?.rollback_plan && (
                 <div>
                   <span className="font-bold text-rose-800">خطة التراجع (Rollback):</span>
-                  <p className="text-slate-600 mt-0.5">{selectedRecord.rollback_plan}</p>
+                  <p className="text-[var(--text-2)] mt-0.5">{selectedRecord.rollback_plan}</p>
                 </div>
               )}
             </div>
@@ -499,8 +499,8 @@ export default function MaintenancePage() {
 
           {/* Action buttons for Managers / Super Admin */}
           {selectedRecord?.approval_status === "Pending" && (
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-slate-500 font-semibold">هل ترغب في اعتماد هذا الإجراء؟</span>
+            <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
+              <span className="text-[var(--text-3)] font-semibold">هل ترغب في اعتماد هذا الإجراء؟</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleApprove(selectedRecord.id, "Rejected")}

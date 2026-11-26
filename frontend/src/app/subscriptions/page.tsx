@@ -295,10 +295,10 @@ export default function SubscriptionsPage() {
               <Icons.Subscriptions size={20} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
                 الاشتراكات والتراخيص
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-[var(--text-3)] mt-0.5">
                 إدارة جميع الاشتراكات والتراخيص، وربطها بالموظفين والفروع
               </p>
             </div>
@@ -307,72 +307,72 @@ export default function SubscriptionsPage() {
 
         {/* Row 1: 6 Harmonized KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">
+              <div className="text-xl font-black font-mono text-[var(--text)]">
                 {summary?.total_subscriptions_count ?? subscriptions.length}
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الاشتراكات</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">إجمالي الاشتراكات</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#2563EB]">
                 {summary?.active_subscriptions_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">اشتراك نشط</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">اشتراك نشط</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">
+              <div className="text-xl font-black font-mono text-[var(--text)]">
                 {summary?.total_allocated_seats ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">مستخدم مرتبط</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">مستخدم مرتبط</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.Users size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-rose-700">
                 {summary?.expired_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">منتهية</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">منتهية</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
               <Icons.AlertCircle size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-amber-700">
                 {summary?.expiring_soon_count ?? 0}
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">تقترب من الانتهاء</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">تقترب من الانتهاء</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <Icons.Calendar size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-lg font-black font-mono text-[#1D4ED8]">
                 {(summary?.total_monthly_cost ?? 0).toLocaleString("en-US")} ر.س
               </div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">التكلفة الشهرية</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">التكلفة الشهرية</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
@@ -382,14 +382,14 @@ export default function SubscriptionsPage() {
 
         {/* Row 2: 3 Middle Cards (Top Alerts, Upcoming Renewals Bar, Type Distribution Donut) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-[var(--border)]">
               <Icons.Notifications size={17} className="text-[#1D4ED8]" />
-              <h2 className="text-sm font-bold text-slate-900">أهم التنبيهات</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">أهم التنبيهات</h2>
             </div>
 
             {alertSubscriptions.length === 0 ? (
-              <p className="text-xs text-slate-500 py-8 text-center">
+              <p className="text-xs text-[var(--text-3)] py-8 text-center">
                 جميع الاشتراكات النشطة بحالة سليمة حالياً
               </p>
             ) : (
@@ -402,9 +402,9 @@ export default function SubscriptionsPage() {
                       key={al.id}
                       type="button"
                       onClick={() => setInspectedSub(al)}
-                      className="w-full text-right p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-100 flex items-center justify-between gap-2 transition-colors cursor-pointer"
+                      className="w-full text-right p-2.5 rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/50 border border-[var(--border)] flex items-center justify-between gap-2 transition-colors cursor-pointer"
                     >
-                      <span className="flex items-center gap-2 text-xs font-bold text-slate-900 truncate">
+                      <span className="flex items-center gap-2 text-xs font-bold text-[var(--text)] truncate">
                         <span
                           className={`w-2 h-2 rounded-full shrink-0 ${
                             urgent ? "bg-rose-500" : "bg-amber-500"
@@ -441,9 +441,9 @@ export default function SubscriptionsPage() {
         {/* Row 3: Split Sidebar Inspector (Right) + Inline Filter Toolbar & Subscriptions Table (Left) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           {/* Right Inspector: تفاصيل الاشتراك (Desktop Only) */}
-          <aside className="hidden lg:block lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <aside className="hidden lg:block lg:col-span-4 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border)]">
+              <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                 <Icons.Info size={16} className="text-[#1D4ED8]" />
                 <span>تفاصيل الاشتراك</span>
               </h2>
@@ -452,10 +452,10 @@ export default function SubscriptionsPage() {
 
             {inspectedSub ? (
               <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
                   <div>
-                    <div className="font-bold text-sm text-slate-900">{inspectedSub.service_name}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="font-bold text-sm text-[var(--text)]">{inspectedSub.service_name}</div>
+                    <div className="text-[11px] text-[var(--text-3)] mt-0.5">
                       {inspectedSub.provider || inspectedSub.subscription_type}
                     </div>
                   </div>
@@ -464,32 +464,32 @@ export default function SubscriptionsPage() {
                   </span>
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[var(--border)]">
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">الشركة</span>
-                    <span className="font-bold text-slate-900">{activeCompany?.name_ar || "بوابة المستثمر"}</span>
+                    <span className="text-[var(--text-3)] font-semibold">الشركة</span>
+                    <span className="font-bold text-[var(--text)]">{activeCompany?.name_ar || "بوابة المستثمر"}</span>
                   </div>
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">الفرع</span>
-                    <span className="font-bold text-slate-800">{inspectedSub.branch_name || "جميع الفروع"}</span>
+                    <span className="text-[var(--text-3)] font-semibold">الفرع</span>
+                    <span className="font-bold text-[var(--text)]">{inspectedSub.branch_name || "جميع الفروع"}</span>
                   </div>
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">عدد المستخدمين</span>
+                    <span className="text-[var(--text-3)] font-semibold">عدد المستخدمين</span>
                     <span className="font-mono font-bold text-[#2563EB]" dir="ltr">
                       {inspectedSub.allocated_seats ?? 0} / {inspectedSub.seat_limit ?? 1}
                     </span>
                   </div>
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">تاريخ البداية</span>
-                    <span className="font-mono text-slate-700" dir="ltr">{inspectedSub.start_date || "—"}</span>
+                    <span className="text-[var(--text-3)] font-semibold">تاريخ البداية</span>
+                    <span className="font-mono text-[var(--text-2)]" dir="ltr">{inspectedSub.start_date || "—"}</span>
                   </div>
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">تاريخ التجديد / الانتهاء</span>
-                    <span className="font-mono font-bold text-slate-900" dir="ltr">{inspectedSub.renewal_date || "—"}</span>
+                    <span className="text-[var(--text-3)] font-semibold">تاريخ التجديد / الانتهاء</span>
+                    <span className="font-mono font-bold text-[var(--text)]" dir="ltr">{inspectedSub.renewal_date || "—"}</span>
                   </div>
                   <div className="py-2 flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold">التكلفة والدورة</span>
-                    <span className="font-mono font-bold text-slate-900" dir="ltr">
+                    <span className="text-[var(--text-3)] font-semibold">التكلفة والدورة</span>
+                    <span className="font-mono font-bold text-[var(--text)]" dir="ltr">
                       {inspectedSub.price.toLocaleString("en-US")} {inspectedSub.currency} / {inspectedSub.billing_cycle}
                     </span>
                   </div>
@@ -505,7 +505,7 @@ export default function SubscriptionsPage() {
                 </button>
               </div>
             ) : (
-              <p className="text-xs text-slate-500 py-8 text-center">
+              <p className="text-xs text-[var(--text-3)] py-8 text-center">
                 اختر اشتراكاً من الجدول لعرض تفاصيله ومقاعد الموظفين
               </p>
             )}
@@ -574,13 +574,13 @@ export default function SubscriptionsPage() {
             >
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                     نوع الاشتراك
                   </label>
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
                   >
                     <option value="">جميع الأنواع</option>
                     <option value="SaaS">SaaS</option>
@@ -592,13 +592,13 @@ export default function SubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                     الفرع
                   </label>
                   <select
                     value={selectedBranchIds[0] || ""}
                     onChange={(e) => setSelectedBranchIds(e.target.value ? [e.target.value] : [])}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
                   >
                     <option value="">جميع الفروع</option>
                     {companyBranches.map((br) => (
@@ -610,13 +610,13 @@ export default function SubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                     حالة الاشتراك
                   </label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                    className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
                   >
                     <option value="">جميع الحالات</option>
                     <option value="Active">نشط</option>
@@ -629,16 +629,16 @@ export default function SubscriptionsPage() {
             </MobileFilterSheet>
 
             {/* Desktop Toolbar (Hidden on Mobile) */}
-            <div className="hidden lg:flex bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs flex-wrap items-center gap-2">
+            <div className="hidden lg:flex bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-3 shadow-xs flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[180px]">
-                <Icons.Search size={14} className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
+                <Icons.Search size={14} className="text-[var(--text-3)] absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="بحث في الاشتراكات"
                   placeholder="بحث في الاشتراكات ..."
-                  className="w-full ps-8 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#2563EB] focus:bg-white"
+                  className="w-full ps-8 pe-3 py-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] focus:bg-[var(--surface)]"
                 />
               </div>
 
@@ -646,7 +646,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب النوع"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+                className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
               >
                 <option value="">كل الأنواع</option>
                 <option value="SaaS">SaaS</option>
@@ -660,7 +660,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب الفرع"
                 value={selectedBranchIds[0] || ""}
                 onChange={(e) => setSelectedBranchIds(e.target.value ? [e.target.value] : [])}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+                className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
               >
                 <option value="">كل الفروع</option>
                 {companyBranches.map((br) => (
@@ -674,7 +674,7 @@ export default function SubscriptionsPage() {
                 aria-label="تصفية حسب حالة الاشتراك"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+                className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-2.5 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
               >
                 <option value="">كل الحالات</option>
                 <option value="Active">نشط</option>
@@ -687,7 +687,7 @@ export default function SubscriptionsPage() {
                 type="button"
                 onClick={() => void handleExportSubscriptions()}
                 disabled={exportingCsv}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text-2)] cursor-pointer"
               >
                 <Icons.Download size={14} />
                 <span>{exportingCsv ? "جاري التصدير..." : "تصدير"}</span>
@@ -705,7 +705,7 @@ export default function SubscriptionsPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
               {loading ? (
                 <TableSkeleton variant="table" rows={5} cols={8} />
               ) : filteredSubscriptions.length === 0 ? (
@@ -730,7 +730,7 @@ export default function SubscriptionsPage() {
                   {/* Desktop Subscriptions Table */}
                   <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-right text-xs">
-                      <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+                      <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
                         <tr>
                           <th className="p-3">#</th>
                           <th className="p-3">الاشتراك / الخدمة</th>
@@ -742,7 +742,7 @@ export default function SubscriptionsPage() {
                           <th className="p-3 text-center">الإجراءات</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {filteredSubscriptions.map((s, idx) => {
                           const isSelected = inspectedSub?.id === s.id;
                           return (
@@ -753,10 +753,10 @@ export default function SubscriptionsPage() {
                                 isSelected ? "bg-emerald-50/50" : ""
                               }`}
                             >
-                              <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
-                              <td className="p-3 font-bold text-slate-900">
+                              <td className="p-3 font-mono text-[var(--text-3)]">{idx + 1}</td>
+                              <td className="p-3 font-bold text-[var(--text)]">
                                 <div>{s.service_name}</div>
-                                <div className="text-[11px] text-slate-500 font-normal">
+                                <div className="text-[11px] text-[var(--text-3)] font-normal">
                                   {s.provider || s.account_email || "—"}
                                 </div>
                               </td>
@@ -765,11 +765,11 @@ export default function SubscriptionsPage() {
                                   {s.subscription_type}
                                 </span>
                               </td>
-                              <td className="p-3 text-slate-700">{s.branch_name || "جميع الفروع"}</td>
-                              <td className="p-3 text-center font-mono font-bold text-slate-800 whitespace-nowrap">
+                              <td className="p-3 text-[var(--text-2)]">{s.branch_name || "جميع الفروع"}</td>
+                              <td className="p-3 text-center font-mono font-bold text-[var(--text)] whitespace-nowrap">
                                 <bdi dir="ltr">{s.allocated_seats ?? 0} / {s.seat_limit ?? 1}</bdi>
                               </td>
-                              <td className="p-3 font-mono text-slate-700">
+                              <td className="p-3 font-mono text-[var(--text-2)]">
                                 <bdi dir="ltr">{s.renewal_date || "—"}</bdi>
                               </td>
                               <td className="p-3">
@@ -780,7 +780,7 @@ export default function SubscriptionsPage() {
                                   <button
                                     type="button"
                                     onClick={() => setInspectedSub(s)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-[#2563EB] hover:bg-emerald-50 cursor-pointer"
+                                    className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-[#2563EB] hover:bg-emerald-50 cursor-pointer"
                                     title="عرض التفاصيل"
                                   >
                                     <Icons.Eye size={14} />
@@ -816,7 +816,7 @@ export default function SubscriptionsPage() {
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 اسم الخدمة أو البرنامج *
               </label>
               <input
@@ -825,12 +825,12 @@ export default function SubscriptionsPage() {
                 value={serviceName}
                 onChange={(e) => setServiceName(e.target.value)}
                 placeholder="Microsoft 365 Business"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 المزود (Provider)
               </label>
               <input
@@ -838,20 +838,20 @@ export default function SubscriptionsPage() {
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
                 placeholder="Microsoft / AWS / Fortinet"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الخدمة
               </label>
               <select
                 value={subType}
                 onChange={(e) => setSubType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="SaaS">برمجيات كخدمة (SaaS)</option>
                 <option value="Cloud Hosting">استضافة سحابية (Cloud Hosting)</option>
@@ -863,13 +863,13 @@ export default function SubscriptionsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الباقة (Package Type)
               </label>
               <select
                 value={pkgType}
                 onChange={(e) => setPkgType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Basic">Basic</option>
                 <option value="Standard">Standard</option>
@@ -883,7 +883,7 @@ export default function SubscriptionsPage() {
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 السعر *
               </label>
               <input
@@ -892,18 +892,18 @@ export default function SubscriptionsPage() {
                 required
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 العملة
               </label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="SAR">SAR (ريال)</option>
                 <option value="USD">USD ($)</option>
@@ -912,13 +912,13 @@ export default function SubscriptionsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 دورة الفوترة
               </label>
               <select
                 value={billingCycle}
                 onChange={(e) => setBillingCycle(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Monthly">شهري (Monthly)</option>
                 <option value="Quarterly">ربع سنوي (Quarterly)</option>
@@ -930,7 +930,7 @@ export default function SubscriptionsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تاريخ التجديد القادم *
               </label>
               <input
@@ -938,25 +938,25 @@ export default function SubscriptionsPage() {
                 required
                 value={renewalDate}
                 onChange={(e) => setRenewalDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تاريخ الانتهاء الفعلي
               </label>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               البريد الإلكتروني المرتبط بالحساب
             </label>
             <input
@@ -964,7 +964,7 @@ export default function SubscriptionsPage() {
               value={accountEmail}
               onChange={(e) => setAccountEmail(e.target.value)}
               placeholder="billing@company.sa"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -976,20 +976,20 @@ export default function SubscriptionsPage() {
               onChange={(e) => setAutoRenewal(e.target.checked)}
               className="rounded text-[#2563EB]"
             />
-            <label htmlFor="autoRenew" className="text-xs text-slate-700 font-semibold cursor-pointer">
+            <label htmlFor="autoRenew" className="text-xs text-[var(--text-2)] font-semibold cursor-pointer">
               تفعيل التجديد التلقائي (Auto-Renewal)
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الفرع المعتمد (اختياري)
               </label>
               <select
                 value={subBranchId}
                 onChange={(e) => setSubBranchId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">على مستوى الشركة بالكامل</option>
                 {companyBranches.map((br) => (
@@ -998,7 +998,7 @@ export default function SubscriptionsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 عدد المقاعد / التراخيص المتاحة
               </label>
               <input
@@ -1006,7 +1006,7 @@ export default function SubscriptionsPage() {
                 min={1}
                 value={seatLimit}
                 onChange={(e) => setSeatLimit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
@@ -1015,7 +1015,7 @@ export default function SubscriptionsPage() {
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold"
             >
               إلغاء
             </button>
@@ -1037,21 +1037,21 @@ export default function SubscriptionsPage() {
         maxWidth="max-w-2xl"
       >
         <div className="space-y-4 text-xs">
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <span className="text-slate-500 block text-[10px]">المزود</span>
-              <strong className="text-slate-900">{activeSub?.provider || "—"}</strong>
+              <span className="text-[var(--text-3)] block text-[10px]">المزود</span>
+              <strong className="text-[var(--text)]">{activeSub?.provider || "—"}</strong>
             </div>
             <div>
-              <span className="text-slate-500 block text-[10px]">الفرع</span>
-              <strong className="text-slate-900">{activeSub?.branch_name || "جميع الفروع"}</strong>
+              <span className="text-[var(--text-3)] block text-[10px]">الفرع</span>
+              <strong className="text-[var(--text)]">{activeSub?.branch_name || "جميع الفروع"}</strong>
             </div>
             <div>
-              <span className="text-slate-500 block text-[10px]">المقاعد المستخدمة</span>
+              <span className="text-[var(--text-3)] block text-[10px]">المقاعد المستخدمة</span>
               <strong className="font-mono text-[#1D4ED8]">{seatEmployees.length} / {activeSub?.seat_limit ?? 1}</strong>
             </div>
             <div>
-              <span className="text-slate-500 block text-[10px]">الحالة</span>
+              <span className="text-[var(--text-3)] block text-[10px]">الحالة</span>
               {activeSub && <StatusBadge status={activeSub.status} />}
             </div>
           </div>
@@ -1059,13 +1059,13 @@ export default function SubscriptionsPage() {
           {canManage && (
             <form onSubmit={handleAssignSeat} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
               <div className="sm:col-span-6">
-                <label htmlFor="seat-emp-pick" className="block font-bold text-slate-700 mb-1">إضافة موظف للاشتراك</label>
+                <label htmlFor="seat-emp-pick" className="block font-bold text-[var(--text-2)] mb-1">إضافة موظف للاشتراك</label>
                 <select
                   id="seat-emp-pick"
                   value={pickEmployeeId}
                   onChange={(e) => setPickEmployeeId(e.target.value)}
                   disabled={seatsLoading || allEmployees.length === 0}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 disabled:bg-slate-50"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] disabled:bg-slate-50"
                 >
                   {allEmployees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
@@ -1075,14 +1075,14 @@ export default function SubscriptionsPage() {
                 </select>
               </div>
               <div className="sm:col-span-4">
-                <label htmlFor="seat-note-input" className="block font-bold text-slate-700 mb-1">ملاحظة</label>
+                <label htmlFor="seat-note-input" className="block font-bold text-[var(--text-2)] mb-1">ملاحظة</label>
                 <input
                   id="seat-note-input"
                   type="text"
                   value={seatNotes}
                   onChange={(e) => setSeatNotes(e.target.value)}
                   placeholder="رخصة عمل..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)]"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -1098,16 +1098,16 @@ export default function SubscriptionsPage() {
           )}
 
           {seatsLoading ? (
-            <p className="text-center text-slate-500 py-6">جاري تحميل قائمة المستفيدين...</p>
+            <p className="text-center text-[var(--text-3)] py-6">جاري تحميل قائمة المستفيدين...</p>
           ) : seatEmployees.length === 0 ? (
-            <p className="text-center text-slate-500 py-6">لا يوجد موظفون مخصصون لهذا الاشتراك حتى الآن</p>
+            <p className="text-center text-[var(--text-3)] py-6">لا يوجد موظفون مخصصون لهذا الاشتراك حتى الآن</p>
           ) : (
-            <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+            <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl overflow-hidden">
               {seatEmployees.map((row) => (
-                <div key={row.id} className="p-3 flex items-center justify-between gap-2 bg-white">
+                <div key={row.id} className="p-3 flex items-center justify-between gap-2 bg-[var(--surface)]">
                   <div>
-                    <div className="font-bold text-slate-900">{row.full_name} <span className="font-mono text-[10px] text-slate-500">#{row.employee_number}</span></div>
-                    <div className="text-[11px] text-slate-500">{row.job_title || "—"} {row.notes ? `• ${row.notes}` : ""}</div>
+                    <div className="font-bold text-[var(--text)]">{row.full_name} <span className="font-mono text-[10px] text-[var(--text-3)]">#{row.employee_number}</span></div>
+                    <div className="text-[11px] text-[var(--text-3)]">{row.job_title || "—"} {row.notes ? `• ${row.notes}` : ""}</div>
                   </div>
                   {canManage && (
                     <button

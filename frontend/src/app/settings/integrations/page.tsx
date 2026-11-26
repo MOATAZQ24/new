@@ -790,15 +790,15 @@ export default function IntegrationsCenterPage() {
     <DashboardLayout>
       <div className="space-y-6 pb-12">
         {/* Header & Multi-Company Selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[var(--surface)] p-5 rounded-2xl border border-[var(--border)] shadow-xs">
           <div>
             <div className="flex items-center gap-2">
               <span className="p-2 bg-[#1D4ED8]/10 text-[#1D4ED8] rounded-xl">
                 <Icons.Settings size={20} />
               </span>
-              <h1 className="text-xl font-bold text-slate-900">مركز التكاملات والربط السحابي</h1>
+              <h1 className="text-xl font-bold text-[var(--text)]">مركز التكاملات والربط السحابي</h1>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[var(--text-3)] mt-1">
               إدارة تكاملات المنظومة (Telegram Bot، n8n) مع عزل صارم ومستقل لكل منشأة
             </p>
           </div>
@@ -806,13 +806,13 @@ export default function IntegrationsCenterPage() {
           <div className="flex items-center gap-3">
             {/* Multi-Company Selector */}
             {user?.is_superadmin && user?.companies && user.companies.length > 1 ? (
-              <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-2 bg-[var(--surface-2)] p-2 rounded-xl border border-[var(--border)]">
                 <Icons.Building size={16} className="text-[#2563EB]" />
-                <span className="text-xs font-bold text-slate-700 whitespace-nowrap">المنشأة المستهدفة:</span>
+                <span className="text-xs font-bold text-[var(--text-2)] whitespace-nowrap">المنشأة المستهدفة:</span>
                 <select
                   value={selectedCompanyId}
                   onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  className="text-xs font-bold bg-white text-slate-900 border border-slate-200 rounded-lg px-2.5 py-1 focus:ring-[#2563EB] focus:border-[#2563EB]"
+                  className="text-xs font-bold bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] rounded-lg px-2.5 py-1 focus:ring-[#2563EB] focus:border-[#2563EB]"
                 >
                   {user.companies.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -837,7 +837,7 @@ export default function IntegrationsCenterPage() {
                 fetchMenuData();
                 fetchTemplatesData();
               }}
-              className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-colors cursor-pointer"
+              className="p-2 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl transition-colors cursor-pointer"
               title="تحديث البيانات"
             >
               <Icons.Refresh size={16} />
@@ -846,11 +846,11 @@ export default function IntegrationsCenterPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap items-center gap-2 bg-slate-100/70 p-1.5 rounded-2xl border border-slate-200/60 max-w-full">
+        <div className="flex flex-wrap items-center gap-2 bg-[var(--surface-2)] p-1.5 rounded-2xl border border-[var(--border)] max-w-full">
           <button
             onClick={() => setActiveTab("general")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === "general" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "general" ? "bg-[var(--surface)] text-[var(--text)] shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
             }`}
           >
             التكاملات العامة (Integrations)
@@ -858,7 +858,7 @@ export default function IntegrationsCenterPage() {
           <button
             onClick={() => setActiveTab("telegram")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "telegram" ? "bg-white text-[#2563EB] shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "telegram" ? "bg-[var(--surface)] text-[#2563EB] shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
             }`}
           >
             <Icons.Send size={14} className="text-[#2563EB]" />
@@ -867,7 +867,7 @@ export default function IntegrationsCenterPage() {
           <button
             onClick={() => setActiveTab("employees")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "employees" ? "bg-white text-blue-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "employees" ? "bg-[var(--surface)] text-blue-700 shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
             }`}
           >
             <Icons.Users size={14} className="text-blue-600" />
@@ -876,7 +876,7 @@ export default function IntegrationsCenterPage() {
           <button
             onClick={() => setActiveTab("menu_builder")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "menu_builder" ? "bg-white text-amber-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "menu_builder" ? "bg-[var(--surface)] text-amber-700 shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
             }`}
           >
             <Icons.Dashboard size={14} className="text-amber-600" />
@@ -885,7 +885,7 @@ export default function IntegrationsCenterPage() {
           <button
             onClick={() => setActiveTab("templates")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === "templates" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              activeTab === "templates" ? "bg-[var(--surface)] text-purple-700 shadow-xs" : "text-[var(--text-2)] hover:text-slate-900"
             }`}
           >
             <Icons.MessageSquare size={14} className="text-purple-600" />
@@ -900,49 +900,49 @@ export default function IntegrationsCenterPage() {
               {integrations.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+                  className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2.5">
-                        <span className="p-2.5 bg-slate-100 text-slate-700 rounded-xl">
+                        <span className="p-2.5 bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl">
                           {item.service_name === "n8n" && <Icons.Refresh size={20} className="text-orange-500" />}
                           {item.service_name === "telegram" && <Icons.Send size={20} className="text-blue-500" />}
                         </span>
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900">{item.display_name}</h3>
-                          <span className="text-[11px] text-slate-400 font-mono capitalize">{item.service_name}</span>
+                          <h3 className="text-sm font-bold text-[var(--text)]">{item.display_name}</h3>
+                          <span className="text-[11px] text-[var(--text-3)] font-mono capitalize">{item.service_name}</span>
                         </div>
                       </div>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          item.is_enabled ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-600"
+                          item.is_enabled ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-[var(--surface-2)] text-[var(--text-2)]"
                         }`}
                       >
                         {item.is_enabled ? "مفعل" : "معطل"}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 mb-4 line-clamp-2">
+                    <p className="text-xs text-[var(--text-3)] mb-4 line-clamp-2">
                       {item.service_name === "n8n" && "أتمتة المهام وتوجيه الأحداث التشغيلية وسير العمل عبر Webhooks"}
                       {item.service_name === "telegram" && "إرسال الإشعارات التفاعلية للمهام الفنية وقبولها عبر البوت الفوري"}
                     </p>
 
-                    <div className="space-y-1.5 border-t border-slate-100 pt-3 text-[11px]">
-                      <div className="flex items-center justify-between text-slate-500">
+                    <div className="space-y-1.5 border-t border-[var(--border)] pt-3 text-[11px]">
+                      <div className="flex items-center justify-between text-[var(--text-3)]">
                         <span>الحالة:</span>
-                        <span className="font-semibold text-slate-700">{item.status}</span>
+                        <span className="font-semibold text-[var(--text-2)]">{item.status}</span>
                       </div>
-                      <div className="flex items-center justify-between text-slate-500">
+                      <div className="flex items-center justify-between text-[var(--text-3)]">
                         <span>آخر فحص:</span>
-                        <span className="font-mono text-slate-700">
+                        <span className="font-mono text-[var(--text-2)]">
                           {item.last_tested_at ? new Date(item.last_tested_at).toLocaleString("ar-SA") : "لم يُفحص بعد"}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="mt-5 pt-4 border-t border-[var(--border)] flex items-center justify-between gap-2">
                     <button
                       onClick={() => handleToggleEnable(item)}
                       className={`text-xs px-2.5 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
@@ -955,7 +955,7 @@ export default function IntegrationsCenterPage() {
                       <button
                         onClick={() => handleTestConnection(item.service_name)}
                         disabled={testingService === item.service_name}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                        className="px-2.5 py-1.5 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg text-xs font-bold transition-colors cursor-pointer"
                       >
                         {testingService === item.service_name ? "جاري الفحص..." : "فحص الاتصال"}
                       </button>
@@ -972,17 +972,17 @@ export default function IntegrationsCenterPage() {
             </div>
 
             {/* External Integration Logs Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">سجل أحداث التكامل الخارجي (Integration Logs)</h3>
-                  <p className="text-xs text-slate-500">متابعة جميع الأحداث المرسلة إلى Webhooks وTelegram</p>
+                  <h3 className="text-sm font-bold text-[var(--text)]">سجل أحداث التكامل الخارجي (Integration Logs)</h3>
+                  <p className="text-xs text-[var(--text-3)]">متابعة جميع الأحداث المرسلة إلى Webhooks وTelegram</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <select
                     value={logServiceFilter}
                     onChange={(e) => setLogServiceFilter(e.target.value)}
-                    className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5"
+                    className="text-xs bg-[var(--surface-2)] border border-[var(--border)] rounded-lg px-2.5 py-1.5"
                   >
                     <option value="">جميع الخدمات</option>
                     <option value="telegram">Telegram</option>
@@ -990,7 +990,7 @@ export default function IntegrationsCenterPage() {
                   </select>
                   <button
                     onClick={fetchLogs}
-                    className="p-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg"
+                    className="p-1.5 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg"
                     title="تحديث السجل"
                   >
                     <Icons.Refresh size={14} />
@@ -1000,7 +1000,7 @@ export default function IntegrationsCenterPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                  <thead className="bg-[var(--surface-2)] text-[var(--text-3)] font-semibold border-b border-[var(--border)]">
                     <tr>
                       <th className="p-3">الخدمة</th>
                       <th className="p-3">نوع الحدث</th>
@@ -1009,16 +1009,16 @@ export default function IntegrationsCenterPage() {
                       <th className="p-3">الوقت</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {logs.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="p-6 text-center text-slate-400">
+                        <td colSpan={5} className="p-6 text-center text-[var(--text-3)]">
                           لا توجد سجلات أحداث مسجلة بعد
                         </td>
                       </tr>
                     ) : (
                       logs.map((log) => (
-                        <tr key={log.id} className="hover:bg-slate-50/50">
+                        <tr key={log.id} className="hover:bg-[var(--surface-2)]">
                           <td className="p-3 font-bold uppercase">{log.service_name}</td>
                           <td className="p-3 font-mono">{log.event_type}</td>
                           <td className="p-3">
@@ -1032,10 +1032,10 @@ export default function IntegrationsCenterPage() {
                               {log.status}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-500 max-w-xs truncate">
+                          <td className="p-3 text-[var(--text-3)] max-w-xs truncate">
                             {log.error_message || JSON.stringify(log.payload || {})}
                           </td>
-                          <td className="p-3 font-mono text-slate-400">
+                          <td className="p-3 font-mono text-[var(--text-3)]">
                             {new Date(log.created_at).toLocaleString("ar-SA")}
                           </td>
                         </tr>
@@ -1072,13 +1072,13 @@ export default function IntegrationsCenterPage() {
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-bold text-slate-500">الموظفون المرتبطون بالبوت</span>
+              <div className="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)] shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-bold text-[var(--text-3)]">الموظفون المرتبطون بالبوت</span>
                 <div className="my-2">
-                  <span className="text-2xl font-bold text-slate-900">
+                  <span className="text-2xl font-bold text-[var(--text)]">
                     {tgStatus?.stats?.linked_employees || 0}
                   </span>
-                  <span className="text-xs text-slate-400 mr-1.5 font-bold">
+                  <span className="text-xs text-[var(--text-3)] mr-1.5 font-bold">
                     / {tgStatus?.stats?.total_active_employees || 0} موظف
                   </span>
                 </div>
@@ -1090,13 +1090,13 @@ export default function IntegrationsCenterPage() {
                 </button>
               </div>
 
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-bold text-slate-500">صندوق الإشعارات (Outbox)</span>
+              <div className="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)] shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-bold text-[var(--text-3)]">صندوق الإشعارات (Outbox)</span>
                 <div className="my-2">
                   <span className="text-2xl font-bold text-emerald-600">
                     {tgStatus?.stats?.outbox_sent || 0}
                   </span>
-                  <span className="text-xs text-slate-400 mr-2">
+                  <span className="text-xs text-[var(--text-3)] mr-2">
                     (معلق: {tgStatus?.stats?.outbox_pending || 0})
                   </span>
                 </div>
@@ -1110,10 +1110,10 @@ export default function IntegrationsCenterPage() {
             </div>
 
             {/* Telegram Configuration Form */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-              <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 shadow-xs">
+              <h3 className="text-base font-bold text-[var(--text)] mb-4 pb-2 border-b border-[var(--border)] flex items-center justify-between">
                 <span>إعدادات الاعتماد والتنبيهات المخصصة للمنشأة</span>
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--text-2)]">
                   <span>تفعيل البوت لهذه المنشأة:</span>
                   <input
                     type="checkbox"
@@ -1127,7 +1127,7 @@ export default function IntegrationsCenterPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                       رمز Bot API Token:
                     </label>
                     <input
@@ -1135,16 +1135,16 @@ export default function IntegrationsCenterPage() {
                       value={botTokenInput}
                       onChange={(e) => setBotTokenInput(e.target.value)}
                       placeholder={tgStatus?.has_bot_token ? "رمز التوكن محفوظ بأمان (اتركه فارغاً للإبقاء عليه)" : "123456789:ABC..."}
-                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
+                      className="w-full text-xs font-mono p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
                     />
-                    <span className="text-[11px] text-slate-400 mt-1 block">
+                    <span className="text-[11px] text-[var(--text-3)] mt-1 block">
                       مخزن ومحمي على الخادم ولا يُعرض كنص صريح في المتصفح أبداً (Zero-Plaintext).
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                         اسم مستخدم البوت (Username):
                       </label>
                       <input
@@ -1152,11 +1152,11 @@ export default function IntegrationsCenterPage() {
                         value={botUsernameInput}
                         onChange={(e) => setBotUsernameInput(e.target.value)}
                         placeholder="InvestorGateBot"
-                        className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                        className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                         معرّف المحادثة الافتراضي (Chat ID):
                       </label>
                       <input
@@ -1164,7 +1164,7 @@ export default function IntegrationsCenterPage() {
                         value={chatIdInput}
                         onChange={(e) => setChatIdInput(e.target.value)}
                         placeholder="5451561520"
-                        className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                        className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl font-mono"
                       />
                     </div>
                   </div>
@@ -1174,7 +1174,7 @@ export default function IntegrationsCenterPage() {
                       type="button"
                       onClick={() => handleTestTgConnection()}
                       disabled={testingTgConnection}
-                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text)] rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <Icons.Refresh size={12} />
                       <span>{testingTgConnection ? "جاري الفحص..." : "فحص الاتصال (getMe)"}</span>
@@ -1204,8 +1204,8 @@ export default function IntegrationsCenterPage() {
                 </div>
 
                 {/* Right Column: Notification Rules */}
-                <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-200">
-                  <span className="text-xs font-bold text-slate-800 block mb-2">
+                <div className="space-y-3 bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)]">
+                  <span className="text-xs font-bold text-[var(--text)] block mb-2">
                     أحداث المهام التشغيلية المرسلة للبوت (Task Event Rules):
                   </span>
                   {[
@@ -1224,19 +1224,19 @@ export default function IntegrationsCenterPage() {
                         className="mt-0.5 rounded text-[#2563EB] focus:ring-[#2563EB]"
                       />
                       <div>
-                        <span className="text-xs font-bold text-slate-800 block">{rule.label}</span>
-                        <span className="text-[11px] text-slate-500">{rule.desc}</span>
+                        <span className="text-xs font-bold text-[var(--text)] block">{rule.label}</span>
+                        <span className="text-[11px] text-[var(--text-3)]">{rule.desc}</span>
                       </div>
                     </label>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setSimModalOpen(true)}
-                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Icons.Tasks size={14} />
                   <span>محاكي إجراءات البوت (Bot Action Simulator)</span>
@@ -1253,11 +1253,11 @@ export default function IntegrationsCenterPage() {
             </div>
 
             {/* Outbox Notifications Queue Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">صندوق إرسال الإشعارات (Transactional Outbox)</h3>
-                  <p className="text-xs text-slate-500">سجل الإشعارات المجدولة مع ضمان عدم التكرار (Idempotency)</p>
+                  <h3 className="text-sm font-bold text-[var(--text)]">صندوق إرسال الإشعارات (Transactional Outbox)</h3>
+                  <p className="text-xs text-[var(--text-3)]">سجل الإشعارات المجدولة مع ضمان عدم التكرار (Idempotency)</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -1268,7 +1268,7 @@ export default function IntegrationsCenterPage() {
                   </button>
                   <button
                     onClick={fetchTelegramData}
-                    className="p-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg"
+                    className="p-1.5 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg"
                     title="تحديث"
                   >
                     <Icons.Refresh size={14} />
@@ -1278,7 +1278,7 @@ export default function IntegrationsCenterPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                  <thead className="bg-[var(--surface-2)] text-[var(--text-3)] font-semibold border-b border-[var(--border)]">
                     <tr>
                       <th className="p-3">نوع الحدث</th>
                       <th className="p-3">المستلم (Chat ID)</th>
@@ -1288,17 +1288,17 @@ export default function IntegrationsCenterPage() {
                       <th className="p-3">وقت الإنشاء</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {outboxItems.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-6 text-center text-slate-400">
+                        <td colSpan={6} className="p-6 text-center text-[var(--text-3)]">
                           صندوق الإشعارات فارغ حالياً
                         </td>
                       </tr>
                     ) : (
                       outboxItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/50">
-                          <td className="p-3 font-mono font-bold text-slate-800">{item.event_type}</td>
+                        <tr key={item.id} className="hover:bg-[var(--surface-2)]">
+                          <td className="p-3 font-mono font-bold text-[var(--text)]">{item.event_type}</td>
                           <td className="p-3 font-mono">{item.recipient_chat_id || "—"}</td>
                           <td className="p-3">
                             <span
@@ -1313,13 +1313,13 @@ export default function IntegrationsCenterPage() {
                               {item.status}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-600 max-w-sm truncate" title={item.message_text}>
+                          <td className="p-3 text-[var(--text-2)] max-w-sm truncate" title={item.message_text}>
                             {item.message_text}
                           </td>
                           <td className="p-3 font-mono text-center">
                             {item.retry_count} / {item.max_retries}
                           </td>
-                          <td className="p-3 font-mono text-slate-400">
+                          <td className="p-3 font-mono text-[var(--text-3)]">
                             {new Date(item.created_at).toLocaleString("ar-SA")}
                           </td>
                         </tr>
@@ -1335,28 +1335,28 @@ export default function IntegrationsCenterPage() {
         {/* TAB 3: LINKED EMPLOYEES MANAGEMENT */}
         {activeTab === "employees" && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+              <div className="p-5 border-b border-[var(--border)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">سجل ربط حسابات الموظفين (Linked Employees)</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <h3 className="text-base font-bold text-[var(--text)]">سجل ربط حسابات الموظفين (Linked Employees)</h3>
+                  <p className="text-xs text-[var(--text-3)] mt-0.5">
                     إدارة الربط الآمن والتحكم الكامل في ربط وإلغاء وإعادة ربط حسابات تليجرام للموظفين
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Icons.Search size={14} className="absolute right-3 top-2.5 text-slate-400" />
+                    <Icons.Search size={14} className="absolute right-3 top-2.5 text-[var(--text-3)]" />
                     <input
                       type="text"
                       value={empSearch}
                       onChange={(e) => setEmpSearch(e.target.value)}
                       placeholder="بحث بالاسم، القسم، الرقم..."
-                      className="pr-8 pl-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
+                      className="pr-8 pl-3 py-1.5 text-xs bg-[var(--surface-2)] border border-[var(--border)] rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB]"
                     />
                   </div>
                   <button
                     onClick={fetchTelegramData}
-                    className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
+                    className="p-2 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl"
                     title="تحديث القائمة"
                   >
                     <Icons.Refresh size={14} />
@@ -1366,7 +1366,7 @@ export default function IntegrationsCenterPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold">
+                  <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-3)] font-bold">
                     <tr>
                       <th className="p-3.5">اسم الموظف والرقم</th>
                       <th className="p-3.5">الفرع والقسم</th>
@@ -1378,40 +1378,40 @@ export default function IntegrationsCenterPage() {
                       <th className="p-3.5 text-center">الإجراءات</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {filteredEmployees.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-400">
+                        <td colSpan={8} className="p-8 text-center text-[var(--text-3)]">
                           لا يوجد موظفون مطابقون لمعايير البحث
                         </td>
                       </tr>
                     ) : (
                       filteredEmployees.map((emp) => (
-                        <tr key={emp.employee_id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-3.5 font-bold text-slate-900">
+                        <tr key={emp.employee_id} className="hover:bg-[var(--surface-2)] transition-colors">
+                          <td className="p-3.5 font-bold text-[var(--text)]">
                             <div className="flex items-center gap-2">
                               <span className="w-8 h-8 rounded-full bg-[#1D4ED8]/10 text-[#1D4ED8] font-bold flex items-center justify-center text-xs">
                                 {emp.full_name?.charAt(0) || "م"}
                               </span>
                               <div>
                                 <span>{emp.full_name}</span>
-                                <span className="block text-[10px] text-slate-400 font-mono">{emp.employee_number}</span>
+                                <span className="block text-[10px] text-[var(--text-3)] font-mono">{emp.employee_number}</span>
                               </div>
                             </div>
                           </td>
-                          <td className="p-3.5 text-slate-700">
+                          <td className="p-3.5 text-[var(--text-2)]">
                             <span>{emp.branch_name || "الفرع الرئيسي"}</span>
-                            <span className="block text-[10px] text-slate-400">{emp.department_name || "عام"}</span>
+                            <span className="block text-[10px] text-[var(--text-3)]">{emp.department_name || "عام"}</span>
                           </td>
-                          <td className="p-3.5 text-slate-600">{emp.job_title}</td>
+                          <td className="p-3.5 text-[var(--text-2)]">{emp.job_title}</td>
                           <td className="p-3.5 font-mono">
                             {emp.telegram_username ? (
                               <span className="text-blue-600 font-bold">@{emp.telegram_username}</span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-[var(--text-3)]">—</span>
                             )}
                           </td>
-                          <td className="p-3.5 font-mono text-slate-700">{emp.telegram_chat_id || "—"}</td>
+                          <td className="p-3.5 font-mono text-[var(--text-2)]">{emp.telegram_chat_id || "—"}</td>
                           <td className="p-3.5">
                             {emp.is_linked ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
@@ -1423,12 +1423,12 @@ export default function IntegrationsCenterPage() {
                                 بانتظار التحقق...
                               </span>
                             ) : (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[var(--surface-2)] text-[var(--text-2)]">
                                 غير مرتبط
                               </span>
                             )}
                           </td>
-                          <td className="p-3.5 font-mono text-slate-400">
+                          <td className="p-3.5 font-mono text-[var(--text-3)]">
                             {emp.last_interaction_at ? new Date(emp.last_interaction_at).toLocaleString("ar-SA") : "—"}
                           </td>
                           <td className="p-3.5 text-center">
@@ -1491,10 +1491,10 @@ export default function IntegrationsCenterPage() {
         {/* TAB 4: NO-CODE TELEGRAM MENU BUILDER */}
         {activeTab === "menu_builder" && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[var(--surface)] p-5 rounded-2xl border border-[var(--border)] shadow-xs">
               <div>
-                <h2 className="text-base font-bold text-slate-900">منشئ القوائم والأزرار التفاعلية (Bot Menu Builder)</h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h2 className="text-base font-bold text-[var(--text)]">منشئ القوائم والأزرار التفاعلية (Bot Menu Builder)</h2>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">
                   تخصيص أزرار لوحة المفاتيح التفاعلية (Reply Keyboards) وأوامر البوت دون كتابة كود برمي
                 </p>
               </div>
@@ -1531,33 +1531,33 @@ export default function IntegrationsCenterPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Menu Items Table & Management */}
-              <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900">أزرار وقوائم البوت المهيأة ({menuItems.length})</h3>
+              <div className="lg:col-span-2 bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[var(--text)]">أزرار وقوائم البوت المهيأة ({menuItems.length})</h3>
                   <button
                     onClick={fetchMenuData}
-                    className="p-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg"
+                    className="p-1.5 border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg"
                     title="تحديث"
                   >
                     <Icons.Refresh size={14} />
                   </button>
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[var(--border)]">
                   {menuItems.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400 text-xs">
+                    <div className="p-8 text-center text-[var(--text-3)] text-xs">
                       لا توجد أزرار مضافة حالياً. اضغط &quot;إضافة زر جديد&quot; للبدء.
                     </div>
                   ) : (
                     menuItems.map((item, idx) => (
-                      <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                      <div key={item.id} className="p-4 flex items-center justify-between hover:bg-[var(--surface-2)] transition-colors">
                         <div className="flex items-center gap-3">
                           {/* Reorder Buttons */}
                           <div className="flex flex-col gap-1">
                             <button
                               onClick={() => handleMoveMenuOrder(idx, "up")}
                               disabled={idx === 0}
-                              className="p-1 hover:bg-slate-200 rounded disabled:opacity-30 cursor-pointer"
+                              className="p-1 hover:bg-[var(--surface-2)] rounded disabled:opacity-30 cursor-pointer"
                               title="تحريك لأعلى"
                             >
                               <ChevronUp size={14} />
@@ -1565,20 +1565,20 @@ export default function IntegrationsCenterPage() {
                             <button
                               onClick={() => handleMoveMenuOrder(idx, "down")}
                               disabled={idx === menuItems.length - 1}
-                              className="p-1 hover:bg-slate-200 rounded disabled:opacity-30 cursor-pointer"
+                              className="p-1 hover:bg-[var(--surface-2)] rounded disabled:opacity-30 cursor-pointer"
                               title="تحريك لأسفل"
                             >
                               <ChevronDown size={14} />
                             </button>
                           </div>
 
-                          <span className="w-9 h-9 rounded-xl bg-slate-100 text-base flex items-center justify-center font-bold">
+                          <span className="w-9 h-9 rounded-xl bg-[var(--surface-2)] text-base flex items-center justify-center font-bold">
                             {item.icon || "🔘"}
                           </span>
 
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-slate-900">{item.label}</span>
+                              <span className="text-sm font-bold text-[var(--text)]">{item.label}</span>
                               <span
                                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                   item.menu_type === "reply_keyboard"
@@ -1591,7 +1591,7 @@ export default function IntegrationsCenterPage() {
                                 {item.menu_type === "reply_keyboard" ? "لوحة المفاتيح" : item.menu_type === "inline_button" ? "زر مدمج" : "أمر نصي"}
                               </span>
                             </div>
-                            <span className="text-[11px] font-mono text-slate-400 block mt-0.5">
+                            <span className="text-[11px] font-mono text-[var(--text-3)] block mt-0.5">
                               الإجراء: {item.action}
                             </span>
                           </div>
@@ -1611,7 +1611,7 @@ export default function IntegrationsCenterPage() {
                           </label>
                           <button
                             onClick={() => handleOpenEditMenuModal(item)}
-                            className="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg cursor-pointer"
+                            className="p-1.5 hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg cursor-pointer"
                             title="تعديل"
                           >
                             <Icons.Edit size={14} />
@@ -1631,8 +1631,8 @@ export default function IntegrationsCenterPage() {
               </div>
 
               {/* Right Column: Interactive Smartphone Mockup */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col items-center">
-                <span className="text-xs font-bold text-slate-700 mb-3 block">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs flex flex-col items-center">
+                <span className="text-xs font-bold text-[var(--text-2)] mb-3 block">
                   معاينة حية لشاشة Telegram على الهاتف الذكي (Live Preview)
                 </span>
 
@@ -1656,7 +1656,7 @@ export default function IntegrationsCenterPage() {
                           <span className="text-[10px] text-blue-400">متصل (bot)</span>
                         </div>
                       </div>
-                      <span className="text-xs text-slate-400">•••</span>
+                      <span className="text-xs text-[var(--text-3)]">•••</span>
                     </div>
 
                     {/* Chat Messages Simulation */}
@@ -1664,7 +1664,7 @@ export default function IntegrationsCenterPage() {
                       <div className="bg-[#182533] p-2.5 rounded-2xl rounded-tr-none text-slate-200 shadow-xs border border-slate-700/50">
                         <span className="font-bold text-blue-400 block mb-1">Investor Gate OS:</span>
                         مرحباً بك في بوت المهام التشغيلية التابع لـ {currentCompany?.name_ar || "المنشأة"}.
-                        <span className="block text-[9px] text-slate-500 mt-1 text-left font-mono">10:30 ص ✓✓</span>
+                        <span className="block text-[9px] text-[var(--text-3)] mt-1 text-left font-mono">10:30 ص ✓✓</span>
                       </div>
 
                       <div className="bg-[#2b5278] p-2.5 rounded-2xl rounded-tl-none text-white self-start shadow-xs">
@@ -1676,7 +1676,7 @@ export default function IntegrationsCenterPage() {
                         <span className="font-bold text-emerald-400 block mb-0.5">📋 مهامك النشطة (2):</span>
                         1. 🔴 تحديث خادم البنية التحتية
                         2. 🟡 استبدال راوتر الفرع
-                        <span className="block text-[9px] text-slate-500 mt-1 text-left font-mono">10:31 ص ✓✓</span>
+                        <span className="block text-[9px] text-[var(--text-3)] mt-1 text-left font-mono">10:31 ص ✓✓</span>
                       </div>
                     </div>
 
@@ -1692,7 +1692,7 @@ export default function IntegrationsCenterPage() {
                           </div>
                         ))}
                       </div>
-                      <span className="block text-[9px] text-slate-500 text-center mt-1.5 font-mono">
+                      <span className="block text-[9px] text-[var(--text-3)] text-center mt-1.5 font-mono">
                         لوحة مفاتيح تفاعلية دائمة
                       </span>
                     </div>
@@ -1706,17 +1706,17 @@ export default function IntegrationsCenterPage() {
         {/* TAB 5: CONFIGURABLE MESSAGE TEMPLATES */}
         {activeTab === "templates" && (
           <div className="space-y-6">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-              <h2 className="text-base font-bold text-slate-900">قوالب الرسائل والإشعارات العربية المخصصة</h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+            <div className="bg-[var(--surface)] p-5 rounded-2xl border border-[var(--border)] shadow-xs">
+              <h2 className="text-base font-bold text-[var(--text)]">قوالب الرسائل والإشعارات العربية المخصصة</h2>
+              <p className="text-xs text-[var(--text-3)] mt-0.5">
                 تعديل نصوص الإشعارات والترحيب مع دعم المتغيرات الآمنة والترميز الغني (HTML)
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Templates Navigation Sidebar */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
-                <span className="text-xs font-bold text-slate-700 block mb-3">القوالب المتاحة:</span>
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs space-y-2">
+                <span className="text-xs font-bold text-[var(--text-2)] block mb-3">القوالب المتاحة:</span>
                 {templates.map((tmpl) => (
                   <button
                     key={tmpl.id}
@@ -1724,11 +1724,11 @@ export default function IntegrationsCenterPage() {
                     className={`w-full text-right p-3 rounded-xl transition-all cursor-pointer flex flex-col gap-1 ${
                       selectedTemplateKey === tmpl.template_key
                         ? "bg-[#1D4ED8] text-white font-bold shadow-xs"
-                        : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                        : "bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text)]"
                     }`}
                   >
                     <span className="text-xs font-bold">{tmpl.title_ar}</span>
-                    <span className={`text-[10px] font-mono ${selectedTemplateKey === tmpl.template_key ? "text-white/80" : "text-slate-400"}`}>
+                    <span className={`text-[10px] font-mono ${selectedTemplateKey === tmpl.template_key ? "text-white/80" : "text-[var(--text-3)]"}`}>
                       {tmpl.template_key}
                     </span>
                   </button>
@@ -1738,20 +1738,20 @@ export default function IntegrationsCenterPage() {
               {/* Template Editor & Live Preview */}
               <div className="lg:col-span-2 space-y-5">
                 {/* Editor Card */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs">
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--border)]">
                     <input
                       type="text"
                       value={templateEditTitle}
                       onChange={(e) => setTemplateEditTitle(e.target.value)}
-                      className="text-sm font-bold text-slate-900 bg-transparent border-none focus:outline-none focus:ring-0 w-full"
+                      className="text-sm font-bold text-[var(--text)] bg-transparent border-none focus:outline-none focus:ring-0 w-full"
                     />
-                    <span className="text-xs font-mono text-slate-400">{selectedTemplateKey}</span>
+                    <span className="text-xs font-mono text-[var(--text-3)]">{selectedTemplateKey}</span>
                   </div>
 
                   {/* Variables Toolbar */}
                   <div className="mb-3">
-                    <span className="text-xs font-bold text-slate-600 block mb-1.5">
+                    <span className="text-xs font-bold text-[var(--text-2)] block mb-1.5">
                       المتغيرات المتاحة (انقر للإدراج في النص):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -1771,7 +1771,7 @@ export default function IntegrationsCenterPage() {
                           key={v}
                           type="button"
                           onClick={() => handleInsertPlaceholder(v)}
-                          className="px-2 py-0.5 bg-slate-100 hover:bg-[#1D4ED8] hover:text-white text-slate-700 rounded-lg text-[11px] font-mono transition-colors cursor-pointer"
+                          className="px-2 py-0.5 bg-[var(--surface-2)] hover:bg-[#1D4ED8] hover:text-white text-[var(--text-2)] rounded-lg text-[11px] font-mono transition-colors cursor-pointer"
                         >
                           +{`{${v}}`}
                         </button>
@@ -1788,9 +1788,9 @@ export default function IntegrationsCenterPage() {
                         setTemplateEditContent(e.target.value);
                         updatePreview(selectedTemplateKey, e.target.value);
                       }}
-                      className="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB] text-right"
+                      className="w-full text-xs font-mono p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl focus:ring-[#2563EB] focus:border-[#2563EB] text-right"
                     />
-                    <span className="text-[11px] text-slate-400 mt-1 block">
+                    <span className="text-[11px] text-[var(--text-3)] mt-1 block">
                       يدعم التنسيق الغني: &lt;b&gt;نص غامق&lt;/b&gt; و &lt;i&gt;مائل&lt;/i&gt; والرموز التعبيرية.
                     </span>
                   </div>
@@ -1802,7 +1802,7 @@ export default function IntegrationsCenterPage() {
                         value={testSendChatId}
                         onChange={(e) => setTestSendChatId(e.target.value)}
                         placeholder="Chat ID للتجربة (اختياري)"
-                        className="text-xs p-2 bg-slate-50 border border-slate-200 rounded-xl font-mono w-48"
+                        className="text-xs p-2 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl font-mono w-48"
                       />
                       <button
                         type="button"
@@ -1838,13 +1838,13 @@ export default function IntegrationsCenterPage() {
                 </div>
 
                 {/* Rendered Live Preview Card */}
-                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-xs">
-                  <span className="text-xs font-bold text-slate-700 block mb-3">
+                <div className="bg-[var(--surface-2)] rounded-2xl border border-[var(--border)] p-5 shadow-xs">
+                  <span className="text-xs font-bold text-[var(--text-2)] block mb-3">
                     معاينة القالب كما سيظهر في Telegram:
                   </span>
                   <div className="bg-[#182533] text-slate-100 p-4 rounded-2xl max-w-lg shadow-md border border-slate-700 font-sans text-xs leading-relaxed whitespace-pre-wrap">
                     {previewLoading ? (
-                      <span className="text-slate-400">جاري توليد المعاينة...</span>
+                      <span className="text-[var(--text-3)]">جاري توليد المعاينة...</span>
                     ) : (
                       previewRendered || "اكتب نص القالب لمعاينته هنا..."
                     )}
@@ -1867,33 +1867,33 @@ export default function IntegrationsCenterPage() {
           >
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">عنوان الزر (Label):</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">عنوان الزر (Label):</label>
                 <input
                   type="text"
                   value={editingMenuItem?.label || ""}
                   onChange={(e) => setEditingMenuItem({ ...editingMenuItem, label: e.target.value })}
                   placeholder="مثال: 📋 مهامي"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">الرمز / Emoji:</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">الرمز / Emoji:</label>
                   <input
                     type="text"
                     value={editingMenuItem?.icon || ""}
                     onChange={(e) => setEditingMenuItem({ ...editingMenuItem, icon: e.target.value })}
                     placeholder="📋 أو 🎫 أو ❓"
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">نوع القائمة:</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">نوع القائمة:</label>
                   <select
                     value={editingMenuItem?.menu_type || "reply_keyboard"}
                     onChange={(e) => setEditingMenuItem({ ...editingMenuItem, menu_type: e.target.value })}
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                   >
                     <option value="reply_keyboard">لوحة مفاتيح الرد (Reply Keyboard)</option>
                     <option value="inline_button">زر مدمج تفاعلي (Inline Button)</option>
@@ -1903,11 +1903,11 @@ export default function IntegrationsCenterPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">الإجراء المرتبط (Action):</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">الإجراء المرتبط (Action):</label>
                 <select
                   value={editingMenuItem?.action || "cmd:my_tasks"}
                   onChange={(e) => setEditingMenuItem({ ...editingMenuItem, action: e.target.value })}
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                 >
                   <option value="cmd:my_tasks">عرض مهامي النشطة (cmd:my_tasks)</option>
                   <option value="cmd:tickets">عرض تذاكر الدعم الفني (cmd:tickets)</option>
@@ -1918,24 +1918,24 @@ export default function IntegrationsCenterPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">وصف مختصر (يظهر في تليجرام):</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">وصف مختصر (يظهر في تليجرام):</label>
                 <input
                   type="text"
                   value={editingMenuItem?.description_ar || ""}
                   onChange={(e) => setEditingMenuItem({ ...editingMenuItem, description_ar: e.target.value })}
                   placeholder="استعراض المهام التشغيلية المسندة إليك"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setMenuModalOpen(false);
                     setEditingMenuItem(null);
                   }}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-bold"
                 >
                   إلغاء
                 </button>
@@ -1978,11 +1978,11 @@ export default function IntegrationsCenterPage() {
           >
             <form onSubmit={handleSimulateBotAction} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">الموظف المحاكى:</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">الموظف المحاكى:</label>
                 <select
                   value={simEmployeeId}
                   onChange={(e) => setSimEmployeeId(e.target.value)}
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                   required
                 >
                   <option value="">اختر الموظف...</option>
@@ -1995,11 +1995,11 @@ export default function IntegrationsCenterPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">نوع الإجراء:</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">نوع الإجراء:</label>
                 <select
                   value={simActionType}
                   onChange={(e) => setSimActionType(e.target.value)}
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                 >
                   <option value="cmd:my_tasks">استعراض مهامي (cmd:my_tasks)</option>
                   <option value="act:accept">قبول المهمة (act:accept)</option>
@@ -2011,11 +2011,11 @@ export default function IntegrationsCenterPage() {
 
               {simActionType !== "cmd:my_tasks" && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">المهمة المستهدفة:</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">المهمة المستهدفة:</label>
                   <select
                     value={simTaskId}
                     onChange={(e) => setSimTaskId(e.target.value)}
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full text-xs p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                     required
                   >
                     <option value="">اختر المهمة...</option>
@@ -2038,11 +2038,11 @@ export default function IntegrationsCenterPage() {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setSimModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-bold"
                 >
                   إغلاق
                 </button>
@@ -2074,13 +2074,13 @@ export default function IntegrationsCenterPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">نص الرسالة المباشرة:</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">نص الرسالة المباشرة:</label>
                 <textarea
                   value={directMsgText}
                   onChange={(e) => setDirectMsgText(e.target.value)}
                   placeholder="اكتب التوجيه أو الرسالة الإدارية هنا..."
                   rows={4}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none"
+                  className="w-full text-xs p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none"
                   required
                 />
               </div>
@@ -2095,11 +2095,11 @@ export default function IntegrationsCenterPage() {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setDirectMsgTarget(null)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-bold cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -2126,32 +2126,32 @@ export default function IntegrationsCenterPage() {
               {activeModal === "n8n" && (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">رابط Webhook URL:</label>
+                    <label className="block text-xs font-bold text-[var(--text-2)] mb-1">رابط Webhook URL:</label>
                     <input
                       type="text"
                       value={String(currentConfig.webhook_url || "")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, webhook_url: e.target.value })}
                       placeholder="https://n8n.your-domain.com/webhook/..."
-                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                      className="w-full text-xs font-mono p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">مفتاح السر (Webhook Secret):</label>
+                    <label className="block text-xs font-bold text-[var(--text-2)] mb-1">مفتاح السر (Webhook Secret):</label>
                     <input
                       type="password"
                       value={String(currentConfig.webhook_secret || "")}
                       onChange={(e) => setCurrentConfig({ ...currentConfig, webhook_secret: e.target.value })}
-                      className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                      className="w-full text-xs font-mono p-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl"
                     />
                   </div>
                 </>
               )}
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveModal(null)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold"
+                  className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-bold"
                 >
                   إلغاء
                 </button>

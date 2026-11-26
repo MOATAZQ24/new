@@ -51,7 +51,7 @@ export function MobileFilterSheet({
         </div>
 
         {/* Sticky Bottom Actions */}
-        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center gap-2.5">
+        <div className="px-5 py-3 border-t border-[var(--border)] dark:border-slate-800 bg-[var(--surface-2)] dark:bg-slate-900/80 flex items-center gap-2.5">
           {activeCount > 0 && (
             <button
               type="button"

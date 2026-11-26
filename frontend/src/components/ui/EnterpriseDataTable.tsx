@@ -241,26 +241,26 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Table Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-2.5 rounded-2xl shadow-xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 p-2.5 rounded-2xl shadow-xs">
         <div className="flex items-center gap-2 flex-1">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
             <Search
               size={15}
-              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
             />
             <input
               type="text"
               value={activeSearch}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full ps-9 pe-8 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#078363]/25 focus:border-[#078363] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 transition"
+              className="w-full ps-9 pe-8 py-2 text-xs bg-[var(--surface-2)] dark:bg-slate-800/80 border border-[var(--border)] dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#078363]/25 focus:border-[#078363] text-[var(--text)] dark:text-slate-100 placeholder:text-slate-400 transition"
             />
             {activeSearch && (
               <button
                 type="button"
                 onClick={() => handleSearch("")}
-                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-slate-600 dark:hover:text-slate-200 transition"
                 aria-label="مسح البحث"
               >
                 <X size={13} />
@@ -278,14 +278,14 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
 
           {/* View Mode Toggle */}
           {allowViewModeToggle && (
-            <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl p-0.5 bg-slate-50 dark:bg-slate-800/50">
+            <div className="flex items-center border border-[var(--border)] dark:border-slate-800 rounded-xl p-0.5 bg-[var(--surface-2)] dark:bg-slate-800/50">
               <button
                 type="button"
                 onClick={() => setViewMode("table")}
                 className={`p-1.5 rounded-lg text-xs transition ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-slate-700 text-[#078363] dark:text-emerald-400 shadow-xs font-bold"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                    ? "bg-[var(--surface)] dark:bg-slate-700 text-[#078363] dark:text-emerald-400 shadow-xs font-bold"
+                    : "text-[var(--text-3)] hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
                 title="عرض جدولي"
                 aria-label="عرض جدولي"
@@ -297,8 +297,8 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                 onClick={() => setViewMode("cards")}
                 className={`p-1.5 rounded-lg text-xs transition ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-slate-700 text-[#078363] dark:text-emerald-400 shadow-xs font-bold"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                    ? "bg-[var(--surface)] dark:bg-slate-700 text-[#078363] dark:text-emerald-400 shadow-xs font-bold"
+                    : "text-[var(--text-3)] hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
                 title="عرض بطاقات"
                 aria-label="عرض بطاقات"
@@ -339,7 +339,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                   action.variant === "danger"
                     ? "bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
                     : action.variant === "secondary"
-                    ? "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                    ? "bg-[var(--surface)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-200 border border-[var(--border)] dark:border-slate-700 hover:bg-[var(--surface-2)]"
                     : "bg-[#078363] text-white hover:bg-[#066e53] shadow-xs"
                 }`}
               >
@@ -353,25 +353,25 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
 
       {/* Loading State */}
       {loading ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-8 shadow-xs">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl p-8 shadow-xs">
           <div className="space-y-3">
             <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4 animate-pulse"></div>
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="h-11 bg-slate-100 dark:bg-slate-800/60 rounded-xl animate-pulse"
+                className="h-11 bg-[var(--surface-2)] dark:bg-slate-800/60 rounded-xl animate-pulse"
               ></div>
             ))}
           </div>
         </div>
       ) : paginatedData.length === 0 ? (
         /* Empty State */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-10 text-center shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl p-10 text-center shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-3)] dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
             {emptyIcon || <Inbox size={24} />}
           </div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{emptyTitle}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">
+          <h3 className="text-sm font-bold text-[var(--text)] dark:text-slate-200 mb-1">{emptyTitle}</h3>
+          <p className="text-xs text-[var(--text-3)] dark:text-slate-400 max-w-sm mx-auto mb-4">
             {emptyDescription}
           </p>
           {emptyAction && <div className="flex justify-center">{emptyAction}</div>}
@@ -380,20 +380,20 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
         <>
           {/* Desktop Table View */}
           <div
-            className={`overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs ${
+            className={`overflow-hidden bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl shadow-xs ${
               viewMode === "cards" ? "hidden" : "block"
             }`}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-start text-xs border-collapse">
-                <thead className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+                <thead className="bg-[var(--surface-2)] dark:bg-slate-800/50 border-b border-[var(--border)] dark:border-slate-800 text-[var(--text-2)] dark:text-slate-300">
                   <tr>
                     {selectable && (
                       <th className="p-3 w-10 text-center">
                         <button
                           type="button"
                           onClick={toggleSelectAll}
-                          className="text-slate-400 hover:text-[#078363] transition"
+                          className="text-[var(--text-3)] hover:text-[#078363] transition"
                           aria-label="تحديد الكل"
                         >
                           {allCurrentPageSelected ? (
@@ -412,7 +412,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                           onClick={() => handleSort(col.id, col.sortable)}
                           className={`p-3 font-bold text-start select-none ${
                             col.sortable
-                              ? "cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition"
+                              ? "cursor-pointer hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                               : ""
                           } ${col.headerClassName || ""} ${
                             col.hideOnMobile ? "hidden md:table-cell" : ""
@@ -421,7 +421,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                           <div className="flex items-center gap-1.5">
                             <span>{col.header}</span>
                             {col.sortable && (
-                              <span className="text-slate-400">
+                              <span className="text-[var(--text-3)]">
                                 {isSorted ? (
                                   sortDir === "asc" ? (
                                     <ChevronUp size={14} className="text-[#078363]" />
@@ -439,7 +439,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                     })}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                <tbody className="divide-y divide-[var(--border)] dark:divide-slate-800/70">
                   {paginatedData.map((item, idx) => {
                     const id = keyExtractor(item);
                     const isSelected = selectedIds.includes(id);
@@ -455,8 +455,8 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                           isRowActive
                             ? "bg-emerald-50/70 dark:bg-emerald-950/30"
                             : isSelected
-                            ? "bg-slate-50/90 dark:bg-slate-800/40"
-                            : "hover:bg-slate-50/60 dark:hover:bg-slate-800/30"
+                            ? "bg-[var(--surface-2)] dark:bg-slate-800/40"
+                            : "hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/30"
                         }`}
                       >
                         {selectable && (
@@ -469,7 +469,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                           >
                             <button
                               type="button"
-                              className="text-slate-400 hover:text-[#078363] transition"
+                              className="text-[var(--text-3)] hover:text-[#078363] transition"
                               aria-label="تحديد السطر"
                             >
                               {isSelected ? (
@@ -484,7 +484,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                         {columns.map((col) => (
                           <td
                             key={col.id}
-                            className={`p-3 text-slate-700 dark:text-slate-200 align-middle ${
+                            className={`p-3 text-[var(--text-2)] dark:text-slate-200 align-middle ${
                               col.className || ""
                             } ${col.hideOnMobile ? "hidden md:table-cell" : ""}`}
                           >
@@ -526,19 +526,19 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                 <div
                   key={String(id)}
                   onClick={() => onRowClick?.(item)}
-                  className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border transition cursor-pointer ${
+                  className={`p-4 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border transition cursor-pointer ${
                     isSelected
                       ? "border-[#078363] bg-emerald-50/30 dark:bg-emerald-950/20"
-                      : "border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      : "border-[var(--border)] dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="space-y-2">
                     {columns.slice(0, 4).map((col) => (
                       <div key={col.id} className="flex items-center justify-between text-xs gap-2">
-                        <span className="text-slate-400 dark:text-slate-500 font-medium">
+                        <span className="text-[var(--text-3)] dark:text-slate-500 font-medium">
                           {col.header}
                         </span>
-                        <span className="text-slate-800 dark:text-slate-200 font-semibold text-end">
+                        <span className="text-[var(--text)] dark:text-slate-200 font-semibold text-end">
                           {col.cell
                             ? col.cell(item, 0)
                             : col.accessorKey
@@ -555,8 +555,8 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
 
           {/* Pagination Footer */}
           {showPagination && totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs text-xs">
-              <div className="text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2 bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl shadow-xs text-xs">
+              <div className="text-[var(--text-3)] dark:text-slate-400">
                 عرض {(currentPage - 1) * pageSize + 1} إلى{" "}
                 {Math.min(currentPage * pageSize, totalItems)} من أصل {totalItems} سجل
               </div>
@@ -566,13 +566,13 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                  className="p-1.5 rounded-lg border border-[var(--border)] dark:border-slate-700 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition"
                   aria-label="الصفحة السابقة"
                 >
                   <ChevronRight size={15} />
                 </button>
 
-                <div className="px-2 font-bold text-slate-800 dark:text-slate-200">
+                <div className="px-2 font-bold text-[var(--text)] dark:text-slate-200">
                   {currentPage} / {totalPages}
                 </div>
 
@@ -580,7 +580,7 @@ export function EnterpriseDataTable<T extends { id: string | number }>({
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                  className="p-1.5 rounded-lg border border-[var(--border)] dark:border-slate-700 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition"
                   aria-label="الصفحة التالية"
                 >
                   <ChevronLeft size={15} />

@@ -160,7 +160,7 @@ export default function InfrastructurePage() {
               aria-label="تصفية حسب نوع الجهاز"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع أنواع الأجهزة</option>
               <option value="Server">خادم (Server)</option>
@@ -176,7 +176,7 @@ export default function InfrastructurePage() {
               aria-label="تصفية حسب حالة الجهاز"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -189,7 +189,7 @@ export default function InfrastructurePage() {
       />
 
       {/* Devices Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={7} />
         ) : devices.length === 0 ? (
@@ -201,7 +201,7 @@ export default function InfrastructurePage() {
         ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+            <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
               <tr>
                 <th className="p-3.5">اسم الجهاز</th>
                 <th className="p-3.5">النوع</th>
@@ -213,24 +213,24 @@ export default function InfrastructurePage() {
                 <th className="p-3.5 text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--border)]">
               {devices.map((d) => (
-                <tr key={d.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-3.5 font-bold text-slate-900">
+                <tr key={d.id} className="hover:bg-[var(--surface-2)] transition-colors">
+                  <td className="p-3.5 font-bold text-[var(--text)]">
                     <div>{d.device_name}</div>
-                    <div className="text-[11px] text-slate-600 font-normal">
+                    <div className="text-[11px] text-[var(--text-2)] font-normal">
                       {d.network_name || "-"}
                     </div>
                   </td>
-                  <td className="p-3.5 text-slate-700 font-semibold">{d.device_type}</td>
+                  <td className="p-3.5 text-[var(--text-2)] font-semibold">{d.device_type}</td>
                   <td className="p-3.5 font-mono font-bold text-[#2563EB]">
                     <bdi dir="ltr">{d.management_ip || "-"}</bdi>
                   </td>
-                  <td className="p-3.5 text-slate-700">
+                  <td className="p-3.5 text-[var(--text-2)]">
                     {d.manufacturer} {d.model}
                   </td>
-                  <td className="p-3.5 font-mono text-slate-600"><bdi dir="ltr">{d.hostname || "-"}</bdi></td>
-                  <td className="p-3.5 text-slate-700">{d.location || "-"}</td>
+                  <td className="p-3.5 font-mono text-[var(--text-2)]"><bdi dir="ltr">{d.hostname || "-"}</bdi></td>
+                  <td className="p-3.5 text-[var(--text-2)]">{d.location || "-"}</td>
                   <td className="p-3.5">
                     <StatusBadge status={d.status} />
                   </td>
@@ -241,7 +241,7 @@ export default function InfrastructurePage() {
                         setSelectedDevice(d);
                         setShowDetailsModal(true);
                       }}
-                      className="motion-control px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
+                      className="motion-control px-2.5 py-1 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                     >
                       التفاصيل والربط
                     </button>
@@ -263,7 +263,7 @@ export default function InfrastructurePage() {
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 اسم الجهاز (Device Name) *
               </label>
               <input
@@ -272,18 +272,18 @@ export default function InfrastructurePage() {
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 placeholder="SW-CORE-01"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الجهاز *
               </label>
               <select
                 value={deviceType}
                 onChange={(e) => setDeviceType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Server">خادم (Server)</option>
                 <option value="Firewall">جدار حماية (Firewall)</option>
@@ -298,7 +298,7 @@ export default function InfrastructurePage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 عنوان IP للإدارة (Management IP)
               </label>
               <input
@@ -306,12 +306,12 @@ export default function InfrastructurePage() {
                 value={managementIp}
                 onChange={(e) => setManagementIp(e.target.value)}
                 placeholder="10.0.1.1"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 اسم المضيف (Hostname)
               </label>
               <input
@@ -319,14 +319,14 @@ export default function InfrastructurePage() {
                 value={hostname}
                 onChange={(e) => setHostname(e.target.value)}
                 placeholder="core-sw.corp.local"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الشركة المصنعة والموديل
               </label>
               <input
@@ -334,12 +334,12 @@ export default function InfrastructurePage() {
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="Cisco Catalyst 9300"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الموقع الفيزيائي
               </label>
               <input
@@ -347,13 +347,13 @@ export default function InfrastructurePage() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="غرفة الخوادم - الراك A2"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               مرجع الخزنة السرية للمصادقة (Credential Reference - Vault)
             </label>
             <input
@@ -361,9 +361,9 @@ export default function InfrastructurePage() {
               value={credentialRef}
               onChange={(e) => setCredentialRef(e.target.value)}
               placeholder="vault://infra/core-switch/root"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono bg-slate-50"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono bg-[var(--surface-2)]"
             />
-            <p className="text-[10px] text-slate-400 mt-1">
+            <p className="text-[10px] text-[var(--text-3)] mt-1">
               * متطلب أمان: لا يتم تخزين كلمات المرور كنصوص واضحة مطلقاً، بل مرجع في خزنة الأسرار.
             </p>
           </div>
@@ -372,7 +372,7 @@ export default function InfrastructurePage() {
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold"
             >
               إلغاء
             </button>
@@ -394,39 +394,39 @@ export default function InfrastructurePage() {
         maxWidth="max-w-xl"
       >
         <div className="space-y-4 text-xs">
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl grid grid-cols-2 gap-3">
+          <div className="p-4 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl grid grid-cols-2 gap-3">
             <div>
-              <span className="text-slate-400">اسم الجهاز:</span>{" "}
+              <span className="text-[var(--text-3)]">اسم الجهاز:</span>{" "}
               <span className="font-bold">{selectedDevice?.device_name}</span>
             </div>
             <div>
-              <span className="text-slate-400">النوع:</span>{" "}
+              <span className="text-[var(--text-3)]">النوع:</span>{" "}
               <span className="font-semibold">{selectedDevice?.device_type}</span>
             </div>
             <div>
-              <span className="text-slate-400">IP الإدارة:</span>{" "}
+              <span className="text-[var(--text-3)]">IP الإدارة:</span>{" "}
               <span className="font-mono font-bold text-[#2563EB]">
                 {selectedDevice?.management_ip || "-"}
               </span>
             </div>
             <div>
-              <span className="text-slate-400">Hostname:</span>{" "}
+              <span className="text-[var(--text-3)]">Hostname:</span>{" "}
               <span className="font-mono">{selectedDevice?.hostname || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400">الشبكة / VLAN:</span>{" "}
+              <span className="text-[var(--text-3)]">الشبكة / VLAN:</span>{" "}
               <span>{selectedDevice?.network_name} • {selectedDevice?.vlan || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400">الموقع:</span>{" "}
+              <span className="text-[var(--text-3)]">الموقع:</span>{" "}
               <span>{selectedDevice?.location || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400">الفيرموير:</span>{" "}
+              <span className="text-[var(--text-3)]">الفيرموير:</span>{" "}
               <span className="font-mono">{selectedDevice?.firmware_version || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400">الحالة التشغيلية:</span>{" "}
+              <span className="text-[var(--text-3)]">الحالة التشغيلية:</span>{" "}
               <StatusBadge status={selectedDevice?.status || "Active"} />
             </div>
           </div>
@@ -439,9 +439,9 @@ export default function InfrastructurePage() {
           </div>
 
           {selectedDevice?.notes && (
-            <div className="p-3 bg-white border border-slate-200 rounded-xl">
-              <span className="font-bold text-slate-800 block mb-0.5">ملاحظات فنية:</span>
-              <p className="text-slate-600">{selectedDevice.notes}</p>
+            <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl">
+              <span className="font-bold text-[var(--text)] block mb-0.5">ملاحظات فنية:</span>
+              <p className="text-[var(--text-2)]">{selectedDevice.notes}</p>
             </div>
           )}
         </div>

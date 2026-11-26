@@ -41,14 +41,14 @@ export function StatsCard({
   const cardBody = (
     <div
       onClick={onClick}
-      className={`motion-card bg-white rounded-xl border p-4 sm:p-5 shadow-xs relative overflow-hidden border-t-4 ${accentColor} transition-all ${
+      className={`motion-card bg-[var(--surface)] rounded-xl border p-4 sm:p-5 shadow-xs relative overflow-hidden border-t-4 ${accentColor} transition-all ${
         active
-          ? "border-slate-300 ring-2 ring-[#2563EB]/30 shadow-sm bg-[#2563EB]/[0.03]"
-          : "border-slate-200/90 hover:shadow-md hover:border-slate-300"
+          ? "border-[var(--border)] ring-2 ring-[#2563EB]/30 shadow-sm bg-[#2563EB]/[0.03]"
+          : "border-[var(--border)] hover:shadow-md hover:border-slate-300"
       } ${isInteractive ? "cursor-pointer group" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">
+        <span className="text-xs font-semibold text-[var(--text-2)] group-hover:text-slate-900 transition-colors">
           {title}
         </span>
         {icon && (
@@ -56,7 +56,7 @@ export function StatsCard({
             className={`p-2 rounded-lg transition-colors shrink-0 ${
               active
                 ? "bg-[#2563EB] text-white"
-                : "bg-slate-100/80 text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white"
+                : "bg-[var(--surface-2)] text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white"
             }`}
           >
             {icon}
@@ -69,7 +69,7 @@ export function StatsCard({
           {loading ? (
             <span className="inline-block h-7 w-16 rounded-md bg-slate-200/80 animate-pulse" />
           ) : (
-            <span className="motion-counter text-2xl font-black text-slate-900 tracking-tight">
+            <span className="motion-counter text-2xl font-black text-[var(--text)] tracking-tight">
               {value}
             </span>
           )}
@@ -92,7 +92,7 @@ export function StatsCard({
             className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors cursor-pointer ${
               active
                 ? "bg-[#2563EB] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-slate-900"
             }`}
           >
             {active ? "مفعل" : "تصفية"}
@@ -101,7 +101,7 @@ export function StatsCard({
       </div>
 
       {subtitle && (
-        <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">{subtitle}</p>
+        <p className="mt-1.5 text-[11px] text-[var(--text-2)] leading-snug">{subtitle}</p>
       )}
     </div>
   );

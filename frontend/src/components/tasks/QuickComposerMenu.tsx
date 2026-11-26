@@ -73,7 +73,7 @@ export function QuickComposerMenu({
     },
     {
       id: "broadcast",
-      label: "إسناد جماعي (Broadcast)",
+      label: "إسناد جماعي",
       icon: <Users size={16} />,
       color: "text-indigo-600",
     },
@@ -105,7 +105,7 @@ export function QuickComposerMenu({
       id: "file_upload",
       label: "رفع ملف / مرفقات",
       icon: <Paperclip size={16} />,
-      color: "text-slate-600",
+      color: "text-[var(--text-2)]",
     },
   ];
 
@@ -131,7 +131,7 @@ export function QuickComposerMenu({
 
       {/* Dropdown Menu (Reference 1) */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-1.5 z-50 divide-y divide-slate-100 dark:divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 shadow-xl py-1.5 z-50 divide-y divide-[var(--border)] dark:divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="py-1">
             {menuItems.map((item) => (
               <button
@@ -141,7 +141,7 @@ export function QuickComposerMenu({
                   onSelectAction(item.id);
                   onClose();
                 }}
-                className="w-full text-right px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary flex items-center gap-2.5 transition-colors cursor-pointer"
+                className="w-full text-right px-3.5 py-2.5 text-xs font-semibold text-[var(--text)] dark:text-slate-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary flex items-center gap-2.5 transition-colors cursor-pointer"
               >
                 <span className={`shrink-0 ${item.color}`}>{item.icon}</span>
                 <span>{item.label}</span>

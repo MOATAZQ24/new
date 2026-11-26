@@ -118,7 +118,7 @@ const reportsList: ReportItem[] = [
   },
   {
     type: "audit",
-    title: "تقرير سجل الرقابة والعمليات (Audit Logs)",
+    title: "تقرير سجل الرقابة والعمليات",
     description: "سجل كامل للعمليات والتغييرات المنفذة في النظام، هوية المستخدمين، عناوين IP، والتوقيت الزمني.",
     icon: ShieldAlertIcon,
     color: "gray",
@@ -262,18 +262,18 @@ export default function ReportsPage() {
               <Icons.Reports size={20} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
                 التقارير
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-[var(--text-3)] mt-0.5">
                 تقارير تشغيلية شاملة للأصول، الدعم الفني، المهام، والموظفين
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-xs">
-              <Icons.Calendar size={14} className="text-slate-500" />
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-semibold text-[var(--text-2)] shadow-xs">
+              <Icons.Calendar size={14} className="text-[var(--text-3)]" />
               <span>
                 {new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
                   weekday: "long",
@@ -386,31 +386,31 @@ export default function ReportsPage() {
         {overview && (
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+              <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-4 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
                   <LaptopIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono text-slate-900">
+                  <div className="text-2xl font-black font-mono text-[var(--text)]">
                     {overview.kpis.total_assets}
                   </div>
-                  <div className="text-xs font-bold text-slate-600 mt-1">إجمالي الأصول</div>
+                  <div className="text-xs font-bold text-[var(--text-2)] mt-1">إجمالي الأصول</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+              <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-4 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
                   <LifeBuoyIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono text-slate-900">
+                  <div className="text-2xl font-black font-mono text-[var(--text)]">
                     {overview.kpis.total_tickets}
                   </div>
-                  <div className="text-xs font-bold text-slate-600 mt-1">تذكرة (Help Desk)</div>
+                  <div className="text-xs font-bold text-[var(--text-2)] mt-1">تذكرة (Help Desk)</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+              <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-4 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                   <Icons.Clock size={22} />
                 </div>
@@ -418,11 +418,11 @@ export default function ReportsPage() {
                   <div className="text-2xl font-black font-mono text-amber-700">
                     {overview.kpis.overdue_tasks}
                   </div>
-                  <div className="text-xs font-bold text-slate-600 mt-1">مهام متأخرة</div>
+                  <div className="text-xs font-bold text-[var(--text-2)] mt-1">مهام متأخرة</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 flex items-center gap-3">
+              <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-4 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                   <Icons.HelpDesk size={22} />
                 </div>
@@ -430,7 +430,7 @@ export default function ReportsPage() {
                   <div className="text-2xl font-black font-mono text-rose-700">
                     {overview.kpis.open_tickets}
                   </div>
-                  <div className="text-xs font-bold text-slate-600 mt-1">تذاكر مفتوحة</div>
+                  <div className="text-xs font-bold text-[var(--text-2)] mt-1">تذاكر مفتوحة</div>
                 </div>
               </div>
             </div>
@@ -457,10 +457,10 @@ export default function ReportsPage() {
                 }))}
               />
 
-              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border)]">
                   <Icons.FileText size={17} className="text-[#1D4ED8]" />
-                  <h2 className="text-sm font-bold text-slate-900">تقارير جاهزة</h2>
+                  <h2 className="text-sm font-bold text-[var(--text)]">تقارير جاهزة</h2>
                 </div>
                 <div className="space-y-2">
                   {[
@@ -474,10 +474,10 @@ export default function ReportsPage() {
                       key={item.key}
                       type="button"
                       onClick={() => void handleExport(item.key, "excel")}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-100 flex items-center justify-between text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                      className="w-full p-2.5 rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/70 border border-[var(--border)] flex items-center justify-between text-xs font-bold text-[var(--text)] transition-colors cursor-pointer"
                     >
                       <span>{item.label}</span>
-                      <span className="text-slate-400">←</span>
+                      <span className="text-[var(--text-3)]">←</span>
                     </button>
                   ))}
                 </div>
@@ -495,10 +495,10 @@ export default function ReportsPage() {
 
             {/* Row 3: 3 Bottom Cards (Quick Actions 2x2, Summary by Company Table, Latest Reports) (Desktop Only) */}
             <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between gap-4">
+              <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <Icons.Sparkles size={17} className="text-[#3B82F6]" />
-                  <h2 className="text-sm font-bold text-slate-900">إجراءات سريعة</h2>
+                  <h2 className="text-sm font-bold text-[var(--text)]">إجراءات سريعة</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 flex-1">
                   <button
@@ -507,7 +507,7 @@ export default function ReportsPage() {
                       const el = document.getElementById("reports-catalog");
                       el?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/70 border border-[var(--border)] hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-[var(--text)] transition-colors cursor-pointer"
                   >
                     <PlusIcon className="w-4 h-4 text-[#2563EB]" />
                     <span>إنشاء تقرير مخصص</span>
@@ -515,7 +515,7 @@ export default function ReportsPage() {
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "excel")}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/70 border border-[var(--border)] hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-[var(--text)] transition-colors cursor-pointer"
                   >
                     <DownloadIcon className="w-4 h-4 text-[#1D4ED8]" />
                     <span>تصدير تقرير</span>
@@ -523,7 +523,7 @@ export default function ReportsPage() {
                   <button
                     type="button"
                     onClick={() => void handleExport("assets", "html")}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/70 border border-[var(--border)] hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-[var(--text)] transition-colors cursor-pointer"
                   >
                     <PrinterIcon className="w-4 h-4 text-[#8A6D3B]" />
                     <span>طباعة التقرير</span>
@@ -535,7 +535,7 @@ export default function ReportsPage() {
                       setImportResult(null);
                       setImportFileContent("");
                     }}
-                    className="rounded-xl bg-slate-50/90 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800 transition-colors cursor-pointer"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/70 border border-[var(--border)] hover:border-[#2563EB]/40 p-3 flex items-center justify-center gap-1.5 text-xs font-bold text-[var(--text)] transition-colors cursor-pointer"
                   >
                     <Icons.FileText size={15} className="text-[#2563EB]" />
                     <span>استيراد Excel</span>
@@ -543,17 +543,17 @@ export default function ReportsPage() {
                 </div>
               </section>
 
-              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border)]">
                   <Icons.Building size={17} className="text-[#1D4ED8]" />
-                  <h2 className="text-sm font-bold text-slate-900">ملخص حسب الشركة</h2>
+                  <h2 className="text-sm font-bold text-[var(--text)]">ملخص حسب الشركة</h2>
                 </div>
                 {overview.company_breakdown.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-6 text-center">لا توجد بيانات شركات متاحة</p>
+                  <p className="text-xs text-[var(--text-3)] py-6 text-center">لا توجد بيانات شركات متاحة</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-right">
-                      <thead className="border-b border-slate-200 text-slate-500">
+                      <thead className="border-b border-[var(--border)] text-[var(--text-3)]">
                         <tr>
                           <th className="py-2 px-1.5">الشركة</th>
                           <th className="py-2 px-1.5 text-center">الأصول</th>
@@ -561,11 +561,11 @@ export default function ReportsPage() {
                           <th className="py-2 px-1.5 text-center">المهام</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {overview.company_breakdown.map((c) => (
                           <tr key={c.company_id}>
-                            <td className="py-2.5 px-1.5 font-bold text-slate-900">{c.company_name_ar}</td>
-                            <td className="py-2.5 px-1.5 text-center font-mono font-bold text-slate-900">{c.assets_count}</td>
+                            <td className="py-2.5 px-1.5 font-bold text-[var(--text)]">{c.company_name_ar}</td>
+                            <td className="py-2.5 px-1.5 text-center font-mono font-bold text-[var(--text)]">{c.assets_count}</td>
                             <td className="py-2.5 px-1.5 text-center font-mono text-sky-700">{c.tickets_count}</td>
                             <td className="py-2.5 px-1.5 text-center font-mono text-amber-800">{c.tasks_count}</td>
                           </tr>
@@ -576,10 +576,10 @@ export default function ReportsPage() {
                 )}
               </section>
 
-              <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border)]">
                   <Icons.Clock size={17} className="text-[#1D4ED8]" />
-                  <h2 className="text-sm font-bold text-slate-900">أحدث التقارير</h2>
+                  <h2 className="text-sm font-bold text-[var(--text)]">أحدث التقارير</h2>
                 </div>
                 <div className="space-y-2">
                   {[
@@ -592,9 +592,9 @@ export default function ReportsPage() {
                       key={doc.key}
                       type="button"
                       onClick={() => void handleExport(doc.key, doc.fmt)}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-between gap-2 text-xs cursor-pointer"
+                      className="w-full p-2.5 rounded-xl bg-[var(--surface-2)] hover:bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2 text-xs cursor-pointer"
                     >
-                      <span className="flex items-center gap-2 font-bold text-slate-800 truncate">
+                      <span className="flex items-center gap-2 font-bold text-[var(--text)] truncate">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${doc.cls}`}>
                           {doc.tag}
                         </span>
@@ -619,7 +619,7 @@ export default function ReportsPage() {
             return (
               <div
                 key={rep.type}
-                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center gap-3 mb-3">
@@ -627,16 +627,16 @@ export default function ReportsPage() {
                       <Icon className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900">{rep.title}</h3>
-                      <span className="text-[11px] text-slate-400 font-mono">Module: {rep.type}</span>
+                      <h3 className="text-sm font-bold text-[var(--text)]">{rep.title}</h3>
+                      <span className="text-[11px] text-[var(--text-3)] font-mono">Module: {rep.type}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                  <p className="text-xs text-[var(--text-2)] leading-relaxed mb-4">
                     {rep.description}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-2 pt-3 border-t border-[var(--border)]">
                   <button
                     onClick={() => handleExport(rep.type, "excel")}
                     disabled={isExcelLoading}
@@ -649,7 +649,7 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleExport(rep.type, "html")}
                     disabled={isHtmlLoading}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-[var(--text-2)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)] border border-[var(--border)] rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <PrinterIcon className="w-4 h-4" />
                     {isHtmlLoading ? "جاري الفتح..." : "معاينة وطباعة PDF"}
@@ -671,13 +671,13 @@ export default function ReportsPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الوحدة المستهدفة للاستيراد *
               </label>
               <select
                 value={importModule}
                 onChange={(e) => setImportModule(e.target.value as "assets" | "employees" | "infrastructure")}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="assets">الأصول التقنية (Technical Assets)</option>
                 <option value="employees">الموظفون والتقنيون (Employees)</option>
@@ -686,24 +686,24 @@ export default function ReportsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 اختيار ملف CSV
               </label>
               <input
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleFileUpload}
-                className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1D4ED8] file:text-white hover:file:bg-[#2563EB] cursor-pointer"
+                className="w-full text-xs text-[var(--text-2)] file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1D4ED8] file:text-white hover:file:bg-[#2563EB] cursor-pointer"
               />
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-xs font-bold text-[var(--text-2)]">
                 أو الصق بيانات CSV مباشرةً:
               </label>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-[var(--text-3)]">
                 {importModule === "assets" && "الأعمدة: كود الأصل, اسم الأصل, النوع, الماركة, الموديل, الرقم التسلسلي"}
                 {importModule === "employees" && "الأعمدة: الرقم الوظيفي, اسم الموظف, المسمى الوظيفي, البريد الإلكتروني, الهاتف"}
                 {importModule === "infrastructure" && "الأعمدة: اسم الجهاز, نوع الجهاز, الشركة المصنعة, الموديل, IP الإدارة, الموقع"}
@@ -720,15 +720,15 @@ export default function ReportsPage() {
                   ? "الرقم الوظيفي,اسم الموظف,المسمى الوظيفي,البريد الإلكتروني,الهاتف\nEMP-101,أحمد المنصور,فني شبكات,ahmad@company.sa,0501112222"
                   : "اسم الجهاز,نوع الجهاز,الشركة المصنعة,الموديل,IP الإدارة,الموقع\nCore-SW-01,Switch,Cisco,Catalyst 9300,10.0.0.1,غرفة الخوادم الرئيسية"
               }
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono text-left"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono text-left"
               dir="ltr"
             />
           </div>
 
           {importResult && (
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+            <div className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">
+                <span className="font-bold text-[var(--text)]">
                   نتيجة العملية: {importResult.dry_run ? "(معاينة تجريبية)" : "(استيراد فعلي)"}
                 </span>
                 <span className="text-emerald-700 font-bold">
@@ -741,7 +741,7 @@ export default function ReportsPage() {
                 </div>
               )}
               {importResult.errors && importResult.errors.length > 0 && (
-                <div className="max-h-24 overflow-y-auto space-y-1 text-[10px] text-slate-500 font-mono bg-white p-2 rounded border border-slate-100">
+                <div className="max-h-24 overflow-y-auto space-y-1 text-[10px] text-[var(--text-3)] font-mono bg-[var(--surface)] p-2 rounded border border-[var(--border)]">
                   {importResult.errors.map((err, i) => (
                     <div key={i}>
                       {typeof err === "string" ? err : `صف ${err.row ?? i + 1}: ${err.error ?? ""}`}
@@ -757,7 +757,7 @@ export default function ReportsPage() {
               type="button"
               onClick={() => handleExecuteImport(true)}
               disabled={importLoading || !importFileContent.trim()}
-              className="px-3.5 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 border border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-50"
             >
               {importLoading ? "جاري الفحص..." : "فحص ومعاينة (Dry-Run)"}
             </button>
@@ -766,7 +766,7 @@ export default function ReportsPage() {
               <button
                 type="button"
                 onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
               >
                 إغلاق
               </button>

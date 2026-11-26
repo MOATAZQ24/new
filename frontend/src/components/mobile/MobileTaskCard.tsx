@@ -121,7 +121,7 @@ export function MobileTaskCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -139,17 +139,17 @@ export function MobileTaskCard({
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+            <h3 className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
               {task.title}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium">
+            <p className="text-xs text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5 font-medium">
               {subtitle}
             </p>
-            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-              <Calendar size={13} className="shrink-0 text-slate-400" />
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[var(--text-3)] dark:text-slate-500 font-medium">
+              <Calendar size={13} className="shrink-0 text-[var(--text-3)]" />
               <span>{friendlyDate}</span>
               {task.reference && (
-                <span dir="ltr" className="font-mono text-[10px] text-slate-400 px-1 bg-slate-50 dark:bg-slate-800 rounded">
+                <span dir="ltr" className="font-mono text-[10px] text-[var(--text-3)] px-1 bg-[var(--surface-2)] dark:bg-slate-800 rounded">
                   #{task.reference}
                 </span>
               )}

@@ -51,7 +51,7 @@ export function StickyActionBar({
       <button
         type="button"
         onClick={onClear}
-        className="p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
+        className="p-1 rounded-lg text-white/70 hover:text-white hover:bg-[var(--surface)]/10 transition cursor-pointer"
         title="إلغاء التحديد"
       >
         <X className="w-4 h-4" />

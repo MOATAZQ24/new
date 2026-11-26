@@ -140,7 +140,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => dismissToast(item.id)}
                 aria-label="إغلاق التنبيه"
-                className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
+                className="p-1 rounded-lg text-[var(--text-3)] hover:text-slate-800 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
               >
                 <Icons.X size={14} />
               </button>

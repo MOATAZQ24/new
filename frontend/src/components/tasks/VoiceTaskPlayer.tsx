@@ -236,7 +236,7 @@ export default function VoiceTaskPlayer({
             </div>
 
             {/* Time Labels */}
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-3)]">
               <span className="font-semibold text-blue-900">{formatTime(currentTime)}</span>
               <span>{formatTime(totalDuration)}</span>
             </div>
@@ -247,7 +247,7 @@ export default function VoiceTaskPlayer({
             type="button"
             onClick={cyclePlaybackRate}
             aria-label="تغيير سرعة التشغيل"
-            className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-white hover:bg-blue-100/50 rounded-lg border border-blue-300 transition shadow-2xs cursor-pointer select-none"
+            className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-[var(--surface)] hover:bg-blue-100/50 rounded-lg border border-blue-300 transition shadow-2xs cursor-pointer select-none"
           >
             {playbackRate}x
           </button>

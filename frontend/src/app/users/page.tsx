@@ -538,17 +538,17 @@ export default function UsersManagementPage() {
     <DashboardLayout>
       <div className="space-y-6 pb-12">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface)] dark:bg-slate-900 p-6 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm">
           <div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Icons.Users size={22} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-[var(--text)] dark:text-white">
                   إدارة المستخدمين والتحكم في الوصول
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-sm text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                   إدارة الحسابات، صلاحيات الشركات المتعددة (Multi-Company)، وضوابط الصلاحيات RBAC
                 </p>
               </div>
@@ -558,7 +558,7 @@ export default function UsersManagementPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setShowMatrixModal(true)}
-              className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 transition"
+              className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 hover:bg-[var(--surface-2)] transition"
             >
               <Icons.ShieldCheck size={16} className="text-primary" />
               <span>مصفوفة الصلاحيات</span>
@@ -571,7 +571,7 @@ export default function UsersManagementPage() {
                 setActionError("");
                 setShowBulkModal(true);
               }}
-              className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 transition"
+              className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 hover:bg-[var(--surface-2)] transition"
             >
               <Icons.Download size={16} />
               <span>استيراد جماعي (Excel)</span>
@@ -619,18 +619,18 @@ export default function UsersManagementPage() {
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 p-4 rounded-xl border border-[var(--border)] dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Icons.Search
               size={18}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)]"
             />
             <input
               type="text"
               placeholder="البحث بالاسم، اسم المستخدم، البريد، أو رقم الهاتف..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pr-10 pl-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pr-10 pl-4 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text)] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -638,7 +638,7 @@ export default function UsersManagementPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text-2)] dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">جميع الأدوار</option>
               {rolesList.map((r) => (
@@ -651,7 +651,7 @@ export default function UsersManagementPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 text-[var(--text-2)] dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -659,7 +659,7 @@ export default function UsersManagementPage() {
               <option value="Suspended">معلق (Suspended)</option>
             </select>
 
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50">
               <input
                 type="checkbox"
                 id="includeDeletedToggle"
@@ -667,7 +667,7 @@ export default function UsersManagementPage() {
                 onChange={(e) => setIncludeDeleted(e.target.checked)}
                 className="rounded text-primary focus:ring-primary"
               />
-              <label htmlFor="includeDeletedToggle" className="text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
+              <label htmlFor="includeDeletedToggle" className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-400 cursor-pointer">
                 المحذوفات
               </label>
             </div>
@@ -680,7 +680,7 @@ export default function UsersManagementPage() {
                   setStatusFilter("");
                   setIncludeDeleted(false);
                 }}
-                className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-red-600 transition"
+                className="px-3 py-2 text-xs font-semibold text-[var(--text-3)] hover:text-red-600 transition"
               >
                 إلغاء الفلاتر
               </button>
@@ -689,10 +689,10 @@ export default function UsersManagementPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-800">
+            <table className="w-full text-right text-sm text-[var(--text-2)] dark:text-slate-300">
+              <thead className="bg-[var(--surface-2)] dark:bg-slate-800/50 text-xs font-semibold text-[var(--text-3)] dark:text-slate-400 uppercase border-b border-[var(--border)] dark:border-slate-800">
                 <tr>
                   <th className="px-6 py-4">اسم المستخدم</th>
                   <th className="px-6 py-4">الموظف والاتصال</th>
@@ -703,7 +703,7 @@ export default function UsersManagementPage() {
                   <th className="px-6 py-4 text-center">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-[var(--border)] dark:divide-slate-800">
                 {loading ? (
                   <tr>
                     <td colSpan={7}>
@@ -724,12 +724,12 @@ export default function UsersManagementPage() {
                   users.map((u) => (
                     <tr
                       key={u.id}
-                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors ${
+                      className={`hover:bg-[var(--surface-2)] dark:hover:bg-slate-800/40 transition-colors ${
                         u.is_deleted ? "bg-red-50/30 dark:bg-red-950/10 opacity-75" : ""
                       }`}
                     >
                       {/* Username */}
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                      <td className="px-6 py-4 font-medium text-[var(--text)] dark:text-white">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold">{u.username}</span>
                           {u.is_superadmin && (
@@ -749,16 +749,16 @@ export default function UsersManagementPage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-slate-400 font-mono mt-0.5">{u.email}</div>
+                        <div className="text-xs text-[var(--text-3)] font-mono mt-0.5">{u.email}</div>
                       </td>
 
                       {/* Employee & Contact */}
                       <td className="px-6 py-4 text-xs">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">
+                        <div className="font-semibold text-[var(--text)] dark:text-slate-200">
                           {u.full_name || "—"}
                         </div>
                         {u.phone && (
-                          <div className="text-slate-400 font-mono mt-0.5" dir="ltr">
+                          <div className="text-[var(--text-3)] font-mono mt-0.5" dir="ltr">
                             {u.phone}
                           </div>
                         )}
@@ -777,7 +777,7 @@ export default function UsersManagementPage() {
                                   ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
                                   : r === "IT Technician"
                                   ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                  : "bg-[var(--surface-2)] text-[var(--text-2)] dark:bg-slate-800 dark:text-slate-300"
                               }`}
                             >
                               {r}
@@ -790,7 +790,7 @@ export default function UsersManagementPage() {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleOpenCompanyAccess(u)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[var(--surface-2)] hover:bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 transition"
                         >
                           <Icons.Building size={14} className="text-primary" />
                           <span>{u.companies?.length || 0} شركات</span>
@@ -803,7 +803,7 @@ export default function UsersManagementPage() {
                       </td>
 
                       {/* Last Login */}
-                      <td className="px-6 py-4 text-xs font-mono text-slate-400">
+                      <td className="px-6 py-4 text-xs font-mono text-[var(--text-3)]">
                         {u.last_login ? new Date(u.last_login).toLocaleString("ar-SA") : "لم يسجل بعد"}
                       </td>
 
@@ -813,7 +813,7 @@ export default function UsersManagementPage() {
                           {/* Manage Companies */}
                           <button
                             onClick={() => handleOpenCompanyAccess(u)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-primary hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="إدارة صلاحيات الشركات"
                           >
                             <Icons.Building size={16} />
@@ -822,7 +822,7 @@ export default function UsersManagementPage() {
                           {/* Edit User */}
                           <button
                             onClick={() => handleOpenEdit(u)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-amber-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="تعديل المستخدم"
                           >
                             <Icons.Edit size={16} />
@@ -831,7 +831,7 @@ export default function UsersManagementPage() {
                           {/* Reset Password */}
                           <button
                             onClick={() => handleOpenReset(u)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-blue-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="إعادة تعيين كلمة المرور"
                           >
                             <Icons.Key size={16} />
@@ -853,7 +853,7 @@ export default function UsersManagementPage() {
                             onClick={() => handleToggleStatus(u)}
                             className={`p-1.5 rounded-lg transition ${
                               u.account_status === "Active"
-                                ? "text-slate-500 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                ? "text-[var(--text-3)] hover:text-red-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                                 : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                             }`}
                             title={u.account_status === "Active" ? "تعطيل الحساب" : "تفعيل الحساب"}
@@ -864,7 +864,7 @@ export default function UsersManagementPage() {
                           {/* Activity History */}
                           <button
                             onClick={() => handleOpenActivity(u)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-slate-800 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                             title="سجل النشاط والدخول"
                           >
                             <Icons.Clock size={16} />
@@ -882,7 +882,7 @@ export default function UsersManagementPage() {
                           ) : (
                             <button
                               onClick={() => handleDeleteUser(u)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                              className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-red-600 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                               title="حذف الحساب (حذف آمن)"
                             >
                               <Icons.Trash size={16} />
@@ -914,7 +914,7 @@ export default function UsersManagementPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الاسم الكامل للموظف *
                   </label>
                   <input
@@ -923,12 +923,12 @@ export default function UsersManagementPage() {
                     placeholder="مثال: فيصل بن خالد الدوسري"
                     value={formFullName}
                     onChange={(e) => setFormFullName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     اسم المستخدم للدخول (Username) *
                   </label>
                   <input
@@ -937,12 +937,12 @@ export default function UsersManagementPage() {
                     placeholder="مثال: faisal_ops"
                     value={formUsername}
                     onChange={(e) => setFormUsername(e.target.value)}
-                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     البريد الإلكتروني *
                   </label>
                   <input
@@ -951,12 +951,12 @@ export default function UsersManagementPage() {
                     placeholder="faisal@investorgate.com"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     رقم الهاتف
                   </label>
                   <input
@@ -964,19 +964,19 @@ export default function UsersManagementPage() {
                     placeholder="+9665..."
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الشركة الأساسية *
                   </label>
                   <select
                     required
                     value={formCompanyId}
                     onChange={(e) => setFormCompanyId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     {companies.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -987,14 +987,14 @@ export default function UsersManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الدور والصلاحية (Role) *
                   </label>
                   <select
                     required
                     value={formRole}
                     onChange={(e) => setFormRole(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-semibold text-primary"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-semibold text-primary"
                   >
                     {rolesList.map((r) => (
                       <option key={r} value={r}>
@@ -1005,13 +1005,13 @@ export default function UsersManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الفرع (اختياري)
                   </label>
                   <select
                     value={formBranchId}
                     onChange={(e) => setFormBranchId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="">بدون تخصيص فرع</option>
                     {branches.map((b) => (
@@ -1023,13 +1023,13 @@ export default function UsersManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     حالة الحساب
                   </label>
                   <select
                     value={formAccountStatus}
                     onChange={(e) => setFormAccountStatus(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Active">نشط (Active)</option>
                     <option value="Inactive">معطل (Inactive)</option>
@@ -1038,7 +1038,7 @@ export default function UsersManagementPage() {
               </div>
 
               {/* Password Option */}
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700 space-y-3">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -1047,14 +1047,14 @@ export default function UsersManagementPage() {
                     onChange={(e) => setFormUseAutoPassword(e.target.checked)}
                     className="rounded text-primary focus:ring-primary w-4 h-4"
                   />
-                  <label htmlFor="autoPassToggle" className="text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                  <label htmlFor="autoPassToggle" className="text-xs font-bold text-[var(--text)] dark:text-slate-200 cursor-pointer">
                     توليد كلمة مرور مؤقتة عشوائية آمنة تلقائياً (موصى به)
                   </label>
                 </div>
 
                 {!formUseAutoPassword && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                       كلمة المرور المخصصة *
                     </label>
                     <input
@@ -1063,12 +1063,12 @@ export default function UsersManagementPage() {
                       placeholder="أدخل كلمة مرور أولية..."
                       value={formCustomPassword}
                       onChange={(e) => setFormCustomPassword(e.target.value)}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                     />
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                <div className="flex items-center gap-2 pt-1 border-t border-[var(--border)] dark:border-slate-700">
                   <input
                     type="checkbox"
                     id="mustChangeToggle"
@@ -1076,7 +1076,7 @@ export default function UsersManagementPage() {
                     onChange={(e) => setFormMustChangePassword(e.target.checked)}
                     className="rounded text-primary focus:ring-primary w-4 h-4"
                   />
-                  <label htmlFor="mustChangeToggle" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label htmlFor="mustChangeToggle" className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 cursor-pointer">
                     إلزام المستخدم بتغيير كلمة المرور فور تسجيل الدخول الأول
                   </label>
                 </div>
@@ -1086,7 +1086,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -1120,7 +1120,7 @@ export default function UsersManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-3)] mb-1">
                   كلمة المرور المؤقتة:
                 </label>
                 <div className="relative">
@@ -1128,7 +1128,7 @@ export default function UsersManagementPage() {
                     type="text"
                     readOnly
                     value={tempPasswordGenerated}
-                    className="w-full px-4 py-3 text-base font-mono font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white select-all"
+                    className="w-full px-4 py-3 text-base font-mono font-bold rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-white select-all"
                   />
                   <button
                     onClick={handleCopyTempPassword}
@@ -1177,7 +1177,7 @@ export default function UsersManagementPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الاسم الكامل
                   </label>
                   <input
@@ -1185,12 +1185,12 @@ export default function UsersManagementPage() {
                     required
                     value={editFullName}
                     onChange={(e) => setEditFullName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     البريد الإلكتروني
                   </label>
                   <input
@@ -1198,42 +1198,42 @@ export default function UsersManagementPage() {
                     required
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     رقم الهاتف
                   </label>
                   <input
                     type="text"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     المسمى الوظيفي
                   </label>
                   <input
                     type="text"
                     value={editJobTitle}
                     onChange={(e) => setEditJobTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     الصلاحية في الشركة الحالية
                   </label>
                   <select
                     value={editRole}
                     onChange={(e) => setEditRole(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-semibold text-primary"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none font-semibold text-primary"
                   >
                     {rolesList.map((r) => (
                       <option key={r} value={r}>
@@ -1244,13 +1244,13 @@ export default function UsersManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                     حالة الحساب
                   </label>
                   <select
                     value={editAccountStatus}
                     onChange={(e) => setEditAccountStatus(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
                     <option value="Active">نشط (Active)</option>
                     <option value="Inactive">معطل (Inactive)</option>
@@ -1263,7 +1263,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -1304,7 +1304,7 @@ export default function UsersManagementPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   كلمة مرور حسابك أنت (المسؤول) لتأكيد الإجراء *
                 </label>
                 <input
@@ -1313,11 +1313,11 @@ export default function UsersManagementPage() {
                   placeholder="أدخل كلمة مرور دخولك الحالية..."
                   value={adminReauthPassword}
                   onChange={(e) => setAdminReauthPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
-              <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="space-y-3 pt-2 border-t border-[var(--border)] dark:border-slate-700">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -1326,14 +1326,14 @@ export default function UsersManagementPage() {
                     onChange={(e) => setResetUseAutoPassword(e.target.checked)}
                     className="rounded text-primary focus:ring-primary w-4 h-4"
                   />
-                  <label htmlFor="resetAutoPassToggle" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label htmlFor="resetAutoPassToggle" className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 cursor-pointer">
                     توليد كلمة مرور مؤقتة عشوائية آمنة (موصى به)
                   </label>
                 </div>
 
                 {!resetUseAutoPassword && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                       كلمة المرور الجديدة المخصصة *
                     </label>
                     <input
@@ -1342,7 +1342,7 @@ export default function UsersManagementPage() {
                       placeholder="أدخل كلمة مرور جديدة..."
                       value={resetCustomPassword}
                       onChange={(e) => setResetCustomPassword(e.target.value)}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                     />
                   </div>
                 )}
@@ -1355,7 +1355,7 @@ export default function UsersManagementPage() {
                     onChange={(e) => setResetMustChangePassword(e.target.checked)}
                     className="rounded text-primary focus:ring-primary w-4 h-4"
                   />
-                  <label htmlFor="resetMustChangeToggle" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label htmlFor="resetMustChangeToggle" className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 cursor-pointer">
                     إلزام المستخدم بتغيير كلمة المرور فور الدخول القادم
                   </label>
                 </div>
@@ -1365,7 +1365,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowResetModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إلغاء
                 </button>
@@ -1391,35 +1391,35 @@ export default function UsersManagementPage() {
             <div className="space-y-6">
               {/* Existing Companies List */}
               <div>
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider mb-2">
                   الشركات المصرح للمستخدم بالوصول إليها:
                 </h3>
 
                 {userCompanies.length === 0 ? (
-                  <p className="text-sm text-slate-400 text-center py-4">
+                  <p className="text-sm text-[var(--text-3)] text-center py-4">
                     لا توجد شركات مخصصة لهذا المستخدم حالياً
                   </p>
                 ) : (
-                  <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                  <div className="divide-y divide-[var(--border)] dark:divide-slate-800 border border-[var(--border)] dark:border-slate-800 rounded-xl overflow-hidden">
                     {userCompanies.map((mc) => (
                       <div
                         key={mc.company_id}
-                        className="p-3.5 flex items-center justify-between bg-white dark:bg-slate-900"
+                        className="p-3.5 flex items-center justify-between bg-[var(--surface)] dark:bg-slate-900"
                       >
                         <div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                          <div className="font-bold text-sm text-[var(--text)] dark:text-white flex items-center gap-2">
                             <span>{mc.company_name_ar}</span>
                             <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold">
                               {mc.role}
                             </span>
                             {mc.is_default && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-3)]">
                                 الافتراضية
                               </span>
                             )}
                           </div>
                           {mc.branch_name && (
-                            <div className="text-xs text-slate-400 mt-0.5">
+                            <div className="text-xs text-[var(--text-3)] mt-0.5">
                               الفرع: {mc.branch_name}
                             </div>
                           )}
@@ -1438,8 +1438,8 @@ export default function UsersManagementPage() {
               </div>
 
               {/* Add Company Access Form */}
-              <form onSubmit={handleAssignCompany} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              <form onSubmit={handleAssignCompany} className="p-4 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700 space-y-3">
+                <h4 className="text-xs font-bold text-[var(--text)] dark:text-slate-200">
                   منح وصول لشركة إضافية مع دور محدد:
                 </h4>
 
@@ -1451,14 +1451,14 @@ export default function UsersManagementPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                       الشركة *
                     </label>
                     <select
                       required
                       value={accessCompanyId}
                       onChange={(e) => setAccessCompanyId(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:outline-none"
                     >
                       {companies.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -1469,14 +1469,14 @@ export default function UsersManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                       الدور في هذه الشركة *
                     </label>
                     <select
                       required
                       value={accessRole}
                       onChange={(e) => setAccessRole(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-primary focus:outline-none"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 font-semibold text-primary focus:outline-none"
                     >
                       {rolesList.map((r) => (
                         <option key={r} value={r}>
@@ -1510,7 +1510,7 @@ export default function UsersManagementPage() {
           >
             <div className="space-y-4">
               {userActivity.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-6">
+                <p className="text-sm text-[var(--text-3)] text-center py-6">
                   لا يوجد نشاط مسجل لهذا المستخدم حتى الآن
                 </p>
               ) : (
@@ -1518,17 +1518,17 @@ export default function UsersManagementPage() {
                   {userActivity.map((log) => (
                     <div
                       key={log.id}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between text-xs"
+                      className="p-3 rounded-xl border border-[var(--border)] dark:border-slate-800 bg-[var(--surface-2)] dark:bg-slate-800/40 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                        <span className="font-bold text-[var(--text)] dark:text-slate-200 block">
                           {log.action}
                         </span>
-                        <span className="text-slate-400 font-mono text-[11px]">
+                        <span className="text-[var(--text-3)] font-mono text-[11px]">
                           النوع: {log.resource_type} • المعرف: {log.resource_id?.substring(0, 8)}...
                         </span>
                       </div>
-                      <div className="text-left font-mono text-slate-400">
+                      <div className="text-left font-mono text-[var(--text-3)]">
                         <div>{new Date(log.timestamp).toLocaleTimeString("ar-SA")}</div>
                         <div className="text-[10px]">{new Date(log.timestamp).toLocaleDateString("ar-SA")}</div>
                       </div>
@@ -1548,14 +1548,14 @@ export default function UsersManagementPage() {
             title="استيراد جماعي للمستخدمين (بدون كلمات مرور)"
           >
             <form onSubmit={handleBulkImport} className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                <div className="font-bold text-slate-800 dark:text-slate-200">
+              <div className="p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800 text-xs text-[var(--text-2)] dark:text-slate-400 space-y-1">
+                <div className="font-bold text-[var(--text)] dark:text-slate-200">
                   صيغة البيانات المطلوبة (سطر لكل مستخدم مفصول بفواصل أو Tab):
                 </div>
                 <code className="block bg-slate-200/60 dark:bg-slate-700/60 p-2 rounded text-[11px] font-mono select-all">
                   الاسم الكامل, اسم المستخدم, البريد الإلكتروني, رقم الهاتف, الصلاحية
                 </code>
-                <div className="text-slate-500">
+                <div className="text-[var(--text-3)]">
                   مثال: سعد العلي, saad_ops, saad@investorgate.com, +966500000001, IT Technician
                 </div>
               </div>
@@ -1580,7 +1580,7 @@ export default function UsersManagementPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1">
                   لصق أسطر البيانات هنا *
                 </label>
                 <textarea
@@ -1589,7 +1589,7 @@ export default function UsersManagementPage() {
                   placeholder="الصق أسطر المستخدمين من ملف Excel أو CSV هنا..."
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
@@ -1597,7 +1597,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowBulkModal(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition"
                 >
                   إغلاق
                 </button>
@@ -1621,22 +1621,22 @@ export default function UsersManagementPage() {
             title="مصفوفة الصلاحيات والأدوار (RBAC Permission Matrix)"
           >
             <div className="space-y-4 max-h-[75vh] overflow-y-auto">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[var(--text-3)]">
                 توضح هذه المصفوفة الصلاحيات الممنوحة لكل دور داخل المنظومة وفق متطلبات الأمان وعزل الشركات المتعددة.
               </p>
 
               {permissionMatrix ? (
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+                <div className="overflow-x-auto border border-[var(--border)] dark:border-slate-800 rounded-xl">
                   <table className="w-full text-right text-xs">
-                    <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <thead className="bg-[var(--surface-2)] dark:bg-slate-800/60 border-b border-[var(--border)] dark:border-slate-800 font-bold text-[var(--text-2)] dark:text-slate-300">
                       <tr>
                         <th className="p-3">الدور (Role)</th>
                         <th className="p-3">الأقسام والصلاحيات الممنوحة</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody className="divide-y divide-[var(--border)] dark:divide-slate-800">
                       {Object.entries(permissionMatrix).map(([roleName, modulesMap]) => (
-                        <tr key={roleName} className="hover:bg-slate-50/50">
+                        <tr key={roleName} className="hover:bg-[var(--surface-2)]">
                           <td className="p-3 font-bold text-primary align-top whitespace-nowrap">
                             {roleName}
                           </td>
@@ -1646,10 +1646,10 @@ export default function UsersManagementPage() {
                                 actions.length > 0 && (
                                   <div
                                     key={mod}
-                                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-[11px]"
+                                    className="p-1.5 rounded-lg bg-[var(--surface-2)] dark:bg-slate-800/80 border border-[var(--border)] dark:border-slate-700 text-[11px]"
                                   >
-                                    <strong className="text-slate-800 dark:text-slate-200">{mod}:</strong>{" "}
-                                    <span className="text-slate-500">{actions.join(", ")}</span>
+                                    <strong className="text-[var(--text)] dark:text-slate-200">{mod}:</strong>{" "}
+                                    <span className="text-[var(--text-3)]">{actions.join(", ")}</span>
                                   </div>
                                 )
                               ))}
@@ -1661,7 +1661,7 @@ export default function UsersManagementPage() {
                   </table>
                 </div>
               ) : (
-                <p className="text-center py-6 text-slate-400">جاري تحميل المصفوفة...</p>
+                <p className="text-center py-6 text-[var(--text-3)]">جاري تحميل المصفوفة...</p>
               )}
             </div>
           </Modal>

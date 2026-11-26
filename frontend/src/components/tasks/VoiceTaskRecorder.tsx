@@ -266,7 +266,7 @@ export default function VoiceTaskRecorder({
 
   return (
     <div
-      className={`border rounded-2xl p-4 bg-slate-50/70 border-slate-200 transition-all ${className}`}
+      className={`border rounded-2xl p-4 bg-[var(--surface-2)] border-[var(--border)] transition-all ${className}`}
       dir="rtl"
     >
       {previewUrl && (
@@ -312,10 +312,10 @@ export default function VoiceTaskRecorder({
             </svg>
           </button>
           <div className="space-y-1">
-            <span className="block text-sm font-bold text-gray-800">
+            <span className="block text-sm font-bold text-[var(--text)]">
               اضغط لبدء تسجيل المهمة الصوتية
             </span>
-            <span className="block text-xs text-gray-500">
+            <span className="block text-xs text-[var(--text-3)]">
               يمكنك تسجيل تعليمات المهمة مباشرة بصوتك كرسالة صوتية (الحد الأقصى: 5 دقائق)
             </span>
           </div>
@@ -323,7 +323,7 @@ export default function VoiceTaskRecorder({
       )}
 
       {recordState === "requesting" && (
-        <div className="flex items-center justify-center py-6 gap-3 text-slate-600">
+        <div className="flex items-center justify-center py-6 gap-3 text-[var(--text-2)]">
           <svg className="animate-spin h-5 w-5 text-[#2563EB]" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -334,7 +334,7 @@ export default function VoiceTaskRecorder({
 
       {(recordState === "recording" || recordState === "paused") && (
         <div className="flex flex-col gap-3 py-2">
-          <div className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-blue-200 shadow-2xs">
+          <div className="flex items-center justify-between bg-[var(--surface)] px-4 py-3 rounded-xl border border-blue-200 shadow-2xs">
             <div className="flex items-center gap-3">
               <span className="relative flex h-3.5 w-3.5">
                 {recordState === "recording" && (
@@ -347,7 +347,7 @@ export default function VoiceTaskRecorder({
                 ></span>
               </span>
 
-              <span className="text-xs font-bold text-gray-700">
+              <span className="text-xs font-bold text-[var(--text-2)]">
                 {recordState === "recording" ? "جاري التسجيل..." : "التسجيل متوقف مؤقتاً"}
               </span>
             </div>
@@ -424,7 +424,7 @@ export default function VoiceTaskRecorder({
           </div>
 
           {/* Interactive Preview Bar */}
-          <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-blue-200">
+          <div className="flex items-center gap-3 bg-[var(--surface)] p-3 rounded-xl border border-blue-200">
             <button
               type="button"
               onClick={togglePreviewPlay}
@@ -443,13 +443,13 @@ export default function VoiceTaskRecorder({
             </button>
 
             <div className="flex-1 flex flex-col gap-1">
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-[var(--surface-2)] h-2 rounded-full overflow-hidden">
                 <div
                   className="bg-[#2563EB] h-full transition-all duration-100"
                   style={{ width: `${previewProgress}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+              <div className="flex justify-between text-[10px] text-[var(--text-3)] font-mono">
                 <span>{previewPlaying ? "جاري الاستماع للمعاينة..." : "جاهز للإرسال"}</span>
                 <span>{formatSeconds(seconds)}</span>
               </div>
@@ -459,7 +459,7 @@ export default function VoiceTaskRecorder({
               type="button"
               onClick={resetRecording}
               title="إعادة التسجيل"
-              className="px-2.5 py-1 text-xs text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-200 hover:border-rose-200 rounded-lg transition cursor-pointer flex items-center gap-1 shrink-0 font-medium"
+              className="px-2.5 py-1 text-xs text-[var(--text-2)] hover:text-rose-600 hover:bg-rose-50 border border-[var(--border)] hover:border-rose-200 rounded-lg transition cursor-pointer flex items-center gap-1 shrink-0 font-medium"
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />

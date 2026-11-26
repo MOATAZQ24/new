@@ -292,10 +292,10 @@ export default function HelpLearningCenterPage() {
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
                 مركز المساعدة والتعلّم (Learning Center)
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-[var(--text-3)] mt-0.5">
                 أدلة التشغيل العملية، الجولة الإرشادية، الأسئلة الشائعة، واستكشاف الأعطال
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function HelpLearningCenterPage() {
             </button>
             <Link
               href="/about"
-              className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 inline-flex items-center gap-2 hover:border-[#2563EB]"
+              className="h-10 px-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-bold text-[var(--text)] inline-flex items-center gap-2 hover:border-[#2563EB]"
             >
               <Info className="w-4 h-4 text-[#2563EB]" />
               <span>حول النظام والمطور</span>
@@ -328,7 +328,7 @@ export default function HelpLearningCenterPage() {
           <section
             role="dialog"
             aria-label="الجولة الإرشادية التفاعلية"
-            className="rounded-2xl bg-white border-2 border-[#2563EB] p-5 shadow-md space-y-4"
+            className="rounded-2xl bg-[var(--surface)] border-2 border-[#2563EB] p-5 shadow-md space-y-4"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB]">
@@ -341,21 +341,21 @@ export default function HelpLearningCenterPage() {
                 type="button"
                 onClick={finishTour}
                 aria-label="إغلاق الجولة"
-                className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 cursor-pointer"
+                className="p-1.5 rounded-lg text-[var(--text-3)] hover:bg-[var(--surface-2)] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">{TOUR_STEPS[tourStep].title}</h2>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">{TOUR_STEPS[tourStep].desc}</p>
+              <h2 className="text-base font-bold text-[var(--text)]">{TOUR_STEPS[tourStep].title}</h2>
+              <p className="text-xs text-[var(--text-2)] mt-1 leading-relaxed">{TOUR_STEPS[tourStep].desc}</p>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
               <button
                 type="button"
                 disabled={tourStep === 0}
                 onClick={() => setTourStep((s) => Math.max(0, s - 1))}
-                className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-40 cursor-pointer"
+                className="h-9 px-3 rounded-lg border border-[var(--border)] text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
                 <span>السابق</span>
@@ -384,16 +384,16 @@ export default function HelpLearningCenterPage() {
         )}
 
         {/* Search & RBAC Filter Bar */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
+            <Search className="w-4 h-4 text-[var(--text-3)] absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="ابحث في الأدلة التعليمية والأسئلة الشائعة"
               placeholder="ابحث عن وحدة، إجراء، أو مصطلح (مثال: Custody, QR, Telegram, Backup)..."
-              className="w-full h-10 ps-9 pe-3 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full h-10 ps-9 pe-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
           <button
@@ -403,7 +403,7 @@ export default function HelpLearningCenterPage() {
             className={`h-10 px-3.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer ${
               onlyMyRole
                 ? "border-[#2563EB] bg-emerald-50 text-[#1D4ED8]"
-                : "border-slate-200 bg-slate-50 text-slate-700"
+                : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-2)]"
             }`}
           >
             <ShieldCheck className="w-4 h-4" />
@@ -416,7 +416,7 @@ export default function HelpLearningCenterPage() {
           {filteredTutorials.map((tut) => (
             <article
               key={tut.id}
-              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between gap-3"
+              className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs flex flex-col justify-between gap-3"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -424,22 +424,22 @@ export default function HelpLearningCenterPage() {
                     <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-50 text-[#1D4ED8] text-[10px] font-bold mb-1.5">
                       {tut.category}
                     </span>
-                    <h2 className="text-sm font-bold text-slate-900">{tut.titleAr}</h2>
-                    <div className="text-[11px] font-mono text-slate-500" dir="ltr">
+                    <h2 className="text-sm font-bold text-[var(--text)]">{tut.titleAr}</h2>
+                    <div className="text-[11px] font-mono text-[var(--text-3)]" dir="ltr">
                       {tut.titleEn}
                     </div>
                   </div>
                   <Link
                     href={tut.route}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-[#2563EB] hover:border-[#2563EB] shrink-0"
+                    className="px-2.5 py-1 rounded-lg border border-[var(--border)] text-[11px] font-bold text-[#2563EB] hover:border-[#2563EB] shrink-0"
                   >
                     فتح الشاشة ←
                   </Link>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed">{tut.summary}</p>
+                <p className="text-xs text-[var(--text-2)] leading-relaxed">{tut.summary}</p>
 
-                <ol className="space-y-1.5 text-xs text-slate-700 bg-slate-50/80 rounded-xl p-3 border border-slate-100 list-decimal list-inside">
+                <ol className="space-y-1.5 text-xs text-[var(--text-2)] bg-[var(--surface-2)] rounded-xl p-3 border border-[var(--border)] list-decimal list-inside">
                   {tut.steps.map((step, i) => (
                     <li key={i} className="leading-relaxed">
                       {step}
@@ -453,31 +453,31 @@ export default function HelpLearningCenterPage() {
 
         {/* FAQs & Troubleshooting */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <HelpCircle className="w-4 h-4 text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">الأسئلة الشائعة (FAQs)</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">الأسئلة الشائعة (FAQs)</h2>
             </div>
             <div className="space-y-2.5">
               {FAQS.map((f, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 space-y-1">
-                  <div className="text-xs font-bold text-slate-900">{f.q}</div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">{f.a}</p>
+                <div key={idx} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] space-y-1">
+                  <div className="text-xs font-bold text-[var(--text)]">{f.q}</div>
+                  <p className="text-[11px] text-[var(--text-2)] leading-relaxed">{f.a}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <Wrench className="w-4 h-4 text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">استكشاف الأعطال وإصلاحها (Troubleshooting)</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">استكشاف الأعطال وإصلاحها (Troubleshooting)</h2>
             </div>
             <div className="space-y-2.5">
               {TROUBLESHOOTING.map((tr, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 space-y-1">
-                  <div className="text-xs font-bold text-slate-900">{tr.issue}</div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">{tr.solution}</p>
+                <div key={idx} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] space-y-1">
+                  <div className="text-xs font-bold text-[var(--text)]">{tr.issue}</div>
+                  <p className="text-[11px] text-[var(--text-2)] leading-relaxed">{tr.solution}</p>
                 </div>
               ))}
             </div>

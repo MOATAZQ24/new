@@ -168,16 +168,16 @@ export default function BrandingPage() {
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--surface)] dark:bg-slate-900 p-6 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Icons.Building size={22} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-bold text-[var(--text)] dark:text-white">
                 علامة الشركة التجارية (Company Branding)
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                 تخصيص شعار الشركة، الألوان والهوية البصرية — معزولة بالكامل عن باقي الشركات
               </p>
             </div>
@@ -199,16 +199,16 @@ export default function BrandingPage() {
         )}
 
         {/* Logo Section */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-6">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Building size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">شعار الشركة (Company Logo)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">شعار الشركة (Company Logo)</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             {/* Current Logo Preview */}
             <div className="flex flex-col items-center gap-3">
-              <div className="w-36 h-36 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
+              <div className="w-36 h-36 rounded-2xl border-2 border-dashed border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
                 {currentLogoUrl ? (
                   <img
                     src={currentLogoUrl}
@@ -218,7 +218,7 @@ export default function BrandingPage() {
                 ) : (
                   <div className="text-center space-y-1">
                     <Icons.Building size={36} className="mx-auto text-slate-300" />
-                    <p className="text-xs text-slate-400">لا يوجد شعار</p>
+                    <p className="text-xs text-[var(--text-3)]">لا يوجد شعار</p>
                   </div>
                 )}
               </div>
@@ -250,8 +250,8 @@ export default function BrandingPage() {
 
             {/* Upload Info */}
             <div className="flex-1 space-y-4">
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                <div className="font-bold text-slate-800 dark:text-slate-200 mb-1">متطلبات الشعار المثالي:</div>
+              <div className="p-4 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800 text-xs text-[var(--text-2)] dark:text-slate-400 space-y-2">
+                <div className="font-bold text-[var(--text)] dark:text-slate-200 mb-1">متطلبات الشعار المثالي:</div>
                 <div className="flex items-center gap-2">
                   <Icons.Check size={14} className="text-emerald-600 shrink-0" />
                   <span>الصيغ المدعومة: PNG، SVG، WebP، JPEG</span>
@@ -294,15 +294,15 @@ export default function BrandingPage() {
         </div>
 
         {/* Favicon Section */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
             <Icons.Globe size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">أيقونة المتصفح (Favicon)</h2>
+            <h2 className="text-base font-bold text-[var(--text)] dark:text-white">أيقونة المتصفح (Favicon)</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 rounded-xl border-2 border-dashed border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
                 {currentFaviconUrl ? (
                   <img
                     src={currentFaviconUrl}
@@ -312,13 +312,13 @@ export default function BrandingPage() {
                 ) : (
                   <div className="text-center space-y-1">
                     <Icons.Globe size={28} className="mx-auto text-slate-300" />
-                    <p className="text-[10px] text-slate-400">لا يوجد</p>
+                    <p className="text-[10px] text-[var(--text-3)]">لا يوجد</p>
                   </div>
                 )}
               </div>
               <button
                 onClick={() => faviconInputRef.current?.click()}
-                className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition"
+                className="px-3 py-1.5 text-xs font-semibold bg-[var(--surface-2)] hover:bg-[var(--surface-2)] dark:bg-slate-800 dark:hover:bg-slate-700 text-[var(--text-2)] dark:text-slate-300 rounded-lg transition"
               >
                 رفع Favicon
               </button>
@@ -331,8 +331,8 @@ export default function BrandingPage() {
               />
             </div>
 
-            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
-              <div className="font-semibold text-slate-700 dark:text-slate-300">متطلبات Favicon:</div>
+            <div className="text-xs text-[var(--text-3)] dark:text-slate-400 space-y-1.5">
+              <div className="font-semibold text-[var(--text-2)] dark:text-slate-300">متطلبات Favicon:</div>
               <div>• الصيغ: ICO، PNG، SVG</div>
               <div>• الأبعاد: 32×32 أو 64×64 بكسل (مربع)</div>
               <div>• الحجم الأقصى: 512 كيلوبايت</div>
@@ -345,15 +345,15 @@ export default function BrandingPage() {
 
         {/* Branding Colors & Names */}
         <form onSubmit={handleSaveBranding} className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-5">
-            <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-5">
+            <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
               <Icons.Building size={20} className="text-primary" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">معلومات العلامة التجارية</h2>
+              <h2 className="text-base font-bold text-[var(--text)] dark:text-white">معلومات العلامة التجارية</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                   اسم الشركة بالعربية (Brand Name AR)
                 </label>
                 <input
@@ -361,12 +361,12 @@ export default function BrandingPage() {
                   value={brandNameAr}
                   onChange={(e) => setBrandNameAr(e.target.value)}
                   placeholder="Investor Gate للاستثمار"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                   اسم الشركة بالإنجليزية (Brand Name EN)
                 </label>
                 <input
@@ -374,14 +374,14 @@ export default function BrandingPage() {
                   value={brandNameEn}
                   onChange={(e) => setBrandNameEn(e.target.value)}
                   placeholder="Investor Gate Investment"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Company Brand Colors */}
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">ألوان العلامة التجارية</h3>
+              <h3 className="text-sm font-bold text-[var(--text)] dark:text-slate-200 mb-3">ألوان العلامة التجارية</h3>
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { key: "primary" as const, label: "اللون الرئيسي", value: primaryColor, setter: setPrimaryColor },
@@ -389,13 +389,13 @@ export default function BrandingPage() {
                   { key: "accent" as const, label: "لون التأكيد", value: accentColor, setter: setAccentColor },
                 ].map(({ key, label, value, setter }) => (
                   <div key={key} className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">{label}</label>
+                    <label className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-400">{label}</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
                         value={value}
                         onChange={(e) => setter(e.target.value)}
-                        className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-700 p-0.5"
+                        className="w-10 h-10 rounded-lg cursor-pointer border border-[var(--border)] dark:border-slate-700 p-0.5"
                       />
                       <input
                         type="text"
@@ -404,17 +404,17 @@ export default function BrandingPage() {
                           if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) setter(e.target.value);
                         }}
                         maxLength={7}
-                        className="flex-1 min-w-0 w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
+                        className="flex-1 min-w-0 w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-white focus:ring-1 focus:ring-primary focus:outline-none"
                       />
                     </div>
-                    <div className="h-6 rounded-md border border-slate-200 dark:border-slate-700" style={{ backgroundColor: value }} />
+                    <div className="h-6 rounded-md border border-[var(--border)] dark:border-slate-700" style={{ backgroundColor: value }} />
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Enforce company theme */}
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-800">
               <input
                 type="checkbox"
                 id="enforceTheme"
@@ -423,10 +423,10 @@ export default function BrandingPage() {
                 className="rounded text-primary focus:ring-primary w-4 h-4"
               />
               <label htmlFor="enforceTheme" className="flex flex-col cursor-pointer">
-                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                <span className="text-sm font-semibold text-[var(--text)] dark:text-slate-200">
                   تطبيق ألوان الشركة بشكل إلزامي على جميع مستخدميها
                 </span>
-                <span className="text-xs text-slate-400 mt-0.5">
+                <span className="text-xs text-[var(--text-3)] mt-0.5">
                   عند التفعيل لن يتمكن الموظفون من تغيير ألوان النظام بشكل شخصي
                 </span>
               </label>
@@ -434,15 +434,15 @@ export default function BrandingPage() {
           </div>
 
           {/* Branding Preview */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
-            <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-sm p-6 space-y-4">
+            <div className="flex items-center gap-2 pb-4 border-b border-[var(--border)] dark:border-slate-800">
               <Icons.Eye size={20} className="text-primary" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">معاينة العلامة التجارية</h2>
+              <h2 className="text-base font-bold text-[var(--text)] dark:text-white">معاينة العلامة التجارية</h2>
             </div>
 
             {/* Simulated topnav with branding */}
             <div
-              className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700"
+              className="rounded-xl overflow-hidden border border-[var(--border)] dark:border-slate-700"
               style={{ backgroundColor: primaryColor }}
             >
               <div className="flex items-center justify-between px-4 py-3">
@@ -520,7 +520,7 @@ export default function BrandingPage() {
                 setAccentColor(companyBranding?.accent_color || "#3B82F6");
                 setEnforceTheme(Boolean(companyBranding?.enforce_company_theme));
               }}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+              className="px-5 py-2.5 text-sm font-semibold text-[var(--text-2)] dark:text-slate-400 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 rounded-xl transition"
             >
               إلغاء التغييرات
             </button>

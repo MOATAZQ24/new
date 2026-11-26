@@ -509,10 +509,10 @@ export default function AdaptiveTicketWizard({
                   onChange={(e) => setPriority(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/20 outline-none"
                 >
-                  <option value="Urgent">عاجل جداً (Urgent) — توقف كلي</option>
-                  <option value="High">مرتفع (High) — يعيق العمل الأساسي</option>
-                  <option value="Medium">متوسط (Medium) — تأثير جزئي</option>
-                  <option value="Low">منخفض (Low) — استفسار أو طلب بسيط</option>
+                  <option value="Urgent">عاجل جداً — توقف كلي</option>
+                  <option value="High">مرتفع — يعيق العمل الأساسي</option>
+                  <option value="Medium">متوسط — تأثير جزئي</option>
+                  <option value="Low">منخفض — استفسار أو طلب بسيط</option>
                 </select>
               </div>
             </div>

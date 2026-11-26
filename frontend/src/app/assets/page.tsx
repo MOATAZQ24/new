@@ -461,10 +461,10 @@ export default function AssetsPage() {
           {/* Page Title & Subtitle Header */}
           <div className="flex items-center justify-between">
             <div className="text-right">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl font-bold text-[var(--text)] dark:text-white tracking-tight">
                 إدارة الأصول
               </h1>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-500 mt-0.5 font-medium">
                 متابعة وإدارة جميع أصول الشركة
               </p>
             </div>
@@ -484,8 +484,8 @@ export default function AssetsPage() {
               <div className="flex items-center justify-center text-emerald-500 mb-0.5">
                 <CheckCircle2 size={16} strokeWidth={2.4} />
               </div>
-              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">فعالة</div>
-              <div className="text-lg font-black text-slate-900 dark:text-white">
+              <div className="text-[10px] font-bold text-[var(--text-2)] dark:text-slate-300">فعالة</div>
+              <div className="text-lg font-black text-[var(--text)] dark:text-white">
                 {analytics?.kpis?.available_assets ?? 126}
               </div>
             </button>
@@ -499,8 +499,8 @@ export default function AssetsPage() {
               <div className="flex items-center justify-center text-sky-500 mb-0.5">
                 <ArrowLeftRight size={16} strokeWidth={2.4} />
               </div>
-              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">منقولة</div>
-              <div className="text-lg font-black text-slate-900 dark:text-white">
+              <div className="text-[10px] font-bold text-[var(--text-2)] dark:text-slate-300">منقولة</div>
+              <div className="text-lg font-black text-[var(--text)] dark:text-white">
                 {analytics?.kpis?.assigned_assets ?? 7}
               </div>
             </button>
@@ -514,8 +514,8 @@ export default function AssetsPage() {
               <div className="flex items-center justify-center text-amber-500 mb-0.5">
                 <AlertTriangle size={16} strokeWidth={2.4} />
               </div>
-              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">معطلة</div>
-              <div className="text-lg font-black text-slate-900 dark:text-white">
+              <div className="text-[10px] font-bold text-[var(--text-2)] dark:text-slate-300">معطلة</div>
+              <div className="text-lg font-black text-[var(--text)] dark:text-white">
                 {analytics?.kpis?.retired_assets ?? 2}
               </div>
             </button>
@@ -529,8 +529,8 @@ export default function AssetsPage() {
               <div className="flex items-center justify-center text-purple-500 mb-0.5">
                 <Wrench size={16} strokeWidth={2.4} />
               </div>
-              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">قيد الصيانة</div>
-              <div className="text-lg font-black text-slate-900 dark:text-white">
+              <div className="text-[10px] font-bold text-[var(--text-2)] dark:text-slate-300">قيد الصيانة</div>
+              <div className="text-lg font-black text-[var(--text)] dark:text-white">
                 {analytics?.kpis?.maintenance_assets ?? 3}
               </div>
             </button>
@@ -545,7 +545,7 @@ export default function AssetsPage() {
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 !statusFilter && !typeFilter && !categoryFilter
                   ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
               }`}
             >
               <span>الكل</span>
@@ -559,7 +559,7 @@ export default function AssetsPage() {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 categoryFilter === "IT"
                   ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
               }`}
             >
               <Laptop size={13} />
@@ -574,7 +574,7 @@ export default function AssetsPage() {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 typeFilter === "Software"
                   ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
               }`}
             >
               <Layers size={13} />
@@ -589,7 +589,7 @@ export default function AssetsPage() {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 categoryFilter === "General"
                   ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
               }`}
             >
               <span>أخرى</span>
@@ -606,11 +606,11 @@ export default function AssetsPage() {
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder="بحث في الأصول..."
-                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
+                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 text-xs text-[var(--text)] dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
               />
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
               />
             </div>
 
@@ -618,7 +618,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setMobileFilterOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              className="w-11 h-11 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 shadow-2xs flex items-center justify-center text-[var(--text-2)] dark:text-slate-200 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
               aria-label="تصفية الأصول المتقدمة"
             >
               <SlidersHorizontal size={18} strokeWidth={2.2} />
@@ -657,13 +657,13 @@ export default function AssetsPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               الفرع
             </label>
             <select
               value={selectedBranchIds[0] || ""}
               onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -675,13 +675,13 @@ export default function AssetsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               فئة الأصل
             </label>
             <select
               value={categoryFilter}
               onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع الفئات (تقنية وعامة)</option>
               <option value="IT">أصول تقنية (IT)</option>
@@ -690,13 +690,13 @@ export default function AssetsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               نوع الأصل
             </label>
             <select
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع أنواع الأصول</option>
               <option value="Laptop">أجهزة لابتوب (Laptop)</option>
@@ -710,13 +710,13 @@ export default function AssetsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               حالة الأصل
             </label>
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع الحالات</option>
               <option value="Available">متاح للتسليم (Available)</option>
@@ -801,7 +801,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب الفرع المعتمد"
               value={selectedBranchIds[0] || ""}
               onChange={(e) => { setSelectedBranchIds(e.target.value ? [e.target.value] : []); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -815,7 +815,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب الفئة"
               value={categoryFilter}
               onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع الفئات (تقنية وعامة)</option>
               <option value="IT">أصول تقنية (IT)</option>
@@ -826,7 +826,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب نوع الأصل"
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع أنواع الأصول</option>
               <option value="Laptop">أجهزة لابتوب (Laptop)</option>
@@ -842,7 +842,7 @@ export default function AssetsPage() {
               aria-label="تصفية حسب حالة الأصل"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">جميع الحالات</option>
               <option value="Available">متاح للتسليم (Available)</option>
@@ -863,7 +863,7 @@ export default function AssetsPage() {
         onCloseDetail={() => setSelectedAsset(null)}
         masterWidthPercentage={selectedAsset ? 62 : 100}
         masterContent={
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={7} />
         ) : assets.length === 0 ? (
@@ -876,7 +876,7 @@ export default function AssetsPage() {
                 <button
                   type="button"
                   onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); setCategoryFilter(""); setPage(1); }}
-                  className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                  className="motion-control px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text)] cursor-pointer"
                 >
                   عرض جميع الأصول
                 </button>
@@ -928,7 +928,7 @@ export default function AssetsPage() {
             {/* Desktop Assets Table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+            <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
               <PreferenceRow tableId="/assets" columns={assetColumns}>
                 <th className="p-3.5">كود الأصل</th>
                 <th className="p-3.5">اسم وموديل الأصل</th>
@@ -941,32 +941,32 @@ export default function AssetsPage() {
                 <th className="p-3.5 text-center">الإجراءات</th>
               </PreferenceRow>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--border)]">
               {assets.map((ast) => (
                 <PreferenceRow
                   tableId="/assets"
                   columns={assetColumns}
                   key={ast.id}
                   onClick={() => openAssetDetails(ast)}
-                  className={`cursor-pointer transition-colors ${selectedAsset?.id === ast.id ? "bg-emerald-50/60" : "hover:bg-slate-50/60"}`}
+                  className={`cursor-pointer transition-colors ${selectedAsset?.id === ast.id ? "bg-emerald-50/60" : "hover:bg-[var(--surface-2)]"}`}
                 >
                   <td className="p-3.5 font-mono font-bold text-[#2563EB]">
                     <bdi dir="ltr">{ast.asset_code}</bdi>
                   </td>
-                  <td className="p-3.5 font-bold text-slate-900">
+                  <td className="p-3.5 font-bold text-[var(--text)]">
                     <div>{ast.asset_name}</div>
-                    <div className="text-[11px] text-slate-600 font-normal">
+                    <div className="text-[11px] text-[var(--text-2)] font-normal">
                       {ast.brand} {ast.model}
                     </div>
                   </td>
-                  <td className="p-3.5 text-slate-600">{ast.asset_type}</td>
-                  <td className="p-3.5 font-mono text-slate-600">
+                  <td className="p-3.5 text-[var(--text-2)]">{ast.asset_type}</td>
+                  <td className="p-3.5 font-mono text-[var(--text-2)]">
                     {ast.serial_number ? (
                       <div className="flex items-center gap-1.5">
                         <span>{ast.serial_number}</span>
                         <button
                           onClick={() => copyToClipboard(ast.serial_number || "")}
-                          className="text-slate-400 hover:text-slate-800 p-0.5 cursor-pointer"
+                          className="text-[var(--text-3)] hover:text-slate-800 p-0.5 cursor-pointer"
                           title="نسخ الرقم التسلسلي"
                         >
                           {copiedSerial === ast.serial_number ? (
@@ -981,11 +981,11 @@ export default function AssetsPage() {
                   <td className="p-3.5">
                     <StatusBadge status={ast.status} />
                   </td>
-                  <td className="p-3.5 font-semibold text-slate-700">
+                  <td className="p-3.5 font-semibold text-[var(--text-2)]">
                     {ast.assigned_employee_name ? (
                       <span className="text-blue-700">{ast.assigned_employee_name}</span>
                     ) : (
-                      <span className="text-slate-400 font-normal">
+                      <span className="text-[var(--text-3)] font-normal">
                         {ast.status === "Assigned" ? "عهدة غير محددة الموظف" : "غير معين (في المستودع)"}
                       </span>
                     )}
@@ -996,7 +996,7 @@ export default function AssetsPage() {
                         setSelectedAsset(ast);
                         setShowQRModal(true);
                       }}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] cursor-pointer"
+                      className="p-1.5 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] cursor-pointer"
                       title="عرض وطباعة QR"
                     >
                       <Icons.Dashboard size={14} />
@@ -1019,7 +1019,7 @@ export default function AssetsPage() {
                           استرجاع العهدة
                         </button>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">-</span>
+                        <span className="text-[var(--text-3)] text-[11px]">-</span>
                       )
                     )}
                   </td>
@@ -1027,7 +1027,7 @@ export default function AssetsPage() {
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => openAssetDetails(ast)}
-                        className="px-2 py-1 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
+                        className="px-2 py-1 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                       >
                         السجل
                       </button>
@@ -1035,7 +1035,7 @@ export default function AssetsPage() {
                         <button
                           type="button"
                           onClick={() => openTransferBranch(ast)}
-                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 text-[#1D4ED8] font-semibold text-[11px] cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-[var(--surface-2)] hover:bg-emerald-50 text-[#1D4ED8] font-semibold text-[11px] cursor-pointer"
                           title="نقل الأصل إلى فرع آخر"
                         >
                           نقل فرع
@@ -1047,7 +1047,7 @@ export default function AssetsPage() {
                             type="button"
                             onClick={() => openEditAsset(ast)}
                             aria-label={`تعديل الأصل ${ast.asset_code}`}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-slate-900 hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
                             title="تعديل بيانات الأصل"
                           >
                             <Icons.Edit size={14} />
@@ -1056,7 +1056,7 @@ export default function AssetsPage() {
                             type="button"
                             onClick={() => handleDeleteAsset(ast.id, ast.asset_code)}
                             aria-label={`حذف الأصل ${ast.asset_code}`}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="حذف الأصل"
                           >
                             <Icons.Trash size={14} />
@@ -1118,16 +1118,16 @@ export default function AssetsPage() {
         title={`نقل الأصل بين الفروع المعتمدة: ${selectedAsset?.asset_code || ""}`}
       >
         <form onSubmit={handleTransferBranchSubmit} className="space-y-4 text-xs">
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
             الفرع الحالي: <strong>{selectedAsset?.branch_name || "غير محدد"}</strong>
           </div>
           <div>
-            <label className="block font-bold text-slate-700 mb-1">الفرع الجديد المستهدف *</label>
+            <label className="block font-bold text-[var(--text-2)] mb-1">الفرع الجديد المستهدف *</label>
             <select
               value={transferTargetBranchId}
               onChange={(e) => setTransferTargetBranchId(e.target.value)}
               required
-              className="w-full border border-slate-200 rounded-xl p-2.5"
+              className="w-full border border-[var(--border)] rounded-xl p-2.5"
             >
               {companyBranches.map((br) => (
                 <option key={br.id} value={br.id}>
@@ -1137,13 +1137,13 @@ export default function AssetsPage() {
             </select>
           </div>
           <div>
-            <label className="block font-bold text-slate-700 mb-1">سبب النقل</label>
+            <label className="block font-bold text-[var(--text-2)] mb-1">سبب النقل</label>
             <input
               type="text"
               value={transferReason}
               onChange={(e) => setTransferReason(e.target.value)}
               placeholder="مثال: نقل الجهاز لفرع الدمام لتغطية احتياج القسم"
-              className="w-full border border-slate-200 rounded-xl p-2.5"
+              className="w-full border border-[var(--border)] rounded-xl p-2.5"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -1162,7 +1162,7 @@ export default function AssetsPage() {
         <form onSubmit={handleCreateAsset} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 كود الأصل الداخلي *
               </label>
               <input
@@ -1171,12 +1171,12 @@ export default function AssetsPage() {
                 value={assetCode}
                 onChange={(e) => setAssetCode(e.target.value.toUpperCase())}
                 placeholder="AST-IGT-LAP-005"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 اسم الأصل *
               </label>
               <input
@@ -1185,20 +1185,20 @@ export default function AssetsPage() {
                 value={assetName}
                 onChange={(e) => setAssetName(e.target.value)}
                 placeholder="مثال: MacBook Pro 14"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الفرع الفعلي للأصل *
               </label>
               <select
                 value={assetBranchId}
                 onChange={(e) => setAssetBranchId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 {companyBranches.map((br) => (
                   <option key={br.id} value={br.id}>
@@ -1208,13 +1208,13 @@ export default function AssetsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تصنيف الأصل *
               </label>
               <select
                 value={assetCategory}
                 onChange={(e) => setAssetCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="IT">أصل تقني (IT Asset)</option>
                 <option value="General">أصل عام / مكتبي (General Asset)</option>
@@ -1224,13 +1224,13 @@ export default function AssetsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الأصل *
               </label>
               <select
                 value={assetType}
                 onChange={(e) => setAssetType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Laptop">لابتوب (Laptop)</option>
                 <option value="Desktop">حاسب مكتبي (Desktop)</option>
@@ -1243,7 +1243,7 @@ export default function AssetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الشركة المصنعة (Brand)
               </label>
               <input
@@ -1251,14 +1251,14 @@ export default function AssetsPage() {
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="Apple / Dell / Lenovo"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الموديل والمواصفات
               </label>
               <input
@@ -1266,12 +1266,12 @@ export default function AssetsPage() {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="M3 Pro / 18GB / 512GB"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الرقم التسلسلي (Serial Number)
               </label>
               <input
@@ -1279,20 +1279,20 @@ export default function AssetsPage() {
                 value={serial}
                 onChange={(e) => setSerial(e.target.value)}
                 placeholder="SN-12345678"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 حالة الجهاز
               </label>
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1303,13 +1303,13 @@ export default function AssetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 حالة التوفر
               </label>
               <select
                 value={statusVal}
                 onChange={(e) => setStatusVal(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Available">متاح للتسليم (Available)</option>
                 <option value="Under Maintenance">تحت الصيانة</option>
@@ -1319,7 +1319,7 @@ export default function AssetsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ملاحظات إضافية
             </label>
             <textarea
@@ -1327,7 +1327,7 @@ export default function AssetsPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="أي تفاصيل أو ملحقات إضافية..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1335,7 +1335,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إلغاء
             </button>
@@ -1357,7 +1357,7 @@ export default function AssetsPage() {
       >
         <form onSubmit={handleUpdateAsset} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الأصل *
             </label>
             <input
@@ -1365,19 +1365,19 @@ export default function AssetsPage() {
               required
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 نوع الأصل *
               </label>
               <select
                 value={editType}
                 onChange={(e) => setEditType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Laptop">لابتوب (Laptop)</option>
                 <option value="Desktop">حاسب مكتبي (Desktop)</option>
@@ -1390,53 +1390,53 @@ export default function AssetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الشركة المصنعة (Brand)
               </label>
               <input
                 type="text"
                 value={editBrand}
                 onChange={(e) => setEditBrand(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الموديل
               </label>
               <input
                 type="text"
                 value={editModel}
                 onChange={(e) => setEditModel(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الرقم التسلسلي (S/N)
               </label>
               <input
                 type="text"
                 value={editSerial}
                 onChange={(e) => setEditSerial(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 حالة الجهاز
               </label>
               <select
                 value={editCondition}
                 onChange={(e) => setEditCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1447,13 +1447,13 @@ export default function AssetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الحالة العامة
               </label>
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Available">متاح (Available)</option>
                 <option value="Assigned">مسلّم كعهدة (Assigned)</option>
@@ -1468,7 +1468,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setShowEditModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إلغاء
             </button>
@@ -1491,14 +1491,14 @@ export default function AssetsPage() {
       >
         <form onSubmit={handleHandoverSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اختيار الموظف المستلم للعهدة *
             </label>
             <select
               required
               value={handoverEmployeeId}
               onChange={(e) => setHandoverEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">اختر الموظف...</option>
               {employees.map((emp) => (
@@ -1511,13 +1511,13 @@ export default function AssetsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 حالة الأصل عند التسليم *
               </label>
               <select
                 value={handoverCondition}
                 onChange={(e) => setHandoverCondition(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="New">جديد (New)</option>
                 <option value="Excellent">ممتاز (Excellent)</option>
@@ -1527,20 +1527,20 @@ export default function AssetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تاريخ الإرجاع المتوقع
               </label>
               <input
                 type="date"
                 value={handoverExpectedReturn}
                 onChange={(e) => setHandoverExpectedReturn(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ملاحظات وملحقات التسليم
             </label>
             <textarea
@@ -1548,7 +1548,7 @@ export default function AssetsPage() {
               value={handoverNotes}
               onChange={(e) => setHandoverNotes(e.target.value)}
               placeholder="مثال: تم تسليم الشاحن وحقيبة الجهاز والماوس..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1560,7 +1560,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setShowHandoverModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إلغاء
             </button>
@@ -1583,13 +1583,13 @@ export default function AssetsPage() {
       >
         <form onSubmit={handleReturnSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               حالة الأصل عند الإرجاع *
             </label>
             <select
               value={returnCondition}
               onChange={(e) => setReturnCondition(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Excellent">ممتاز (Excellent)</option>
               <option value="Good">جيد (Good)</option>
@@ -1599,7 +1599,7 @@ export default function AssetsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ملاحظات فحص الإرجاع
             </label>
             <textarea
@@ -1607,7 +1607,7 @@ export default function AssetsPage() {
               value={returnNotes}
               onChange={(e) => setReturnNotes(e.target.value)}
               placeholder="فحص سلامة الشاشة، لوحة المفاتيح، الملحقات..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1619,7 +1619,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setShowReturnModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إلغاء
             </button>
@@ -1641,7 +1641,7 @@ export default function AssetsPage() {
         maxWidth="max-w-sm"
       >
         <div className="text-center p-4 space-y-4">
-          <div className="flex justify-center p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+          <div className="flex justify-center p-4 bg-[var(--surface-2)] border border-[var(--border)] rounded-2xl">
             {selectedAsset?.qr_code_data ? (
               <img
                 src={selectedAsset.qr_code_data}
@@ -1649,14 +1649,14 @@ export default function AssetsPage() {
                 className="w-48 h-48 rounded-lg shadow-xs"
               />
             ) : (
-              <div className="w-48 h-48 bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+              <div className="w-48 h-48 bg-[var(--surface-2)] flex items-center justify-center text-xs text-[var(--text-3)]">
                 لا يتوفر QR
               </div>
             )}
           </div>
           <div>
-            <div className="font-bold text-sm text-slate-800">{selectedAsset?.asset_name}</div>
-            <div className="text-xs text-slate-400 font-mono mt-0.5">{selectedAsset?.asset_code}</div>
+            <div className="font-bold text-sm text-[var(--text)]">{selectedAsset?.asset_name}</div>
+            <div className="text-xs text-[var(--text-3)] font-mono mt-0.5">{selectedAsset?.asset_code}</div>
           </div>
           <button
             onClick={() => window.print()}
@@ -1675,34 +1675,34 @@ export default function AssetsPage() {
         maxWidth="max-w-2xl"
       >
         <div className="space-y-4">
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl grid grid-cols-2 gap-3 text-xs">
+          <div className="p-4 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400">الاسم:</span>{" "}
+              <span className="text-[var(--text-3)]">الاسم:</span>{" "}
               <span className="font-bold">{selectedAsset?.asset_name}</span>
             </div>
             <div>
-              <span className="text-slate-400">النوع:</span>{" "}
+              <span className="text-[var(--text-3)]">النوع:</span>{" "}
               <span className="font-semibold">{selectedAsset?.asset_type}</span>
             </div>
             <div>
-              <span className="text-slate-400">الماركة / الموديل:</span>{" "}
+              <span className="text-[var(--text-3)]">الماركة / الموديل:</span>{" "}
               <span>{selectedAsset?.brand} {selectedAsset?.model}</span>
             </div>
             <div>
-              <span className="text-slate-400">الرقم التسلسلي:</span>{" "}
+              <span className="text-[var(--text-3)]">الرقم التسلسلي:</span>{" "}
               <span className="font-mono">{selectedAsset?.serial_number || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400">الحالة العامة:</span>{" "}
+              <span className="text-[var(--text-3)]">الحالة العامة:</span>{" "}
               <StatusBadge status={selectedAsset?.status || "Available"} />
             </div>
             <div>
-              <span className="text-slate-400">حالة العتاد:</span>{" "}
+              <span className="text-[var(--text-3)]">حالة العتاد:</span>{" "}
               <span className="font-semibold">{selectedAsset?.condition}</span>
             </div>
           </div>
 
-          <h4 className="text-xs font-bold text-slate-800 pt-2 flex items-center gap-2">
+          <h4 className="text-xs font-bold text-[var(--text)] pt-2 flex items-center gap-2">
             <Icons.Custody size={16} className="text-[#2563EB]" />
             <span>سجل تسليم وإرجاع العهدة ({selectedAsset?.custody_history?.length || 0})</span>
           </h4>
@@ -1712,11 +1712,11 @@ export default function AssetsPage() {
               {selectedAsset.custody_history.map((h) => (
                 <div
                   key={h.id}
-                  className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
+                  className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl flex items-center justify-between text-xs"
                 >
                   <div>
-                    <div className="font-bold text-slate-800">{h.employee_name}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="font-bold text-[var(--text)]">{h.employee_name}</div>
+                    <div className="text-[11px] text-[var(--text-3)] mt-0.5">
                       تاريخ التسليم: {new Date(h.assignment_date).toLocaleDateString("ar-SA")}{" "}
                       {h.actual_return_date && (
                         <span>• تاريخ الإرجاع: {new Date(h.actual_return_date).toLocaleDateString("ar-SA")}</span>
@@ -1727,7 +1727,7 @@ export default function AssetsPage() {
                     <StatusBadge status={h.status} />
                     <button
                       onClick={() => openReceipt(h.id)}
-                      className="px-2 py-0.5 border border-slate-200 hover:border-[#2563EB] text-slate-700 text-[10px] rounded cursor-pointer"
+                      className="px-2 py-0.5 border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] text-[10px] rounded cursor-pointer"
                     >
                       عرض السند
                     </button>
@@ -1736,7 +1736,7 @@ export default function AssetsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-200 rounded-xl">
+            <p className="text-xs text-[var(--text-3)] py-3 text-center border border-dashed border-[var(--border)] rounded-xl">
               لم يتم تسليم هذا الأصل لأي موظف حتى الآن
             </p>
           )}
@@ -1751,38 +1751,38 @@ export default function AssetsPage() {
         maxWidth="max-w-lg"
       >
         <div className="p-4 space-y-4 text-xs">
-          <div className="text-center border-b border-slate-200 pb-3">
+          <div className="text-center border-b border-[var(--border)] pb-3">
             <h3 className="font-black text-sm text-[#1D4ED8]">إقرار استلام عهدة تقنية</h3>
-            <p className="text-slate-400 text-[11px] mt-0.5">سند رسمي موثق إلكترونياً</p>
+            <p className="text-[var(--text-3)] text-[11px] mt-0.5">سند رسمي موثق إلكترونياً</p>
           </div>
 
           {receiptData && (
-            <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="space-y-3 bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)]">
               <div className="flex justify-between">
-                <span className="text-slate-500">اسم الموظف المستلم:</span>
-                <span className="font-bold text-slate-900">{receiptData.employee_name}</span>
+                <span className="text-[var(--text-3)]">اسم الموظف المستلم:</span>
+                <span className="font-bold text-[var(--text)]">{receiptData.employee_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">الرقم الوظيفي:</span>
+                <span className="text-[var(--text-3)]">الرقم الوظيفي:</span>
                 <span className="font-mono">{receiptData.employee_number}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">اسم الأصل:</span>
-                <span className="font-bold text-slate-900">{receiptData.asset_name}</span>
+                <span className="text-[var(--text-3)]">اسم الأصل:</span>
+                <span className="font-bold text-[var(--text)]">{receiptData.asset_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">كود الأصل:</span>
+                <span className="text-[var(--text-3)]">كود الأصل:</span>
                 <span className="font-mono font-bold text-[#2563EB]">{receiptData.asset_code}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">الرقم التسلسلي (S/N):</span>
+                <span className="text-[var(--text-3)]">الرقم التسلسلي (S/N):</span>
                 <span className="font-mono">{receiptData.serial_number || "-"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">تاريخ التسليم:</span>
+                <span className="text-[var(--text-3)]">تاريخ التسليم:</span>
                 <span>{receiptData.assignment_date ? new Date(receiptData.assignment_date).toLocaleString("ar-SA") : "-"}</span>
               </div>
-              <div className="pt-2 border-t border-slate-200 text-slate-600 leading-relaxed text-[11px]">
+              <div className="pt-2 border-t border-[var(--border)] text-[var(--text-2)] leading-relaxed text-[11px]">
                 {receiptData.legal_text || "أقر أنا الموقع أعلاه باستلام الجهاز الموضح بياناته بحالة جيدة، وأتعهد بالمحافظة عليه واستخدامه في أغراض العمل وإعادته متى طُلب مني ذلك."}
               </div>
             </div>
@@ -1797,7 +1797,7 @@ export default function AssetsPage() {
             </button>
             <button
               onClick={() => setShowReceiptModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إغلاق
             </button>

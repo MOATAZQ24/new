@@ -135,7 +135,7 @@ export function MobileMoreMenuSheet({
           sub: "Security Audit Log",
           href: "/audit",
           icon: ClipboardList,
-          color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          color: "bg-[var(--surface-2)] text-[var(--text-2)] dark:bg-slate-800 dark:text-slate-300",
         },
       ],
     },
@@ -147,7 +147,7 @@ export function MobileMoreMenuSheet({
           sub: "Integrations & Bot",
           href: "/settings/integrations",
           icon: Settings,
-          color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          color: "bg-[var(--surface-2)] text-[var(--text-2)] dark:bg-slate-800 dark:text-slate-300",
         },
         {
           name: "المظهر والسمات",
@@ -171,7 +171,7 @@ export function MobileMoreMenuSheet({
       <div className="space-y-5 pb-6">
         {sections.map((sec, idx) => (
           <div key={idx} className="space-y-2">
-            <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">
+            <h4 className="text-xs font-bold text-[var(--text-3)] dark:text-slate-500 uppercase tracking-wider px-1">
               {sec.title}
             </h4>
 
@@ -193,7 +193,7 @@ export function MobileMoreMenuSheet({
                     className={`p-3 rounded-2xl flex items-center gap-3 transition-colors active:scale-98 border ${
                       isActive
                         ? "bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/60 text-primary dark:text-blue-300 font-bold"
-                        : "bg-slate-50/60 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        : "bg-[var(--surface-2)] dark:bg-slate-800/60 border-[var(--border)] dark:border-slate-800 text-[var(--text)] dark:text-slate-200 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                     }`}
                   >
                     <div
@@ -205,7 +205,7 @@ export function MobileMoreMenuSheet({
                       <div className="text-sm font-bold truncate">
                         {item.name}
                       </div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      <div className="text-[11px] text-[var(--text-3)] dark:text-slate-500 truncate mt-0.5">
                         {item.sub}
                       </div>
                     </div>

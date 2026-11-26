@@ -130,7 +130,7 @@ export function MobileHeader() {
                 className={`w-full p-3.5 rounded-2xl flex items-center justify-between text-start transition cursor-pointer border ${
                   isSelected
                     ? "bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/60 text-primary dark:text-blue-300 font-bold"
-                    : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                    : "bg-[var(--surface)] dark:bg-slate-800 border-[var(--border)] dark:border-slate-700/60 text-[var(--text)] dark:text-slate-200 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700/40"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -138,7 +138,7 @@ export function MobileHeader() {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       isSelected
                         ? "bg-primary text-white"
-                        : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        : "bg-[var(--surface-2)] dark:bg-slate-700 text-[var(--text-2)] dark:text-slate-300"
                     }`}
                   >
                     <Building2 size={20} />
@@ -148,7 +148,7 @@ export function MobileHeader() {
                       {comp.name_ar || comp.name_en}
                     </div>
                     {comp.code && (
-                      <div className="text-xs font-mono text-slate-500 mt-0.5">
+                      <div className="text-xs font-mono text-[var(--text-3)] mt-0.5">
                         #{comp.code}
                       </div>
                     )}
@@ -175,15 +175,15 @@ export function MobileHeader() {
       >
         <div className="space-y-4 py-2">
           {/* User Card */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-[var(--surface-2)] dark:bg-slate-800/70 border border-[var(--border)] dark:border-slate-700 flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-lg flex items-center justify-center shadow-xs">
               {user?.full_name?.slice(0, 1).toUpperCase() || "U"}
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              <div className="text-sm font-bold text-[var(--text)] dark:text-white truncate">
                 {user?.full_name || "مستخدم النظام"}
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate mt-0.5">
+              <div className="text-xs text-[var(--text-3)] dark:text-slate-400 font-mono truncate mt-0.5">
                 {user?.email}
               </div>
               <div className="inline-block mt-1 text-[11px] font-semibold text-primary dark:text-blue-300 bg-primary/10 dark:bg-primary/20 px-2 py-0.5 rounded-full">
@@ -197,26 +197,26 @@ export function MobileHeader() {
             <Link
               href="/settings"
               onClick={() => setProfileSheetOpen(false)}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-medium transition"
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 text-[var(--text-2)] dark:text-slate-200 text-sm font-medium transition"
             >
               <span>إعدادات النظام والحساب</span>
-              <span className="text-slate-400">←</span>
+              <span className="text-[var(--text-3)]">←</span>
             </Link>
             <Link
               href="/settings/appearance"
               onClick={() => setProfileSheetOpen(false)}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-medium transition"
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 text-[var(--text-2)] dark:text-slate-200 text-sm font-medium transition"
             >
               <span>تخصيص المظهر والألوان</span>
-              <span className="text-slate-400">←</span>
+              <span className="text-[var(--text-3)]">←</span>
             </Link>
             <Link
               href="/notifications"
               onClick={() => setProfileSheetOpen(false)}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-medium transition"
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 text-[var(--text-2)] dark:text-slate-200 text-sm font-medium transition"
             >
               <span>مركز التنبيهات والإشعارات</span>
-              <span className="text-slate-400">←</span>
+              <span className="text-[var(--text-3)]">←</span>
             </Link>
           </div>
 

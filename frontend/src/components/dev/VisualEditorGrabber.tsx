@@ -188,7 +188,7 @@ export function VisualEditorGrabber() {
             </div>
             <button
               onClick={() => setSelectedEl(null)}
-              className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"
+              className="text-[var(--text-3)] hover:text-white p-1 rounded hover:bg-slate-800"
             >
               <X className="w-4 h-4" />
             </button>
@@ -202,7 +202,7 @@ export function VisualEditorGrabber() {
 
           {/* Classes Editor */}
           <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-slate-400 font-medium">فئات Tailwind / CSS:</label>
+            <label className="text-[11px] text-[var(--text-3)] font-medium">فئات Tailwind / CSS:</label>
             <textarea
               dir="ltr"
               value={editedClasses}
@@ -218,7 +218,7 @@ export function VisualEditorGrabber() {
           {/* Text Content Editor */}
           {selectedEl.text !== "" && (
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] text-slate-400 font-medium">النص المباشر:</label>
+              <label className="text-[11px] text-[var(--text-3)] font-medium">النص المباشر:</label>
               <input
                 type="text"
                 value={editedText}
@@ -233,7 +233,7 @@ export function VisualEditorGrabber() {
 
           {/* Preset Quick Actions */}
           <div className="flex flex-wrap gap-1.5 pt-1">
-            <span className="text-[10px] text-slate-500 w-full">إضافات سريعة:</span>
+            <span className="text-[10px] text-[var(--text-3)] w-full">إضافات سريعة:</span>
             {[
               { label: "ظل بارز", cls: "shadow-xl shadow-purple-500/20" },
               { label: "حواف دائرية", cls: "rounded-2xl" },

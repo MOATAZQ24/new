@@ -128,22 +128,22 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
   return (
     <section
       dir="rtl"
-      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs"
+      className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center">
             <Icons.ShieldCheck size={16} />
           </div>
           <div>
             <h3 className="text-sm font-bold text-[#1D4ED8]">صلاحيات الإجراءات الفعلية</h3>
-            <p className="text-[11px] text-slate-600">
+            <p className="text-[11px] text-[var(--text-2)]">
               التحكم الدقيق في وحدات النظام وإشعارات الموظف عبر البوت
             </p>
           </div>
         </div>
         {!canManage && (
-          <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold">
+          <span className="px-2.5 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-2)] text-[11px] font-semibold">
             عرض فقط
           </span>
         )}
@@ -152,7 +152,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
       <fieldset disabled={!canManage || busy} className="space-y-4 disabled:opacity-70">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block space-y-1">
-            <span className="text-xs font-semibold text-slate-700">قالب الصلاحيات</span>
+            <span className="text-xs font-semibold text-[var(--text-2)]">قالب الصلاحيات</span>
             <select
               value={template}
               onChange={(e) => {
@@ -170,7 +170,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                   );
                 }
               }}
-              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#2563EB] focus:bg-white"
+              className="block w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--text)] outline-none focus:border-[#2563EB] focus:bg-[var(--surface)]"
             >
               <option value="custom">مخصص</option>
               <option value="read_only">للقراءة فقط</option>
@@ -179,11 +179,11 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
           </label>
 
           <label className="block space-y-1">
-            <span className="text-xs font-semibold text-slate-700">نطاق البيانات</span>
+            <span className="text-xs font-semibold text-[var(--text-2)]">نطاق البيانات</span>
             <select
               value={scope}
               onChange={(e) => setScope(e.target.value)}
-              className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#2563EB] focus:bg-white"
+              className="block w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--text)] outline-none focus:border-[#2563EB] focus:bg-[var(--surface)]"
             >
               <option value="Self">سجلات الموظف فقط</option>
               {details.permissions_matrix?.maximum_scope === "Company" && (
@@ -198,9 +198,9 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
           {Object.entries(maximum).map(([module, allowed]) => (
             <div
               key={module}
-              className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3 space-y-2"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 space-y-2"
             >
-              <div className="text-xs font-bold text-slate-900">
+              <div className="text-xs font-bold text-[var(--text)]">
                 {labels[module] || module}
               </div>
               <div className="flex flex-wrap gap-2">
@@ -212,10 +212,10 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                       key={action}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-colors ${
                         !isAllowed
-                          ? "border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed opacity-60"
+                          ? "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-3)] cursor-not-allowed opacity-60"
                           : checked
                           ? "border-[#2563EB]/40 bg-emerald-50 text-[#1D4ED8] font-semibold cursor-pointer"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer"
+                          : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-2)] cursor-pointer"
                       }`}
                     >
                       <input
@@ -230,7 +230,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                               : (current[module] || []).filter((a) => a !== action),
                           }))
                         }
-                        className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
+                        className="rounded border-[var(--border)] text-[#2563EB] focus:ring-[#2563EB]"
                       />
                       <span>{label}</span>
                     </label>
@@ -242,13 +242,13 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
         </div>
 
         {/* Notification Event Subscriptions */}
-        <div className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3.5 space-y-2.5">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-900 cursor-pointer">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3.5 space-y-2.5">
+          <label className="flex items-center gap-2 text-xs font-bold text-[var(--text)] cursor-pointer">
             <input
               type="checkbox"
               checked={notifications}
               onChange={(e) => setNotifications(e.target.checked)}
-              className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
+              className="rounded border-[var(--border)] text-[#2563EB] focus:ring-[#2563EB]"
             />
             <span>استلام الإشعارات الفورية عبر البوت</span>
           </label>
@@ -261,7 +261,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
             }).map(([event, label]) => (
               <label
                 key={event}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[11px] font-medium text-[var(--text-2)] cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -269,7 +269,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
                   onChange={(e) =>
                     setPreferences((p) => ({ ...p, [event]: e.target.checked }))
                   }
-                  className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
+                  className="rounded border-[var(--border)] text-[#2563EB] focus:ring-[#2563EB]"
                 />
                 <span>{label}</span>
               </label>
@@ -289,7 +289,7 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
           <button
             type="button"
             onClick={reset}
-            className="motion-control inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+            className="motion-control inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] px-4 py-2 text-xs font-semibold text-[var(--text-2)] transition-colors cursor-pointer"
           >
             <Icons.Refresh size={13} />
             <span>إعادة ضبط</span>
@@ -307,18 +307,18 @@ export default function TelegramActionPermissions({ employeeId, companyId, detai
         </div>
       )}
 
-      <details className="rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs">
-        <summary className="cursor-pointer font-bold text-slate-700 select-none">
+      <details className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 text-xs">
+        <summary className="cursor-pointer font-bold text-[var(--text-2)] select-none">
           معاينة الصلاحيات الفعلية المعتمدة
         </summary>
         <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
           {Object.entries(grants).map(([m, values]) => (
             <div
               key={m}
-              className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-lg border border-slate-100"
+              className="flex items-center justify-between bg-[var(--surface)] px-2.5 py-1.5 rounded-lg border border-[var(--border)]"
             >
-              <span className="font-semibold text-slate-800">{labels[m] || m}</span>
-              <span className="text-slate-600">
+              <span className="font-semibold text-[var(--text)]">{labels[m] || m}</span>
+              <span className="text-[var(--text-2)]">
                 {values.includes("view")
                   ? values.map((a) => actions[a] || a).join("، ")
                   : "غير مسموح"}

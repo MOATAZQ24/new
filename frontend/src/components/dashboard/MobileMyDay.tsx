@@ -85,23 +85,23 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
 
       {/* 2. Contextual Quick Actions (1-Tap Primary Actions) */}
       <div className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
+        <h2 className="text-xs font-bold text-[var(--text-3)] dark:text-slate-400 uppercase tracking-wider px-1">
           إجراءات سريعة وفورية
         </h2>
         <div className="grid grid-cols-2 gap-2.5">
           {/* Quick Voice Task Button */}
           <Link
             href="/tasks?mode=voice"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <Mic size={20} />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-black text-slate-900 dark:text-white">
+              <div className="text-xs font-black text-[var(--text)] dark:text-white">
                 مهمة صوتية
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <div className="text-[10px] text-[var(--text-3)] dark:text-slate-400 truncate mt-0.5">
                 تسجيل وإرسال سريع
               </div>
             </div>
@@ -110,16 +110,16 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           {/* Quick Ticket Button */}
           <Link
             href="/tickets?action=new"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
               <PlusCircle size={20} />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-black text-slate-900 dark:text-white">
+              <div className="text-xs font-black text-[var(--text)] dark:text-white">
                 تذكرة دعم
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <div className="text-[10px] text-[var(--text-3)] dark:text-slate-400 truncate mt-0.5">
                 طلب أو بلاغ فني
               </div>
             </div>
@@ -128,16 +128,16 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
           {/* Scan Asset QR */}
           <Link
             href="/assets?action=scan"
-            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
+            className="p-3.5 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs hover:border-primary transition active:scale-98 flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
               <QrCode size={20} />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-black text-slate-900 dark:text-white">
+              <div className="text-xs font-black text-[var(--text)] dark:text-white">
                 مسح أصل QR
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <div className="text-[10px] text-[var(--text-3)] dark:text-slate-400 truncate mt-0.5">
                 فحص عهدة وجرد
               </div>
             </div>
@@ -170,23 +170,23 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
 
       {/* 3. Essential 4 Focus Metrics */}
       <div className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
+        <h2 className="text-xs font-bold text-[var(--text-3)] dark:text-slate-400 uppercase tracking-wider px-1">
           ملخص أولوياتك
         </h2>
         <div className="grid grid-cols-2 gap-2.5">
           <Link
             href="/tasks"
-            className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex flex-col justify-between"
+            className="p-4 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300">
                 مهام نشطة
               </span>
               <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                 <CheckSquare size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-2">
+            <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white mt-2">
               {data.open_tasks}
             </div>
           </Link>
@@ -196,7 +196,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
             className={`p-4 rounded-2xl border shadow-2xs flex flex-col justify-between ${
               data.overdue_tasks > 0
                 ? "bg-rose-50/80 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300"
-                : "bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-900 dark:text-white"
+                : "bg-[var(--surface)] dark:bg-slate-800 border-[var(--border)] dark:border-slate-700 text-[var(--text)] dark:text-white"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -212,34 +212,34 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
 
           <Link
             href="/tickets"
-            className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex flex-col justify-between"
+            className="p-4 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300">
                 تذاكر الدعم
               </span>
               <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 flex items-center justify-center">
                 <Headphones size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-2">
+            <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white mt-2">
               {data.open_tickets}
             </div>
           </Link>
 
           <Link
             href="/assets"
-            className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex flex-col justify-between"
+            className="p-4 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300">
                 أصول وعهد
               </span>
               <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center">
                 <Laptop size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-2">
+            <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white mt-2">
               {data.total_assets}
             </div>
           </Link>
@@ -249,7 +249,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
       {/* 4. Urgent Action Items (المهام والتذاكر العاجلة لليوم) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-[var(--text-3)] dark:text-slate-400 uppercase tracking-wider">
             مهام تحتاج انتباهك
           </h2>
           <Link
@@ -267,14 +267,14 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
               <Link
                 key={task.id}
                 href="/tasks"
-                className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center justify-between gap-3 transition hover:border-primary"
+                className="p-3.5 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 shadow-2xs flex items-center justify-between gap-3 transition hover:border-primary"
               >
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  <div className="text-xs font-bold text-[var(--text)] dark:text-white truncate">
                     {task.title}
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-1">
-                    <span className="inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-[10px] font-semibold">
+                  <div className="text-[11px] text-[var(--text-3)] dark:text-slate-400 flex items-center gap-2 mt-1">
+                    <span className="inline-block px-1.5 py-0.5 rounded bg-[var(--surface-2)] dark:bg-slate-700 text-[10px] font-semibold">
                       {task.status}
                     </span>
                     {task.due_date && (
@@ -285,7 +285,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
                     )}
                   </div>
                 </div>
-                <ChevronLeft size={16} className="text-slate-400 shrink-0" />
+                <ChevronLeft size={16} className="text-[var(--text-3)] shrink-0" />
               </Link>
             ))}
           </div>
@@ -307,7 +307,7 @@ export function MobileMyDay({ data, onSwitchToFullDashboard }: MobileMyDayProps)
         <button
           type="button"
           onClick={onSwitchToFullDashboard}
-          className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition py-2 px-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+          className="text-xs font-bold text-[var(--text-3)] dark:text-slate-400 hover:text-primary transition py-2 px-4 rounded-full border border-[var(--border)] dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
         >
           <BarChart3 className="w-3.5 h-3.5" />
           <span>عرض لوحة المؤشرات البيانية الكاملة</span>

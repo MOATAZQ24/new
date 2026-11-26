@@ -140,10 +140,10 @@ export default function NotificationsPage() {
           <span className="text-xs text-[var(--text-3)] px-2 font-medium shrink-0">مستوى الأولوية:</span>
           {[
             { id: "", label: "الكل" },
-            { id: "Urgent", label: "عاجل جداً (Urgent)" },
-            { id: "High", label: "مرتفع (High)" },
-            { id: "Normal", label: "عادي (Normal)" },
-            { id: "Low", label: "منخفض (Low)" },
+            { id: "Urgent", label: "عاجل جداً" },
+            { id: "High", label: "مرتفع" },
+            { id: "Normal", label: "عادي" },
+            { id: "Low", label: "منخفض" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -162,7 +162,11 @@ export default function NotificationsPage() {
         {/* Notifications Feed */}
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-xs overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-[var(--text-3)]">جاري تحميل الإشعارات...</div>
+            <div className="p-4 space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-20 rounded-xl bg-[var(--surface-2)] animate-pulse" />
+              ))}
+            </div>
           ) : notifications.length === 0 ? (
             <div className="p-12 text-center text-[var(--text-3)]">
               <BellIcon className="w-12 h-12 text-[var(--icon-muted)] mx-auto mb-3" />

@@ -132,6 +132,9 @@ interface CommentItem {
 }
 
 interface TaskDetail extends TaskItem {
+  team_name?: string;
+  resolution_due_at?: string;
+  attachments?: { name?: string; url?: string; size?: string | number }[] | string[] | null;
   comments: CommentItem[];
   telegram_info?: {
     is_employee_linked: boolean;
@@ -817,10 +820,10 @@ export default function TasksPage() {
               {userInitial}
             </div>
             <div className="text-right">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl font-bold text-[var(--text)] dark:text-white tracking-tight">
                 مرحباً، {userFirstName}
               </h1>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-500 mt-0.5 font-medium">
                 أعمالك اليوم
               </p>
             </div>
@@ -841,10 +844,10 @@ export default function TasksPage() {
               <div className="flex items-center justify-center text-blue-500 mb-0.5">
                 <CheckCircle2 size={18} strokeWidth={2.4} />
               </div>
-              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              <div className="text-[11px] font-bold text-[var(--text-2)] dark:text-slate-300">
                 المهام اليوم
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl font-black text-[var(--text)] dark:text-white">
                 {summary?.total ?? totalTasks}
               </div>
             </button>
@@ -861,10 +864,10 @@ export default function TasksPage() {
               <div className="flex items-center justify-center text-sky-500 mb-0.5">
                 <Clock size={18} strokeWidth={2.4} />
               </div>
-              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              <div className="text-[11px] font-bold text-[var(--text-2)] dark:text-slate-300">
                 قيد التنفيذ
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl font-black text-[var(--text)] dark:text-white">
                 {inProgressCount}
               </div>
             </button>
@@ -881,10 +884,10 @@ export default function TasksPage() {
               <div className="flex items-center justify-center text-rose-500 mb-0.5">
                 <AlertCircle size={18} strokeWidth={2.4} />
               </div>
-              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              <div className="text-[11px] font-bold text-[var(--text-2)] dark:text-slate-300">
                 متأخرة
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl font-black text-[var(--text)] dark:text-white">
                 {overdueCount}
               </div>
             </button>
@@ -893,7 +896,7 @@ export default function TasksPage() {
           {/* Section Title & Filter Chips */}
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-bold text-sm text-slate-900 dark:text-white">
+              <div className="flex items-center gap-1.5 font-bold text-sm text-[var(--text)] dark:text-white">
                 <ListTodo size={16} className="text-primary" />
                 <span>المهام</span>
               </div>
@@ -912,7 +915,7 @@ export default function TasksPage() {
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
                   !statusFilter && !overdueOnly && filterMode === "all"
                     ? "bg-primary text-white shadow-xs"
-                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 الكل
@@ -925,7 +928,7 @@ export default function TasksPage() {
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
                   filterMode === "my"
                     ? "bg-primary text-white shadow-xs"
-                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 مهامي
@@ -941,7 +944,7 @@ export default function TasksPage() {
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
                   statusFilter === "in_progress"
                     ? "bg-primary text-white shadow-xs"
-                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 قيد التنفيذ
@@ -957,7 +960,7 @@ export default function TasksPage() {
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
                   overdueOnly || statusFilter === "overdue"
                     ? "bg-primary text-white shadow-xs"
-                    : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 المتأخرة
@@ -974,11 +977,11 @@ export default function TasksPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="بحث في المهام..."
-                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
+                className="w-full h-11 pr-4 pl-10 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 text-xs text-[var(--text)] dark:text-slate-100 placeholder:text-slate-400 shadow-2xs outline-none focus:border-primary transition"
               />
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
               />
             </div>
 
@@ -986,7 +989,7 @@ export default function TasksPage() {
             <button
               type="button"
               onClick={() => setMobileFilterOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xs flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
+              className="w-11 h-11 rounded-2xl bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 shadow-2xs flex items-center justify-center text-[var(--text-2)] dark:text-slate-200 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer shrink-0"
               aria-label="تصفية المهام المتقدمة"
             >
               <SlidersHorizontal size={18} strokeWidth={2.2} />
@@ -1002,10 +1005,10 @@ export default function TasksPage() {
               <CheckSquareIcon className="w-6 h-6" />
             </div>
             <div className="text-right">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight flex items-center gap-2">
                 <span>إدارة المهام والتشغيل</span>
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+              <p className="text-xs text-[var(--text-3)] dark:text-slate-400 mt-0.5 font-medium">
                 متابعة المهام، الإسناد، التنفيذ، والاعتماد عبر الإدارات والفرق
               </p>
             </div>
@@ -1033,7 +1036,7 @@ export default function TasksPage() {
               className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border border-primary/20 bg-primary/10 dark:bg-primary/15 text-primary hover:bg-primary/20 transition-colors shadow-2xs cursor-pointer"
             >
               <UsersIcon size={16} />
-              <span>إسناد جماعي (Broadcast)</span>
+              <span>إسناد جماعي</span>
             </button>
 
             {/* Hidden file & camera inputs */}
@@ -1072,7 +1075,7 @@ export default function TasksPage() {
         >
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 نطاق المهام
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -1082,7 +1085,7 @@ export default function TasksPage() {
                   className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
                     filterMode === "all"
                       ? "bg-[#2563EB] text-white border-[#2563EB]"
-                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                      : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 border-[var(--border)] dark:border-slate-700"
                   }`}
                 >
                   جميع المهام
@@ -1093,7 +1096,7 @@ export default function TasksPage() {
                   className={`py-2 px-3 text-xs font-bold rounded-xl border transition cursor-pointer ${
                     filterMode === "my"
                       ? "bg-[#2563EB] text-white border-[#2563EB]"
-                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                      : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-300 border-[var(--border)] dark:border-slate-700"
                   }`}
                 >
                   مهامي المسندة إلي
@@ -1102,13 +1105,13 @@ export default function TasksPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 المرحلة أو الحالة
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
               >
                 <option value="">جميع الحالات والمراحل</option>
                 <optgroup label="مراحل دورة العمل الموحدة">
@@ -1124,13 +1127,13 @@ export default function TasksPage() {
                 <optgroup label="الحالات التفصيلية">
                   <option value="Draft">مسودة (Draft)</option>
                   <option value="Assigned">تم الإسناد (Assigned)</option>
-                  <option value="Accepted">تم القبول (Accepted)</option>
-                  <option value="In Progress">قيد التنفيذ (In Progress)</option>
-                  <option value="Blocked">معلّق لوجود معوق (Blocked)</option>
+                  <option value="Accepted">تم القبول</option>
+                  <option value="In Progress">قيد التنفيذ</option>
+                  <option value="Blocked">معلّق لوجود معوق</option>
                   <option value="Waiting for Response">بانتظار التوضيح (Waiting)</option>
-                  <option value="Submitted for Review">مرفوع للمراجعة (Review)</option>
+                  <option value="Submitted for Review">مرفوع للمراجعة</option>
                   <option value="Rework Required">مطلوب تعديلات (Rework)</option>
-                  <option value="Completed">معتمد ومكتمل (Completed)</option>
+                  <option value="Completed">معتمد ومكتمل</option>
                   <option value="Rejected">مرفوض (Rejected)</option>
                   <option value="Cancelled">ملغي (Cancelled)</option>
                 </optgroup>
@@ -1139,13 +1142,13 @@ export default function TasksPage() {
 
             {filterEmployees.length > 0 && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                   الموظف المسند إليه
                 </label>
                 <select
                   value={filterAssigneeId}
                   onChange={(e) => setFilterAssigneeId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                  className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
                 >
                   <option value="">جميع الموظفين</option>
                   {filterEmployees.map((emp) => (
@@ -1156,31 +1159,31 @@ export default function TasksPage() {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 مستوى الأولوية
               </label>
               <select
                 value={priorityFilter}
                 onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
               >
                 <option value="">جميع الأولويات</option>
-                <option value="Critical">حرج جداً (Critical)</option>
-                <option value="Urgent">عاجل (Urgent)</option>
-                <option value="High">مرتفع (High)</option>
-                <option value="Medium">متوسط (Medium)</option>
-                <option value="Low">منخفض (Low)</option>
+                <option value="Critical">حرج جداً</option>
+                <option value="Urgent">عاجل</option>
+                <option value="High">مرتفع</option>
+                <option value="Medium">متوسط</option>
+                <option value="Low">منخفض</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
                 ترتيب العرض
               </label>
               <select
                 value={sortBy}
                 onChange={(e) => { setSortBy(e.target.value as "created_desc" | "due_asc" | "updated_desc"); setPage(1); }}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+                className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
               >
                 <option value="created_desc">الأحدث أولاً</option>
                 <option value="due_asc">الأقرب موعداً</option>
@@ -1188,12 +1191,12 @@ export default function TasksPage() {
               </select>
             </div>
 
-            <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-rose-600 dark:text-rose-400 cursor-pointer">
+            <label className="flex items-center gap-2 p-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-xs font-bold text-rose-600 dark:text-rose-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={overdueOnly}
                 onChange={(e) => { setOverdueOnly(e.target.checked); setPage(1); }}
-                className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
+                className="rounded border-[var(--border)] text-rose-600 focus:ring-rose-500 w-4 h-4"
               />
               <span>عرض المهام المتأخرة عن الموعد فقط</span>
             </label>
@@ -1231,14 +1234,14 @@ export default function TasksPage() {
           {/* Toolbar Row 1: Scope Tabs (Right in RTL) & View Modes (Left in RTL) */}
           <div className="flex items-center justify-between gap-4">
             {/* View Modes on Left (in RTL) */}
-            <div className="flex items-center gap-1 p-1 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs">
+            <div className="flex items-center gap-1 p-1 bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl shadow-2xs">
               <button
                 type="button"
                 onClick={() => setActiveViewMode("list")}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                   activeViewMode === "list"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                 }`}
               >
                 <List size={15} />
@@ -1250,11 +1253,11 @@ export default function TasksPage() {
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                   activeViewMode === "kanban"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                 }`}
               >
                 <LayoutGrid size={15} />
-                <span>لوحة (Kanban)</span>
+                <span>لوحة</span>
               </button>
               <button
                 type="button"
@@ -1262,7 +1265,7 @@ export default function TasksPage() {
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                   activeViewMode === "calendar"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                 }`}
               >
                 <CalendarDays size={15} />
@@ -1274,7 +1277,7 @@ export default function TasksPage() {
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                   activeViewMode === "timeline"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                 }`}
               >
                 <GanttChartSquare size={15} />
@@ -1286,7 +1289,7 @@ export default function TasksPage() {
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                   activeViewMode === "workload"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)] dark:hover:bg-slate-800"
                 }`}
               >
                 <UsersIcon size={15} />
@@ -1305,7 +1308,7 @@ export default function TasksPage() {
                 className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
                   activeScopeTab === "all"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    : "bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 جميع المهام ({summary?.total ?? totalTasks})
@@ -1319,7 +1322,7 @@ export default function TasksPage() {
                 className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
                   activeScopeTab === "my"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    : "bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 مهامي
@@ -1333,7 +1336,7 @@ export default function TasksPage() {
                 className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer ${
                   activeScopeTab === "assigned_by_me"
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    : "bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 text-[var(--text-2)] dark:text-slate-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 المسندة مني
@@ -1342,7 +1345,7 @@ export default function TasksPage() {
           </div>
 
           {/* Toolbar Row 2: Search Input & Filter Dropdowns */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
             {/* Search Input (Right side in RTL) */}
             <div className="relative flex-1 min-w-[240px] max-w-md">
               <input
@@ -1350,11 +1353,11 @@ export default function TasksPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="بحث في المهام..."
-                className="w-full h-10 pr-4 pl-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:border-primary transition"
+                className="w-full h-10 pr-4 pl-10 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 text-xs text-[var(--text)] dark:text-slate-100 placeholder:text-slate-400 outline-none focus:border-primary transition"
               />
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
               />
             </div>
 
@@ -1364,7 +1367,7 @@ export default function TasksPage() {
               <select
                 value={filterAssigneeId}
                 onChange={(e) => setFilterAssigneeId(e.target.value)}
-                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+                className="h-10 px-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
                 <option value="">الموظف (الكل)</option>
                 {filterEmployees.map((emp) => (
@@ -1374,7 +1377,7 @@ export default function TasksPage() {
 
               {/* الإدارة / القسم */}
               <select
-                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+                className="h-10 px-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
                 <option value="">الإدارة / القسم (الكل)</option>
                 <option value="it">تقنية المعلومات</option>
@@ -1387,7 +1390,7 @@ export default function TasksPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+                className="h-10 px-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
                 <option value="">الحالة (الكل)</option>
                 <option value="in_progress">قيد التنفيذ</option>
@@ -1400,14 +1403,14 @@ export default function TasksPage() {
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
+                className="h-10 px-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text)] dark:text-slate-200 outline-none focus:border-primary cursor-pointer"
               >
                 <option value="">الأولوية (الكل)</option>
-                <option value="Critical">حرج جداً (Critical)</option>
-                <option value="Urgent">عاجل (Urgent)</option>
-                <option value="High">مرتفع (High)</option>
-                <option value="Medium">متوسط (Medium)</option>
-                <option value="Low">منخفض (Low)</option>
+                <option value="Critical">حرج جداً</option>
+                <option value="Urgent">عاجل</option>
+                <option value="High">مرتفع</option>
+                <option value="Medium">متوسط</option>
+                <option value="Low">منخفض</option>
               </select>
 
               {/* Reset Filter Button */}
@@ -1415,7 +1418,7 @@ export default function TasksPage() {
                 type="button"
                 onClick={resetAllFilters}
                 title="إعادة تعيين الفلاتر"
-                className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer"
+                className="h-10 w-10 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700 text-[var(--text-2)] dark:text-slate-300 flex items-center justify-center transition cursor-pointer"
               >
                 <Filter size={16} />
               </button>
@@ -1465,17 +1468,29 @@ export default function TasksPage() {
                     description: selectedTask.description,
                     priority: selectedTask.priority,
                     status: selectedTask.status,
-                    department: "تقنية المعلومات",
+                    team_name: selectedTask.team_name,
+                    department: selectedTask.team_name || "تقنية المعلومات",
                     category: "تشغيلي",
                     assigned_to_name: selectedTask.assigned_to_name,
+                    assigned_by_name: selectedTask.assigned_by_name,
+                    reviewer_name: selectedTask.reviewer_name,
                     created_at: selectedTask.created_at,
                     due_date: selectedTask.due_date,
-                    target_duration_minutes: 60,
+                    resolution_due_at: selectedTask.resolution_due_at,
+                    acknowledged_at: selectedTask.acknowledged_at,
+                    accepted_at: selectedTask.accepted_at,
+                    submitted_for_review_at: selectedTask.submitted_for_review_at,
+                    completed_at: selectedTask.completed_at,
+                    blocked_at: selectedTask.blocked_at,
+                    blocker_reason: selectedTask.blocker_reason,
+                    related_asset_name: selectedTask.related_asset_name,
+                    related_ticket_number: selectedTask.related_ticket_number,
                     voice_note_url: selectedTask.voice_note_url,
                     voice_note_duration: selectedTask.voice_note_duration,
                     is_voice_task: selectedTask.is_voice_task,
                     comments_count: selectedTask.comments?.length || 0,
-                    attachments_count: 2,
+                    comments: selectedTask.comments,
+                    attachments: selectedTask.attachments,
                   }}
                   onClose={() => {
                     setSelectedTask(null);
@@ -1637,7 +1652,7 @@ export default function TasksPage() {
         )}
 
         {/* Mobile Task List (Purpose-built for mobile screens, Reference 2) */}
-        <div className="block lg:hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
+        <div className="block lg:hidden bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-xs overflow-hidden">
           {loading ? (
             <TableSkeleton variant="list" rows={5} />
           ) : loadError ? (
@@ -1646,8 +1661,8 @@ export default function TasksPage() {
                 <AlertCircle className="w-7 h-7" />
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-base font-bold text-gray-900">تعذر تحميل قائمة المهام</h3>
-                <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">{loadError}</p>
+                <h3 className="text-base font-bold text-[var(--text)]">تعذر تحميل قائمة المهام</h3>
+                <p className="text-sm text-[var(--text-2)] max-w-md mx-auto leading-relaxed">{loadError}</p>
               </div>
               <div className="flex items-center justify-center gap-3 pt-1">
                 <button
@@ -1655,7 +1670,7 @@ export default function TasksPage() {
                   onClick={() => void loadTasks()}
                   className="motion-control inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-xl shadow-xs transition cursor-pointer"
                 >
-                  <Clock className="w-4 h-4 text-slate-500 inline" />
+                  <Clock className="w-4 h-4 text-[var(--text-3)] inline" />
                   <span>إعادة المحاولة الآن</span>
                 </button>
               </div>
@@ -1670,7 +1685,7 @@ export default function TasksPage() {
                   <button
                     type="button"
                     onClick={resetAllFilters}
-                    className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                    className="motion-control px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text)] cursor-pointer"
                   >
                     عرض جميع المهام
                   </button>
@@ -1691,16 +1706,16 @@ export default function TasksPage() {
           )}
 
           {totalPages > 1 && (
-            <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="px-5 py-3.5 bg-[var(--surface-2)] border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-2)]">
               <span>
-                صفحة <strong className="text-slate-900">{page}</strong> من <strong className="text-slate-900">{totalPages}</strong>
+                صفحة <strong className="text-[var(--text)]">{page}</strong> من <strong className="text-[var(--text)]">{totalPages}</strong>
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] disabled:opacity-40 font-semibold text-[var(--text-2)] cursor-pointer"
                 >
                   السابق
                 </button>
@@ -1708,7 +1723,7 @@ export default function TasksPage() {
                   type="button"
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 font-semibold text-slate-700 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] disabled:opacity-40 font-semibold text-[var(--text-2)] cursor-pointer"
                 >
                   التالي
                 </button>
@@ -1757,14 +1772,14 @@ export default function TasksPage() {
           maxWidth="max-w-2xl"
         >
           {!editingTask && (
-            <div className="flex border-b border-gray-200 mb-4 gap-2">
+            <div className="flex border-b border-[var(--border)] mb-4 gap-2">
               <button
                 type="button"
                 onClick={() => setCreateMode("text")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "text"
                     ? "border-[#2563EB] text-[#1D4ED8]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-[var(--text-3)] hover:text-gray-700"
                 }`}
               >
                 <span className="text-xs font-bold">كتابية</span>
@@ -1776,7 +1791,7 @@ export default function TasksPage() {
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "voice"
                     ? "border-[#2563EB] text-[#1D4ED8]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-[var(--text-3)] hover:text-gray-700"
                 }`}
               >
                 <span className="text-xs font-bold">صوتية</span>
@@ -1788,7 +1803,7 @@ export default function TasksPage() {
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                   createMode === "broadcast"
                     ? "border-[#2563EB] text-[#1D4ED8]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-[var(--text-3)] hover:text-gray-700"
                 }`}
               >
                 <span className="text-xs font-bold">بث جماعي</span>
@@ -1808,7 +1823,7 @@ export default function TasksPage() {
 
               {/* Mode Selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-2">نمط البث والإسناد:</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-2">نمط البث والإسناد:</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -1816,11 +1831,11 @@ export default function TasksPage() {
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "individual"
                         ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
-                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                     }`}
                   >
                     <div className="font-bold text-xs mb-0.5">فردي متعدد (Individual)</div>
-                    <div className="text-[11px] text-gray-500">إنشاء مهمة مستقلة لكل موظف مع منع التكرار</div>
+                    <div className="text-[11px] text-[var(--text-3)]">إنشاء مهمة مستقلة لكل موظف مع منع التكرار</div>
                   </button>
                   <button
                     type="button"
@@ -1828,11 +1843,11 @@ export default function TasksPage() {
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "shared"
                         ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
-                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                     }`}
                   >
                     <div className="font-bold text-xs mb-0.5">مهمة مشتركة (Shared RACI)</div>
-                    <div className="text-[11px] text-gray-500">مهمة واحدة بفريق عمل ومسؤول أول محدد</div>
+                    <div className="text-[11px] text-[var(--text-3)]">مهمة واحدة بفريق عمل ومسؤول أول محدد</div>
                   </button>
                   <button
                     type="button"
@@ -1840,18 +1855,18 @@ export default function TasksPage() {
                     className={`p-3 rounded-xl border text-right transition cursor-pointer ${
                       broadcastData.broadcast_mode === "announcement"
                         ? "border-[#2563EB] bg-[#2563EB]/5 text-[#1D4ED8] ring-1 ring-[#2563EB]"
-                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                     }`}
                   >
                     <div className="font-bold text-xs mb-0.5">تعميم إداري (Announcement)</div>
-                    <div className="text-[11px] text-gray-500">إشعار فوري عاجل دون إنشاء مهمة عمل</div>
+                    <div className="text-[11px] text-[var(--text-3)]">إشعار فوري عاجل دون إنشاء مهمة عمل</div>
                   </button>
                 </div>
               </div>
 
               {/* Title & Description */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                   {broadcastData.broadcast_mode === "announcement" ? "عنوان التعميم الإداري *" : "عنوان المهمة الجماعية *"}
                 </label>
                 <input
@@ -1860,24 +1875,24 @@ export default function TasksPage() {
                   onChange={(e) => setBroadcastData({ ...broadcastData, title: e.target.value })}
                   placeholder={broadcastData.broadcast_mode === "announcement" ? "مثال: تعميم بخصوص تحديث سياسات الأمن السيبراني" : "مثال: فحص وتحديث أجهزة قسم العمليات"}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">تفاصيل التوجيه / الوصف:</label>
+                <label className="block text-xs font-bold text-[var(--text-2)] mb-1">تفاصيل التوجيه / الوصف:</label>
                 <textarea
                   value={broadcastData.description}
                   onChange={(e) => setBroadcastData({ ...broadcastData, description: e.target.value })}
                   rows={3}
                   placeholder="اكتب التوجيهات الفنية أو تفاصيل الإسناد هنا..."
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
 
               {/* Recipient Picker */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">
+                <label className="block text-xs font-bold text-[var(--text-2)]">
                   إضافة مستلمين ({broadcastData.recipients.length} محدد):
                 </label>
                 <EmployeeCombobox
@@ -1894,11 +1909,11 @@ export default function TasksPage() {
 
                 {/* Selected Recipient Badges */}
                 {broadcastData.recipients.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200/80 max-h-36 overflow-y-auto">
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)] max-h-36 overflow-y-auto">
                     {broadcastData.recipients.map((emp) => (
                       <span
                         key={emp.id}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-800 shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--surface)] border border-[var(--border)] rounded-full text-xs font-medium text-[var(--text)] shadow-2xs"
                       >
                         <span>{emp.full_name}</span>
                         {emp.is_telegram_linked && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />}
@@ -1910,7 +1925,7 @@ export default function TasksPage() {
                               recipients: broadcastData.recipients.filter((r) => r.id !== emp.id),
                             })
                           }
-                          className="text-gray-400 hover:text-rose-600 font-bold ml-0.5 cursor-pointer"
+                          className="text-[var(--text-3)] hover:text-rose-600 font-bold ml-0.5 cursor-pointer"
                         >
                           ×
                         </button>
@@ -1923,11 +1938,11 @@ export default function TasksPage() {
               {/* For Shared mode: Pick Accountable Owner */}
               {broadcastData.broadcast_mode === "shared" && broadcastData.recipients.length > 0 && (
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">المسؤول الأول المعتمد (Accountable Owner):</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">المسؤول الأول المعتمد (Accountable Owner):</label>
                   <select
                     value={broadcastData.accountable_id || broadcastData.recipients[0]?.id}
                     onChange={(e) => setBroadcastData({ ...broadcastData, accountable_id: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     {broadcastData.recipients.map((r) => (
                       <option key={r.id} value={r.id}>
@@ -1941,7 +1956,7 @@ export default function TasksPage() {
               {/* Priority & Deadline Policies */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">مستوى الأولوية:</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">مستوى الأولوية:</label>
                   <select
                     value={broadcastData.priority}
                     onChange={(e) => {
@@ -1953,7 +1968,7 @@ export default function TasksPage() {
                         target_duration_minutes: durMap[p] || 4320,
                       });
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     <option value="Critical">طارئ (مستهدف: ساعة واحدة)</option>
                     <option value="Urgent">عاجل (مستهدف: 4 ساعات)</option>
@@ -1964,35 +1979,35 @@ export default function TasksPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">المدة المستهدفة للإنجاز (دقيقة):</label>
+                  <label className="block text-xs font-bold text-[var(--text-2)] mb-1">المدة المستهدفة للإنجاز (دقيقة):</label>
                   <input
                     type="number"
                     value={broadcastData.target_duration_minutes}
                     onChange={(e) => setBroadcastData({ ...broadcastData, target_duration_minutes: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
               </div>
 
               {/* Telegram Notification */}
-              <label className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer">
+              <label className="flex items-center gap-2 p-3 bg-[var(--surface-2)] rounded-lg border border-[var(--border)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={broadcastData.notify_telegram}
                   onChange={(e) => setBroadcastData({ ...broadcastData, notify_telegram: e.target.checked })}
                   className="rounded text-[#2563EB] focus:ring-[#2563EB]"
                 />
-                <span className="text-xs font-medium text-gray-700">
+                <span className="text-xs font-medium text-[var(--text-2)]">
                   إرسال إشعار فوري عبر Telegram لكافة الموظفين المرتبطين
                 </span>
               </label>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setCreateModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -2050,15 +2065,15 @@ export default function TasksPage() {
                       const selectedEmp = selectedEmployee;
                       if (!selectedEmp) return null;
                       return (
-                        <div className="mt-2 p-2 bg-white rounded-lg border border-emerald-200 text-xs space-y-1.5">
+                        <div className="mt-2 p-2 bg-[var(--surface)] rounded-lg border border-emerald-200 text-xs space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-700">إشعار Telegram المباشر:</span>
+                            <span className="font-semibold text-[var(--text-2)]">إشعار Telegram المباشر:</span>
                             {selectedEmp.is_telegram_linked ? (
                               <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                 سيصل التسجيل الصوتي فوراً ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1 text-[var(--text-3)] bg-[var(--surface-2)] px-2 py-0.5 rounded">
                                 غير مرتبط بـ Telegram
                               </span>
                             )}
@@ -2069,15 +2084,15 @@ export default function TasksPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      عنوان المهمة الصوتية <span className="text-gray-400 font-normal">(اختياري — سيتم تعيين عنوان تلقائي في حال تركه فارغاً)</span>
+                    <label className="block text-xs font-medium text-[var(--text-2)] mb-1">
+                      عنوان المهمة الصوتية <span className="text-[var(--text-3)] font-normal">(اختياري — سيتم تعيين عنوان تلقائي في حال تركه فارغاً)</span>
                     </label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       placeholder="مثال: تعليمات فحص السيرفر الصباحية"
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
                   </div>
                 </div>
@@ -2094,14 +2109,14 @@ export default function TasksPage() {
                 </div>
 
                 {showAdvancedVoiceFields && (
-                  <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                  <div className="p-3.5 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">الأصل المرتبط</label>
+                        <label className="block text-xs font-medium text-[var(--text-2)] mb-1">الأصل المرتبط</label>
                         <select
                           value={formData.related_asset_id}
                           onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-[var(--surface)]"
                         >
                           <option value="">-- غير مرتبط بأصل --</option>
                           {assets.map((ast) => (
@@ -2111,16 +2126,16 @@ export default function TasksPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">مستوى الأولوية</label>
+                        <label className="block text-xs font-medium text-[var(--text-2)] mb-1">مستوى الأولوية</label>
                         <select
                           value={formData.priority}
                           onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-[var(--surface)]"
                         >
-                          <option value="Urgent">عاجل جداً (Urgent)</option>
-                          <option value="High">مرتفع (High)</option>
-                          <option value="Medium">متوسط (Medium)</option>
-                          <option value="Low">منخفض (Low)</option>
+                          <option value="Urgent">عاجل جداً</option>
+                          <option value="High">مرتفع</option>
+                          <option value="Medium">متوسط</option>
+                          <option value="Low">منخفض</option>
                         </select>
                       </div>
 
@@ -2132,13 +2147,13 @@ export default function TasksPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
+                        <label className="block text-xs font-medium text-[var(--text-2)] mb-1">ملاحظات إضافية</label>
                         <input
                           type="text"
                           value={formData.notes}
                           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                           placeholder="ملاحظة سريعة..."
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-white"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB] bg-[var(--surface)]"
                         />
                       </div>
                     </div>
@@ -2148,7 +2163,7 @@ export default function TasksPage() {
             ) : (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-[var(--text-2)] mb-1">
                     عنوان المهمة <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -2157,18 +2172,18 @@ export default function TasksPage() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="مثال: ترقية خوادم قواعد البيانات، تهيئة طابعات القسم المالي"
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">وصف المهمة</label>
+                  <label className="block text-xs font-medium text-[var(--text-2)] mb-1">وصف المهمة</label>
                   <textarea
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="تفاصيل وإرشادات تنفيذ المهمة الفنية..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
 
@@ -2190,30 +2205,30 @@ export default function TasksPage() {
                       const selectedEmp = selectedEmployee;
                       if (!selectedEmp) return null;
                       return (
-                        <div className="mt-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+                        <div className="mt-2 p-2.5 bg-[var(--surface-2)] rounded-lg border border-[var(--border)] text-xs space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-700">حالة الربط بـ Telegram:</span>
+                            <span className="font-semibold text-[var(--text-2)]">حالة الربط بـ Telegram:</span>
                             {selectedEmp.is_telegram_linked ? (
                               <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span>مرتبط ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "مفعل ومؤكد"})</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1.5 text-[var(--text-3)] bg-[var(--surface-2)] px-2 py-0.5 rounded">
                                 <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                                 <span>غير مرتبط</span>
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
-                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700">
+                          <div className="flex items-center justify-between pt-1 border-t border-[var(--border)]">
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-[var(--text-2)]">
                               <input
                                 type="checkbox"
                                 checked={formData.notify_telegram && !!selectedEmp.is_telegram_linked}
                                 disabled={!selectedEmp.is_telegram_linked}
                                 onChange={(e) => setFormData({ ...formData, notify_telegram: e.target.checked })}
-                                className="rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+                                className="rounded border-[var(--border)] text-[#2563EB] focus:ring-[#2563EB]"
                               />
                               <span>إرسال إشعار فوري عبر Telegram</span>
                             </label>
@@ -2229,11 +2244,11 @@ export default function TasksPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">الأصل المرتبط</label>
+                    <label className="block text-xs font-medium text-[var(--text-2)] mb-1">الأصل المرتبط</label>
                     <select
                       value={formData.related_asset_id}
                       onChange={(e) => setFormData({ ...formData, related_asset_id: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
                       <option value="">-- غير مرتبط بأصل --</option>
                       {assets.map((ast) => (
@@ -2243,25 +2258,25 @@ export default function TasksPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">مستوى الأولوية</label>
+                    <label className="block text-xs font-medium text-[var(--text-2)] mb-1">مستوى الأولوية</label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
-                      <option value="Urgent">عاجل جداً (Urgent)</option>
-                      <option value="High">مرتفع (High)</option>
-                      <option value="Medium">متوسط (Medium)</option>
-                      <option value="Low">منخفض (Low)</option>
+                      <option value="Urgent">عاجل جداً</option>
+                      <option value="High">مرتفع</option>
+                      <option value="Medium">متوسط</option>
+                      <option value="Low">منخفض</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">حالة البداية</label>
+                    <label className="block text-xs font-medium text-[var(--text-2)] mb-1">حالة البداية</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     >
                       <option value="Assigned">تم الإسناد (Assigned)</option>
                       <option value="Draft">مسودة (Draft)</option>
@@ -2269,12 +2284,12 @@ export default function TasksPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ البدء</label>
+                    <label className="block text-xs font-medium text-[var(--text-2)] mb-1">تاريخ البدء</label>
                     <input
                       type="date"
                       value={formData.start_date}
                       onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
                   </div>
 
@@ -2287,12 +2302,12 @@ export default function TasksPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
+                  <label className="block text-xs font-medium text-[var(--text-2)] mb-1">ملاحظات إضافية</label>
                   <textarea
                     rows={2}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
               </>
@@ -2309,7 +2324,7 @@ export default function TasksPage() {
               <button
                 type="button"
                 onClick={() => setCreateModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg"
               >
                 إلغاء
               </button>
@@ -2396,10 +2411,10 @@ export default function TasksPage() {
               {selectedTask.status === "Rework Required" && (
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
                   <div className="flex items-center gap-2 text-orange-800 font-bold text-sm">
-                    <Clock className="w-4 h-4 text-slate-500 inline" />
+                    <Clock className="w-4 h-4 text-[var(--text-3)] inline" />
                     <h4>مطلوب تعديلات إضافية من قِبل المسؤول (جولة تعديل #{selectedTask.rework_count})</h4>
                   </div>
-                  <p className="text-xs text-orange-700 bg-white/80 p-2.5 rounded-lg border border-orange-100">
+                  <p className="text-xs text-orange-700 bg-[var(--surface)] p-2.5 rounded-lg border border-orange-100">
                     {selectedTask.review_notes || "يرجى مراجعة الملاحظات وإعادة العمل على المهمة ثم رفعها مجدداً."}
                   </p>
                 </div>
@@ -2409,7 +2424,7 @@ export default function TasksPage() {
               {selectedTask.status === "Submitted for Review" && (
                 <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <ListTodo className="w-5 h-5 text-slate-600 inline" />
+                    <ListTodo className="w-5 h-5 text-[var(--text-2)] inline" />
                     <div>
                       <h4 className="text-sm font-bold text-primary">المهمة مكتملة فنياً وبانتظار المراجعة والاعتماد</h4>
                       <p className="text-xs text-muted-foreground">لا تعتبر المهمة مكتملة نهائياً حتى يتم اعتمادها من قِبل مدير النظام أو المسؤول.</p>
@@ -2449,7 +2464,7 @@ export default function TasksPage() {
               )}
 
               {/* Task Meta Information Card */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200/80 space-y-3">
+              <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <PriorityBadge priority={selectedTask.priority} />
@@ -2460,20 +2475,20 @@ export default function TasksPage() {
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-[var(--text-3)]">
                     أنشئت بواسطة: {selectedTask.assigned_by_name || "النظام"}
                   </div>
                 </div>
 
                 {selectedTask.is_voice_task && selectedTask.voice_note_url && (
-                  <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-2">
+                  <div className="bg-[var(--surface)] p-3.5 rounded-xl border border-emerald-200 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-emerald-950">
                       <span className="flex items-center gap-1.5">
                         <Mic className="w-4 h-4 text-emerald-700" />
                         <span>الرسالة الصوتية للمهمة (Voice Task Note)</span>
                       </span>
                       {selectedTask.voice_note_duration ? (
-                        <span className="text-gray-500 font-mono text-[11px]">
+                        <span className="text-[var(--text-3)] font-mono text-[11px]">
                           المدة: {selectedTask.voice_note_duration} ثانية
                         </span>
                       ) : null}
@@ -2486,45 +2501,45 @@ export default function TasksPage() {
                 )}
 
                 {selectedTask.description && (
-                  <p className="text-sm text-gray-800 leading-relaxed bg-white p-3 rounded-lg border border-gray-100">
+                  <p className="text-sm text-[var(--text)] leading-relaxed bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)]">
                     {selectedTask.description}
                   </p>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-gray-600">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-[var(--text-2)]">
                   <div>
-                    <span className="text-gray-400 block">المسند إليه:</span>
-                    <strong className="text-gray-800">{selectedTask.assigned_to_name || "غير محدد"}</strong>
+                    <span className="text-[var(--text-3)] block">المسند إليه:</span>
+                    <strong className="text-[var(--text)]">{selectedTask.assigned_to_name || "غير محدد"}</strong>
                   </div>
                   <div>
-                    <span className="text-gray-400 block">تاريخ البدء:</span>
+                    <span className="text-[var(--text-3)] block">تاريخ البدء:</span>
                     <span>{selectedTask.start_date || "-"}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 block">تاريخ الاستحقاق:</span>
-                    <span className="font-semibold text-gray-800">{selectedTask.due_date || "-"}</span>
+                    <span className="text-[var(--text-3)] block">تاريخ الاستحقاق:</span>
+                    <span className="font-semibold text-[var(--text)]">{selectedTask.due_date || "-"}</span>
                   </div>
                   {selectedTask.accepted_at && (
                     <div>
-                      <span className="text-gray-400 block">تاريخ القبول:</span>
+                      <span className="text-[var(--text-3)] block">تاريخ القبول:</span>
                       <span className="text-blue-700">{selectedTask.accepted_at.slice(0, 16).replace("T", " ")}</span>
                     </div>
                   )}
                   {selectedTask.submitted_for_review_at && (
                     <div>
-                      <span className="text-gray-400 block">تاريخ الرفع للمراجعة:</span>
+                      <span className="text-[var(--text-3)] block">تاريخ الرفع للمراجعة:</span>
                       <span className="text-primary font-bold">{selectedTask.submitted_for_review_at.slice(0, 16).replace("T", " ")}</span>
                     </div>
                   )}
                   {selectedTask.related_asset_name && (
                     <div>
-                      <span className="text-gray-400 block">الأصل المرتبط:</span>
+                      <span className="text-[var(--text-3)] block">الأصل المرتبط:</span>
                       <span>{selectedTask.related_asset_name}</span>
                     </div>
                   )}
                   {selectedTask.acknowledged_at && (
                     <div>
-                      <span className="text-gray-400 block">تأكيد استلام الموظف:</span>
+                      <span className="text-[var(--text-3)] block">تأكيد استلام الموظف:</span>
                       <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>{selectedTask.acknowledged_at.slice(0, 16).replace("T", " ")}</span>
@@ -2553,11 +2568,11 @@ export default function TasksPage() {
               </div>
 
               {/* Telegram Notification & Acknowledgement Pipeline Card */}
-              <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-xl p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2">
                   <div className="flex items-center gap-2">
                     <Send className="w-4 h-4 text-sky-600" />
-                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-[var(--text)] uppercase tracking-wider">
                       إشعار Telegram وتأكيد استلام المهمة (Delivery & Acknowledgement)
                     </h4>
                   </div>
@@ -2565,7 +2580,7 @@ export default function TasksPage() {
                     <button
                       onClick={() => handleResendTelegram(selectedTask.id)}
                       disabled={resendLoading}
-                      className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] bg-white hover:bg-blue-50 px-3 py-1 rounded-lg border border-slate-200 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                      className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] bg-[var(--surface)] hover:bg-blue-50 px-3 py-1 rounded-lg border border-[var(--border)] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                     >
                       {resendLoading ? "جاري الإرسال..." : "إعادة إرسال الإشعار لـ Telegram"}
                     </button>
@@ -2579,8 +2594,8 @@ export default function TasksPage() {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                    <span className="text-gray-500 block">حالة التسليم عبر Telegram:</span>
+                  <div className="bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)] space-y-1">
+                    <span className="text-[var(--text-3)] block">حالة التسليم عبر Telegram:</span>
                     <div className="flex items-center gap-2">
                       {selectedTask.telegram_info?.delivery_status === "Sent" ? (
                         <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -2595,12 +2610,12 @@ export default function TasksPage() {
                           تعذر التسليم
                         </span>
                       ) : (
-                        <span className="text-gray-500 font-medium">
+                        <span className="text-[var(--text-3)] font-medium">
                           {selectedTask.telegram_info?.is_employee_linked ? "تم تجهيز الإشعار" : "الموظف غير مرتبط بـ Telegram"}
                         </span>
                       )}
                       {selectedTask.telegram_info?.sent_at && (
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-[11px] text-[var(--text-3)]">
                           ({selectedTask.telegram_info.sent_at.slice(0, 16).replace("T", " ")})
                         </span>
                       )}
@@ -2610,8 +2625,8 @@ export default function TasksPage() {
                     )}
                   </div>
 
-                  <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
-                    <span className="text-gray-500 block">تأكيد استلام الموظف للمهمة:</span>
+                  <div className="bg-[var(--surface)] p-3 rounded-lg border border-[var(--border)] space-y-1">
+                    <span className="text-[var(--text-3)] block">تأكيد استلام الموظف للمهمة:</span>
                     {selectedTask.acknowledged_at ? (
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
@@ -2627,7 +2642,7 @@ export default function TasksPage() {
                         <span className="font-medium">بانتظار تأكيد الاستلام من الفني عبر Telegram</span>
                       </div>
                     )}
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] text-[var(--text-3)]">
                       * تأكيد الاستلام يثبت إشعار الفني وبدء المتابعة، ولا يعني اكتمال تنفيذ المهمة.
                     </p>
                   </div>
@@ -2635,8 +2650,8 @@ export default function TasksPage() {
               </div>
 
               {/* Collaboration Interactive Action Bar */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] shadow-sm space-y-3">
+                <h4 className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider">
                   إجراءات دورة حياة المهمة (Workflow Actions)
                 </h4>
 
@@ -2731,7 +2746,7 @@ export default function TasksPage() {
 
               {/* Comments Section */}
               <div className="space-y-3">
-                <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <h4 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                   <MessageSquareIcon className="w-4 h-4 text-[#2563EB]" />
                   سجل التعليقات والتحديثات الفنية ({selectedTask.comments?.length || 0})
                 </h4>
@@ -2739,16 +2754,16 @@ export default function TasksPage() {
                 <div className="space-y-2 max-h-60 overflow-y-auto p-1">
                   {selectedTask.comments && selectedTask.comments.length > 0 ? (
                     selectedTask.comments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-50 border border-gray-200/80 rounded-lg p-3 text-sm">
-                        <div className="flex justify-between items-center mb-1 text-xs text-gray-500">
-                          <span className="font-bold text-gray-800">{comment.user_name}</span>
+                      <div key={comment.id} className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-3 text-sm">
+                        <div className="flex justify-between items-center mb-1 text-xs text-[var(--text-3)]">
+                          <span className="font-bold text-[var(--text)]">{comment.user_name}</span>
                           <span>{comment.created_at?.slice(0, 16).replace("T", " ")}</span>
                         </div>
-                        <p className="text-gray-700 leading-normal">{comment.content}</p>
+                        <p className="text-[var(--text-2)] leading-normal">{comment.content}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-gray-400 py-3 text-center">لا توجد تعليقات سابقة على هذه المهمة</p>
+                    <p className="text-xs text-[var(--text-3)] py-3 text-center">لا توجد تعليقات سابقة على هذه المهمة</p>
                   )}
                 </div>
 
@@ -2759,7 +2774,7 @@ export default function TasksPage() {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="اكتب تعليقاً أو استفساراً تشغيلياً..."
-                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                   <button
                     type="submit"
@@ -2783,7 +2798,7 @@ export default function TasksPage() {
           maxWidth="max-w-md"
         >
           <div className="space-y-4">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-[var(--text-2)]">
               يرجى توضيح سبب المعوّق التقني أو اللوجستي بدقة ليتم إشعار مدير النظام والمشرفين لمساعدتك في إزالته:
             </p>
             <textarea
@@ -2792,13 +2807,13 @@ export default function TasksPage() {
               value={blockerReasonInput}
               onChange={(e) => setBlockerReasonInput(e.target.value)}
               placeholder="مثال: انقطاع كابل الألياف، عدم توفر صلاحيات المسؤول على الخادم، انتظار رد المورد..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-rose-500"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
                 onClick={() => setBlockModal(false)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg"
               >
                 إلغاء
               </button>
@@ -2822,7 +2837,7 @@ export default function TasksPage() {
           maxWidth="max-w-md"
         >
           <div className="space-y-4">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-[var(--text-2)]">
               أدخل ملخص الإنجاز والنتائج الفنية التي تم تحقيقها للمراجع:
             </p>
             <textarea
@@ -2830,13 +2845,13 @@ export default function TasksPage() {
               value={submissionNotesInput}
               onChange={(e) => setSubmissionNotesInput(e.target.value)}
               placeholder="مثال: تم إكمال تثبيت الحزم، واختبار الخدمة بنجاح، كافة الفحوصات سليمة..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
                 onClick={() => setSubmitModal(false)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg"
               >
                 إلغاء
               </button>
@@ -2860,7 +2875,7 @@ export default function TasksPage() {
           maxWidth="max-w-md"
         >
           <div className="space-y-4">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-[var(--text-2)]">
               اكتب التوجيهات والملاحظات الإلزامية التي يجب على الفني تعديلها قبل إعادة الاعتماد:
             </p>
             <textarea
@@ -2869,13 +2884,13 @@ export default function TasksPage() {
               value={reworkNotesInput}
               onChange={(e) => setReworkNotesInput(e.target.value)}
               placeholder="مثال: يرجى إضافة التقرير الفني لاختبار الأداء وضبط جدار الحماية..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
                 onClick={() => setReworkModal(false)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg"
               >
                 إلغاء
               </button>
@@ -2899,7 +2914,7 @@ export default function TasksPage() {
           maxWidth="max-w-md"
         >
           <div className="space-y-4">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-[var(--text-2)]">
               هل أنت متأكد من اكتمال العمل واعتماد المهمة نهائياً وإغلاقها؟ يمكنك تدوين ملاحظات الاعتماد:
             </p>
             <textarea
@@ -2907,13 +2922,13 @@ export default function TasksPage() {
               value={approvalNotesInput}
               onChange={(e) => setApprovalNotesInput(e.target.value)}
               placeholder="ملاحظات الاعتماد (اختياري)..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"
                 onClick={() => setApproveModal(false)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg"
               >
                 إلغاء
               </button>
@@ -2929,7 +2944,8 @@ export default function TasksPage() {
           </div>
         </Modal>
 
-        {/* Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment (Hidden on Mobile to preserve single clean FAB) */}
+        {/* Desktop WhatsApp-Style Floating Action Button for Rapid Voice Task Assignment (Hidden when split drawer is open) */}
+        {!selectedTask && (
         <div className="hidden lg:block fixed bottom-8 left-8 z-30">
           <button
             type="button"
@@ -2970,6 +2986,7 @@ export default function TasksPage() {
             </span>
           </button>
         </div>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -58,14 +58,14 @@ export function TasksKpiCards({
       <button
         type="button"
         onClick={() => onFilterClick?.("all")}
-        className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
+        className={`group bg-[var(--surface)] dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "all" || !activeFilter
             ? "border-primary/70 dark:border-primary ring-2 ring-primary/20"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-primary/50"
+            : "border-[var(--border)] dark:border-slate-800 hover:border-primary/50"
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             إجمالي المهام
           </span>
           <div className="w-8 h-8 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary flex items-center justify-center">
@@ -73,7 +73,7 @@ export function TasksKpiCards({
           </div>
         </div>
         <div className="mt-3">
-          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight">
             {total}
           </span>
         </div>
@@ -83,14 +83,14 @@ export function TasksKpiCards({
       <button
         type="button"
         onClick={() => onFilterClick?.("new")}
-        className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
+        className={`group bg-[var(--surface)] dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "new"
             ? "border-indigo-500/80 dark:border-indigo-500 ring-2 ring-indigo-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-indigo-300"
+            : "border-[var(--border)] dark:border-slate-800 hover:border-indigo-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             بانتظار القبول
           </span>
           <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
@@ -98,7 +98,7 @@ export function TasksKpiCards({
           </div>
         </div>
         <div className="mt-3 flex items-baseline justify-between">
-          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight">
             {newCount}
           </span>
         </div>
@@ -108,14 +108,14 @@ export function TasksKpiCards({
       <button
         type="button"
         onClick={() => onFilterClick?.("in_progress")}
-        className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
+        className={`group bg-[var(--surface)] dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "in_progress"
             ? "border-sky-500/80 dark:border-sky-500 ring-2 ring-sky-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-sky-300"
+            : "border-[var(--border)] dark:border-slate-800 hover:border-sky-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             قيد التنفيذ
           </span>
           <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center">
@@ -123,7 +123,7 @@ export function TasksKpiCards({
           </div>
         </div>
         <div className="mt-3 flex items-baseline justify-between">
-          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight">
             {inProgressCount}
           </span>
         </div>
@@ -133,14 +133,14 @@ export function TasksKpiCards({
       <button
         type="button"
         onClick={() => onFilterClick?.("completed")}
-        className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
+        className={`group bg-[var(--surface)] dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "completed"
             ? "border-sky-500/80 dark:border-sky-500 ring-2 ring-sky-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-sky-300"
+            : "border-[var(--border)] dark:border-slate-800 hover:border-sky-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             مكتملة
           </span>
           <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center">
@@ -148,7 +148,7 @@ export function TasksKpiCards({
           </div>
         </div>
         <div className="mt-3 flex items-baseline justify-between">
-          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight">
             {completedCount}
           </span>
         </div>
@@ -158,14 +158,14 @@ export function TasksKpiCards({
       <button
         type="button"
         onClick={() => onFilterClick?.("overdue")}
-        className={`group bg-white dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
+        className={`group bg-[var(--surface)] dark:bg-slate-900 border rounded-2xl p-4 text-right transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex flex-col justify-between ${
           activeFilter === "overdue"
             ? "border-rose-500/80 dark:border-rose-500 ring-2 ring-rose-500/10"
-            : "border-slate-200/80 dark:border-slate-800 hover:border-rose-300"
+            : "border-[var(--border)] dark:border-slate-800 hover:border-rose-300"
         }`}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             متأخرة
           </span>
           <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -173,20 +173,20 @@ export function TasksKpiCards({
           </div>
         </div>
         <div className="mt-3 flex items-baseline justify-between">
-          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <span className="text-2xl font-black text-[var(--text)] dark:text-white tracking-tight">
             {overdueCount}
           </span>
         </div>
       </button>
 
       {/* 6. معدل الإنجاز Circular Ring */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 text-right shadow-xs flex flex-col justify-between">
+      <div className="bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl p-4 text-right shadow-xs flex flex-col justify-between">
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-[var(--text-3)] dark:text-slate-400">
             معدل الإنجاز
           </span>
           <span
-            className="text-slate-400 hover:text-slate-600 cursor-pointer"
+            className="text-[var(--text-3)] hover:text-slate-600 cursor-pointer"
             title="نسبة المهام المكتملة إلى إجمالي المهام"
           >
             <Info size={14} />
@@ -215,7 +215,7 @@ export function TasksKpiCards({
                 fill="none"
               />
             </svg>
-            <span className="absolute text-sm font-black text-slate-900 dark:text-white">
+            <span className="absolute text-sm font-black text-[var(--text)] dark:text-white">
               {rate}%
             </span>
           </div>

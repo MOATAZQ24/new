@@ -268,7 +268,7 @@ export default function Employee360ProfilePage() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href="/employees"
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700"
+                className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text-2)]"
               >
                 العودة لدليل الموظفين
               </Link>
@@ -317,7 +317,7 @@ export default function Employee360ProfilePage() {
         <div
           role="tablist"
           aria-label="أقسام ملف الموظف 360"
-          className="flex flex-wrap items-center gap-1.5 bg-white rounded-2xl border border-slate-200 p-1.5 shadow-xs"
+          className="flex flex-wrap items-center gap-1.5 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-1.5 shadow-xs"
         >
           {tabs.map((t) => (
             <button
@@ -329,7 +329,7 @@ export default function Employee360ProfilePage() {
               className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === t.id
                   ? "bg-[#1D4ED8] text-white shadow-xs"
-                  : "text-slate-600 hover:bg-slate-100"
+                  : "text-[var(--text-2)] hover:bg-[var(--surface-2)]"
               }`}
             >
               {t.label}
@@ -338,7 +338,7 @@ export default function Employee360ProfilePage() {
         </div>
 
         {loading || !profile || !ov ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-xs text-slate-500">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 text-center text-xs text-[var(--text-3)]">
             جاري تحميل البيانات المتكاملة للموظف...
           </div>
         ) : (
@@ -346,55 +346,55 @@ export default function Employee360ProfilePage() {
             {/* TAB A: OVERVIEW */}
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="lg:col-span-5 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-[var(--border)]">
                     <div className="w-14 h-14 rounded-2xl bg-[#1D4ED8] text-[#3B82F6] font-black text-xl flex items-center justify-center shrink-0">
                       {ov.full_name.slice(0, 2)}
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-slate-900">{ov.full_name}</h2>
-                      <p className="text-xs text-slate-600">
+                      <h2 className="text-base font-bold text-[var(--text)]">{ov.full_name}</h2>
+                      <p className="text-xs text-[var(--text-2)]">
                         {ov.job_title || "موظف"} • <span className="font-mono">#{ov.employee_number}</span>
                       </p>
                     </div>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">الشركة</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">{ov.company_name || "—"}</dd>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">الشركة</dt>
+                      <dd className="font-bold text-[var(--text)] mt-0.5">{ov.company_name || "—"}</dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">الفروع المعتمدة</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">الفروع المعتمدة</dt>
+                      <dd className="font-bold text-[var(--text)] mt-0.5">
                         {ov.branch_names && ov.branch_names.length > 0
                           ? ov.branch_names.join(" • ")
                           : ov.branch_name || "المركز الرئيسي"}
                       </dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">القسم</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">{ov.department_name || "غير محدد"}</dd>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">القسم</dt>
+                      <dd className="font-bold text-[var(--text)] mt-0.5">{ov.department_name || "غير محدد"}</dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">المدير المباشر</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">{ov.manager_name || "الإدارة التنفيذية"}</dd>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">المدير المباشر</dt>
+                      <dd className="font-bold text-[var(--text)] mt-0.5">{ov.manager_name || "الإدارة التنفيذية"}</dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">البريد الإلكتروني</dt>
-                      <dd className="font-mono text-slate-900 mt-0.5 truncate"><bdi>{ov.email || "—"}</bdi></dd>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">البريد الإلكتروني</dt>
+                      <dd className="font-mono text-[var(--text)] mt-0.5 truncate"><bdi>{ov.email || "—"}</bdi></dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">الهاتف</dt>
-                      <dd className="font-mono text-slate-900 mt-0.5"><bdi>{ov.phone || "—"}</bdi></dd>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">الهاتف</dt>
+                      <dd className="font-mono text-[var(--text)] mt-0.5"><bdi>{ov.phone || "—"}</bdi></dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">حساب النظام</dt>
-                      <dd className="font-bold text-slate-900 mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">حساب النظام</dt>
+                      <dd className="font-bold text-[var(--text)] mt-0.5">
                         {ov.has_user_account ? `مفعل (@${ov.username})` : "بدون حساب دخول"}
                       </dd>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50">
-                      <dt className="text-slate-500">ربط Telegram</dt>
+                    <div className="p-2.5 rounded-xl bg-[var(--surface-2)]">
+                      <dt className="text-[var(--text-3)]">ربط Telegram</dt>
                       <dd className="font-bold text-emerald-700 mt-0.5">
                         {ov.is_telegram_linked ? `مرتبط (@${ov.telegram_username || "موثق"})` : "غير مرتبط"}
                       </dd>
@@ -408,7 +408,7 @@ export default function Employee360ProfilePage() {
                     subtitle="مقارنة المهام المكتملة والنشطة والمتأخرة من قاعدة البيانات الموحدة"
                     totalLabel="مهمة"
                     items={[
-                      { label: "مكتملة (Completed)", value: perf?.operational_metrics.completed_tasks || 0, color: "#2563EB" },
+                      { label: "مكتملة", value: perf?.operational_metrics.completed_tasks || 0, color: "#2563EB" },
                       { label: "قيد التنفيذ (Active)", value: perf?.operational_metrics.active_tasks || 0, color: "#0284C7" },
                       { label: "متأخرة (Overdue)", value: perf?.operational_metrics.overdue_tasks || 0, color: "#E11D48" },
                     ]}
@@ -420,9 +420,9 @@ export default function Employee360ProfilePage() {
             {/* TAB D: TASKS */}
             {activeTab === "tasks" && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+                <div className="lg:col-span-7 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">
+                    <h3 className="text-sm font-bold text-[var(--text)]">
                       المهام المسندة للموظف ({profile.tasks_and_projects.tasks.length})
                     </h3>
                     <Link href="/tasks" className="text-xs font-bold text-[#2563EB] hover:underline">
@@ -431,10 +431,10 @@ export default function Employee360ProfilePage() {
                   </div>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {profile.tasks_and_projects.tasks.map((t) => (
-                      <div key={t.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between gap-2">
+                      <div key={t.id} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs flex items-center justify-between gap-2">
                         <div>
                           <span className="font-mono font-bold text-[#2563EB] me-2">{t.reference}</span>
-                          <span className="font-semibold text-slate-900">{t.title}</span>
+                          <span className="font-semibold text-[var(--text)]">{t.title}</span>
                           {t.is_voice_task && (
                             <span className="inline-flex items-center gap-1 ms-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                               <Mic className="w-3 h-3 text-emerald-700" />
@@ -442,7 +442,7 @@ export default function Employee360ProfilePage() {
                             </span>
                           )}
                           {t.due_date && (
-                            <div className="text-[11px] text-slate-500 mt-0.5">
+                            <div className="text-[11px] text-[var(--text-3)] mt-0.5">
                               الاستحقاق: <span className="font-mono">{t.due_date}</span>
                             </div>
                           )}
@@ -453,21 +453,21 @@ export default function Employee360ProfilePage() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900">
+                <div className="lg:col-span-5 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                  <h3 className="text-sm font-bold text-[var(--text)]">
                     المشاريع المرتبطة ({profile.tasks_and_projects.projects.length})
                   </h3>
                   {profile.tasks_and_projects.projects.length === 0 ? (
-                    <p className="text-xs text-slate-500 py-6 text-center">لا توجد مشاريع مرتبطة حالياً</p>
+                    <p className="text-xs text-[var(--text-3)] py-6 text-center">لا توجد مشاريع مرتبطة حالياً</p>
                   ) : (
                     <div className="space-y-2.5">
                       {profile.tasks_and_projects.projects.map((p) => (
-                        <div key={p.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1.5">
+                        <div key={p.id} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-900">{p.name}</span>
+                            <span className="font-bold text-[var(--text)]">{p.name}</span>
                             <StatusBadge status={p.status} />
                           </div>
-                          <div className="text-slate-500">كود المشروع: {p.project_code} • الإنجاز: {p.progress_percent}%</div>
+                          <div className="text-[var(--text-3)]">كود المشروع: {p.project_code} • الإنجاز: {p.progress_percent}%</div>
                         </div>
                       ))}
                     </div>
@@ -478,22 +478,22 @@ export default function Employee360ProfilePage() {
 
             {/* TAB E: ASSETS & CUSTODY */}
             {activeTab === "assets" && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-                <h3 className="text-sm font-bold text-slate-900">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
+                <h3 className="text-sm font-bold text-[var(--text)]">
                   العهد التقنية النشطة ({profile.assets_and_custody.active_custody.length})
                 </h3>
                 {profile.assets_and_custody.active_custody.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-6 text-center">لا توجد عهد نشطة مسجلة على هذا الموظف</p>
+                  <p className="text-xs text-[var(--text-3)] py-6 text-center">لا توجد عهد نشطة مسجلة على هذا الموظف</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {profile.assets_and_custody.active_custody.map((c) => (
-                      <div key={c.custody_id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                      <div key={c.custody_id} className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-mono font-bold text-[#2563EB]">{c.asset_code}</span>
                           <StatusBadge status={c.status} />
                         </div>
-                        <div className="font-bold text-slate-900">{c.asset_name} ({c.asset_type})</div>
-                        {c.serial_number && <div className="font-mono text-slate-500">S/N: {c.serial_number}</div>}
+                        <div className="font-bold text-[var(--text)]">{c.asset_name} ({c.asset_type})</div>
+                        {c.serial_number && <div className="font-mono text-[var(--text-3)]">S/N: {c.serial_number}</div>}
                       </div>
                     ))}
                   </div>
@@ -504,23 +504,23 @@ export default function Employee360ProfilePage() {
             {/* TAB F: TICKETS */}
             {activeTab === "tickets" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900">
+                <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                  <h3 className="text-sm font-bold text-[var(--text)]">
                     التذاكر المقدمة من الموظف ({profile.tickets_and_activities.requested_tickets.length})
                   </h3>
                   {profile.tickets_and_activities.requested_tickets.map((tk) => (
-                    <div key={tk.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex justify-between">
+                    <div key={tk.id} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs flex justify-between">
                       <span><strong className="font-mono text-[#2563EB]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
                       <StatusBadge status={tk.status} />
                     </div>
                   ))}
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                  <h3 className="text-sm font-bold text-slate-900">
+                <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                  <h3 className="text-sm font-bold text-[var(--text)]">
                     التذاكر المسندة كفني دعم ({profile.tickets_and_activities.assigned_tech_tickets.length})
                   </h3>
                   {profile.tickets_and_activities.assigned_tech_tickets.map((tk) => (
-                    <div key={tk.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex justify-between">
+                    <div key={tk.id} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs flex justify-between">
                       <span><strong className="font-mono text-[#2563EB]">{tk.ticket_number}</strong>: {tk.issue_title}</span>
                       <StatusBadge status={tk.status} />
                     </div>
@@ -531,23 +531,23 @@ export default function Employee360ProfilePage() {
 
             {/* TAB G: DOCUMENTS & HISTORY */}
             {activeTab === "documents" && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                <h3 className="text-sm font-bold text-slate-900">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+                <h3 className="text-sm font-bold text-[var(--text)]">
                   سجل التسكين والتنقلات الوظيفية غير القابل للتلاعب ({profile.documents_and_history.assignment_history.length})
                 </h3>
                 {profile.documents_and_history.assignment_history.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-4 text-center">لا توجد حركات تنقل مسجلة</p>
+                  <p className="text-xs text-[var(--text-3)] py-4 text-center">لا توجد حركات تنقل مسجلة</p>
                 ) : (
                   <div className="space-y-2">
                     {profile.documents_and_history.assignment_history.map((h) => (
-                      <div key={h.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between">
+                      <div key={h.id} className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs flex items-center justify-between">
                         <div>
-                          <div className="font-bold text-slate-900">
+                          <div className="font-bold text-[var(--text)]">
                             {h.change_type} — {h.job_title || "موظف"} ({h.department_name || "عام"} • {h.branch_name || "المركز الرئيسي"})
                           </div>
-                          {h.notes && <div className="text-slate-500 mt-0.5">{h.notes}</div>}
+                          {h.notes && <div className="text-[var(--text-3)] mt-0.5">{h.notes}</div>}
                         </div>
-                        <div className="font-mono text-slate-600">
+                        <div className="font-mono text-[var(--text-2)]">
                           {h.effective_from} → {h.effective_to || "الحالي"}
                         </div>
                       </div>

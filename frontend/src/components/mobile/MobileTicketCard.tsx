@@ -97,7 +97,7 @@ export function MobileTicketCard({ ticket, onClick }: MobileTicketCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -115,32 +115,32 @@ export function MobileTicketCard({ ticket, onClick }: MobileTicketCardProps) {
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+            <h3 className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
               {ticket.issue_title}
             </h3>
 
             {/* Device & Requester Rows */}
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-[var(--text-3)] dark:text-slate-400">
               <span className="flex items-center gap-1 truncate font-medium">
-                <Laptop size={12} className="text-slate-400 shrink-0" />
+                <Laptop size={12} className="text-[var(--text-3)] shrink-0" />
                 <span>{deviceName}</span>
               </span>
             </div>
 
             {ticket.requester_name && (
-              <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                <User size={12} className="text-slate-400 shrink-0" />
+              <div className="flex items-center gap-1 mt-0.5 text-xs text-[var(--text-3)] dark:text-slate-400 font-medium">
+                <User size={12} className="text-[var(--text-3)] shrink-0" />
                 <span className="truncate">{ticket.requester_name}</span>
               </div>
             )}
 
             {/* Ticket Code & Date */}
-            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium flex-wrap">
-              <span dir="ltr" className="font-mono text-slate-500 dark:text-slate-400 font-bold shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[var(--text-3)] dark:text-slate-500 font-medium flex-wrap">
+              <span dir="ltr" className="font-mono text-[var(--text-3)] dark:text-slate-400 font-bold shrink-0 whitespace-nowrap">
                 #{ticket.ticket_number}
               </span>
               <span className="flex items-center gap-1 shrink-0 whitespace-nowrap">
-                <Calendar size={12} className="text-slate-400 shrink-0" />
+                <Calendar size={12} className="text-[var(--text-3)] shrink-0" />
                 <span>{friendlyDate}</span>
               </span>
             </div>

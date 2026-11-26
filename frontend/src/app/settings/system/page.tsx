@@ -125,8 +125,8 @@ export default function SystemSettingsPage() {
           <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
             <Lock className="w-8 h-8" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">صلاحية وصول مقيدة</h1>
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <h1 className="text-xl font-bold text-[var(--text)]">صلاحية وصول مقيدة</h1>
+          <p className="text-sm text-[var(--text-2)] leading-relaxed">
             قسم صيانة النظام والتعافي من الكوارث مخصص حصراً لمدير النظام الرئيسي (Super Admin). ليس لديك الصلاحيات الكافية للوصول إلى هذه الشاشة.
           </p>
           <Link
@@ -145,22 +145,22 @@ export default function SystemSettingsPage() {
       <div className="space-y-6">
         
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
           <Link
             href="/settings"
-            className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:text-gray-900 hover:bg-[var(--surface-2)] rounded-lg transition-colors"
           >
             الإعدادات العامة
           </Link>
           <Link
             href="/settings/branding"
-            className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:text-gray-900 hover:bg-[var(--surface-2)] rounded-lg transition-colors"
           >
             الهوية والمظهر
           </Link>
           <Link
             href="/settings/integrations"
-            className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-medium text-[var(--text-2)] hover:text-gray-900 hover:bg-[var(--surface-2)] rounded-lg transition-colors"
           >
             التكامل الخارجي (Telegram & n8n)
           </Link>
@@ -175,8 +175,8 @@ export default function SystemSettingsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">مركز صيانة النظام والتعافي من الكوارث (DR)</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-[var(--text)]">مركز صيانة النظام والتعافي من الكوارث (DR)</h1>
+            <p className="text-sm text-[var(--text-3)] mt-1">
               مراقبة صحة الخوادم، تخزين قاعدة البيانات، النسخ الاحتياطي الذري، وتشخيص السجلات
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function SystemSettingsPage() {
             <button
               onClick={loadData}
               disabled={loading}
-              className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-lg border border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors"
               title="تحديث البيانات"
             >
               <RefreshCwIcon className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -248,17 +248,17 @@ export default function SystemSettingsPage() {
         {health && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Database Engine Card */}
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <div className="bg-[var(--surface)] p-5 rounded-xl border border-[var(--border)] shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                 <Database className="w-4 h-4 text-[#2563EB]" /> محرك قاعدة البيانات وسجلات الجداول
               </h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <span className="text-gray-400 block mb-1">المحرك المستخدم:</span>
-                  <strong className="text-gray-800 text-sm">{health.database.engine.toUpperCase()}</strong>
+                <div className="bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] block mb-1">المحرك المستخدم:</span>
+                  <strong className="text-[var(--text)] text-sm">{health.database.engine.toUpperCase()}</strong>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <span className="text-gray-400 block mb-1">حالة الاتصال:</span>
+                <div className="bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] block mb-1">حالة الاتصال:</span>
                   <strong className="text-emerald-700 text-sm flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
                     {health.database.status}
@@ -267,55 +267,55 @@ export default function SystemSettingsPage() {
               </div>
 
               <div className="border-t pt-3">
-                <span className="text-xs font-semibold text-gray-600 block mb-2">إحصائيات السجلات:</span>
+                <span className="text-xs font-semibold text-[var(--text-2)] block mb-2">إحصائيات السجلات:</span>
                 <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">المنشآت</span>
-                    <strong className="text-gray-800">{health.database.table_records.companies || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">المنشآت</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.companies || 0}</strong>
                   </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">المستخدمين</span>
-                    <strong className="text-gray-800">{health.database.table_records.users || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">المستخدمين</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.users || 0}</strong>
                   </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">الأصول التقنية</span>
-                    <strong className="text-gray-800">{health.database.table_records.assets || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">الأصول التقنية</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.assets || 0}</strong>
                   </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">المهام التشغيلية</span>
-                    <strong className="text-gray-800">{health.database.table_records.tasks || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">المهام التشغيلية</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.tasks || 0}</strong>
                   </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">تذاكر الدعم</span>
-                    <strong className="text-gray-800">{health.database.table_records.tickets || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">تذاكر الدعم</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.tickets || 0}</strong>
                   </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <span className="text-gray-400 block text-[10px]">سجلات التدقيق</span>
-                    <strong className="text-gray-800">{health.database.table_records.audit_logs || 0}</strong>
+                  <div className="text-center p-2 bg-[var(--surface-2)] rounded">
+                    <span className="text-[var(--text-3)] block text-[10px]">سجلات التدقيق</span>
+                    <strong className="text-[var(--text)]">{health.database.table_records.audit_logs || 0}</strong>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Storage & Environment Card */}
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <div className="bg-[var(--surface)] p-5 rounded-xl border border-[var(--border)] shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                 <HardDrive className="w-4 h-4 text-[#2563EB]" /> مساحة القرص والبيئة التشغيلية
               </h3>
               
               {health.storage.used_percent !== undefined && (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-gray-600">
+                  <div className="flex justify-between text-xs text-[var(--text-2)]">
                     <span>استهلاك القرص الصلب:</span>
-                    <strong className="text-gray-900">{health.storage.used_percent}%</strong>
+                    <strong className="text-[var(--text)]">{health.storage.used_percent}%</strong>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-[var(--surface-2)] rounded-full h-2.5 overflow-hidden">
                     <div 
                       className="bg-[#2563EB] h-2.5 rounded-full transition-all" 
                       style={{ width: `${health.storage.used_percent}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[11px] text-gray-400 pt-1">
+                  <div className="flex justify-between text-[11px] text-[var(--text-3)] pt-1">
                     <span>المستخدم: {health.storage.used_gb} GB</span>
                     <span>المتبقي: {health.storage.free_gb} GB</span>
                     <span>الإجمالي: {health.storage.total_gb} GB</span>
@@ -337,27 +337,27 @@ export default function SystemSettingsPage() {
         )}
 
         {/* Backups List */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden space-y-3 p-5">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden space-y-3 p-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
               <Save className="w-4 h-4 text-[#2563EB]" /> النسخ الاحتياطية المتوفرة للتعافي ({backups.length})
             </h3>
-            <span className="text-xs text-gray-500">مخزنة في دليل النسخ المؤمّن على الخادم</span>
+            <span className="text-xs text-[var(--text-3)]">مخزنة في دليل النسخ المؤمّن على الخادم</span>
           </div>
 
           {backups.length === 0 ? (
-            <p className="text-xs text-gray-400 py-6 text-center">لا توجد نسخ احتياطية مسجلة حالياً</p>
+            <p className="text-xs text-[var(--text-3)] py-6 text-center">لا توجد نسخ احتياطية مسجلة حالياً</p>
           ) : (
-            <div className="divide-y divide-gray-100 overflow-x-auto">
+            <div className="divide-y divide-[var(--border)] overflow-x-auto">
               {backups.map((b) => (
                 <div key={b.filename} className="py-3 flex items-center justify-between text-xs gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--surface-2)] flex items-center justify-center text-[var(--text-2)]">
                       <Package className="w-4 h-4" />
                     </div>
                     <div>
-                      <strong className="text-gray-800 font-mono text-xs">{b.filename}</strong>
-                      <span className="text-gray-400 block text-[10px] mt-0.5">
+                      <strong className="text-[var(--text)] font-mono text-xs">{b.filename}</strong>
+                      <span className="text-[var(--text-3)] block text-[10px] mt-0.5">
                         التاريخ: {b.created_at.slice(0, 16).replace("T", " ")} | الحجم: {b.size_kb} KB
                       </span>
                     </div>
@@ -375,14 +375,14 @@ export default function SystemSettingsPage() {
         </div>
 
         {/* Operational Diagnostics & Audit Logs */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-5 space-y-3">
-          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden p-5 space-y-3">
+          <h3 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
             <ScrollText className="w-4 h-4 text-[#2563EB]" /> سجل العمليات التشغيلية والأمان الحديثة
           </h3>
 
           <div className="overflow-x-auto max-h-72 overflow-y-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-gray-50 text-gray-500 border-b">
+              <thead className="bg-[var(--surface-2)] text-[var(--text-3)] border-b">
                 <tr>
                   <th className="py-2.5 px-3">الإجراء</th>
                   <th className="py-2.5 px-3">نوع الكيان</th>
@@ -391,14 +391,14 @@ export default function SystemSettingsPage() {
                   <th className="py-2.5 px-3">الوقت والتاريخ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[var(--border)]">
                 {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50/60">
-                    <td className="py-2.5 px-3 font-semibold text-gray-800">{log.action}</td>
-                    <td className="py-2.5 px-3 text-gray-600">{log.resource_type}</td>
-                    <td className="py-2.5 px-3 text-gray-700">{log.user_name}</td>
-                    <td className="py-2.5 px-3 font-mono text-gray-500" dir="ltr">{log.ip_address || "127.0.0.1"}</td>
-                    <td className="py-2.5 px-3 text-gray-400" dir="ltr">{log.created_at?.slice(0, 16).replace("T", " ")}</td>
+                  <tr key={log.id} className="hover:bg-[var(--surface-2)]">
+                    <td className="py-2.5 px-3 font-semibold text-[var(--text)]">{log.action}</td>
+                    <td className="py-2.5 px-3 text-[var(--text-2)]">{log.resource_type}</td>
+                    <td className="py-2.5 px-3 text-[var(--text-2)]">{log.user_name}</td>
+                    <td className="py-2.5 px-3 font-mono text-[var(--text-3)]" dir="ltr">{log.ip_address || "127.0.0.1"}</td>
+                    <td className="py-2.5 px-3 text-[var(--text-3)]" dir="ltr">{log.created_at?.slice(0, 16).replace("T", " ")}</td>
                   </tr>
                 ))}
               </tbody>

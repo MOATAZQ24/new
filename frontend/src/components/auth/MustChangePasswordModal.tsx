@@ -91,7 +91,7 @@ export function MustChangePasswordModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="must-change-password-title"
-        className="motion-popover bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden text-right"
+        className="motion-popover bg-[var(--surface)] dark:bg-slate-900 border border-[var(--border)] dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden text-right"
         tabIndex={-1}
       >
         {/* Header Banner */}
@@ -117,10 +117,10 @@ export function MustChangePasswordModal() {
           {success ? (
             <div className="py-8 text-center space-y-3">
               <Icons.CheckCircle size={48} className="text-emerald-500 mx-auto" />
-              <h3 className="font-bold text-slate-800 dark:text-slate-100">
+              <h3 className="font-bold text-[var(--text)] dark:text-slate-100">
                 تم تغيير كلمة المرور بنجاح!
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[var(--text-3)]">
                 يتم الآن تحديث جلستك ونقلك إلى لوحة التحكم...
               </p>
             </div>
@@ -128,7 +128,7 @@ export function MustChangePasswordModal() {
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* Old / Temporary Password */}
               <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-medium text-[var(--text-2)] dark:text-slate-300 mb-1">
                   كلمة المرور الحالية (المؤقتة) *
                 </label>
                 <div className="relative">
@@ -139,12 +139,12 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
                     placeholder="أدخل كلمة المرور الحالية أو المؤقتة"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
+                    className="w-full px-3 py-2.5 pl-10 border border-[var(--border)] dark:border-slate-700 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowOld(!showOld)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-slate-600"
                   >
                     <Icons.Eye size={16} />
                   </button>
@@ -153,7 +153,7 @@ export function MustChangePasswordModal() {
 
               {/* New Password */}
               <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-medium text-[var(--text-2)] dark:text-slate-300 mb-1">
                   كلمة المرور الجديدة *
                 </label>
                 <div className="relative">
@@ -163,19 +163,19 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     placeholder="8 خانات على الأقل تشمل أرقام ورموز"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
+                    className="w-full px-3 py-2.5 pl-10 border border-[var(--border)] dark:border-slate-700 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNew(!showNew)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-slate-600"
                   >
                     <Icons.Eye size={16} />
                   </button>
                 </div>
 
                 {/* Password Strength Indicators */}
-                <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-500">
+                <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-[var(--text-3)]">
                   <span className={hasMinLength ? "text-emerald-600 flex items-center gap-1 font-semibold" : "flex items-center gap-1"}>
                     <Icons.Lock size={12} /> 8 أحرف على الأقل
                   </span>
@@ -193,7 +193,7 @@ export function MustChangePasswordModal() {
 
               {/* Confirm Password */}
               <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-medium text-[var(--text-2)] dark:text-slate-300 mb-1">
                   تأكيد كلمة المرور الجديدة *
                 </label>
                 <div className="relative">
@@ -203,12 +203,12 @@ export function MustChangePasswordModal() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="أعد إدخال كلمة المرور الجديدة"
-                    className="w-full px-3 py-2.5 pl-10 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
+                    className="w-full px-3 py-2.5 pl-10 border border-[var(--border)] dark:border-slate-700 rounded-xl bg-[var(--surface-2)] dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-slate-600"
                   >
                     <Icons.Eye size={16} />
                   </button>
@@ -228,7 +228,7 @@ export function MustChangePasswordModal() {
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                  className="py-2.5 px-4 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] dark:bg-slate-800 dark:hover:bg-slate-700 text-[var(--text-2)] dark:text-slate-300 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
                   title="تسجيل الخروج"
                 >
                   <Icons.LogOut size={16} />

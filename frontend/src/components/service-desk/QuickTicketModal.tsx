@@ -127,11 +127,11 @@ export default function QuickTicketModal({
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/20 outline-none"
             >
-              <option value="Hardware">أجهزة وعتاد (Hardware)</option>
-              <option value="Network">شبكة واتصال (Network)</option>
-              <option value="Software">أنظمة وبرامج (Software)</option>
-              <option value="Access">صلاحيات وأمان (Access)</option>
-              <option value="Email">البريد الإلكتروني (Email)</option>
+              <option value="Hardware">أجهزة وعتاد</option>
+              <option value="Network">شبكة واتصال</option>
+              <option value="Software">أنظمة وبرامج</option>
+              <option value="Access">صلاحيات وأمان</option>
+              <option value="Email">البريد الإلكتروني</option>
             </select>
           </div>
 

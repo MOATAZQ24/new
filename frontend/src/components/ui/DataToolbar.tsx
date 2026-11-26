@@ -46,7 +46,7 @@ export function DataToolbar({
 }: DataToolbarProps) {
   return (
     <div
-      className={`bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3 ${className}`}
+      className={`bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs space-y-3 ${className}`}
     >
       {topSlot}
 
@@ -56,7 +56,7 @@ export function DataToolbar({
           <div className="relative flex-1 min-w-[220px] sm:max-w-xs">
             <Icons.Search
               size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
             />
             <input
               type="text"
@@ -70,14 +70,14 @@ export function DataToolbar({
                   onSearchSubmit();
                 }
               }}
-              className="w-full h-10 bg-slate-50 border border-slate-200 focus:border-[#2563EB] focus:bg-white text-xs sm:text-sm pr-9 pl-8 rounded-xl outline-none text-slate-900 placeholder:text-slate-500 transition-colors"
+              className="w-full h-10 bg-[var(--surface-2)] border border-[var(--border)] focus:border-[#2563EB] focus:bg-[var(--surface)] text-xs sm:text-sm pr-9 pl-8 rounded-xl outline-none text-[var(--text)] placeholder:text-slate-500 transition-colors"
             />
             {searchValue && (
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
                 aria-label="مسح البحث"
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-[var(--text-3)] hover:text-slate-800 hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
               >
                 <Icons.X size={14} />
               </button>
@@ -111,7 +111,7 @@ export function DataToolbar({
                 disabled={refreshing}
                 aria-label="تحديث البيانات"
                 title="تحديث البيانات"
-                className="motion-control p-2 border border-slate-200 bg-slate-50/70 hover:bg-slate-100 text-slate-700 rounded-xl transition-colors cursor-pointer"
+                className="motion-control p-2 border border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-xl transition-colors cursor-pointer"
               >
                 <Icons.Refresh size={16} className={refreshing ? "animate-spin" : ""} />
               </button>

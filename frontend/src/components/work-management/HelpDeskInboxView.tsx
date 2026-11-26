@@ -53,13 +53,60 @@ interface HelpDeskInboxViewProps {
 }
 
 const PRIORITY_BADGE: Record<string, string> = {
-  Critical: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25",
-  "Urgent / Critical": "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25",
-  Urgent: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/25",
-  High: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/25",
+  Critical: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/25",
+  "Urgent / Critical": "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/25",
+  Urgent: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/25",
+  High: "bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/25",
   Medium: "bg-sky-500/12 text-sky-800 dark:text-sky-300 border-sky-500/25",
-  Low: "bg-slate-500/12 text-slate-700 dark:text-slate-300 border-slate-500/25",
+  Low: "bg-slate-500/12 text-[var(--text-2)] dark:text-slate-300 border-slate-500/25",
 };
+
+const STATUS_LABEL_AR: Record<string, string> = {
+  Open: "مفتوحة",
+  Assigned: "مسندة",
+  "In Progress": "قيد المعالجة",
+  "Waiting for User": "بانتظار المستخدم",
+  "Waiting for Vendor": "بانتظار المزود",
+  "Pending Approval": "بانتظار الاعتماد",
+  Resolved: "تم الحل",
+  Closed: "مغلقة",
+  Completed: "مكتملة",
+  "Approved / Completed": "مكتملة",
+  Done: "مكتملة",
+  "To Do": "بانتظار التنفيذ",
+  "Pending Acceptance": "بانتظار القبول",
+  "Submitted for Review": "قيد المراجعة",
+  Draft: "مسودة",
+  Pending: "بانتظار القبول",
+  Accepted: "مقبولة",
+  Blocked: "معلقة",
+};
+
+const PRIORITY_LABEL_AR: Record<string, string> = {
+  Critical: "حرجة جداً",
+  "Urgent / Critical": "حرجة / عاجلة",
+  Urgent: "عاجلة",
+  High: "مرتفعة",
+  Medium: "متوسطة",
+  Normal: "عادية",
+  Low: "منخفضة",
+};
+
+const CATEGORY_LABEL_AR: Record<string, string> = {
+  Hardware: "أجهزة وعتاد",
+  Software: "برمجيات وأنظمة",
+  Network: "شبكات واتصالات",
+  Access: "صلاحيات ووصول",
+  Email: "بريد إلكتروني",
+  General: "عام",
+};
+
+const QUICK_REPLY_TEMPLATES: { label: string; text: string }[] = [
+  { label: "تم الاستلام وجاري العمل", text: "تم استلام بلاغكم وجاري العمل على معالجته من قبل الفريق الفني." },
+  { label: "تم الحل — يرجى التأكيد", text: "تمت معالجة المشكلة وحلها، يرجى التجربة وتأكيد إغلاق التذكرة." },
+  { label: "طلب تفاصيل إضافية", text: "يرجى تزويدنا بمزيد من التفاصيل أو لقطة شاشة للمشكلة لاستكمال المعالجة." },
+  { label: "تم التحويل للمختص", text: "تم توجيه التذكرة إلى الفريق المختص لمتابعة الإجراء الفني اللازم." },
+];
 
 const EVENT_KIND_LABEL: Record<string, string> = {
   comment_public: "رد عام",
@@ -558,33 +605,33 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)]"
+            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
           >
             <option value="">كل الحالات</option>
-            <option value="Open">Open</option>
-            <option value="Assigned">Assigned</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Waiting for User">Waiting for User</option>
-            <option value="Waiting for Vendor">Waiting for Vendor</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
+            <option value="Open">مفتوحة</option>
+            <option value="Assigned">مسندة</option>
+            <option value="In Progress">قيد المعالجة</option>
+            <option value="Waiting for User">بانتظار المستخدم</option>
+            <option value="Waiting for Vendor">بانتظار المزود</option>
+            <option value="Resolved">تم الحل</option>
+            <option value="Closed">مغلقة</option>
           </select>
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)]"
+            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
           >
             <option value="">كل الأولويات</option>
-            <option value="Critical">Critical</option>
-            <option value="Urgent">Urgent</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
+            <option value="Critical">حرجة جداً</option>
+            <option value="Urgent">عاجلة</option>
+            <option value="High">مرتفعة</option>
+            <option value="Medium">متوسطة</option>
+            <option value="Low">منخفضة</option>
           </select>
           <select
             value={teamFilter}
             onChange={(e) => setTeamFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)]"
+            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
           >
             <option value="">كل الفرق</option>
             {teams.map((tm) => (
@@ -596,7 +643,7 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
           <select
             value={slaFilter}
             onChange={(e) => setSlaFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)]"
+            className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
           >
             <option value="">كل حالات SLA</option>
             <option value="ok">ضمن SLA</option>
@@ -631,9 +678,9 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
               disabled={bulkBusy}
               className="px-2 py-1 text-xs rounded-lg bg-white/15 text-white border border-white/25"
             >
-              <option value="" className="text-slate-900">إسناد جماعي...</option>
+              <option value="" className="text-[var(--text)]">إسناد جماعي...</option>
               {users.map((u) => (
-                <option key={u.id} value={u.id} className="text-slate-900">
+                <option key={u.id} value={u.id} className="text-[var(--text)]">
                   {u.full_name || u.username}
                 </option>
               ))}
@@ -647,10 +694,10 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
               disabled={bulkBusy}
               className="px-2 py-1 text-xs rounded-lg bg-white/15 text-white border border-white/25"
             >
-              <option value="" className="text-slate-900">تغيير الحالة...</option>
-              <option value="In Progress" className="text-slate-900">In Progress</option>
-              <option value="Waiting for User" className="text-slate-900">Waiting for User</option>
-              <option value="Resolved" className="text-slate-900">Resolved</option>
+              <option value="" className="text-[var(--text)]">تغيير الحالة...</option>
+              <option value="In Progress" className="text-[var(--text)]">قيد المعالجة</option>
+              <option value="Waiting for User" className="text-[var(--text)]">بانتظار المستخدم</option>
+              <option value="Resolved" className="text-[var(--text)]">تم الحل</option>
             </select>
             <select
               value={bulkPriority}
@@ -661,17 +708,17 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
               disabled={bulkBusy}
               className="px-2 py-1 text-xs rounded-lg bg-white/15 text-white border border-white/25"
             >
-              <option value="" className="text-slate-900">الأولوية...</option>
-              <option value="Critical" className="text-slate-900">Critical</option>
-              <option value="High" className="text-slate-900">High</option>
-              <option value="Medium" className="text-slate-900">Medium</option>
-              <option value="Low" className="text-slate-900">Low</option>
+              <option value="" className="text-[var(--text)]">الأولوية...</option>
+              <option value="Critical" className="text-[var(--text)]">حرجة جداً</option>
+              <option value="High" className="text-[var(--text)]">مرتفعة</option>
+              <option value="Medium" className="text-[var(--text)]">متوسطة</option>
+              <option value="Low" className="text-[var(--text)]">منخفضة</option>
             </select>
             <button
               type="button"
               disabled={bulkBusy}
               onClick={() => void handleBulkAction("close")}
-              className="px-3 py-1 rounded-lg bg-white text-[var(--primary)] text-xs font-bold hover:opacity-90 cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-[var(--surface)] text-[var(--primary)] text-xs font-bold hover:opacity-90 cursor-pointer"
             >
               إغلاق المحدد
             </button>
@@ -755,9 +802,11 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--muted-foreground)]">
                         <span className={`px-1.5 py-0.5 rounded border text-[10px] font-medium ${PRIORITY_BADGE[t.priority] || PRIORITY_BADGE.Medium}`}>
-                          {t.priority}
+                          {PRIORITY_LABEL_AR[t.priority] || t.priority}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded bg-[var(--muted)] text-[10px]">{t.status}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[var(--muted)] text-[10px]">
+                          {STATUS_LABEL_AR[t.status] || t.status}
+                        </span>
                         {t.team_name && <span className="truncate max-w-[110px]">• {t.team_name}</span>}
                         <span className="truncate max-w-[110px]">
                           • {t.assigned_technician_name || "غير معين"}
@@ -809,7 +858,7 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                         <bdi>{detail.ticket_number}</bdi>
                       </span>
                       <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[var(--primary)]/12 text-[var(--primary)]">
-                        {detail.status}
+                        {STATUS_LABEL_AR[detail.status] || detail.status}
                       </span>
                       <SlaBadge state={detail.sla_state} dueAt={detail.resolution_due_at} />
                       {detail.merged_into_ticket_id && (
@@ -820,11 +869,22 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                     </div>
                     <h2 className="text-base font-bold text-[var(--foreground)]">{detail.issue_title}</h2>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      مقدم الطلب: {detail.requester_name || "غير محدد"} • التصنيف: {detail.category} • الأولوية: {detail.priority}
+                      مقدم الطلب: {detail.requester_name || "غير محدد"} • التصنيف: {CATEGORY_LABEL_AR[detail.category] || detail.category} • الأولوية: {PRIORITY_LABEL_AR[detail.priority] || detail.priority}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5">
+                    {isStaff && user && detail.assigned_technician_id !== user.id && (
+                      <button
+                        type="button"
+                        onClick={() => void handleAssign({ assignee_id: user.id })}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors shadow-2xs cursor-pointer"
+                        title="إسناد هذه التذكرة لنفسي فوراً"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        <span>استلام التذكرة (لي)</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => void handleToggleWatch()}
@@ -923,9 +983,9 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                           ref={idx === 0 ? firstStatusBtnRef : undefined}
                           type="button"
                           onClick={() => void handleTransition(tr.to_status, tr.requires_comment)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] transition-colors cursor-pointer"
                         >
-                          ← {tr.to_status}
+                          ← {STATUS_LABEL_AR[tr.to_status] || tr.to_status}
                         </button>
                       ))}
                     </div>
@@ -958,7 +1018,9 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                         >
                           <ListTodo className="w-3 h-3 text-[var(--primary)]" />
                           <span>{lt.title}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-[var(--muted)] text-[10px]">{lt.status}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-[var(--muted)] text-[10px]">
+                            {STATUS_LABEL_AR[lt.status] || lt.status}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -974,6 +1036,8 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                   events.map((ev) => {
                     const isInternal = ev.visibility === "internal";
                     const content = typeof ev.payload?.content === "string" ? ev.payload.content : null;
+                    const fromSt = String(ev.payload?.from || "جديد");
+                    const toSt = String(ev.payload?.to || "");
                     return (
                       <div
                         key={ev.id}
@@ -1002,10 +1066,10 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                         ) : (
                           <p className="text-[var(--muted-foreground)]">
                             {ev.kind === "status_change"
-                              ? `${String(ev.payload?.from || "جديد")} ← ${String(ev.payload?.to || "")}`
+                              ? `${STATUS_LABEL_AR[fromSt] || fromSt} ← ${STATUS_LABEL_AR[toSt] || toSt}`
                               : ev.kind === "assignment"
-                              ? `الاستراتيجية: ${String(ev.payload?.strategy || "manual")} (${String(ev.payload?.reason || "")})`
-                              : JSON.stringify(ev.payload)}
+                              ? `تم تحديث التكليف (${String(ev.payload?.strategy || "يدوي")})`
+                              : ""}
                           </p>
                         )}
                       </div>
@@ -1014,9 +1078,9 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                 )}
               </div>
 
-              {/* Reply / Internal Note Composer with `/` Macro Picker */}
+              {/* Reply / Internal Note Composer with Quick Reply Chips & `/` Macro Picker */}
               <form onSubmit={handleSendReply} className="p-3 border-t border-[var(--border)] bg-[var(--card)] space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -1043,6 +1107,24 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                         <span>ملاحظة داخلية</span>
                       </button>
                     )}
+                  </div>
+
+                  {/* 1-Click Quick Reply Chips */}
+                  <div className="flex flex-wrap items-center gap-1">
+                    {QUICK_REPLY_TEMPLATES.map((tpl) => (
+                      <button
+                        key={tpl.label}
+                        type="button"
+                        onClick={() => {
+                          setReplyText((prev) => (prev ? `${prev}\n${tpl.text}` : tpl.text));
+                          replyBoxRef.current?.focus();
+                        }}
+                        className="px-2 py-0.5 rounded-full text-[11px] bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary-text)] transition-colors cursor-pointer"
+                        title="إدراج رد سريع بضغطة واحدة"
+                      >
+                        + {tpl.label}
+                      </button>
+                    ))}
                   </div>
 
                   {macros.length > 0 && (
@@ -1087,10 +1169,16 @@ export function HelpDeskInboxView({ onCreateNew }: HelpDeskInboxViewProps) {
                       setReplyText(e.target.value);
                       if (e.target.value === "/" && macros.length > 0) setShowMacroMenu(true);
                     }}
+                    onKeyDown={(e) => {
+                      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && replyText.trim() && !sendingReply) {
+                        e.preventDefault();
+                        void handleSendReply(e);
+                      }
+                    }}
                     placeholder={
                       replyMode === "internal"
-                        ? "اكتب ملاحظة فنية داخلية للفريق فقط (لن تظهر للموظف)..."
-                        : "اكتب ردك هنا أو اكتب / لإدراج رد جاهز..."
+                        ? "اكتب ملاحظة فنية داخلية للفريق فقط (Ctrl+Enter للإرسال السريع)..."
+                        : "اكتب ردك هنا أو اختر من الردود السريعة أعلاه (Ctrl+Enter للإرسال)..."
                     }
                     className={`flex-1 rounded-xl px-3 py-2 text-xs border resize-none focus:outline-none focus:ring-2 ${
                       replyMode === "internal"

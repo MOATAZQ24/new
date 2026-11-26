@@ -521,7 +521,7 @@ export default function CompaniesPage() {
               <div className="relative">
                 <Icons.Search
                   size={14}
-                  className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none"
+                  className="text-[var(--text-3)] absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none"
                 />
                 <input
                   type="text"
@@ -529,14 +529,14 @@ export default function CompaniesPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label="بحث عن شركة أو فرع"
                   placeholder="بحث عن شركة، فرع..."
-                  className="ps-8 pe-3 py-2 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-[#2563EB] w-48 sm:w-56"
+                  className="ps-8 pe-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] w-48 sm:w-56"
                 />
               </div>
               <select
                 aria-label="تصفية حسب حالة الشركة"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-white border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+                className="bg-[var(--surface)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
               >
                 <option value="">كل الحالات</option>
                 <option value="Active">نشطة</option>
@@ -550,11 +550,11 @@ export default function CompaniesPage() {
                 className={`motion-control flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                   showArchived
                     ? "bg-amber-50 border-amber-300 text-amber-800 font-bold"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                 }`}
                 title="عرض الشركات المؤرشفة أو المستبعدة"
               >
-                <Icons.Refresh size={13} className={showArchived ? "text-amber-700" : "text-slate-500"} />
+                <Icons.Refresh size={13} className={showArchived ? "text-amber-700" : "text-[var(--text-3)]"} />
                 <span>{showArchived ? "إخفاء الأرشيف" : "عرض الأرشيف"}</span>
               </button>
               {isSuperAdmin && (
@@ -573,22 +573,22 @@ export default function CompaniesPage() {
 
         {/* Row 1: 5 Harmonized KPIs (أصل مرتبط، موظف، علامات تجارية تابعة، شركات، فروع نشطة) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{totalAssetsKpi}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">أصل مرتبط</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{totalAssetsKpi}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">أصل مرتبط</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.Assets size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#2563EB]">{totalEmployeesKpi}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظفو المجموعة (كافة الشركات)</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">موظفو المجموعة (كافة الشركات)</div>
               {selectedCompany && (
-                <div className="text-[10px] text-slate-400 font-medium">{selectedCompany.employees_count || 0} في الشركة المحددة</div>
+                <div className="text-[10px] text-[var(--text-3)] font-medium">{selectedCompany.employees_count || 0} في الشركة المحددة</div>
               )}
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
@@ -596,30 +596,30 @@ export default function CompaniesPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{subsidiariesList.length}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">علامات تجارية تابعة</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{subsidiariesList.length}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">علامات تجارية تابعة</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#1D4ED8]">{companies.length}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">شركات</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">شركات</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <Icons.Building size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#2563EB]">{totalBranchesKpi}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">فروع نشطة</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">فروع نشطة</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.MapPin size={20} />
@@ -631,7 +631,7 @@ export default function CompaniesPage() {
         {loading ? (
           <TableSkeleton variant="cards" rows={3} />
         ) : companies.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
             <EmptyState
               icon={<Icons.Companies size={26} />}
               title="لا توجد شركات مطابقة لمعايير البحث"
@@ -641,13 +641,13 @@ export default function CompaniesPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* Right Card: هيكل الشركات */}
-            <aside className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3">
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <aside className="lg:col-span-4 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border)]">
+                <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                   <Icons.Companies size={16} className="text-[#1D4ED8]" />
                   <span>هيكل الشركات</span>
                 </h2>
-                <span className="text-[11px] font-mono text-slate-500">{companies.length}</span>
+                <span className="text-[11px] font-mono text-[var(--text-3)]">{companies.length}</span>
               </div>
 
               <div className="space-y-1.5">
@@ -659,7 +659,7 @@ export default function CompaniesPage() {
                       className={`w-full text-right px-3 py-2.5 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-colors cursor-pointer ${
                         selectedCompany?.id === groupCompany.id
                           ? "bg-[#1D4ED8] text-white"
-                          : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                          : "bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text)]"
                       }`}
                     >
                       <span className="flex items-center gap-2 truncate">
@@ -679,7 +679,7 @@ export default function CompaniesPage() {
                             className={`w-full text-right px-3 py-2 rounded-xl flex items-center justify-between gap-2 text-xs font-semibold transition-colors cursor-pointer ${
                               selectedCompany?.id === sub.id
                                 ? "bg-[#2563EB] text-white"
-                                : "hover:bg-slate-100 text-slate-700"
+                                : "hover:bg-[var(--surface-2)] text-[var(--text-2)]"
                             }`}
                           >
                             <span className="flex items-center gap-2 truncate">
@@ -706,7 +706,7 @@ export default function CompaniesPage() {
                           ? "bg-[#1D4ED8] text-white"
                           : isArchived
                           ? "bg-amber-50/70 border border-amber-200/80 text-amber-900 hover:bg-amber-100/60"
-                          : "bg-slate-50 hover:bg-slate-100 text-slate-800"
+                          : "bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text)]"
                       }`}
                     >
                       <span className="flex items-center gap-2 truncate">
@@ -737,13 +737,13 @@ export default function CompaniesPage() {
             </aside>
 
             {/* Left Panel: Selected Company Details, Tabs, Branches Table */}
-            <section className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
+            <section className="lg:col-span-8 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-4">
               {selectedCompany ? (
                 <>
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
                     <div className="flex flex-wrap items-center gap-2">
                       <Icons.Building size={19} className="text-[#1D4ED8]" />
-                      <h2 className="text-base font-bold text-slate-900">
+                      <h2 className="text-base font-bold text-[var(--text)]">
                         {selectedCompany.company_name_ar}
                       </h2>
                       <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#2563EB] text-white">
@@ -761,7 +761,7 @@ export default function CompaniesPage() {
                         <button
                           type="button"
                           onClick={() => openEditCompany(selectedCompany)}
-                          className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-[#2563EB] text-xs font-semibold text-slate-700 cursor-pointer flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-xl border border-[var(--border)] hover:border-[#2563EB] text-xs font-semibold text-[var(--text-2)] cursor-pointer flex items-center gap-1"
                         >
                           <Icons.Edit size={13} />
                           <span>تعديل</span>
@@ -804,7 +804,7 @@ export default function CompaniesPage() {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                           detailTab === "branches"
                             ? "bg-[#1D4ED8] text-white"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                         }`}
                       >
                         <Icons.MapPin size={13} />
@@ -817,7 +817,7 @@ export default function CompaniesPage() {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                           detailTab === "info"
                             ? "bg-[#1D4ED8] text-white"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                         }`}
                       >
                         <Icons.Info size={13} />
@@ -830,7 +830,7 @@ export default function CompaniesPage() {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                           detailTab === "departments"
                             ? "bg-[#1D4ED8] text-white"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                         }`}
                       >
                         <Icons.Users size={13} />
@@ -843,7 +843,7 @@ export default function CompaniesPage() {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                           detailTab === "subsidiaries"
                             ? "bg-[#1D4ED8] text-white"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-[var(--surface-2)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                         }`}
                       >
                         <Icons.Subscriptions size={13} />
@@ -877,13 +877,13 @@ export default function CompaniesPage() {
                   {/* Active Detail Tab Body */}
                   {detailTab === "branches" && (
                     branches.length === 0 ? (
-                      <div className="py-10 text-center text-xs text-slate-500">
+                      <div className="py-10 text-center text-xs text-[var(--text-3)]">
                         لا توجد فروع مسجلة لهذه الشركة حالياً
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-right text-xs">
-                          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                          <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
                             <tr>
                               <th className="p-3">#</th>
                               <th className="p-3">اسم الفرع</th>
@@ -895,22 +895,22 @@ export default function CompaniesPage() {
                               <th className="p-3 text-center">الإجراءات</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-[var(--border)]">
                             {branches.map((br, idx) => {
                               const sumMatch = branchSummaries.find((s) => s.branch_id === br.id);
                               return (
-                                <tr key={br.id} className="hover:bg-slate-50/70">
-                                  <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
-                                  <td className="p-3 font-bold text-slate-900">
+                                <tr key={br.id} className="hover:bg-[var(--surface-2)]">
+                                  <td className="p-3 font-mono text-[var(--text-3)]">{idx + 1}</td>
+                                  <td className="p-3 font-bold text-[var(--text)]">
                                     <span className="inline-flex items-center gap-1.5">
                                       <Icons.MapPin size={13} className="text-[#2563EB]" />
                                       <span>{br.branch_name}</span>
                                     </span>
                                   </td>
-                                  <td className="p-3 font-mono text-slate-600">
+                                  <td className="p-3 font-mono text-[var(--text-2)]">
                                     BR-{idx + 1}
                                   </td>
-                                  <td className="p-3 text-slate-700">{br.location || "الرياض"}</td>
+                                  <td className="p-3 text-[var(--text-2)]">{br.location || "الرياض"}</td>
                                   <td className="p-3 text-center font-mono font-bold text-amber-800">
                                     {sumMatch?.employees_count ?? 0}
                                   </td>
@@ -925,7 +925,7 @@ export default function CompaniesPage() {
                                       <button
                                         type="button"
                                         onClick={() => openCompanyDetails(selectedCompany)}
-                                        className="p-1.5 rounded-lg text-slate-500 hover:text-[#2563EB] hover:bg-emerald-50 cursor-pointer"
+                                        className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-[#2563EB] hover:bg-emerald-50 cursor-pointer"
                                         title="عرض تفاصيل الفرع والقسم"
                                       >
                                         <Icons.Eye size={14} />
@@ -935,7 +935,7 @@ export default function CompaniesPage() {
                                           <button
                                             type="button"
                                             onClick={() => openEditBranch(br)}
-                                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-slate-900 hover:bg-[var(--surface-2)] cursor-pointer"
                                             title="تعديل الفرع"
                                           >
                                             <Icons.Edit size={14} />
@@ -943,7 +943,7 @@ export default function CompaniesPage() {
                                           <button
                                             type="button"
                                             onClick={() => handleDeleteBranch(br.id, br.branch_name)}
-                                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                                            className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
                                             title="حذف الفرع"
                                           >
                                             <Icons.Trash size={14} />
@@ -963,23 +963,23 @@ export default function CompaniesPage() {
 
                   {detailTab === "info" && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-slate-500 font-semibold">الاسم العربي</div>
-                        <div className="font-bold text-slate-900 mt-1">{selectedCompany.company_name_ar}</div>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                        <div className="text-[var(--text-3)] font-semibold">الاسم العربي</div>
+                        <div className="font-bold text-[var(--text)] mt-1">{selectedCompany.company_name_ar}</div>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-slate-500 font-semibold">الاسم الإنجليزي</div>
-                        <div className="font-bold text-slate-900 mt-1" dir="ltr">{selectedCompany.company_name_en}</div>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                        <div className="text-[var(--text-3)] font-semibold">الاسم الإنجليزي</div>
+                        <div className="font-bold text-[var(--text)] mt-1" dir="ltr">{selectedCompany.company_name_en}</div>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-slate-500 font-semibold">الكود والنوع</div>
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                        <div className="text-[var(--text-3)] font-semibold">الكود والنوع</div>
                         <div className="font-mono font-bold text-[#2563EB] mt-1">
                           {selectedCompany.company_code} • {selectedCompany.company_type || "Internal"}
                         </div>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-slate-500 font-semibold">بيانات الاتصال</div>
-                        <div className="font-mono text-slate-800 mt-1" dir="ltr">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                        <div className="text-[var(--text-3)] font-semibold">بيانات الاتصال</div>
+                        <div className="font-mono text-[var(--text)] mt-1" dir="ltr">
                           {selectedCompany.contact_email || "—"} • {selectedCompany.contact_phone || "—"}
                         </div>
                       </div>
@@ -988,7 +988,7 @@ export default function CompaniesPage() {
 
                   {detailTab === "departments" && (
                     departments.length === 0 ? (
-                      <div className="py-10 text-center text-xs text-slate-500">
+                      <div className="py-10 text-center text-xs text-[var(--text-3)]">
                         لا توجد أقسام مسجلة لهذه الشركة حالياً
                       </div>
                     ) : (
@@ -996,11 +996,11 @@ export default function CompaniesPage() {
                         {departments.map((d) => (
                           <div
                             key={d.id}
-                            className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between text-xs"
+                            className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between text-xs"
                           >
                             <div>
-                              <div className="font-bold text-slate-900">{d.department_name}</div>
-                              <div className="text-[11px] text-slate-500 mt-0.5">
+                              <div className="font-bold text-[var(--text)]">{d.department_name}</div>
+                              <div className="text-[11px] text-[var(--text-3)] mt-0.5">
                                 {d.branch_name || "على مستوى الشركة"}
                               </div>
                             </div>
@@ -1011,7 +1011,7 @@ export default function CompaniesPage() {
                                   <button
                                     type="button"
                                     onClick={() => openEditDept(d)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white cursor-pointer"
+                                    className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-slate-900 hover:bg-[var(--surface)] cursor-pointer"
                                     title="تعديل القسم"
                                   >
                                     <Icons.Edit size={13} />
@@ -1019,7 +1019,7 @@ export default function CompaniesPage() {
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteDept(d.id, d.department_name)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                                    className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
                                     title="حذف القسم"
                                   >
                                     <Icons.Trash size={13} />
@@ -1035,7 +1035,7 @@ export default function CompaniesPage() {
 
                   {detailTab === "subsidiaries" && (
                     subsidiariesList.length === 0 ? (
-                      <div className="py-10 text-center text-xs text-slate-500">
+                      <div className="py-10 text-center text-xs text-[var(--text-3)]">
                         لا توجد علامات تجارية تابعة مرتبطة حالياً
                       </div>
                     ) : (
@@ -1045,11 +1045,11 @@ export default function CompaniesPage() {
                             key={sub.id}
                             type="button"
                             onClick={() => void selectCompanyNode(sub)}
-                            className="text-right p-3.5 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200 transition-colors cursor-pointer flex items-center justify-between"
+                            className="text-right p-3.5 rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50/60 border border-[var(--border)] transition-colors cursor-pointer flex items-center justify-between"
                           >
                             <div>
-                              <div className="font-bold text-xs text-slate-900">{sub.company_name_ar}</div>
-                              <div className="text-[11px] font-mono text-slate-500">{sub.company_code}</div>
+                              <div className="font-bold text-xs text-[var(--text)]">{sub.company_name_ar}</div>
+                              <div className="text-[11px] font-mono text-[var(--text-3)]">{sub.company_code}</div>
                             </div>
                             <span className="text-xs font-bold text-[#2563EB]">
                               {sub.branches_count || 0} فروع ←
@@ -1069,15 +1069,15 @@ export default function CompaniesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           <section
             aria-label="ملخص الفروع المعتمدة الخمسة"
-            className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3"
+            className="lg:col-span-8 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs space-y-3"
           >
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
               <Icons.Reports size={16} className="text-[#2563EB]" />
               <span>ملخص الفروع ({branchSummaries.length})</span>
             </h2>
 
             {branchSummaries.length === 0 ? (
-              <p className="text-xs text-slate-500 py-4 text-center">
+              <p className="text-xs text-[var(--text-3)] py-4 text-center">
                 اختر شركة لعرض ملخص الفروع الخاص بها
               </p>
             ) : (
@@ -1094,7 +1094,7 @@ export default function CompaniesPage() {
                       <Icons.MapPin size={13} className="shrink-0 text-[#2563EB]" />
                       <span className="truncate">{bs.branch_name}</span>
                     </div>
-                    <div className="space-y-1 text-[11px] text-slate-700">
+                    <div className="space-y-1 text-[11px] text-[var(--text-2)]">
                       <div className="flex items-center justify-between">
                         <span>موظف</span>
                         <span className="font-mono font-bold text-amber-800">{bs.employees_count}</span>
@@ -1110,8 +1110,8 @@ export default function CompaniesPage() {
             )}
           </section>
 
-          <section className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-col justify-between space-y-3">
-            <h2 className="text-sm font-bold text-slate-900">الهيكل التنظيمي للمجموعة</h2>
+          <section className="lg:col-span-4 bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-4 shadow-xs flex flex-col justify-between space-y-3">
+            <h2 className="text-sm font-bold text-[var(--text)]">الهيكل التنظيمي للمجموعة</h2>
             <div className="flex flex-col items-center gap-3 py-1">
               <div className="px-4 py-2 rounded-xl bg-[#1D4ED8] text-white text-xs font-bold text-center">
                 {groupCompany ? `${groupCompany.company_name_ar} (المجموعة)` : "بوابة المستثمر (المجموعة)"}
@@ -1123,7 +1123,7 @@ export default function CompaniesPage() {
                     key={child.id}
                     type="button"
                     onClick={() => void selectCompanyNode(child)}
-                    className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-[11px] font-bold text-slate-800 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-xl bg-[var(--surface-2)] hover:bg-emerald-50 border border-[var(--border)] text-[11px] font-bold text-[var(--text)] cursor-pointer"
                   >
                     {child.company_name_ar}
                   </button>
@@ -1148,7 +1148,7 @@ export default function CompaniesPage() {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الشركة بالعربية *
             </label>
             <input
@@ -1157,12 +1157,12 @@ export default function CompaniesPage() {
               value={nameAr}
               onChange={(e) => setNameAr(e.target.value)}
               placeholder="مثال: شركة التطوير المتقدم"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الشركة بالإنجليزية *
             </label>
             <input
@@ -1171,13 +1171,13 @@ export default function CompaniesPage() {
               value={nameEn}
               onChange={(e) => setNameEn(e.target.value)}
               placeholder="e.g. Advanced Development Co."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 كود الشركة (Unique Code) *
               </label>
               <input
@@ -1186,12 +1186,12 @@ export default function CompaniesPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. ADC"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 رقم الهاتف
               </label>
               <input
@@ -1199,13 +1199,13 @@ export default function CompaniesPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+966 11 000 0000"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               البريد الإلكتروني للاتصال
             </label>
             <input
@@ -1213,12 +1213,12 @@ export default function CompaniesPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="info@company.sa"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               فروع أولية (اختياري - مفصولة بفواصل)
             </label>
             <input
@@ -1226,12 +1226,12 @@ export default function CompaniesPage() {
               value={initialBranchesStr}
               onChange={(e) => setInitialBranchesStr(e.target.value)}
               placeholder="مثال: الفرع الرئيسي, فرع جدة, فرع الدمام"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               أقسام أولية (اختياري - مفصولة بفواصل)
             </label>
             <input
@@ -1239,7 +1239,7 @@ export default function CompaniesPage() {
               value={initialDeptsStr}
               onChange={(e) => setInitialDeptsStr(e.target.value)}
               placeholder="مثال: تقنية المعلومات, الموارد البشرية, المالية"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
@@ -1247,7 +1247,7 @@ export default function CompaniesPage() {
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1275,7 +1275,7 @@ export default function CompaniesPage() {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الشركة بالعربية *
             </label>
             <input
@@ -1283,12 +1283,12 @@ export default function CompaniesPage() {
               required
               value={editNameAr}
               onChange={(e) => setEditNameAr(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الشركة بالإنجليزية *
             </label>
             <input
@@ -1296,13 +1296,13 @@ export default function CompaniesPage() {
               required
               value={editNameEn}
               onChange={(e) => setEditNameEn(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 كود الشركة *
               </label>
               <input
@@ -1310,18 +1310,18 @@ export default function CompaniesPage() {
                 required
                 value={editCode}
                 onChange={(e) => setEditCode(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الحالة *
               </label>
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Active">نشطة (Active)</option>
                 <option value="Inactive">غير نشطة (Inactive)</option>
@@ -1332,26 +1332,26 @@ export default function CompaniesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 البريد الإلكتروني
               </label>
               <input
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 رقم الهاتف
               </label>
               <input
                 type="text"
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1360,7 +1360,7 @@ export default function CompaniesPage() {
             <button
               type="button"
               onClick={() => setShowEditModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1385,7 +1385,7 @@ export default function CompaniesPage() {
           {/* Branches Section */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <h4 className="text-xs font-bold text-[var(--text)] flex items-center gap-2">
                 <Icons.Companies size={16} className="text-[#2563EB]" />
                 <span>فروع الشركة ({branches.length})</span>
               </h4>
@@ -1401,7 +1401,7 @@ export default function CompaniesPage() {
             </div>
 
             {branches.length === 0 ? (
-              <p className="text-xs text-slate-400 p-3 bg-slate-50 rounded-xl text-center">
+              <p className="text-xs text-[var(--text-3)] p-3 bg-[var(--surface-2)] rounded-xl text-center">
                 لا توجد فروع مسجلة لهذه الشركة
               </p>
             ) : (
@@ -1417,18 +1417,18 @@ export default function CompaniesPage() {
                   return (
                   <div
                     key={b.id}
-                    className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-xs"
+                    className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between text-xs"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-800">{b.branch_name}</span>
+                        <span className="font-bold text-[var(--text)]">{b.branch_name}</span>
                         {isCanonical && (
                           <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
                             فرع تشغيلي معتمد
                           </span>
                         )}
                       </div>
-                      <div className="text-slate-400 text-[11px] mt-0.5">
+                      <div className="text-[var(--text-3)] text-[11px] mt-0.5">
                         الموقع: {b.location || "غير محدد"} • تواصل: {b.contact_details || "-"}
                       </div>
                     </div>
@@ -1438,7 +1438,7 @@ export default function CompaniesPage() {
                         <>
                           <button
                             onClick={() => openEditBranch(b)}
-                            className="p-1 text-slate-500 hover:text-slate-800 transition-colors"
+                            className="p-1 text-[var(--text-3)] hover:text-slate-800 transition-colors"
                             title="تعديل الفرع"
                           >
                             <Icons.Edit size={14} />
@@ -1446,7 +1446,7 @@ export default function CompaniesPage() {
                           {!isCanonical && (
                             <button
                               onClick={() => handleDeleteBranch(b.id, b.branch_name)}
-                              className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                              className="p-1 text-[var(--text-3)] hover:text-rose-600 transition-colors"
                               title="حذف الفرع"
                             >
                               <Icons.Trash size={14} />
@@ -1465,7 +1465,7 @@ export default function CompaniesPage() {
           {/* Departments Section */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <h4 className="text-xs font-bold text-[var(--text)] flex items-center gap-2">
                 <Icons.Users size={16} className="text-[#2563EB]" />
                 <span>الأقسام الإدارية ({departments.length})</span>
               </h4>
@@ -1481,7 +1481,7 @@ export default function CompaniesPage() {
             </div>
 
             {departments.length === 0 ? (
-              <p className="text-xs text-slate-400 p-3 bg-slate-50 rounded-xl text-center">
+              <p className="text-xs text-[var(--text-3)] p-3 bg-[var(--surface-2)] rounded-xl text-center">
                 لا توجد أقسام مسجلة لهذه الشركة
               </p>
             ) : (
@@ -1491,11 +1491,11 @@ export default function CompaniesPage() {
                   return (
                     <div
                       key={d.id}
-                      className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-xs"
+                      className="p-3 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-slate-800">{d.department_name}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="font-semibold text-[var(--text)]">{d.department_name}</div>
+                        <div className="text-[10px] text-[var(--text-3)] mt-0.5">
                           الفرع: {linkedBranch ? linkedBranch.branch_name : "عام"}
                         </div>
                       </div>
@@ -1505,14 +1505,14 @@ export default function CompaniesPage() {
                           <>
                             <button
                               onClick={() => openEditDept(d)}
-                              className="p-1 text-slate-500 hover:text-slate-800 transition-colors"
+                              className="p-1 text-[var(--text-3)] hover:text-slate-800 transition-colors"
                               title="تعديل القسم"
                             >
                               <Icons.Edit size={13} />
                             </button>
                             <button
                               onClick={() => handleDeleteDept(d.id, d.department_name)}
-                              className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                              className="p-1 text-[var(--text-3)] hover:text-rose-600 transition-colors"
                               title="حذف القسم"
                             >
                               <Icons.Trash size={13} />
@@ -1538,7 +1538,7 @@ export default function CompaniesPage() {
       >
         <form onSubmit={handleSaveBranch} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم الفرع *
             </label>
             <input
@@ -1547,12 +1547,12 @@ export default function CompaniesPage() {
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
               placeholder="مثال: فرع الرياض - الملز"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               موقع الفرع
             </label>
             <input
@@ -1560,12 +1560,12 @@ export default function CompaniesPage() {
               value={branchLocation}
               onChange={(e) => setBranchLocation(e.target.value)}
               placeholder="مثال: طريق مكة، الدور الثالث"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               بيانات الاتصال
             </label>
             <input
@@ -1573,18 +1573,18 @@ export default function CompaniesPage() {
               value={branchContact}
               onChange={(e) => setBranchContact(e.target.value)}
               placeholder="هاتف أو تحويلة الفرع"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الحالة *
             </label>
             <select
               value={branchStatus}
               onChange={(e) => setBranchStatus(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Active">نشط (Active)</option>
               <option value="Inactive">غير نشط (Inactive)</option>
@@ -1595,7 +1595,7 @@ export default function CompaniesPage() {
             <button
               type="button"
               onClick={() => setShowBranchModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1618,7 +1618,7 @@ export default function CompaniesPage() {
       >
         <form onSubmit={handleSaveDept} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم القسم *
             </label>
             <input
@@ -1627,18 +1627,18 @@ export default function CompaniesPage() {
               value={deptName}
               onChange={(e) => setDeptName(e.target.value)}
               placeholder="مثال: إدارة الخدمات والمشتريات"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الفرع التابع له
             </label>
             <select
               value={deptBranchId}
               onChange={(e) => setDeptBranchId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">بدون فرع محدد (عام)</option>
               {branches.map((b) => (
@@ -1650,13 +1650,13 @@ export default function CompaniesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الحالة *
             </label>
             <select
               value={deptStatus}
               onChange={(e) => setDeptStatus(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Active">نشط (Active)</option>
               <option value="Inactive">غير نشط (Inactive)</option>
@@ -1667,7 +1667,7 @@ export default function CompaniesPage() {
             <button
               type="button"
               onClick={() => setShowDeptModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1693,11 +1693,11 @@ export default function CompaniesPage() {
         title="إدارة حذف أو أرشفة الشركة"
       >
         <div className="space-y-4">
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-sm text-slate-900">{deleteTarget?.company_name_ar}</h3>
-                <div className="text-xs text-slate-500 font-mono mt-0.5">
+                <h3 className="font-bold text-sm text-[var(--text)]">{deleteTarget?.company_name_ar}</h3>
+                <div className="text-xs text-[var(--text-3)] font-mono mt-0.5">
                   {deleteTarget?.company_code} • {deleteTarget?.company_name_en}
                 </div>
               </div>
@@ -1706,17 +1706,17 @@ export default function CompaniesPage() {
           </div>
 
           {loadingImpact ? (
-            <div className="py-8 text-center text-xs text-slate-500 space-y-2">
+            <div className="py-8 text-center text-xs text-[var(--text-3)] space-y-2">
               <div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto" />
               <div>جاري فحص الارتباطات التشغيلية وتقييم أثر الحذف...</div>
             </div>
           ) : companyImpact ? (
             <div className="space-y-3">
-              <div className="text-xs font-bold text-slate-700">تقييم الأثر التشغيلي والارتباطات:</div>
+              <div className="text-xs font-bold text-[var(--text-2)]">تقييم الأثر التشغيلي والارتباطات:</div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-slate-100/70 border border-slate-200 text-center">
-                  <div className="text-[11px] text-slate-500">الفروع والأقسام</div>
-                  <div className="font-bold text-slate-900 mt-1 font-mono">
+                <div className="p-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-center">
+                  <div className="text-[11px] text-[var(--text-3)]">الفروع والأقسام</div>
+                  <div className="font-bold text-[var(--text)] mt-1 font-mono">
                     {companyImpact.branches_count} فرع / {companyImpact.departments_count} قسم
                   </div>
                 </div>
@@ -1783,7 +1783,7 @@ export default function CompaniesPage() {
             </div>
           ) : null}
 
-          <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-[var(--border)]">
             <button
               type="button"
               disabled={deletingCompany || archivingCompany}
@@ -1791,7 +1791,7 @@ export default function CompaniesPage() {
                 setDeleteTarget(null);
                 setCompanyImpact(null);
               }}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-2)] cursor-pointer"
             >
               إلغاء
             </button>

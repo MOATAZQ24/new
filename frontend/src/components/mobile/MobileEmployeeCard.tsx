@@ -44,7 +44,7 @@ export function MobileEmployeeCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -62,7 +62,7 @@ export function MobileEmployeeCard({
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+            <h3 className="text-sm font-bold text-[var(--text)] dark:text-white truncate">
               {employee.full_name}
             </h3>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -73,7 +73,7 @@ export function MobileEmployeeCard({
                 #{employee.employee_number}
               </span>
               {employee.job_title && (
-                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">
+                <span className="text-[11px] text-[var(--text-3)] dark:text-slate-500 font-medium truncate">
                   {employee.job_title}
                 </span>
               )}
@@ -87,7 +87,7 @@ export function MobileEmployeeCard({
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
               isActive
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                : "bg-[var(--surface-2)] dark:bg-slate-800 text-[var(--text-2)] dark:text-slate-400"
             }`}
           >
             {isActive ? (
@@ -104,10 +104,10 @@ export function MobileEmployeeCard({
 
       {/* Organization: Company & Branch */}
       {(employee.company_name || employee.branch_name) && (
-        <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 rounded-xl px-3 py-2 font-medium">
+        <div className="flex items-center gap-2 text-[11px] text-[var(--text-3)] dark:text-slate-400 bg-[var(--surface-2)] dark:bg-slate-800/60 rounded-xl px-3 py-2 font-medium">
           {employee.company_name && (
             <div className="flex items-center gap-1 min-w-0">
-              <Building2 size={12} className="text-slate-400 shrink-0" />
+              <Building2 size={12} className="text-[var(--text-3)] shrink-0" />
               <span className="truncate">{employee.company_name}</span>
             </div>
           )}
@@ -118,7 +118,7 @@ export function MobileEmployeeCard({
 
           {employee.branch_name && (
             <div className="flex items-center gap-1 min-w-0">
-              <MapPin size={12} className="text-slate-400 shrink-0" />
+              <MapPin size={12} className="text-[var(--text-3)] shrink-0" />
               <span className="truncate">{employee.branch_name}</span>
             </div>
           )}
@@ -126,17 +126,17 @@ export function MobileEmployeeCard({
       )}
 
       {/* Metric Counters & Footer Link */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="pt-2 border-t border-[var(--border)] dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {/* Custody Assets count */}
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
-            <Laptop size={11} className="text-slate-400" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--text-2)] dark:text-slate-400 bg-[var(--surface-2)] dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
+            <Laptop size={11} className="text-[var(--text-3)]" />
             <span>{employee.assets_count ?? 0} أصول عهدة</span>
           </span>
 
           {/* Subscriptions count */}
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
-            <CreditCard size={11} className="text-slate-400" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--text-2)] dark:text-slate-400 bg-[var(--surface-2)] dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
+            <CreditCard size={11} className="text-[var(--text-3)]" />
             <span>{employee.subscriptions_count ?? 0} اشتراكات</span>
           </span>
         </div>

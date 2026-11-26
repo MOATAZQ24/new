@@ -78,7 +78,7 @@ export function TaskAnalyticsView({
         <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground">
             <Flame className="w-4 h-4 text-rose-500" />
-            <span className="text-xs font-bold">مهام حرجة (Critical)</span>
+            <span className="text-xs font-bold">مهام حرجة</span>
           </div>
           <div className="text-2xl font-black text-foreground">{critical}</div>
           <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold block">
@@ -89,7 +89,7 @@ export function TaskAnalyticsView({
         <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
-            <span className="text-xs font-bold">مهام معلّقة (Blocked)</span>
+            <span className="text-xs font-bold">مهام معلّقة</span>
           </div>
           <div className="text-2xl font-black text-foreground">{blocked}</div>
           <span className="text-[10px] text-muted-foreground block">

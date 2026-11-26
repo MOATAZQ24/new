@@ -49,7 +49,7 @@ export function MobileSubscriptionCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -67,10 +67,10 @@ export function MobileSubscriptionCard({
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+            <h3 className="text-sm font-bold text-[var(--text)] dark:text-white truncate">
               {subscription.service_name}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
+            <p className="text-xs text-[var(--text-3)] dark:text-slate-500 font-medium truncate mt-0.5">
               {subscription.provider || subscription.account_email || subscription.subscription_type}
             </p>
           </div>
@@ -98,15 +98,15 @@ export function MobileSubscriptionCard({
       </div>
 
       {/* Seat Utilization Bar */}
-      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 space-y-1.5">
+      <div className="bg-[var(--surface-2)] dark:bg-slate-800/60 rounded-xl p-2.5 space-y-1.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-medium">
-            <Users size={13} className="text-slate-400" />
+          <span className="flex items-center gap-1.5 text-[var(--text-3)] dark:text-slate-400 text-[11px] font-medium">
+            <Users size={13} className="text-[var(--text-3)]" />
             <span>المقاعد والمستخدمون:</span>
           </span>
           <span
             dir="ltr"
-            className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs"
+            className="font-mono font-bold text-[var(--text)] dark:text-slate-200 text-xs"
           >
             {allocated} / {limit} ({seatPercentage}%)
           </span>
@@ -128,15 +128,15 @@ export function MobileSubscriptionCard({
       </div>
 
       {/* Branch & Renewal Date */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+      <div className="pt-2 border-t border-[var(--border)] dark:border-slate-800 flex items-center justify-between text-[11px] text-[var(--text-3)] dark:text-slate-500 font-medium">
         <div className="flex items-center gap-1.5">
-          <Building2 size={12} className="text-slate-400" />
+          <Building2 size={12} className="text-[var(--text-3)]" />
           <span>{subscription.branch_name || "جميع الفروع"}</span>
         </div>
 
         {subscription.renewal_date && (
-          <div className="flex items-center gap-1 font-mono text-slate-500 dark:text-slate-400">
-            <Calendar size={12} className="text-slate-400" />
+          <div className="flex items-center gap-1 font-mono text-[var(--text-3)] dark:text-slate-400">
+            <Calendar size={12} className="text-[var(--text-3)]" />
             <span dir="ltr">{subscription.renewal_date}</span>
           </div>
         )}

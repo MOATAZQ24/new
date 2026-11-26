@@ -74,7 +74,7 @@ export function ServicePriorityBadge({ priority }: { priority: string }) {
     Low: {
       label: "منخفض (P5)",
       bg: "bg-slate-500/10 border-slate-500/30",
-      text: "text-slate-700 dark:text-slate-400 font-medium",
+      text: "text-[var(--text-2)] dark:text-slate-400 font-medium",
       dot: "bg-slate-400",
     },
   };
@@ -132,7 +132,7 @@ export function ServiceStatusBadge({ status }: { status: string }) {
     Closed: {
       label: "مغلقة نهائياً",
       bg: "bg-slate-500/10 border-slate-500/30",
-      text: "text-slate-600 dark:text-slate-400",
+      text: "text-[var(--text-2)] dark:text-slate-400",
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     },
     Cancelled: {
@@ -146,7 +146,7 @@ export function ServiceStatusBadge({ status }: { status: string }) {
   const current = map[status] || {
     label: status,
     bg: "bg-slate-500/10 border-slate-500/30",
-    text: "text-slate-700 dark:text-slate-400",
+    text: "text-[var(--text-2)] dark:text-slate-400",
     icon: <FileText className="w-3.5 h-3.5" />,
   };
 

@@ -57,7 +57,7 @@ export function MobileApprovalCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
+      className="bg-[var(--surface)] dark:bg-slate-900 rounded-2xl border border-[var(--border)] dark:border-slate-800 shadow-2xs p-4 hover:border-primary/40 transition active:scale-[0.99] cursor-pointer space-y-2.5"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -75,10 +75,10 @@ export function MobileApprovalCard({
           </div>
 
           <div className="min-w-0 text-right">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+            <h3 className="font-bold text-sm text-[var(--text)] dark:text-white truncate">
               {item.title}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
+            <p className="text-xs text-[var(--text-3)] dark:text-slate-500 font-medium truncate mt-0.5">
               {item.workflow_type}
             </p>
           </div>
@@ -110,7 +110,7 @@ export function MobileApprovalCard({
       </div>
 
       {/* Amount & Initiator */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+      <div className="pt-2 border-t border-[var(--border)] dark:border-slate-800 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           {typeof item.amount_sar === "number" && item.amount_sar > 0 ? (
             <div className="flex items-center gap-1 font-mono font-bold text-primary bg-primary/[0.08] dark:bg-primary/15 px-2.5 py-0.5 rounded-lg text-xs">
@@ -118,13 +118,13 @@ export function MobileApprovalCard({
               <span>{item.amount_sar.toLocaleString()} ر.س</span>
             </div>
           ) : (
-            <span className="text-[11px] text-slate-400 font-medium">طلب تشغيلي عام</span>
+            <span className="text-[11px] text-[var(--text-3)] font-medium">طلب تشغيلي عام</span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+        <div className="flex items-center gap-2 text-[11px] text-[var(--text-3)] dark:text-slate-500 font-medium">
           <span className="flex items-center gap-1">
-            <User size={12} className="text-slate-400" />
+            <User size={12} className="text-[var(--text-3)]" />
             <span>{item.initiator_name || "مقدم الطلب"}</span>
           </span>
           {formattedDate && <span>• {formattedDate}</span>}
@@ -134,7 +134,7 @@ export function MobileApprovalCard({
       {/* Direct Action Buttons for Pending Approvals */}
       {isPending && canApprove && (onApprove || onReject) && (
         <div
-          className="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2"
+          className="pt-2 border-t border-[var(--border)] dark:border-slate-800 grid grid-cols-2 gap-2"
           onClick={(e) => e.stopPropagation()}
         >
           {onReject && (

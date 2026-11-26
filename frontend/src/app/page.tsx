@@ -240,22 +240,22 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] dark:text-white tracking-tight">
                   لوحة المتابعة
                 </h1>
                 <span className="px-2 py-0.5 rounded-md bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 text-xs font-bold border border-primary/20">
                   {primaryRoleTitleAr}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-[var(--text-3)] dark:text-slate-400 mt-0.5">
                 نظرة عامة على الأصول، التذاكر، المهام، والموظفين
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs">
-              <Icons.Calendar size={15} className="text-slate-500" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 text-xs font-semibold text-[var(--text-2)] dark:text-slate-200 shadow-xs">
+              <Icons.Calendar size={15} className="text-[var(--text-3)]" />
               <span suppressHydrationWarning>{todayArabic}</span>
             </div>
             <button
@@ -263,7 +263,7 @@ export default function DashboardPage() {
               onClick={() => void fetchDashboard()}
               disabled={loading}
               aria-label="تحديث بيانات لوحة المتابعة"
-              className="motion-control p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 hover:text-primary hover:border-primary/40 shadow-xs transition-colors cursor-pointer"
+              className="motion-control p-2 rounded-xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 text-[var(--text-2)] dark:text-slate-200 hover:text-primary hover:border-primary/40 shadow-xs transition-colors cursor-pointer"
             >
               <Icons.Refresh size={16} className={loading ? "animate-spin" : ""} />
             </button>
@@ -283,16 +283,16 @@ export default function DashboardPage() {
             {[1, 2, 3, 4].map((idx) => (
               <div
                 key={idx}
-                className="h-24 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 animate-pulse"
+                className="h-24 rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 animate-pulse"
               />
             ))}
           </div>
         ) : data && !canViewKpis ? (
           /* Self-service restricted view preserving role permissions cleanly */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs space-y-3">
+            <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[var(--text)] dark:text-white flex items-center gap-2">
                   <Icons.Tasks size={17} className="text-[#2563EB]" />
                   <span>مهامي الحالية</span>
                 </h2>
@@ -301,14 +301,14 @@ export default function DashboardPage() {
                 </Link>
               </div>
               {data.recent_tasks.length === 0 ? (
-                <p className="text-xs text-slate-500 py-4 text-center">لا توجد مهام مسندة حالياً</p>
+                <p className="text-xs text-[var(--text-3)] py-4 text-center">لا توجد مهام مسندة حالياً</p>
               ) : (
-                <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                <div className="divide-y divide-[var(--border)] dark:divide-slate-700">
                   {data.recent_tasks.slice(0, 4).map((task) => {
                     const badge = formatTaskBadge(task.status);
                     return (
                       <div key={task.id} className="py-2.5 flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">
+                        <span className="text-xs font-semibold text-[var(--text)] dark:text-slate-100 truncate">
                           {task.title}
                         </span>
                         <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${badge.cls}`}>
@@ -321,13 +321,13 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between gap-4">
+            <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[var(--text)] dark:text-white flex items-center gap-2">
                   <Icons.HelpDesk size={17} className="text-sky-600" />
                   <span>تذاكر الدعم العاجلة</span>
                 </h2>
-                <div className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-3">
+                <div className="text-3xl font-black font-mono text-[var(--text)] dark:text-white mt-3">
                   {data.critical_tickets}
                 </div>
               </div>
@@ -346,17 +346,17 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/assets"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--primary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 border-s-4 border-s-[var(--primary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-primary flex items-center justify-center shrink-0">
                     <Icons.Assets size={22} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                    <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                       {data.total_assets}
                     </div>
-                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mt-1.5 truncate">
                       إجمالي الأصول والعهد
                     </div>
                   </div>
@@ -365,17 +365,17 @@ export default function DashboardPage() {
 
               <Link
                 href="/tickets"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--secondary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 border-s-4 border-s-[var(--secondary)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 flex items-center justify-center shrink-0">
                     <Icons.HelpDesk size={22} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                    <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                       {data.total_tickets ?? data.open_tickets}
                     </div>
-                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mt-1.5 truncate">
                       تذكرة (Help Desk)
                     </div>
                   </div>
@@ -384,17 +384,17 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-[var(--accent)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 border-s-4 border-s-[var(--accent)] p-4 flex items-center justify-between gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0">
                     <Icons.Refresh size={22} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                    <div className="text-2xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                       {data.open_tasks}
                     </div>
-                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mt-1.5 truncate">
                       قيد التنفيذ
                     </div>
                   </div>
@@ -403,7 +403,7 @@ export default function DashboardPage() {
 
               <Link
                 href="/tasks"
-                className="motion-card rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 border-s-4 border-s-rose-500 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-rose-300 transition-colors min-w-0"
+                className="motion-card rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 border-s-4 border-s-rose-500 p-4 flex items-center justify-between gap-3 shadow-xs hover:border-rose-300 transition-colors min-w-0"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-900/40 text-rose-600 flex items-center justify-center shrink-0">
@@ -413,7 +413,7 @@ export default function DashboardPage() {
                     <div className="text-2xl font-black font-mono text-rose-700 dark:text-rose-300 leading-none">
                       {data.overdue_tasks}
                     </div>
-                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1.5 truncate">
+                    <div className="text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mt-1.5 truncate">
                       متأخرة
                     </div>
                   </div>
@@ -425,16 +425,16 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/companies"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[var(--surface-2)] dark:bg-slate-700 text-[var(--text-2)] dark:text-slate-300 flex items-center justify-center shrink-0">
                   <Icons.Companies size={20} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                  <div className="text-xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                     {data.total_branches ?? 5}
                   </div>
-                  <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1 truncate">
+                  <div className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mt-1 truncate">
                     فروع
                   </div>
                 </div>
@@ -442,16 +442,16 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <Icons.Clock size={20} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                  <div className="text-xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                     {data.inactive_employees ?? 0}
                   </div>
-                  <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1 truncate">
+                  <div className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mt-1 truncate">
                     متوقف مؤقتاً
                   </div>
                 </div>
@@ -459,16 +459,16 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                   <Icons.User size={20} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                  <div className="text-xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                     {data.active_employees ?? data.total_employees}
                   </div>
-                  <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1 truncate">
+                  <div className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mt-1 truncate">
                     موظف نشط
                   </div>
                 </div>
@@ -476,16 +476,16 @@ export default function DashboardPage() {
 
               <Link
                 href="/employees"
-                className="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
+                className="rounded-2xl bg-[var(--surface)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-4 flex items-center gap-3 shadow-xs hover:border-primary/40 transition-colors min-w-0"
               >
                 <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 flex items-center justify-center shrink-0">
                   <Icons.Users size={20} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white leading-none">
+                  <div className="text-xl font-black font-mono text-[var(--text)] dark:text-white leading-none">
                     {data.total_employees}
                   </div>
-                  <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1 truncate">
+                  <div className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300 mt-1 truncate">
                     إجمالي الموظفين
                   </div>
                 </div>
@@ -495,16 +495,16 @@ export default function DashboardPage() {
             {/* Row 3: 3 Operational Activity Cards (Recent Tickets, Current Tasks, Recent Alerts) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               {/* Recent Help Desk Tickets */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
+              <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-2 pb-3 border-b border-[var(--border)] dark:border-slate-700">
                     <Icons.HelpDesk size={17} className="text-[#1D4ED8] dark:text-emerald-400" />
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-sm font-bold text-[var(--text)] dark:text-white">
                       تذاكر Help Desk الأخيرة
                     </h2>
                   </div>
 
-                  <div className="divide-y divide-slate-100 dark:divide-slate-700 mt-2">
+                  <div className="divide-y divide-[var(--border)] dark:divide-slate-700 mt-2">
                     {data.recent_tickets && data.recent_tickets.length > 0 ? (
                       data.recent_tickets.slice(0, 3).map((tx) => {
                         const badge = formatPriorityBadge(tx.priority);
@@ -512,13 +512,13 @@ export default function DashboardPage() {
                           <Link
                             key={tx.id}
                             href="/tickets"
-                            className="py-3 flex items-center justify-between gap-2 hover:bg-slate-50/70 dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
+                            className="py-3 flex items-center justify-between gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
                           >
                             <div className="min-w-0">
-                              <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                              <div className="text-xs font-bold text-[var(--text)] dark:text-slate-100 truncate">
                                 {tx.issue_title}
                               </div>
-                              <div className="text-[11px] font-mono text-slate-500 mt-0.5" dir="ltr">
+                              <div className="text-[11px] font-mono text-[var(--text-3)] mt-0.5" dir="ltr">
                                 #{tx.ticket_number}
                               </div>
                             </div>
@@ -531,14 +531,14 @@ export default function DashboardPage() {
                         );
                       })
                     ) : (
-                      <div className="py-8 text-center text-xs text-slate-500">
+                      <div className="py-8 text-center text-xs text-[var(--text-3)]">
                         لا توجد تذاكر مسجلة حديثاً
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                <div className="pt-3 mt-2 border-t border-[var(--border)] dark:border-slate-700">
                   <Link
                     href="/tickets"
                     className="inline-flex items-center gap-1 text-xs font-bold text-sky-700 dark:text-sky-400 hover:underline"
@@ -550,16 +550,16 @@ export default function DashboardPage() {
               </section>
 
               {/* Current Tasks */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
+              <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-2 pb-3 border-b border-[var(--border)] dark:border-slate-700">
                     <Icons.CheckSquare size={17} className="text-primary" />
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-sm font-bold text-[var(--text)] dark:text-white">
                       المهام الحالية
                     </h2>
                   </div>
 
-                  <div className="divide-y divide-slate-100 dark:divide-slate-700 mt-2">
+                  <div className="divide-y divide-[var(--border)] dark:divide-slate-700 mt-2">
                     {data.recent_tasks && data.recent_tasks.length > 0 ? (
                       data.recent_tasks.slice(0, 3).map((t) => {
                         const badge = formatTaskBadge(t.status);
@@ -567,13 +567,13 @@ export default function DashboardPage() {
                           <Link
                             key={t.id}
                             href="/tasks"
-                            className="py-3 flex items-center justify-between gap-2 hover:bg-slate-50/70 dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
+                            className="py-3 flex items-center justify-between gap-2 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
                           >
                             <div className="min-w-0">
-                              <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                              <div className="text-xs font-bold text-[var(--text)] dark:text-slate-100 truncate">
                                 {t.title}
                               </div>
-                              <div className="text-[11px] text-slate-500 mt-0.5">
+                              <div className="text-[11px] text-[var(--text-3)] mt-0.5">
                                 الموعد: {formatShortArabicDate(t.due_date)}
                               </div>
                             </div>
@@ -586,14 +586,14 @@ export default function DashboardPage() {
                         );
                       })
                     ) : (
-                      <div className="py-8 text-center text-xs text-slate-500">
+                      <div className="py-8 text-center text-xs text-[var(--text-3)]">
                         لا توجد مهام حالية
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                <div className="pt-3 mt-2 border-t border-[var(--border)] dark:border-slate-700">
                   <Link
                     href="/tasks"
                     className="inline-flex items-center gap-1 text-xs font-bold text-sky-700 dark:text-sky-400 hover:underline"
@@ -605,22 +605,22 @@ export default function DashboardPage() {
               </section>
 
               {/* Recent Alerts & Notifications */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
+              <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-2 pb-3 border-b border-[var(--border)] dark:border-slate-700">
                     <Icons.Notifications size={17} className="text-amber-600" />
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-sm font-bold text-[var(--text)] dark:text-white">
                       التنبيهات الأخيرة
                     </h2>
                   </div>
 
-                  <div className="divide-y divide-slate-100 dark:divide-slate-700 mt-2">
+                  <div className="divide-y divide-[var(--border)] dark:divide-slate-700 mt-2">
                     {recentNotifications.length > 0 ? (
                       recentNotifications.map((n, idx) => (
                         <Link
                           key={n.id}
                           href="/notifications"
-                          className="py-3 flex items-start gap-2.5 hover:bg-slate-50/70 dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
+                          className="py-3 flex items-start gap-2.5 hover:bg-[var(--surface-2)] dark:hover:bg-slate-700/40 rounded-lg px-1 transition-colors"
                         >
                           <div
                             className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
@@ -640,10 +640,10 @@ export default function DashboardPage() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                            <div className="text-xs font-bold text-[var(--text)] dark:text-slate-100 truncate">
                               {n.title}
                             </div>
-                            <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+                            <div className="text-[11px] text-[var(--text-3)] mt-0.5 truncate">
                               {n.created_at
                                 ? formatShortArabicDate(n.created_at)
                                 : n.message || "إشعار نظام"}
@@ -652,14 +652,14 @@ export default function DashboardPage() {
                         </Link>
                       ))
                     ) : (
-                      <div className="py-8 text-center text-xs text-slate-500">
+                      <div className="py-8 text-center text-xs text-[var(--text-3)]">
                         لا توجد تنبيهات جديدة
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
+                <div className="pt-3 mt-2 border-t border-[var(--border)] dark:border-slate-700">
                   <Link
                     href="/notifications"
                     className="inline-flex items-center gap-1 text-xs font-bold text-sky-700 dark:text-sky-400 hover:underline"
@@ -674,10 +674,10 @@ export default function DashboardPage() {
             {/* Row 4: Quick Actions (2x2), Asset Status Donut, Employees/Tickets Donut */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               {/* Quick Actions 2x2 Tile Card */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between gap-4">
+              <section className="bg-[var(--surface)] dark:bg-slate-800 rounded-2xl border border-[var(--border)] dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <Icons.Tasks size={17} className="text-[var(--primary-text)]" />
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h2 className="text-sm font-bold text-[var(--text)] dark:text-white">
                     إجراءات سريعة
                   </h2>
                 </div>
@@ -685,7 +685,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-3 flex-1">
                   <Link
                     href="/assets"
-                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-blue-50/70 border border-[var(--border)] hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-[var(--text)] dark:text-slate-200 transition-colors"
                   >
                     <Icons.Assets size={17} className="text-primary shrink-0" />
                     <span>إضافة أصل/عهد</span>
@@ -693,7 +693,7 @@ export default function DashboardPage() {
 
                   <Link
                     href="/tickets"
-                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-blue-50/70 border border-[var(--border)] hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-[var(--text)] dark:text-slate-200 transition-colors"
                   >
                     <Icons.HelpDesk size={17} className="text-sky-600 dark:text-sky-400 shrink-0" />
                     <span>فتح تذكرة (Help Desk)</span>
@@ -701,15 +701,15 @@ export default function DashboardPage() {
 
                   <Link
                     href="/employees"
-                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-blue-50/70 border border-[var(--border)] hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-[var(--text)] dark:text-slate-200 transition-colors"
                   >
-                    <Icons.Users size={17} className="text-slate-600 dark:text-slate-400 shrink-0" />
+                    <Icons.Users size={17} className="text-[var(--text-2)] dark:text-slate-400 shrink-0" />
                     <span>إضافة موظف</span>
                   </Link>
 
                   <Link
                     href="/tasks"
-                    className="rounded-xl bg-slate-50/90 hover:bg-blue-50/70 border border-slate-200/80 hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors"
+                    className="rounded-xl bg-[var(--surface-2)] hover:bg-blue-50/70 border border-[var(--border)] hover:border-primary/40 p-3.5 flex items-center justify-center gap-2 text-xs font-bold text-[var(--text)] dark:text-slate-200 transition-colors"
                   >
                     <Icons.Tasks size={17} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>إسناد مهمة</span>
@@ -727,14 +727,14 @@ export default function DashboardPage() {
               {/* Employees / Tickets by Status Donut (matching Images 1, 3, 5) */}
               <div className="flex flex-col">
                 <div className="relative flex-1">
-                  <div className="absolute top-4 inset-inline-end-4 z-10 inline-flex rounded-lg bg-slate-100 dark:bg-slate-700 p-0.5 text-[11px] font-bold">
+                  <div className="absolute top-4 inset-inline-end-4 z-10 inline-flex rounded-lg bg-[var(--surface-2)] dark:bg-slate-700 p-0.5 text-[11px] font-bold">
                     <button
                       type="button"
                       onClick={() => setDonutMode("employees")}
                       className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                         donutMode === "employees"
-                          ? "bg-white dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
-                          : "text-slate-600 dark:text-slate-300"
+                          ? "bg-[var(--surface)] dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
+                          : "text-[var(--text-2)] dark:text-slate-300"
                       }`}
                     >
                       الموظفون
@@ -744,8 +744,8 @@ export default function DashboardPage() {
                       onClick={() => setDonutMode("tickets")}
                       className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                         donutMode === "tickets"
-                          ? "bg-white dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
-                          : "text-slate-600 dark:text-slate-300"
+                          ? "bg-[var(--surface)] dark:bg-slate-900 text-primary dark:text-white shadow-2xs"
+                          : "text-[var(--text-2)] dark:text-slate-300"
                       }`}
                     >
                       التذاكر

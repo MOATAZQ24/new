@@ -575,8 +575,8 @@ export default function EmployeesPage() {
                 onClick={() => setTab("employees")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   tab === "employees"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-[var(--surface)] text-[var(--text)] shadow-xs"
+                    : "text-[var(--text-2)] hover:text-slate-900"
                 }`}
               >
                 سجل الموظفين
@@ -586,8 +586,8 @@ export default function EmployeesPage() {
                 onClick={() => setTab("users")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   tab === "users"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-[var(--surface)] text-[var(--text)] shadow-xs"
+                    : "text-[var(--text-2)] hover:text-slate-900"
                 }`}
               >
                 حسابات المستخدمين
@@ -612,14 +612,14 @@ export default function EmployeesPage() {
         <div role="status" className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div>
             <span className="font-bold text-emerald-900">تم إنشاء حساب الدخول المؤقت للمستخدم: </span>
-            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#1D4ED8]">{tempPasswordBanner.username}</code>
+            <code className="px-2 py-0.5 rounded bg-[var(--surface)] border border-emerald-200 font-mono font-bold text-[#1D4ED8]">{tempPasswordBanner.username}</code>
             <span className="mx-1.5 text-emerald-700">كلمة المرور المؤقتة:</span>
-            <code className="px-2 py-0.5 rounded bg-white border border-emerald-200 font-mono font-bold text-[#2563EB]">{tempPasswordBanner.password}</code>
+            <code className="px-2 py-0.5 rounded bg-[var(--surface)] border border-emerald-200 font-mono font-bold text-[#2563EB]">{tempPasswordBanner.password}</code>
           </div>
           <button
             type="button"
             onClick={() => setTempPasswordBanner(null)}
-            className="px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-800 font-semibold cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-emerald-200 text-emerald-800 font-semibold cursor-pointer"
           >
             إغلاق
           </button>
@@ -687,7 +687,7 @@ export default function EmployeesPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               الشركة أو المنشأة
             </label>
             <select
@@ -695,7 +695,7 @@ export default function EmployeesPage() {
               onChange={(e) => {
                 if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
               }}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -706,13 +706,13 @@ export default function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               حالة التوظيف
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع الحالات</option>
               <option value="Active">نشط (Active)</option>
@@ -724,13 +724,13 @@ export default function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] dark:text-slate-300 mb-1.5">
               الفرع
             </label>
             <select
               value={selectedFilterBranchIds[0] || ""}
               onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-slate-800 dark:text-slate-100"
+              className="w-full bg-[var(--surface-2)] dark:bg-slate-800 border border-[var(--border)] dark:border-slate-700 p-3 text-xs rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)] dark:text-slate-100"
             >
               <option value="">جميع الفروع</option>
               {companyBranches.map((br) => (
@@ -741,12 +741,12 @@ export default function EmployeesPage() {
             </select>
           </div>
 
-          <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 cursor-pointer">
+          <label className="flex items-center gap-2 p-3 rounded-xl border border-[var(--border)] dark:border-slate-700 bg-[var(--surface-2)] dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 cursor-pointer">
             <input
               type="checkbox"
               checked={showArchived}
               onChange={(e) => setShowArchived(e.target.checked)}
-              className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 w-4 h-4"
+              className="rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 w-4 h-4"
             />
             <span>عرض الموظفين المؤرشفين واستعادتهم</span>
           </label>
@@ -758,60 +758,60 @@ export default function EmployeesPage() {
       {/* 6 Top Harmonized KPIs */}
       {tab === "employees" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{summary.total}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">إجمالي الموظفين</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{summary.total}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">إجمالي الموظفين</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center shrink-0">
               <Icons.Users size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#2563EB]">{summary.active}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موظف نشط</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">موظف نشط</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.CheckCircle size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-amber-700">{summary.suspended}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">موقوف</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">موقوف</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <Icons.Clock size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-rose-700">{summary.left}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">مغادر</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">مغادر</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
               <Icons.User size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-xl font-black font-mono text-[#1D4ED8]">{summary.with_assets}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم أصول</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">لهم أصول</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#2563EB] flex items-center justify-center shrink-0">
               <Icons.Assets size={20} />
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 flex items-center justify-between gap-2">
+          <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs p-3.5 flex items-center justify-between gap-2">
             <div>
-              <div className="text-xl font-black font-mono text-slate-900">{summary.with_subscriptions}</div>
-              <div className="text-[11px] font-bold text-slate-600 mt-0.5">لهم اشتراكات</div>
+              <div className="text-xl font-black font-mono text-[var(--text)]">{summary.with_subscriptions}</div>
+              <div className="text-[11px] font-bold text-[var(--text-2)] mt-0.5">لهم اشتراكات</div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#8A6D3B] flex items-center justify-center shrink-0">
               <Icons.Subscriptions size={20} />
@@ -821,16 +821,16 @@ export default function EmployeesPage() {
       )}
 
       {/* Unified Inline Search & Filter Toolbar matching Image 4 */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs mb-4 flex flex-wrap items-center gap-2.5">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-3 shadow-xs mb-4 flex flex-wrap items-center gap-2.5">
         <div className="relative flex-1 min-w-[200px]">
-          <Icons.Search size={15} className="text-slate-400 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
+          <Icons.Search size={15} className="text-[var(--text-3)] absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="بحث في الموظفين والمستخدمين"
             placeholder="بحث في الموظفين ..."
-            className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:border-[#2563EB] focus:bg-white"
+            className="w-full ps-9 pe-3 py-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-xs sm:text-sm outline-none focus:border-[#2563EB] focus:bg-[var(--surface)]"
           />
         </div>
 
@@ -842,7 +842,7 @@ export default function EmployeesPage() {
               onChange={(e) => {
                 if (e.target.value && setActiveCompanyId) setActiveCompanyId(e.target.value);
               }}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -855,7 +855,7 @@ export default function EmployeesPage() {
               aria-label="تصفية حسب حالة التوظيف"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">الحالة: الكل</option>
               <option value="Active">نشط (Active)</option>
@@ -869,7 +869,7 @@ export default function EmployeesPage() {
               aria-label="تصفية حسب الفرع"
               value={selectedFilterBranchIds[0] || ""}
               onChange={(e) => setSelectedFilterBranchIds(e.target.value ? [e.target.value] : [])}
-              className="bg-slate-50 border border-slate-200 text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-slate-800"
+              className="bg-[var(--surface-2)] border border-[var(--border)] text-xs py-2 px-3 rounded-xl outline-none focus:border-[#2563EB] text-[var(--text)]"
             >
               <option value="">الفرع: الكل</option>
               {companyBranches.map((br) => (
@@ -885,7 +885,7 @@ export default function EmployeesPage() {
               className={`motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
                 showArchived
                   ? "border-amber-400 bg-amber-50 text-amber-800"
-                  : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                  : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-[var(--text-2)]"
               }`}
               title="عرض الموظفين المؤرشفين واستعادتهم"
             >
@@ -902,7 +902,7 @@ export default function EmployeesPage() {
               type="button"
               onClick={() => void handleExportEmployees()}
               disabled={exportingCsv}
-              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer"
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text-2)] cursor-pointer"
             >
               <Icons.Download size={14} />
               <span>{exportingCsv ? "جاري التصدير..." : "تصدير"}</span>
@@ -910,7 +910,7 @@ export default function EmployeesPage() {
 
             <Link
               href="/reports"
-              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700"
+              className="motion-control inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text-2)]"
             >
               <Icons.FileText size={14} />
               <span>استيراد Excel</span>
@@ -932,7 +932,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Content Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton variant="table" rows={5} cols={tab === "employees" ? 10 : 6} />
         ) : tab === "employees" ? (
@@ -946,7 +946,7 @@ export default function EmployeesPage() {
                   <button
                     type="button"
                     onClick={() => { setSearch(""); setStatusFilter(""); setSelectedFilterBranchIds([]); }}
-                    className="motion-control px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-800 cursor-pointer"
+                    className="motion-control px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-xs font-semibold text-[var(--text)] cursor-pointer"
                   >
                     عرض جميع الموظفين
                   </button>
@@ -979,7 +979,7 @@ export default function EmployeesPage() {
               {/* Desktop Employees Table */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+                <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
                   <tr>
                     <th className="p-3">#</th>
                     <th className="p-3">الموظف</th>
@@ -993,7 +993,7 @@ export default function EmployeesPage() {
                     <th className="p-3 text-center">الإجراءات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[var(--border)]">
                   {employees.map((emp, idx) => {
                     const isSelectedRow = inspectedEmp?.id === emp.id;
                     const assetsCnt = emp.assets_count ?? emp.assigned_assets?.length ?? 0;
@@ -1006,8 +1006,8 @@ export default function EmployeesPage() {
                           isSelectedRow ? "bg-emerald-50/50" : ""
                         }`}
                       >
-                        <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
-                        <td className="p-3 font-bold text-slate-900">
+                        <td className="p-3 font-mono text-[var(--text-3)]">{idx + 1}</td>
+                        <td className="p-3 font-bold text-[var(--text)]">
                           <div className="flex items-center gap-2">
                             <span className="w-7 h-7 rounded-full bg-[#1D4ED8]/10 text-[#1D4ED8] flex items-center justify-center text-[11px] font-bold shrink-0">
                               {(emp.full_name || "م")[0]}
@@ -1024,13 +1024,13 @@ export default function EmployeesPage() {
                         <td className="p-3 font-mono font-bold text-[#2563EB]">
                           <bdi dir="ltr">{emp.employee_number}</bdi>
                         </td>
-                        <td className="p-3 text-slate-700 font-semibold">
+                        <td className="p-3 text-[var(--text-2)] font-semibold">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 text-[#1D4ED8] text-[11px]">
                             <Icons.Building size={12} className="text-[#2563EB]" />
                             <span>{emp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}</span>
                           </span>
                         </td>
-                        <td className="p-3 text-slate-700">
+                        <td className="p-3 text-[var(--text-2)]">
                           {Array.isArray(emp.branch_names) && emp.branch_names.length > 0 ? (
                             <div className="flex items-center gap-1 flex-wrap">
                               <Icons.MapPin size={12} className="text-[#2563EB] shrink-0" />
@@ -1040,7 +1040,7 @@ export default function EmployeesPage() {
                             emp.department_name || "—"
                           )}
                         </td>
-                        <td className="p-3 text-slate-700">{emp.job_title || "—"}</td>
+                        <td className="p-3 text-[var(--text-2)]">{emp.job_title || "—"}</td>
                         <td className="p-3 text-center">
                           <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700">
                             <Icons.Laptop size={13} />
@@ -1076,7 +1076,7 @@ export default function EmployeesPage() {
                               type="button"
                               onClick={() => openEmployeeDetails(emp)}
                               aria-label={`عرض تفاصيل وعهد ${emp.full_name}`}
-                              className="p-1.5 rounded-lg text-slate-600 hover:text-[#2563EB] hover:bg-emerald-50 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-[var(--text-2)] hover:text-[#2563EB] hover:bg-emerald-50 transition-colors cursor-pointer"
                               title="العهد والمهام و Telegram"
                             >
                               <Icons.Eye size={14} />
@@ -1087,7 +1087,7 @@ export default function EmployeesPage() {
                                   type="button"
                                   onClick={() => openEditEmployee(emp)}
                                   aria-label={`تعديل الموظف ${emp.full_name}`}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-slate-900 hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
                                   title="تعديل الموظف"
                                 >
                                   <Icons.Edit size={14} />
@@ -1107,7 +1107,7 @@ export default function EmployeesPage() {
                                     type="button"
                                     onClick={() => handleOpenArchiveModal(emp)}
                                     aria-label={`أرشفة وحفظ الموظف ${emp.full_name}`}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-lg text-[var(--text-3)] hover:text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
                                     title="أرشفة / حذف الموظف"
                                   >
                                     <Icons.Trash size={14} />
@@ -1134,7 +1134,7 @@ export default function EmployeesPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold">
+              <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-[var(--text-2)] font-semibold">
                 <tr>
                   <th className="p-3.5">اسم المستخدم</th>
                   <th className="p-3.5">الموظف المرتبط</th>
@@ -1144,10 +1144,10 @@ export default function EmployeesPage() {
                   <th className="p-3.5">آخر تسجيل دخول</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[var(--border)]">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="p-3.5 font-bold font-mono text-slate-900">
+                  <tr key={u.id} className="hover:bg-[var(--surface-2)] transition-colors">
+                    <td className="p-3.5 font-bold font-mono text-[var(--text)]">
                       <bdi dir="ltr">{u.username}</bdi>
                       {u.is_superadmin && (
                         <span className="ms-2 px-1.5 py-0.5 bg-purple-50 text-purple-800 rounded text-[10px]">
@@ -1155,16 +1155,16 @@ export default function EmployeesPage() {
                         </span>
                       )}
                     </td>
-                    <td className="p-3.5 text-slate-800 font-semibold">
+                    <td className="p-3.5 text-[var(--text)] font-semibold">
                       {u.full_name || "بدون ارتباط"}
                     </td>
-                    <td className="p-3.5 font-mono text-slate-600"><bdi dir="ltr">{u.email}</bdi></td>
+                    <td className="p-3.5 font-mono text-[var(--text-2)]"><bdi dir="ltr">{u.email}</bdi></td>
                     <td className="p-3.5">
                       <div className="flex flex-wrap gap-1">
                         {u.roles?.map((r: string) => (
                           <span
                             key={r}
-                            className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded text-[10px] font-semibold"
+                            className="px-2 py-0.5 bg-[var(--surface-2)] text-[var(--text)] rounded text-[10px] font-semibold"
                           >
                             {r}
                           </span>
@@ -1174,7 +1174,7 @@ export default function EmployeesPage() {
                     <td className="p-3.5">
                       <StatusBadge status={u.account_status || "Active"} />
                     </td>
-                    <td className="p-3.5 text-slate-600 font-mono">
+                    <td className="p-3.5 text-[var(--text-2)] font-mono">
                       <bdi dir="ltr">{u.last_login ? new Date(u.last_login).toLocaleString("ar-SA") : "لم يسجل بعد"}</bdi>
                     </td>
                   </tr>
@@ -1189,9 +1189,9 @@ export default function EmployeesPage() {
       {tab === "employees" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
           {/* Card 1: بيانات الموظف (Live Inspector) */}
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[var(--border)]">
+              <h2 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                 <Icons.User size={16} className="text-[#2563EB]" />
                 <span>بيانات الموظف</span>
               </h2>
@@ -1207,29 +1207,29 @@ export default function EmployeesPage() {
 
             {inspectedEmp ? (
               <div className="space-y-2.5 text-xs">
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500 font-semibold">الشركة *</span>
-                  <span className="font-bold text-slate-900">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] font-semibold">الشركة *</span>
+                  <span className="font-bold text-[var(--text)]">
                     {inspectedEmp.company_name || activeCompany?.name_ar || "بوابة المستثمر"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500 font-semibold">الاسم والرقم</span>
-                  <span className="font-bold text-slate-900">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] font-semibold">الاسم والرقم</span>
+                  <span className="font-bold text-[var(--text)]">
                     {inspectedEmp.full_name} ({inspectedEmp.employee_number})
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500 font-semibold">الفرع *</span>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] font-semibold">الفرع *</span>
                   <span className="font-bold text-[#1D4ED8]">
                     {inspectedEmp.branch_names?.length
                       ? inspectedEmp.branch_names.join("، ")
                       : "غير محدد"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500 font-semibold">القسم والمسمى</span>
-                  <span className="font-semibold text-slate-800">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
+                  <span className="text-[var(--text-3)] font-semibold">القسم والمسمى</span>
+                  <span className="font-semibold text-[var(--text)]">
                     {inspectedEmp.department_name || "—"} • {inspectedEmp.job_title || "—"}
                   </span>
                 </div>
@@ -1237,7 +1237,7 @@ export default function EmployeesPage() {
                   <button
                     type="button"
                     onClick={() => openEmployeeDetails(inspectedEmp)}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#2563EB] text-slate-700 hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg border border-[var(--border)] hover:border-[#2563EB] text-[var(--text-2)] hover:text-[#2563EB] font-semibold text-[11px] cursor-pointer"
                   >
                     العهد والمهام و Telegram
                   </button>
@@ -1253,36 +1253,36 @@ export default function EmployeesPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-500 py-6 text-center">
+              <p className="text-xs text-[var(--text-3)] py-6 text-center">
                 اختر موظفاً من الجدول لعرض بيانات الربط الخاصة به
               </p>
             )}
           </section>
 
           {/* Card 2: قواعد ربط الموظف */}
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <Icons.ShieldCheck size={16} className="text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">قواعد ربط الموظف</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">قواعد ربط الموظف</h2>
             </div>
 
-            <ul className="space-y-2.5 text-xs text-slate-700 bg-slate-50/70 rounded-xl p-3.5 border border-slate-100">
+            <ul className="space-y-2.5 text-xs text-[var(--text-2)] bg-[var(--surface-2)] rounded-xl p-3.5 border border-[var(--border)]">
               <li className="flex items-start gap-2">
                 <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong className="text-slate-900">إلزامي:</strong> ربط الموظف بشركة واحدة معتمدة.
+                  <strong className="text-[var(--text)]">إلزامي:</strong> ربط الموظف بشركة واحدة معتمدة.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong className="text-slate-900">اختياري:</strong> ربط الموظف بفرع واحد أو أكثر والقسم التابع.
+                  <strong className="text-[var(--text)]">اختياري:</strong> ربط الموظف بفرع واحد أو أكثر والقسم التابع.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <Icons.CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong className="text-slate-900">الربط التلقائي:</strong> تتبع الأصول والعهد والاشتراكات حسب الشركة والفرع.
+                  <strong className="text-[var(--text)]">الربط التلقائي:</strong> تتبع الأصول والعهد والاشتراكات حسب الشركة والفرع.
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -1295,10 +1295,10 @@ export default function EmployeesPage() {
           </section>
 
           {/* Card 3: نمذجة الربط */}
-          <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3 flex flex-col justify-between">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+          <section className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-[var(--border)]">
               <Icons.Info size={16} className="text-[#2563EB]" />
-              <h2 className="text-sm font-bold text-slate-900">نمذجة الربط</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">نمذجة الربط</h2>
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4 py-2">
@@ -1313,20 +1313,20 @@ export default function EmployeesPage() {
               <div className="grid grid-cols-3 gap-2 w-full">
                 <Link
                   href="/companies"
-                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#2563EB] transition-colors"
+                  className="p-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-center hover:border-[#2563EB] transition-colors"
                 >
                   <Icons.Building size={16} className="mx-auto text-[#1D4ED8] mb-1" />
-                  <div className="text-[11px] font-bold text-slate-900">شركة</div>
-                  <div className="text-[10px] text-slate-500">(أساسية)</div>
+                  <div className="text-[11px] font-bold text-[var(--text)]">شركة</div>
+                  <div className="text-[10px] text-[var(--text-3)]">(أساسية)</div>
                 </Link>
 
                 <Link
                   href="/subscriptions"
-                  className="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-center hover:border-[#2563EB] transition-colors"
+                  className="p-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] text-center hover:border-[#2563EB] transition-colors"
                 >
                   <Icons.Subscriptions size={16} className="mx-auto text-[#8A6D3B] mb-1" />
-                  <div className="text-[11px] font-bold text-slate-900">اشتراكات</div>
-                  <div className="text-[10px] text-slate-500">(برامج وخدمات)</div>
+                  <div className="text-[11px] font-bold text-[var(--text)]">اشتراكات</div>
+                  <div className="text-[10px] text-[var(--text-3)]">(برامج وخدمات)</div>
                 </Link>
 
                 <Link
@@ -1334,8 +1334,8 @@ export default function EmployeesPage() {
                   className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-center hover:border-[#2563EB] transition-colors"
                 >
                   <Icons.Laptop size={16} className="mx-auto text-[#2563EB] mb-1" />
-                  <div className="text-[11px] font-bold text-slate-900">أصول</div>
-                  <div className="text-[10px] text-slate-500">(أجهزة وعهد)</div>
+                  <div className="text-[11px] font-bold text-[var(--text)]">أصول</div>
+                  <div className="text-[10px] text-[var(--text-3)]">(أجهزة وعهد)</div>
                 </Link>
               </div>
             </div>
@@ -1371,7 +1371,7 @@ export default function EmployeesPage() {
             </div>
           )}
           <div>
-            <label htmlFor="edit-emp-name" className="block text-xs font-bold text-slate-700 mb-1">
+            <label htmlFor="edit-emp-name" className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الاسم الكامل *
             </label>
             <input
@@ -1380,36 +1380,36 @@ export default function EmployeesPage() {
               required
               value={editFullName}
               onChange={(e) => setEditFullName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               المسمى الوظيفي
             </label>
             <input
               type="text"
               value={editJobTitle}
               onChange={(e) => setEditJobTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 البريد الإلكتروني
               </label>
               <input
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 رقم الهاتف
               </label>
               <input
@@ -1417,16 +1417,16 @@ export default function EmployeesPage() {
                 dir="ltr"
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] text-left font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] text-left font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1.5">
               الفروع المعتمدة للموظف
             </label>
-            <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)]">
               {companyBranches.map((br) => {
                 const idx = editBranchIds.indexOf(br.id);
                 const checked = idx !== -1;
@@ -1444,7 +1444,7 @@ export default function EmployeesPage() {
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
                       checked
                         ? "bg-[#1D4ED8] text-white border-[#1D4ED8]"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-[#2563EB]"
+                        : "bg-[var(--surface)] text-[var(--text-2)] border-[var(--border)] hover:border-[#2563EB]"
                     }`}
                   >
                     {idx === 0 ? "أساسي: " : checked ? "مساند: " : ""}{br.branch_name}
@@ -1456,11 +1456,11 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">القسم الإداري</label>
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">القسم الإداري</label>
               <select
                 value={editDeptId}
                 onChange={(e) => setEditDeptId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">اختر القسم...</option>
                 {companyDepartments.map((d) => (
@@ -1471,11 +1471,11 @@ export default function EmployeesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">المدير المباشر</label>
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">المدير المباشر</label>
               <select
                 value={editManagerId}
                 onChange={(e) => setEditManagerId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="">بدون مدير مباشر / الإدارة التنفيذية</option>
                 {employees
@@ -1491,13 +1491,13 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الحالة الوظيفية *
               </label>
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
                 <option value="Active">على رأس العمل (Active)</option>
                 <option value="On Leave">في إجازة (On Leave)</option>
@@ -1506,13 +1506,13 @@ export default function EmployeesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">سبب التعديل / النقل (اختياري)</label>
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">سبب التعديل / النقل (اختياري)</label>
               <input
                 type="text"
                 value={editChangeReason}
                 onChange={(e) => setEditChangeReason(e.target.value)}
                 placeholder="مثال: نقل إلى فرع الدمام"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1521,7 +1521,7 @@ export default function EmployeesPage() {
             <button
               type="button"
               onClick={() => setShowEditEmpModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1544,7 +1544,7 @@ export default function EmployeesPage() {
       >
         <form onSubmit={handleCreateUser} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               اسم المستخدم (Login Username) *
             </label>
             <input
@@ -1553,12 +1553,12 @@ export default function EmployeesPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="مثال: ahmad_it"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB] font-mono"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB] font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               البريد الإلكتروني *
             </label>
             <input
@@ -1567,12 +1567,12 @@ export default function EmployeesPage() {
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="user@company.sa"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               كلمة المرور *
             </label>
             <input
@@ -1581,18 +1581,18 @@ export default function EmployeesPage() {
               value={userPassword}
               onChange={(e) => setUserPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               ربط بموظف (اختياري)
             </label>
             <select
               value={targetEmployeeId}
               onChange={(e) => setTargetEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="">بدون ربط بموظف محدد</option>
               {employees.map((e) => (
@@ -1604,13 +1604,13 @@ export default function EmployeesPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               الدور والصلاحيات *
             </label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             >
               <option value="Employee">موظف (Employee)</option>
               <option value="IT Technician">فني تقنية معلومات (IT Technician)</option>
@@ -1624,7 +1624,7 @@ export default function EmployeesPage() {
             <button
               type="button"
               onClick={() => setShowAddUserModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1646,40 +1646,40 @@ export default function EmployeesPage() {
         maxWidth="max-w-3xl"
       >
         <div className="space-y-4">
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-4 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block text-[10px]">الرقم الوظيفي:</span>
+              <span className="text-[var(--text-3)] block text-[10px]">الرقم الوظيفي:</span>
               <span className="font-mono font-bold text-[#2563EB]">{selectedEmp?.employee_number}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">المسمى:</span>
+              <span className="text-[var(--text-3)] block text-[10px]">المسمى:</span>
               <span className="font-semibold">{selectedEmp?.job_title || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">القسم:</span>
+              <span className="text-[var(--text-3)] block text-[10px]">القسم:</span>
               <span>{selectedEmp?.department_name || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">الحالة:</span>
+              <span className="text-[var(--text-3)] block text-[10px]">الحالة:</span>
               <StatusBadge status={selectedEmp?.employment_status || "Active"} />
             </div>
           </div>
 
           {/* Telegram Account Integration Card */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="p-3.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 text-sky-600 flex items-center justify-center">
                 <Send className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-slate-800 block">ربط إشعارات Telegram:</span>
+                <span className="font-bold text-[var(--text)] block">ربط إشعارات Telegram:</span>
                 {selectedEmp?.is_telegram_linked ? (
                   <span className="text-emerald-700 font-medium inline-flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>مرتبط ومفعل ({selectedEmp.telegram_username ? `@${selectedEmp.telegram_username}` : "حساب مؤكد"})</span>
                   </span>
                 ) : (
-                  <span className="text-slate-500 font-medium inline-flex items-center gap-1.5">
+                  <span className="text-[var(--text-3)] font-medium inline-flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-slate-300" />
                     <span>غير مرتبط — اربط حساب الموظف لتصل إليه تكليفات المهام والإشعارات التشغيلية فوراً</span>
                   </span>
@@ -1727,14 +1727,14 @@ export default function EmployeesPage() {
           )}
 
           {/* Sub tabs */}
-          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+          <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setDetailsTab("custody")}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   detailsTab === "custody"
                     ? "bg-[#1D4ED8] text-white"
-                    : "text-slate-600 hover:bg-slate-100"
+                    : "text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                 }`}
               >
                 الأصول والعهد المسلمة ({selectedEmp?.assigned_assets?.length || 0})
@@ -1744,7 +1744,7 @@ export default function EmployeesPage() {
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   detailsTab === "tasks"
                     ? "bg-[#1D4ED8] text-white"
-                    : "text-slate-600 hover:bg-slate-100"
+                    : "text-[var(--text-2)] hover:bg-[var(--surface-2)]"
                 }`}
               >
                 المهام والعمليات المسندة ({empTasks.length})
@@ -1769,11 +1769,11 @@ export default function EmployeesPage() {
                   {selectedEmp.assigned_assets.map((a) => (
                     <div
                       key={a.custody_id}
-                      className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
+                      className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-bold text-slate-800">{a.asset_name}</div>
-                        <div className="text-slate-400 font-mono text-[11px] mt-0.5">
+                        <div className="font-bold text-[var(--text)]">{a.asset_name}</div>
+                        <div className="text-[var(--text-3)] font-mono text-[11px] mt-0.5">
                           كود: {a.asset_code} • النوع: {a.asset_type}
                         </div>
                       </div>
@@ -1786,7 +1786,7 @@ export default function EmployeesPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl">
+                <p className="text-xs text-[var(--text-3)] py-6 text-center border border-dashed border-[var(--border)] rounded-xl">
                   لا توجد عهد نشطة مسلمة لهذا الموظف حالياً
                 </p>
               )}
@@ -1798,11 +1798,11 @@ export default function EmployeesPage() {
                   {empTasks.map((t) => (
                     <div
                       key={t.id}
-                      className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs"
+                      className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-bold text-slate-800">{t.title}</div>
-                        <div className="text-slate-400 text-[11px] mt-0.5">
+                        <div className="font-bold text-[var(--text)]">{t.title}</div>
+                        <div className="text-[var(--text-3)] text-[11px] mt-0.5">
                           الأولوية: {t.priority} {t.due_date && `• موعد الاستحقاق: ${t.due_date}`}
                         </div>
                       </div>
@@ -1813,7 +1813,7 @@ export default function EmployeesPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl">
+                <p className="text-xs text-[var(--text-3)] py-6 text-center border border-dashed border-[var(--border)] rounded-xl">
                   لا توجد مهام مسندة لهذا الموظف حالياً
                 </p>
               )}
@@ -1831,7 +1831,7 @@ export default function EmployeesPage() {
       >
         <form onSubmit={handleAssignTask} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               عنوان المهمة *
             </label>
             <input
@@ -1840,12 +1840,12 @@ export default function EmployeesPage() {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               placeholder="مثال: ترقية نظام التشغيل وفحص الأمان"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
               تفاصيل المهمة
             </label>
             <textarea
@@ -1853,36 +1853,36 @@ export default function EmployeesPage() {
               value={taskDesc}
               onChange={(e) => setTaskDesc(e.target.value)}
               placeholder="الخطوات والملاحظات الفنية للمهمة..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 الأولوية *
               </label>
               <select
                 value={taskPriority}
                 onChange={(e) => setTaskPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               >
-                <option value="Low">منخفضة (Low)</option>
-                <option value="Medium">متوسطة (Medium)</option>
-                <option value="High">مرتفعة (High)</option>
-                <option value="Urgent">حرجة / عاجلة (Urgent)</option>
+                <option value="Low">منخفضة</option>
+                <option value="Medium">متوسطة</option>
+                <option value="High">مرتفعة</option>
+                <option value="Urgent">حرجة / عاجلة</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[var(--text-2)] mb-1">
                 تاريخ الاستحقاق
               </label>
               <input
                 type="date"
                 value={taskDueDate}
                 onChange={(e) => setTaskDueDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-xs outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -1891,7 +1891,7 @@ export default function EmployeesPage() {
             <button
               type="button"
               onClick={() => setShowAssignTaskModal(false)}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50"
+              className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)]"
             >
               إلغاء
             </button>
@@ -1934,7 +1934,7 @@ export default function EmployeesPage() {
         maxWidth="max-w-md"
       >
         {empToArchive && (
-          <div className="space-y-4 text-xs text-slate-700">
+          <div className="space-y-4 text-xs text-[var(--text-2)]">
             <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
               <Icons.AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18} />
               <div className="space-y-1">
@@ -1954,14 +1954,14 @@ export default function EmployeesPage() {
               </div>
             )}
 
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+            <div className="bg-[var(--surface-2)] p-3 rounded-xl border border-[var(--border)] space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-500">المسمى الوظيفي:</span>
-                <span className="font-semibold text-slate-900">{empToArchive.job_title || "غير محدد"}</span>
+                <span className="text-[var(--text-3)]">المسمى الوظيفي:</span>
+                <span className="font-semibold text-[var(--text)]">{empToArchive.job_title || "غير محدد"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">الفرع / الإدارة:</span>
-                <span className="font-semibold text-slate-900">{empToArchive.branch_names?.join("، ") || "الفرع الرئيسي"}</span>
+                <span className="text-[var(--text-3)]">الفرع / الإدارة:</span>
+                <span className="font-semibold text-[var(--text)]">{empToArchive.branch_names?.join("، ") || "الفرع الرئيسي"}</span>
               </div>
             </div>
 
@@ -1973,7 +1973,7 @@ export default function EmployeesPage() {
                   setShowArchiveModal(false);
                   setEmpToArchive(null);
                 }}
-                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 border border-[var(--border)] text-[var(--text-2)] rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] disabled:opacity-50 cursor-pointer"
               >
                 إلغاء
               </button>

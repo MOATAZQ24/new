@@ -20,7 +20,7 @@ export function ReorderList<T>({ items, itemKey, render, onChange }: {
   };
   return <ul className="space-y-2">{items.map((item, i) => <li key={itemKey(item)}
     onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (dragged !== null) move(dragged, i); setDragged(null); }}
-    className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 bg-white">
+    className="flex items-center gap-3 rounded-lg border border-[var(--border)] p-3 bg-[var(--surface)]">
     <span draggable onDragStart={() => setDragged(i)} onDragEnd={() => setDragged(null)} className="cursor-grab" aria-hidden="true">⠿</span>
     <div className="flex-1 min-w-0">{render(item, i)}</div>
     <button type="button" disabled={i === 0} onClick={() => move(i, i - 1)} aria-label={`نقل لأعلى / Move up ${i + 1}`}>↑</button>
