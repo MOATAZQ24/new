@@ -43,6 +43,7 @@ from app.schemas.task import (
     TaskReviewRequest,
     TaskBroadcastCreate,
     TaskParticipantResponse,
+    TaskRouteAttachmentsRequest,
 )
 from app.schemas.work_management import (
     TaskAssignRequest,
@@ -1521,6 +1522,73 @@ async def attach_file_to_existing_task(
             "attachments": task.attachments,
         },
         message="تم إرفاق الملف وإرساله للمرحلة القادمة بنجاح",
+    )
+
+
+@router.post("/{task_id}/route-attachments")
+def route_uploaded_attachments_to_task(
+    task_id: uuid.UUID,
+    payload: TaskRouteAttachmentsRequest,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Attach already-uploaded files/images to an existing task and optionally advance its workflow stage."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+
+    task.attachments = _merge_task_attachments(task.attachments, payload.attachments)
+    names = ", ".join(
+        (a.get("name") if isinstance(a, dict) else str(a))
+        for a in (payload.attachments or [])
+        if a
+    )
+    comment_text = f"📎 تم إرفاق ({len(payload.attachments or [])}) ملف/صورة: {names}"
+    if payload.stage_note and payload.stage_note.strip():
+        comment_text += f" — ملاحظة المرحلة: {payload.stage_note.strip()}"
+    db.add(TaskComment(task_id=task.id, user_id=current_user.id, content=comment_text))
+
+    next_st = (payload.advance_to_status or "").strip()
+    if next_st:
+        if next_st == "Submitted for Review":
+            task_service.submit_for_review(task=task, notes=payload.stage_note, user=current_user, db=db)
+        elif next_st == "In Progress" and task.status in ("Assigned", "Accepted", "Rework Required", "Draft", "To Do"):
+            task_service.start_task(task=task, user=current_user, db=db)
+        elif next_st == "Accepted" and task.status == "Assigned":
+            task_service.accept_task(task=task, user=current_user, db=db)
+        elif next_st == "Blocked":
+            task_service.block_task(
+                task=task,
+                blocker_reason=payload.stage_note or "تم تعليق المهمة مع إرفاق ملف توضيحي",
+                user=current_user,
+                db=db,
+            )
+        elif next_st == "Rework Required":
+            task_service.rework_task(
+                task=task,
+                rework_notes=payload.stage_note or "يرجى مراجعة المرفقات وإجراء التعديلات المطلوبة",
+                reviewer=current_user,
+                db=db,
+            )
+        elif next_st == "Completed":
+            actor = wf.Actor(
+                user_id=current_user.id, employee_id=current_user.employee_id, name=current_user.username,
+                company_id=active_cid, privileged=task_service.is_manager_or_admin(current_user, db, task.company_id),
+                superadmin=bool(current_user.is_superadmin), source="dashboard",
+            )
+            wf.transition(db, task, actor, "complete", payload.stage_note)
+
+    db.commit()
+    db.refresh(task)
+    return success_response(
+        data={
+            "id": str(task.id),
+            "status": task.status,
+            "attachments": task.attachments,
+        },
+        message="تم حفظ المرفقات وتنفيذ الإجراء على المهمة بنجاح",
     )
 
 

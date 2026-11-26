@@ -132,6 +132,12 @@ class TaskReviewRequest(BaseModel):
     attachments: Optional[Any] = None
 
 
+class TaskRouteAttachmentsRequest(BaseModel):
+    attachments: List[Any]
+    stage_note: Optional[str] = None
+    advance_to_status: Optional[str] = None
+
+
 class TaskResponse(TaskBase):
     id: uuid.UUID
     company_id: uuid.UUID

@@ -52,6 +52,10 @@ import VoiceTaskRecorder, { type VoiceRecordingResult } from "@/components/tasks
 import VoiceTaskPlayer from "@/components/tasks/VoiceTaskPlayer";
 import { TasksKpiCards } from "@/components/tasks/TasksKpiCards";
 import { QuickComposerMenu, type ComposerActionType } from "@/components/tasks/QuickComposerMenu";
+import {
+  SmartUploadActionModal,
+  TaskTemplatesModal,
+} from "@/components/tasks/SmartUploadActionModal";
 import { TasksSplitDrawer, type SplitDrawerTask } from "@/components/tasks/TasksSplitDrawer";
 import { TasksDataTable, type TaskRowItem } from "@/components/tasks/TasksDataTable";
 import MasterDetailLayout from "@/components/ui/MasterDetailLayout";
@@ -249,6 +253,9 @@ export default function TasksPage() {
     { name: string; url: string; size?: string; is_image?: boolean; stage?: string }[]
   >([]);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [smartUploadModalOpen, setSmartUploadModalOpen] = useState(false);
+  const [smartUploadInitialMode, setSmartUploadInitialMode] = useState<"camera" | "file">("file");
+  const [templatesModalOpen, setTemplatesModalOpen] = useState(false);
 
   // Form state for task creation
   const [formData, setFormData] = useState({
@@ -306,26 +313,7 @@ export default function TasksPage() {
         setCreateModal(true);
         break;
       case "template":
-        setEditingTask(null);
-        setSelectedEmployee(null);
-        setFormData({
-          title: "معالجة عطل الخادم الرئيسي",
-          description: "استعادة الخدمة لمستخدمي النظام والتحقق من استقرار الخادم ومنع تكرار العطل.",
-          assigned_to_id: "",
-          priority: "Critical",
-          status: "Assigned",
-          start_date: "",
-          due_date: new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
-          related_asset_id: "",
-          notes: "أولوية قصوى وفق معايير الحوادث الحرجة ITIL",
-          notify_telegram: true,
-          is_voice_task: false,
-          voice_note_url: "",
-          voice_note_duration: 0,
-        });
-        setCreateMode("text");
-        setCreateModal(true);
-        toast.info("تم تحميل قالب المهمة بنجاح");
+        setTemplatesModalOpen(true);
         break;
       case "voice":
         setEditingTask(null);
@@ -334,13 +322,15 @@ export default function TasksPage() {
         setCreateModal(true);
         break;
       case "camera":
-        cameraInputRef.current?.click();
+        setSmartUploadInitialMode("camera");
+        setSmartUploadModalOpen(true);
         break;
       case "file_upload":
-        fileInputRef.current?.click();
+        setSmartUploadInitialMode("file");
+        setSmartUploadModalOpen(true);
         break;
     }
-  }, [toast]);
+  }, []);
 
   const buildBaseParams = useCallback(() => {
     const params: Record<string, string> = {};
@@ -3236,6 +3226,71 @@ export default function TasksPage() {
           </button>
         </div>
         )}
+
+        {/* Smart Upload & Action Routing Wizard Modal (Camera / File Upload -> New Task / Next Stage / Help Desk Ticket) */}
+        <SmartUploadActionModal
+          isOpen={smartUploadModalOpen}
+          initialMode={smartUploadInitialMode}
+          companyId={currentCompany?.id}
+          preselectedTask={
+            selectedTask
+              ? {
+                  id: selectedTask.id,
+                  reference: selectedTask.reference,
+                  title: selectedTask.title,
+                  status: selectedTask.status,
+                  assigned_to_name: selectedTask.assigned_to_name,
+                }
+              : null
+          }
+          activeTasks={tasks.map((t) => ({
+            id: t.id,
+            reference: t.reference,
+            title: t.title,
+            status: t.status,
+            assigned_to_name: t.assigned_to_name,
+          }))}
+          assets={assets}
+          onClose={() => setSmartUploadModalOpen(false)}
+          onSuccessRefresh={(updatedTaskId) => {
+            if (updatedTaskId) {
+              void refreshSelectedTask(updatedTaskId);
+            } else {
+              void loadTasks();
+            }
+          }}
+        />
+
+        {/* Ready-Made Task Templates Library Modal */}
+        <TaskTemplatesModal
+          isOpen={templatesModalOpen}
+          onClose={() => setTemplatesModalOpen(false)}
+          onSelectTemplate={(tpl) => {
+            setEditingTask(null);
+            setSelectedEmployee(null);
+            setPendingAttachments([]);
+            setFormData({
+              title: tpl.title,
+              description: tpl.description,
+              assigned_to_id: "",
+              priority: tpl.priority,
+              status: "Assigned",
+              start_date: new Date().toISOString().split("T")[0],
+              due_date: new Date(Date.now() + tpl.durationHours * 60 * 60 * 1000)
+                .toISOString()
+                .slice(0, 16),
+              related_asset_id: "",
+              notes: tpl.notes,
+              notify_telegram: true,
+              is_voice_task: false,
+              voice_note_url: "",
+              voice_note_duration: 0,
+            });
+            setCreateMode("text");
+            setCreateModal(true);
+            toast.info(`تم اختيار القالب: ${tpl.title}`);
+          }}
+        />
       </div>
     </DashboardLayout>
   );
