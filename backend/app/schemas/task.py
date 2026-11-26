@@ -119,14 +119,17 @@ class TaskUpdate(BaseModel):
 
 class TaskBlockRequest(BaseModel):
     reason: str
+    attachments: Optional[Any] = None
 
 
 class TaskSubmitReviewRequest(BaseModel):
     notes: Optional[str] = None
+    attachments: Optional[Any] = None
 
 
 class TaskReviewRequest(BaseModel):
     review_notes: Optional[str] = None
+    attachments: Optional[Any] = None
 
 
 class TaskResponse(TaskBase):

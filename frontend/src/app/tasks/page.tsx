@@ -239,6 +239,16 @@ export default function TasksPage() {
   const [selectedSplitTaskId, setSelectedSplitTaskId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const stageFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Task Attachments (for task creation, editing, and workflow stage transitions)
+  const [pendingAttachments, setPendingAttachments] = useState<
+    { name: string; url: string; size?: string; is_image?: boolean; stage?: string }[]
+  >([]);
+  const [stageAttachments, setStageAttachments] = useState<
+    { name: string; url: string; size?: string; is_image?: boolean; stage?: string }[]
+  >([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
   // Form state for task creation
   const [formData, setFormData] = useState({
@@ -278,6 +288,7 @@ export default function TasksPage() {
           voice_note_duration: 0,
         });
         setVoiceRecording(null);
+        setPendingAttachments([]);
         setCreateMode("text");
         setCreateError(null);
         setCreateModal(true);
@@ -538,6 +549,7 @@ export default function TasksPage() {
         due_date: formData.due_date || null,
         related_asset_id: formData.related_asset_id || null,
         notes: formData.notes?.trim() || null,
+        attachments: pendingAttachments.length > 0 ? pendingAttachments : (editingTask?.attachments || null),
         notify_telegram: formData.notify_telegram,
         is_voice_task: isVoice || formData.is_voice_task,
         voice_note_url: voiceUrl || null,
@@ -551,6 +563,7 @@ export default function TasksPage() {
       setSelectedEmployee(null);
       setEditingTask(null);
       setVoiceRecording(null);
+      setPendingAttachments([]);
       setCreateMode("text");
       setFormData({
         title: "",
@@ -676,14 +689,108 @@ export default function TasksPage() {
     }
   };
 
+  const uploadAttachmentFile = async (file: File, stage?: string) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    if (stage) fd.append("stage", stage);
+    const res = await api.post<{
+      name: string;
+      url: string;
+      size: string;
+      is_image: boolean;
+      stage?: string;
+    }>("/tasks/attachment-upload", fd);
+    return res.data;
+  };
+
+  const handleAttachFileToSelectedTask = async (
+    taskId: string,
+    file: File,
+    advanceToNextStage = false
+  ) => {
+    setUploadingAttachment(true);
+    try {
+      let nextStatus: string | undefined;
+      if (advanceToNextStage && selectedTask) {
+        if (selectedTask.status === "Assigned") nextStatus = "In Progress";
+        else if (
+          selectedTask.status === "In Progress" ||
+          selectedTask.status === "Accepted" ||
+          selectedTask.status === "Rework Required"
+        ) {
+          nextStatus = "Submitted for Review";
+        } else if (selectedTask.status === "Submitted for Review" && isManagerOrAdmin) {
+          nextStatus = "Completed";
+        }
+      }
+      const fd = new FormData();
+      fd.append("file", file);
+      if (nextStatus) fd.append("advance_to_status", nextStatus);
+      await api.post(`/tasks/${taskId}/attachments`, fd);
+      await refreshSelectedTask(taskId);
+      toast.success(
+        nextStatus
+          ? `تم إرفاق "${file.name}" وإرسال المهمة للمرحلة القادمة بنجاح`
+          : `تم إرفاق "${file.name}" بالمهمة بنجاح`
+      );
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "تعذر رفع المرفق");
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const handleQuickComposerFilePick = async (file: File, isCamera = false) => {
+    if (selectedTask && !createModal) {
+      await handleAttachFileToSelectedTask(selectedTask.id, file, true);
+      return;
+    }
+    setUploadingAttachment(true);
+    try {
+      const uploaded = await uploadAttachmentFile(file, "Assigned");
+      setPendingAttachments((prev) => [...prev, uploaded]);
+      if (!createModal) {
+        setEditingTask(null);
+        setCreateMode("text");
+        setFormData((prev) => ({
+          ...prev,
+          title: prev.title.trim() || (isCamera ? `بلاغ مصور: ${file.name}` : `مهمة مرفقة: ${file.name}`),
+        }));
+        setCreateModal(true);
+      }
+      toast.success(`تم إرفاق "${file.name}" وجاهز للإرسال للمرحلة القادمة`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل رفع الملف المرفق");
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const handleUploadStageAttachment = async (file: File, targetStage: string) => {
+    setUploadingAttachment(true);
+    try {
+      const uploaded = await uploadAttachmentFile(file, targetStage);
+      setStageAttachments((prev) => [...prev, uploaded]);
+      toast.success(`تم إرفاق "${file.name}" لإرساله للمرحلة القادمة`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "فشل رفع المرفق");
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
   const handleBlockTask = async () => {
     if (!selectedTask || !blockerReasonInput.trim()) return;
     setActionLoading(true);
     setActionError(null);
     try {
-      await api.post(`/tasks/${selectedTask.id}/block`, { reason: blockerReasonInput.trim() });
+      await api.post(`/tasks/${selectedTask.id}/block`, {
+        reason: blockerReasonInput.trim(),
+        attachments: stageAttachments.length > 0 ? stageAttachments : undefined,
+      });
       setBlockModal(false);
       setBlockerReasonInput("");
+      setStageAttachments([]);
       await refreshSelectedTask(selectedTask.id);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "فشل تعليق المهمة");
@@ -710,9 +817,14 @@ export default function TasksPage() {
     setActionLoading(true);
     setActionError(null);
     try {
-      await api.post(`/tasks/${selectedTask.id}/submit-review`, { notes: submissionNotesInput.trim() || null });
+      await api.post(`/tasks/${selectedTask.id}/submit-review`, {
+        notes: submissionNotesInput.trim() || null,
+        attachments: stageAttachments.length > 0 ? stageAttachments : undefined,
+      });
       setSubmitModal(false);
       setSubmissionNotesInput("");
+      setStageAttachments([]);
+      toast.success("تم رفع المهمة والمرفقات للمرحلة القادمة (المراجعة والاعتماد)");
       await refreshSelectedTask(selectedTask.id);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "فشل رفع المهمة للمراجعة");
@@ -726,9 +838,14 @@ export default function TasksPage() {
     setActionLoading(true);
     setActionError(null);
     try {
-      await api.post(`/tasks/${selectedTask.id}/approve`, { review_notes: approvalNotesInput.trim() || null });
+      await api.post(`/tasks/${selectedTask.id}/approve`, {
+        review_notes: approvalNotesInput.trim() || null,
+        attachments: stageAttachments.length > 0 ? stageAttachments : undefined,
+      });
       setApproveModal(false);
       setApprovalNotesInput("");
+      setStageAttachments([]);
+      toast.success("تم اعتماد وإكمال المهمة بنجاح");
       await refreshSelectedTask(selectedTask.id);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "فشل اعتماد المهمة");
@@ -742,9 +859,14 @@ export default function TasksPage() {
     setActionLoading(true);
     setActionError(null);
     try {
-      await api.post(`/tasks/${selectedTask.id}/rework`, { review_notes: reworkNotesInput.trim() });
+      await api.post(`/tasks/${selectedTask.id}/rework`, {
+        review_notes: reworkNotesInput.trim(),
+        attachments: stageAttachments.length > 0 ? stageAttachments : undefined,
+      });
       setReworkModal(false);
       setReworkNotesInput("");
+      setStageAttachments([]);
+      toast.success("تم إرسال الملاحظات والمرفقات لمرحلة التعديل");
       await refreshSelectedTask(selectedTask.id);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "فشل طلب التعديل على المهمة");
@@ -1043,10 +1165,13 @@ export default function TasksPage() {
             <input
               ref={fileInputRef}
               type="file"
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
               className="hidden"
               onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  toast.success(`تم اختيار الملف: ${e.target.files[0].name}`);
+                const f = e.target.files?.[0];
+                if (f) {
+                  void handleQuickComposerFilePick(f, false);
+                  e.target.value = "";
                 }
               }}
             />
@@ -1057,8 +1182,10 @@ export default function TasksPage() {
               capture="environment"
               className="hidden"
               onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  toast.success(`تم التقاط الصورة: ${e.target.files[0].name}`);
+                const f = e.target.files?.[0];
+                if (f) {
+                  void handleQuickComposerFilePick(f, true);
+                  e.target.value = "";
                 }
               }}
             />
@@ -1531,6 +1658,8 @@ export default function TasksPage() {
                     }
                     toast.success(`تم نسخ رمز المهمة: ${code}`);
                   }}
+                  onAttachFile={handleAttachFileToSelectedTask}
+                  uploadingAttachment={uploadingAttachment}
                 />
               ) : null
             }
@@ -2310,6 +2439,72 @@ export default function TasksPage() {
                     className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   />
                 </div>
+
+                {/* Attachments & Images Uploader for Task Creation */}
+                <div className="p-3.5 rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)]/60 space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-bold text-[var(--text)] block">
+                        المرفقات والصور (تُرسل مع المهمة للمرحلة القادمة)
+                      </span>
+                      <span className="text-[11px] text-[var(--text-3)]">
+                        صور (PNG, JPG, WEBP) أو ملفات (PDF, Word, Excel, ZIP) حتى 15MB
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={uploadingAttachment}
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer disabled:opacity-50"
+                      >
+                        + إرفاق صورة
+                      </button>
+                      <button
+                        type="button"
+                        disabled={uploadingAttachment}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--primary-soft)] text-[var(--primary-text)] border border-[var(--primary)]/30 hover:bg-[var(--primary)] hover:text-white transition cursor-pointer disabled:opacity-50"
+                      >
+                        {uploadingAttachment ? "جاري الرفع..." : "+ رفع ملف / مرفق"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {pendingAttachments.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {pendingAttachments.map((att, idx) => (
+                        <div
+                          key={`${att.url}-${idx}`}
+                          className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {att.is_image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={att.url} alt={att.name} className="w-9 h-9 rounded object-cover border border-[var(--border)] shrink-0" />
+                            ) : (
+                              <span className="w-8 h-8 rounded bg-[var(--primary-soft)] text-[var(--primary-text)] flex items-center justify-center font-mono text-[10px] font-bold shrink-0">
+                                FILE
+                              </span>
+                            )}
+                            <div className="min-w-0">
+                              <div className="font-semibold text-[var(--text)] truncate">{att.name}</div>
+                              {att.size && <div className="text-[10px] text-[var(--text-3)] font-mono">{att.size}</div>}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                            className="text-rose-500 hover:text-rose-700 font-bold px-1.5 cursor-pointer"
+                            title="إزالة المرفق"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </>
             )}
 
@@ -2847,6 +3042,60 @@ export default function TasksPage() {
               placeholder="مثال: تم إكمال تثبيت الحزم، واختبار الخدمة بنجاح، كافة الفحوصات سليمة..."
               className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-primary"
             />
+
+            {/* Attach proof image or file for the next stage */}
+            <div className="p-3 rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)]/60 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-[var(--text)]">
+                  إرفاق صورة أو ملف للمرحلة القادمة (اختياري)
+                </span>
+                <div>
+                  <input
+                    ref={stageFileInputRef}
+                    type="file"
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        void handleUploadStageAttachment(f, "Submitted for Review");
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={uploadingAttachment}
+                    onClick={() => stageFileInputRef.current?.click()}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[var(--primary-soft)] text-[var(--primary-text)] border border-[var(--primary)]/30 hover:bg-[var(--primary)] hover:text-white transition cursor-pointer disabled:opacity-50"
+                  >
+                    {uploadingAttachment ? "جاري الرفع..." : "+ إرفاق صورة / ملف"}
+                  </button>
+                </div>
+              </div>
+              {stageAttachments.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  {stageAttachments.map((att, idx) => (
+                    <div key={`${att.url}-${idx}`} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {att.is_image && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={att.url} alt={att.name} className="w-8 h-8 rounded object-cover border border-[var(--border)] shrink-0" />
+                        )}
+                        <span className="font-semibold text-[var(--text)] truncate">{att.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setStageAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-rose-500 hover:text-rose-700 font-bold px-1.5 cursor-pointer"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 type="button"

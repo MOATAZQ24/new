@@ -79,6 +79,146 @@ router = APIRouter(prefix="/tasks", tags=["Task Management"])
 VOICE_UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "uploads", "voice_tasks"))
 os.makedirs(VOICE_UPLOAD_DIR, exist_ok=True)
 
+ATTACHMENT_UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "uploads", "task_attachments"))
+os.makedirs(ATTACHMENT_UPLOAD_DIR, exist_ok=True)
+
+ALLOWED_ATTACHMENT_EXTS = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".pdf": "application/pdf",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".csv": "text/csv",
+    ".txt": "text/plain",
+    ".zip": "application/zip",
+}
+
+
+def _merge_task_attachments(existing: Any, incoming: Any) -> list:
+    base: list = list(existing) if isinstance(existing, list) else []
+    if not incoming:
+        return base
+    items = incoming if isinstance(incoming, list) else [incoming]
+    seen_urls = {
+        (x.get("url") if isinstance(x, dict) else str(x))
+        for x in base
+        if x
+    }
+    for item in items:
+        if not item:
+            continue
+        url = item.get("url") if isinstance(item, dict) else str(item)
+        if url not in seen_urls:
+            base.append(item)
+            seen_urls.add(url)
+    return base
+
+
+@router.post("/attachment-upload")
+async def upload_task_attachment(
+    file: UploadFile = File(...),
+    stage: Optional[str] = Form(None),
+    current_user: User = Depends(require_role(["Super Admin", "Company Admin", "IT Manager", "IT Technician", "Employee"])),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+):
+    """Secure file and image upload for tasks and workflow stage transitions."""
+    content = await file.read()
+    max_bytes = 15 * 1024 * 1024
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="حجم الملف المرفق يتجاوز الحد المسموح به (15 ميجابايت)."
+        )
+    if len(content) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="الملف المرفوع فارغ."
+        )
+
+    orig_name = os.path.basename(file.filename or "attachment")
+    _, ext = os.path.splitext(orig_name.lower())
+    content_type = (file.content_type or "").lower()
+
+    if ext not in ALLOWED_ATTACHMENT_EXTS:
+        if "png" in content_type:
+            ext = ".png"
+        elif "jpeg" in content_type or "jpg" in content_type:
+            ext = ".jpg"
+        elif "webp" in content_type:
+            ext = ".webp"
+        elif "gif" in content_type:
+            ext = ".gif"
+        elif "pdf" in content_type:
+            ext = ".pdf"
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="نوع الملف غير مدعوم. الأنواع المسموحة: الصور (PNG, JPG, WEBP, GIF) والمستندات (PDF, Word, Excel, CSV, TXT, ZIP)."
+            )
+
+    file_id = f"att_{uuid.uuid4().hex}{ext}"
+    company_folder = os.path.join(ATTACHMENT_UPLOAD_DIR, str(active_cid))
+    os.makedirs(company_folder, exist_ok=True)
+
+    dest_path = os.path.join(company_folder, file_id)
+    with open(dest_path, "wb") as f:
+        f.write(content)
+
+    size_kb = max(1, round(len(content) / 1024))
+    size_label = f"{round(size_kb / 1024, 1)} MB" if size_kb >= 1024 else f"{size_kb} KB"
+    is_image = ext in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+    return success_response(
+        data={
+            "name": orig_name,
+            "filename": file_id,
+            "url": f"/api/v1/tasks/attachments/{file_id}",
+            "size": size_label,
+            "size_bytes": len(content),
+            "content_type": ALLOWED_ATTACHMENT_EXTS.get(ext, "application/octet-stream"),
+            "is_image": is_image,
+            "stage": stage,
+            "uploaded_by": current_user.username,
+            "uploaded_at": datetime.utcnow().isoformat(),
+        },
+        message="تم إرفاق الملف بنجاح"
+    )
+
+
+@router.get("/attachments/{filename}")
+def get_task_attachment(
+    filename: str,
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+):
+    """Serve an uploaded task attachment or image with company-level isolation."""
+    clean_filename = os.path.basename(filename)
+    if not re.match(r"^att_[a-fA-F0-9]+\.[a-z0-9]+$", clean_filename):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="اسم المرفق غير صالح")
+
+    target_path = os.path.join(ATTACHMENT_UPLOAD_DIR, str(active_cid), clean_filename)
+    found = os.path.isfile(target_path)
+
+    if not found and current_user.is_superadmin and os.path.exists(ATTACHMENT_UPLOAD_DIR):
+        for cid_dir in os.listdir(ATTACHMENT_UPLOAD_DIR):
+            cand = os.path.join(ATTACHMENT_UPLOAD_DIR, cid_dir, clean_filename)
+            if os.path.isfile(cand):
+                target_path = cand
+                found = True
+                break
+
+    if not found or not os.path.isfile(target_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="الملف المرفق غير موجود")
+
+    _, ext = os.path.splitext(clean_filename.lower())
+    media_type = ALLOWED_ATTACHMENT_EXTS.get(ext, "application/octet-stream")
+    return FileResponse(target_path, media_type=media_type)
+
 
 @router.post("/voice-upload")
 async def upload_task_voice_note(
@@ -1190,6 +1330,8 @@ def update_task(
         task.due_date = payload.due_date
     if payload.notes is not None:
         task.notes = payload.notes
+    if 'attachments' in payload.model_fields_set:
+        task.attachments = payload.attachments
     if 'is_voice_task' in payload.model_fields_set and payload.is_voice_task is not None:
         task.is_voice_task = payload.is_voice_task
     if 'voice_note_url' in payload.model_fields_set:
@@ -1318,8 +1460,68 @@ def block_task_endpoint(
     if not task:
         raise HTTPException(status_code=404, detail="المهمة غير موجودة")
     task_service.assert_task_access(task, current_user, active_cid)
+    if payload.attachments:
+        task.attachments = _merge_task_attachments(task.attachments, payload.attachments)
     updated = task_service.block_task(task=task, blocker_reason=payload.reason, user=current_user, db=db)
-    return success_response(data={"id": str(updated.id), "status": updated.status, "blocker_reason": updated.blocker_reason}, message="تم تسجيل تعليق المهمة لوجود معوق")
+    return success_response(data={"id": str(updated.id), "status": updated.status, "blocker_reason": updated.blocker_reason, "attachments": updated.attachments}, message="تم تسجيل تعليق المهمة لوجود معوق")
+
+
+@router.post("/{task_id}/attachments")
+async def attach_file_to_existing_task(
+    task_id: uuid.UUID,
+    file: UploadFile = File(...),
+    stage_note: Optional[str] = Form(None),
+    advance_to_status: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_user),
+    active_cid: uuid.UUID = Depends(get_user_company_id),
+    db: Session = Depends(get_db),
+):
+    """Upload and attach an image or file directly to an existing task, optionally advancing it to the next workflow stage."""
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="المهمة غير موجودة")
+    task_service.assert_task_access(task, current_user, active_cid)
+
+    up_resp = await upload_task_attachment(
+        file=file,
+        stage=advance_to_status or task.status,
+        current_user=current_user,
+        active_cid=active_cid,
+    )
+    att_item = up_resp["data"]
+    task.attachments = _merge_task_attachments(task.attachments, [att_item])
+
+    comment_text = f"📎 تم إرفاق ملف للمرحلة القادمة: {att_item['name']}"
+    if stage_note and stage_note.strip():
+        comment_text += f" — {stage_note.strip()}"
+    db.add(TaskComment(task_id=task.id, user_id=current_user.id, content=comment_text))
+
+    if advance_to_status:
+        if advance_to_status == "Submitted for Review":
+            task_service.submit_for_review(task=task, notes=stage_note, user=current_user, db=db)
+        elif advance_to_status == "In Progress" and task.status in ("Assigned", "Accepted", "Rework Required"):
+            task_service.start_task(task=task, user=current_user, db=db)
+        elif advance_to_status == "Accepted" and task.status == "Assigned":
+            task_service.accept_task(task=task, user=current_user, db=db)
+        elif advance_to_status == "Completed":
+            actor = wf.Actor(
+                user_id=current_user.id, employee_id=current_user.employee_id, name=current_user.username,
+                company_id=active_cid, privileged=task_service.is_manager_or_admin(current_user, db, task.company_id),
+                superadmin=bool(current_user.is_superadmin), source="dashboard",
+            )
+            wf.transition(db, task, actor, "complete", stage_note)
+
+    db.commit()
+    db.refresh(task)
+    return success_response(
+        data={
+            "id": str(task.id),
+            "status": task.status,
+            "attachment": att_item,
+            "attachments": task.attachments,
+        },
+        message="تم إرفاق الملف وإرساله للمرحلة القادمة بنجاح",
+    )
 
 
 @router.post("/{task_id}/unblock")
@@ -1351,8 +1553,10 @@ def submit_for_review_endpoint(
     if not task:
         raise HTTPException(status_code=404, detail="المهمة غير موجودة")
     task_service.assert_task_access(task, current_user, active_cid)
+    if payload.attachments:
+        task.attachments = _merge_task_attachments(task.attachments, payload.attachments)
     updated = task_service.submit_for_review(task=task, notes=payload.notes, user=current_user, db=db)
-    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم رفع المهمة للمراجعة بنجاح")
+    return success_response(data={"id": str(updated.id), "status": updated.status, "attachments": updated.attachments}, message="تم رفع المهمة والمرفقات للمراجعة بنجاح")
 
 
 @router.post("/{task_id}/approve")
@@ -1368,8 +1572,10 @@ def approve_task_endpoint(
     if not task:
         raise HTTPException(status_code=404, detail="المهمة غير موجودة")
     task_service.assert_task_access(task, current_user, active_cid)
+    if payload.attachments:
+        task.attachments = _merge_task_attachments(task.attachments, payload.attachments)
     updated = task_service.approve_task(task=task, review_notes=payload.review_notes, reviewer=current_user, db=db)
-    return success_response(data={"id": str(updated.id), "status": updated.status}, message="تم اعتماد المهمة وإكمالها بنجاح")
+    return success_response(data={"id": str(updated.id), "status": updated.status, "attachments": updated.attachments}, message="تم اعتماد المهمة وإكمالها بنجاح")
 
 
 @router.post("/{task_id}/rework")
@@ -1385,8 +1591,10 @@ def rework_task_endpoint(
     if not task:
         raise HTTPException(status_code=404, detail="المهمة غير موجودة")
     task_service.assert_task_access(task, current_user, active_cid)
+    if payload.attachments:
+        task.attachments = _merge_task_attachments(task.attachments, payload.attachments)
     updated = task_service.rework_task(task=task, rework_notes=payload.review_notes or "", reviewer=current_user, db=db)
-    return success_response(data={"id": str(updated.id), "status": updated.status, "rework_count": updated.rework_count}, message="تم طلب تعديلات إضافية على المهمة")
+    return success_response(data={"id": str(updated.id), "status": updated.status, "rework_count": updated.rework_count, "attachments": updated.attachments}, message="تم طلب تعديلات إضافية على المهمة")
 
 
 @router.post("/{task_id}/reject")

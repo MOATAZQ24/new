@@ -34,6 +34,8 @@ export interface SplitDrawerAttachment {
   name?: string;
   url?: string;
   size?: string | number;
+  is_image?: boolean;
+  stage?: string;
 }
 
 export interface SplitDrawerComment {
@@ -94,6 +96,8 @@ interface TasksSplitDrawerProps {
   onOpenComment: (taskId: string) => void;
   onEdit: (taskId: string) => void;
   onCopyLink?: (taskId: string) => void;
+  onAttachFile?: (taskId: string, file: File, advanceToNextStage?: boolean) => Promise<void> | void;
+  uploadingAttachment?: boolean;
   className?: string;
 }
 
@@ -118,10 +122,14 @@ export function TasksSplitDrawer({
   onOpenComment,
   onEdit,
   onCopyLink,
+  onAttachFile,
+  uploadingAttachment = false,
   className = "",
 }: TasksSplitDrawerProps) {
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [remainingTime, setRemainingTime] = useState<string>("غير محدد");
+  const [advanceOnUpload, setAdvanceOnUpload] = useState(false);
+  const drawerFileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const effectiveDueDate = task?.due_date || task?.resolution_due_at;
 
@@ -207,23 +215,27 @@ export function TasksSplitDrawer({
   };
 
   // Normalize real attachments from API
-  const normalizedAttachments: { name: string; url: string; size?: string }[] = Array.isArray(task.attachments)
+  const normalizedAttachments: { name: string; url: string; size?: string; is_image?: boolean }[] = Array.isArray(task.attachments)
     ? task.attachments
         .map((att, idx) => {
           if (typeof att === "string") {
             const filename = att.split("/").pop() || `مرفق ${idx + 1}`;
-            return { name: filename, url: att };
+            const isImg = /\.(png|jpe?g|webp|gif)$/i.test(att);
+            return { name: filename, url: att, is_image: isImg };
           }
           if (att && typeof att === "object") {
+            const url = att.url || "#";
+            const isImg = Boolean(att.is_image || /\.(png|jpe?g|webp|gif)$/i.test(url) || /\.(png|jpe?g|webp|gif)$/i.test(att.name || ""));
             return {
               name: att.name || `مرفق ${idx + 1}`,
-              url: att.url || "#",
+              url,
               size: att.size ? String(att.size) : undefined,
+              is_image: isImg,
             };
           }
           return null;
         })
-        .filter((x): x is { name: string; url: string; size?: string } => Boolean(x))
+        .filter((x): x is { name: string; url: string; size?: string; is_image?: boolean } => Boolean(x))
     : [];
 
   const totalAttachmentsCount = normalizedAttachments.length + (task.voice_note_url ? 1 : 0);
@@ -514,12 +526,54 @@ export function TasksSplitDrawer({
         </div>
 
         {/* 5. Real Voice Note & Attachments Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-[var(--text)]">
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[var(--text)]">
             <span className="flex items-center gap-1.5">
               <Paperclip size={14} className="text-[var(--primary)]" />
               <span>المرفقات والتسجيلات ({totalAttachmentsCount})</span>
             </span>
+
+            {onAttachFile && (
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={drawerFileInputRef}
+                  type="file"
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      void onAttachFile(task.id, f, advanceOnUpload);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={uploadingAttachment}
+                  onClick={() => {
+                    setAdvanceOnUpload(false);
+                    drawerFileInputRef.current?.click();
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)] hover:border-[var(--primary)] transition cursor-pointer disabled:opacity-50"
+                  title="إرفاق صورة أو ملف بهذه المهمة"
+                >
+                  + إرفاق صورة / ملف
+                </button>
+                <button
+                  type="button"
+                  disabled={uploadingAttachment}
+                  onClick={() => {
+                    setAdvanceOnUpload(true);
+                    drawerFileInputRef.current?.click();
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[var(--primary-soft)] text-[var(--primary-text)] border border-[var(--primary)]/30 hover:bg-[var(--primary)] hover:text-white transition cursor-pointer disabled:opacity-50"
+                  title="إرفاق صورة أو ملف وإرسال المهمة للمرحلة القادمة مباشرة"
+                >
+                  {uploadingAttachment ? "جاري الرفع..." : "إرفاق وإرسال للمرحلة القادمة ←"}
+                </button>
+              </div>
+            )}
           </div>
 
           {task.voice_note_url && (
@@ -533,32 +587,44 @@ export function TasksSplitDrawer({
           {normalizedAttachments.map((att, idx) => (
             <div
               key={`${att.name}-${idx}`}
-              className="bg-[var(--surface-2)]/70 border border-[var(--border)] rounded-2xl p-3 flex items-center justify-between gap-3 shadow-2xs"
+              className="bg-[var(--surface-2)]/70 border border-[var(--border)] rounded-2xl p-3 space-y-2 shadow-2xs"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-[var(--primary-soft)] text-[var(--primary-text)] flex items-center justify-center shrink-0">
-                  <FileText size={18} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-[var(--text)] truncate">
-                    {att.name}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--primary-soft)] text-[var(--primary-text)] flex items-center justify-center shrink-0">
+                    <FileText size={18} />
                   </div>
-                  {att.size && (
-                    <div className="text-[10px] text-[var(--text-3)] font-mono mt-0.5">
-                      {att.size}
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-[var(--text)] truncate">
+                      {att.name}
                     </div>
-                  )}
+                    {att.size && (
+                      <div className="text-[10px] text-[var(--text-3)] font-mono mt-0.5">
+                        {att.size}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {att.url && att.url !== "#" && (
+                  <a
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download={att.name}
+                    className="text-xs font-semibold text-[var(--primary-text)] hover:underline shrink-0"
+                  >
+                    عرض / تحميل
+                  </a>
+                )}
               </div>
-              {att.url && att.url !== "#" && (
-                <a
-                  href={att.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="text-xs font-semibold text-[var(--primary-text)] hover:underline shrink-0"
-                >
-                  تحميل
+              {att.is_image && att.url && att.url !== "#" && (
+                <a href={att.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={att.url}
+                    alt={att.name}
+                    className="max-h-44 w-full object-contain"
+                  />
                 </a>
               )}
             </div>
@@ -566,7 +632,7 @@ export function TasksSplitDrawer({
 
           {totalAttachmentsCount === 0 && (
             <div className="bg-[var(--surface-2)]/40 border border-[var(--border)] rounded-xl p-3 text-center text-xs text-[var(--text-3)]">
-              لا توجد مرفقات لهذه المهمة
+              لا توجد مرفقات لهذه المهمة — يمكنك إرفاق صورة أو ملف وإرساله للمرحلة القادمة
             </div>
           )}
         </div>
