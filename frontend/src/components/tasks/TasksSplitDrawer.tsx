@@ -217,7 +217,7 @@ export function TasksSplitDrawer({
   // Normalize real attachments from API
   const normalizedAttachments: { name: string; url: string; size?: string; is_image?: boolean }[] = Array.isArray(task.attachments)
     ? task.attachments
-        .map((att, idx) => {
+        .map((att, idx): { name: string; url: string; size?: string; is_image?: boolean } | null => {
           if (typeof att === "string") {
             const filename = att.split("/").pop() || `مرفق ${idx + 1}`;
             const isImg = /\.(png|jpe?g|webp|gif)$/i.test(att);
@@ -235,7 +235,7 @@ export function TasksSplitDrawer({
           }
           return null;
         })
-        .filter((x): x is { name: string; url: string; size?: string; is_image?: boolean } => Boolean(x))
+        .filter((x): x is { name: string; url: string; size?: string; is_image?: boolean } => x !== null)
     : [];
 
   const totalAttachmentsCount = normalizedAttachments.length + (task.voice_note_url ? 1 : 0);
